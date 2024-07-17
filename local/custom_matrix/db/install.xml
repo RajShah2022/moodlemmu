@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/custom_matrix/db" VERSION="20140724" COMMENT="XMLDB file for Moodle local/custom performance matrix"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
+    <TABLES>
+        <TABLE NAME="local_performance_logs" COMMENT="User Performance logs.">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="true"/>
+                <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="templateid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="role" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/> 
+                <FIELD NAME="moduletype" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="moduleid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="performancetype" TYPE="char" LENGTH="250" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="performancecatid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/> 
+                <FIELD NAME="parentid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>  
+                <FIELD NAME="type" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>                  
+                <FIELD NAME="month" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="year" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="financialyear" TYPE="char" LENGTH="128" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="maxpoints" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="pointsachieved" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="weightage" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="period" TYPE="char" LENGTH="30" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>               
+                <FIELD NAME="usercreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+        </TABLE>
+
+        <TABLE NAME="local_performance_overall" COMMENT="Overall User Performance">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="true"/>
+                <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="templateid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="role" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/> 
+                <FIELD NAME="performancetype" TYPE="char" LENGTH="250" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="performancecatid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="parentid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/> 
+                <FIELD NAME="type" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>                  
+                <FIELD NAME="month" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="year" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="maxpoints" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="totalpoints" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="weightage" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="financialyear" TYPE="char" LENGTH="128" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                 <FIELD NAME="period" TYPE="char" LENGTH="30" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>                
+                <FIELD NAME="usercreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+        </TABLE>  
+      <!--   <TABLE NAME="local_performance_template" COMMENT="User Performance data quaterly.">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="true"/>              
+                <FIELD NAME="template_name" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>   
+                <FIELD NAME="costcenterid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" />            
+                <FIELD NAME="financialyear" TYPE="char" LENGTH="128" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="active" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="usercreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>               
+            </KEYS>
+        </TABLE>  -->   
+
+        <TABLE NAME="local_performance_matrix" COMMENT="Performance Matrix Weightage">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="true"/>
+                <FIELD NAME="performancetype" TYPE="char" LENGTH="250" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="performancecatid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>  
+                <FIELD NAME="templateid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="parentid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>  
+                <FIELD NAME="type" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>      
+                <FIELD NAME="path" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="role" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>              
+                <FIELD NAME="month" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="year" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="maxscore" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>              
+                <FIELD NAME="weightage" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="usercreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+        </TABLE>   
+
+        <TABLE NAME="local_custom_category" COMMENT="List of custom_category">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" />
+                <FIELD NAME="fullname" TYPE="char" LENGTH="225" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" />
+                <FIELD NAME="shortname" TYPE="char" LENGTH="225" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" />
+                <FIELD NAME="parentid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" />
+                <FIELD NAME="costcenterid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" />
+                <FIELD NAME="visible" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" />
+                <FIELD NAME="type" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" />
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" />
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" />
+                <FIELD NAME="usercreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" />
+                <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" />
+                <FIELD NAME="path" TYPE="char" LENGTH="512" NOTNULL="false" SEQUENCE="false" />
+                <FIELD NAME="depth" TYPE="int" LENGTH="20" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" />
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="parentid" UNIQUE="false" FIELDS="parentid"/>
+            </INDEXES>
+        </TABLE>
+               
+        <TABLE NAME="local_performance_monthly" COMMENT="User Performance monthly data.">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="true"/>
+                <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="role" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/> 
+                <FIELD NAME="moduletype" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="moduleid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="performancetype" TYPE="char" LENGTH="250" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="performancecatid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/> 
+                <FIELD NAME="parentid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>  
+                <FIELD NAME="type" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>                  
+                <FIELD NAME="month" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="year" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="financialyear" TYPE="char" LENGTH="128" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="maxpoints" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="pointsachieved" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="weightage" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="period" TYPE="char" LENGTH="30" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>               
+                <FIELD NAME="usercreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+        </TABLE>
+        <TABLE NAME="local_performance_quarterly" COMMENT="User Performance data quaterly.">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="true"/>
+                <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="role" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/> 
+                <FIELD NAME="moduletype" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="moduleid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="performancetype" TYPE="char" LENGTH="250" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="performancecatid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/> 
+                <FIELD NAME="parentid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>  
+                <FIELD NAME="type" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>                  
+                <FIELD NAME="month" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="year" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="financialyear" TYPE="char" LENGTH="128" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="maxpoints" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="pointsachieved" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="weightage" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="period" TYPE="char" LENGTH="30" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>               
+                <FIELD NAME="usercreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+        </TABLE>
+
+    </TABLES>
+</XMLDB>

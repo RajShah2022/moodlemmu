@@ -1,0 +1,61 @@
+<div class="d-flex justify-content-center" style = "margin-top: 30px">
+    
+    <div class="" style="padding: 0px 10px 1px 0;">
+        <div class="form-group d-flex align-items-center w-100 filters">       
+            <div class="form-inline flex-grow-1">
+                <select class="form-control w-100 matrix_elem" id="performance"  data-dependentselectvalue = "{{# str}} overallperformance, block_performance_matrix{{/ str}}">
+                <option value = "1">{{# str}} categorywise, block_performance_matrix{{/ str}}</option>
+                <option value = "2">{{# str}} overallperformance, block_performance_matrix{{/ str}}</option>
+               
+                </select>
+            </div>
+        </div>
+    </div>
+   
+    <div class="ptype" style="padding: 0px 10px 1px 0;">
+        <div class="form-group d-flex align-items-center w-100 filters">       
+            <div class="form-inline flex-grow-1">
+                <select class="form-control w-100 matrix_elem" id="performancetype" data-action = "performancetype_wise" data-dependentselectvalue = "Select Performance Types">
+                <option value = "">{{# str}} selectperformance, block_performance_matrix{{/ str}}</option>
+                {{# performancetypes}}
+                <optgroup label="{{parentname}}">
+                    {{#child}}
+                    <option value="{{id}}">{{fullname}}</option>
+                    {{/child}}
+                </optgroup>
+                {{/ performancetypes}}
+                </select>
+            </div>
+        </div>
+    </div>
+   
+    {{^ performancetypes}}
+        <input class="hidden" name="performancetype" id="performancetype" value=''/>
+    {{/ performancetypes}}
+    
+    <div class="" style="padding: 8px 12px 0px 0px;">
+        <div class="form-group d-flex align-items-center w-100 filters">
+            <div class="form-inline flex-grow-1 ">
+                <span>
+                    <input type="radio" class="form-check-input radio_filter" name="radio_filter" value = "month" checked="checked"> {{# str}} months, block_performance_matrix{{/ str}}
+                </span>
+               {{# enable_quarter}}
+               <span style="padding-left:10px;">
+                     <input type="radio" class="form-check-input radio_filter" name="radio_filter" value = "quarter"> {{# str}} quaterly, block_performance_matrix{{/ str}}
+                </span>
+               {{/ enable_quarter}}
+
+               {{# enable_halfyear}}
+               <span style="padding-left:10px;">
+                    <input type="radio" class="form-check-input radio_filter" name="radio_filter" value = "halfyearly"> {{# str}} halfyearly, block_performance_matrix{{/ str}}
+                </span>
+               {{/ enable_halfyear}}
+               <span style="padding-left:10px;">
+                    <input type="radio" class="form-check-input radio_filter" name="radio_filter" value = "year"> {{# str}} year, block_performance_matrix{{/ str}}
+                </span>
+            </div>
+        </div>
+    </div>
+   
+</div>
+

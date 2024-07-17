@@ -1,0 +1,151 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+
+    ddd
+
+}}
+<div style="text-align: right;">
+<a href="{{config.wwwroot}}/blocks/performance_matrix/viewgraph.php?id={{userid}}" ><i class="fa fa-line-chart" style="padding: 10px;font-size:24px"></i></a>
+    
+<a href="{{backurl}}" title="{{# str}} back_button, local_custom_matrix{{/ str}}">
+<i id="download_users">{{# str}} back_button, local_custom_matrix{{/ str}}</i>
+</a>
+</div>
+
+<div class="form-group" style="text-align: left;">
+    <select id="perforamce_period" onchange="(function(e){ require('local_custom_matrix/matrix').fetchuserMatrixdata() })(event)" class="select custom-select">
+        {{#options}}
+        <option value="{{value}}" data-name="{{name}}" data-year="{{year}}" data-org="{{costcenterid}}" data-role="{{emprole}}" data-tempid="{{templateid}}" data-month="{{month}}">{{ name }}</option>
+        {{/options}}
+    </select>
+</div>
+
+<div>
+    <h4 id="heading_id">{{heading}}</h4>
+    <input type="hidden" name="" id="heading_old" value="{{heading}}">
+</div>
+
+<div style="margin-top:10%;margin-left:40%; position:absolute;" class="loadElement"></div>
+
+<form action="" method="post">
+<input type="hidden" name="userid" id="userid" value="{{userid}}">
+<table class="generaltable dataTable quedit matrix" id="skill_repository" role="grid" aria-describedby="skill_repository">
+    <thead>
+        <tr role="row">
+            <th class="header text-left" tabindex="0">
+                {{# str}} performancefieldname, local_custom_matrix{{/ str}}
+              
+            </th>
+            <th class="header text-left" tabindex="0">
+                {{# str}} rowperformanceparams , local_custom_matrix{{/ str}}
+            </th>          
+            <th class="header text-left" tabindex="0">{{# str}} rowperformancemaxscore, local_custom_matrix{{/ str}}</th>
+            <th class="header text-left" tabindex="0">{{# str}} performanceweightage, local_custom_matrix{{/ str}}</th>
+             <th class="header text-left" tabindex="0">{{# str}} userscore, local_custom_matrix{{/ str}}</th>
+            
+        </tr>
+    </thead>
+    <tbody id="user_matrix_tbody">
+        {{#response}}  
+            <tr >
+                {{#parentid}}
+                <td class="text-left" ></td>    
+                <td class="text-left" ><h6>
+                        {{fullname}}
+                        <div class="input-group">                    
+                            <input name="data_{{id}}_performancetype" type="hidden" value="{{fullname}}" id="performancetype_{{id}}">
+                            <input name="data_{{id}}_id" type="hidden" value="{{id}}" id="id_{{id}}">
+                            <input name="data_{{id}}_poid" type="hidden" value="{{poid}}" id="poid_{{id}}">
+                            <input name="data_{{id}}_role" type="hidden" value="{{role}}" id="role_{{id}}">
+                            <input name="data_{{id}}_parentid" type="hidden" value="{{parentid}}" id="parentid_{{id}}">
+                            <input name="data_{{id}}_type" type="hidden" value="{{type}}" id="type_{{id}}">
+                            <input name="data_{{id}}_logid" type="hidden" value="{{logid}}" id="logid_{{id}}">
+                            <input name="data_{{id}}_templateid" type="hidden" value="{{templateid}}" id="templateid_{{id}}">                            
+                        </div>
+            
+                    </h6></td>  
+                <td class="text-left">
+                    <div class="form-group  fitem "><h6>{{maxscore}}</h6>
+                        <input type="hidden" class="form-control " name="data_{{id}}_maxscore" id="maxscore_{{id}}" value="{{maxscore}}">
+                    </div> 
+                </td>
+                <td class="text-left" ></td>  
+                {{#type}} 
+                <td class="text-center">
+                    <div class="form-group  fitem  ">
+                        <span data-fieldtype="text">
+                        <input type="number" class="form-control" style="width:40%;" name="data_{{id}}_userscore" id="userscore_{{id}}" value="{{userscore}}">
+                        </span>
+                        <div class="form-control-feedback invalid-feedback" id="userscore_error_{{id}}">                            
+                        </div>
+                    </div>   
+                </td>  
+                {{/type}}  
+                {{^type}} 
+                <td class="text-left"><h6>{{userscore}}</h6></td>
+                {{/type}}  
+                {{/parentid}}  
+                {{^ parentid}}   
+                <td class="text-left" >
+                    <h6>
+                        {{fullname}}
+                        <div class="input-group">                    
+                            <input name="data_{{id}}_performancetype" type="hidden" value="{{fullname}}" id="performancetype_{{id}}">
+                            <input name="data_{{id}}_id" type="hidden" value="{{id}}" id="parentid_{{id}}">
+                            <input name="data_{{id}}_poid" type="hidden" value="{{poid}}" id="poid_{{id}}">
+                            <input name="data_{{id}}_role" type="hidden" value="{{role}}" id="role_{{id}}">
+                            <input name="data_{{id}}_parentid" type="hidden" value="{{parentid}}" id="parentid_{{id}}">
+                            <input name="data_{{id}}_type" type="hidden" value="{{type}}" id="type_{{id}}">
+                            <input name="data_{{id}}_templateid" type="hidden" value="{{templateid}}" id="templateid_{{id}}">
+                        </div>            
+                    </h6>
+                </td> 
+                <td class="text-left"></td>    
+                <td class="text-left"></td>   
+                <td class="text-left">
+                    <h6>{{weightage}}</h6>
+                    <input type="hidden" class="form-control " name="data_{{id}}_weight" id="weight_{{id}}" value="{{weightage}}">                 
+                </td>  
+                <td class="text-left"></td>    
+                {{/parentid}}                                          
+            </tr>
+        {{/response}}
+       
+        {{^response}} 
+         <tr><td colspan="5">No records found please contact to admin</td></tr> 
+        {{/response}}
+    </tbody>
+</table>
+{{#show}}
+<div class="col-md-9 form-inline felement" data-fieldtype="group">
+    <div class="form-group fitem">
+        <span>
+            <input type="button" class="btn btn-primary" name="submitbutton" id="id_submitbutton" onclick="(function(e){ require('local_custom_matrix/matrix').saveUserMatrixdata() })(event)" value="Save changes">
+        </span>
+       
+    </div>
+             
+    <div class="form-group fitem" style="margin-left: 5px;">
+        <span >
+            <input type="submit" class="btn btn-secondary" name="cancel" id="id_cancel" value="Cancel" onclick="window.reload;">
+        </span>
+       
+    </div>
+</div>
+{{/show}}
+
+</form>

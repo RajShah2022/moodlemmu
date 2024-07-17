@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="50" height="50" viewBox="0 0 50 50">
+  <defs>
+    <clipPath id="clip-certificationtemplatesorange">
+      <rect width="50" height="50"/>
+    </clipPath>
+  </defs>
+  <g id="certificationtemplatesorange" clip-path="url(#clip-certificationtemplatesorange)">
+    <g id="certificate" transform="translate(4.999 8)">
+      <path id="Path_12859" data-name="Path 12859" d="M28.984,19.125l2.783,5.39,5.95.864L33.35,29.314l1.122,5.822-5.489-3.275-5.489,3.275,1.122-5.822L20.25,25.379l6.113-.864Z" transform="translate(3.039 -0.202)" fill="#ff5700"/>
+      <path id="Path_12860" data-name="Path 12860" d="M6.75,18h8.734v2.911H6.75Z" transform="translate(-0.928 -0.533)" fill="#ff5700"/>
+      <path id="Path_12861" data-name="Path 12861" d="M6.75,13.5H21.306v2.911H6.75Z" transform="translate(-0.928 -1.855)" fill="#ff5700"/>
+      <path id="Path_12862" data-name="Path 12862" d="M6.75,9H21.306v2.911H6.75Z" transform="translate(-0.928 -3.178)" fill="#ff5700"/>
+      <path id="Path_12863" data-name="Path 12863" d="M22.628,36.523H5.161V7.411H40.1V21.967h2.911V7.411A2.911,2.911,0,0,0,40.1,4.5H5.161A2.911,2.911,0,0,0,2.25,7.411V36.523a2.911,2.911,0,0,0,2.911,2.911H22.628Z" transform="translate(-2.25 -4.5)" fill="#ff5700"/>
+    </g>
+  </g>
+</svg>

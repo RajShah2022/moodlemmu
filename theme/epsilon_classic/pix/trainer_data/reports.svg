@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="50" height="50" viewBox="0 0 50 50">
+  <defs>
+    <clipPath id="clip-reports">
+      <rect width="50" height="50"/>
+    </clipPath>
+  </defs>
+  <g id="reports" clip-path="url(#clip-reports)">
+    <g id="report-data" transform="translate(8 3)">
+      <path id="Path_12855" data-name="Path 12855" d="M16.875,22.5h3.162v6.323H16.875Z" transform="translate(-1.067 5.954)"/>
+      <path id="Path_12856" data-name="Path 12856" d="M22.5,20.25h3.162v9.485H22.5Z" transform="translate(1.212 5.043)"/>
+      <path id="Path_12857" data-name="Path 12857" d="M11.25,15.75h3.162V31.558H11.25Z" transform="translate(-3.346 3.22)"/>
+      <path id="Path_12858" data-name="Path 12858" d="M37.241,6.992H32.5V5.412A3.162,3.162,0,0,0,29.337,2.25H16.691a3.162,3.162,0,0,0-3.162,3.162V6.992H8.787a3.162,3.162,0,0,0-3.162,3.162v33.2a3.162,3.162,0,0,0,3.162,3.162H37.241A3.162,3.162,0,0,0,40.4,43.351v-33.2A3.162,3.162,0,0,0,37.241,6.992ZM16.691,5.412H29.337v6.323H16.691Zm20.55,37.939H8.787v-33.2h4.742V14.9H32.5V10.154h4.742Z" transform="translate(-5.625 -2.25)"/>
+    </g>
+  </g>
+</svg>

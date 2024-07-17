@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="50" height="50" viewBox="0 0 50 50">
+  <defs>
+    <clipPath id="clip-levelsorange">
+      <rect width="50" height="50"/>
+    </clipPath>
+  </defs>
+  <g id="levelsorange" clip-path="url(#clip-levelsorange)">
+    <g id="levels" transform="translate(5 4)">
+      <path id="Path_12851" data-name="Path 12851" d="M10.844,8.44V6.291a1.791,1.791,0,0,0-3.581,0V8.7a3.59,3.59,0,0,0,0,5.931V45.687a1.791,1.791,0,1,0,3.581,0v-30.8a3.585,3.585,0,0,0,0-6.447Z" transform="translate(-5.696 -4.5)" fill="#ff5700"/>
+      <path id="Path_12852" data-name="Path 12852" d="M17.719,30.12V6.291a1.791,1.791,0,1,0-3.581,0V29.984a3.589,3.589,0,0,0,0,6.335v9.368a1.791,1.791,0,1,0,3.581,0v-9.5a3.577,3.577,0,0,0,0-6.065Z" transform="translate(-1.826 -4.5)" fill="#ff5700"/>
+      <path id="Path_12853" data-name="Path 12853" d="M24.427,15.614V6.291a1.791,1.791,0,1,0-3.581,0v9.323a3.58,3.58,0,0,0,0,6.2V45.687a1.791,1.791,0,1,0,3.581,0V21.814a3.58,3.58,0,0,0,0-6.2Z" transform="translate(2.209 -4.5)" fill="#ff5700"/>
+      <path id="Path_12854" data-name="Path 12854" d="M32.968,40.2a3.571,3.571,0,0,0-1.791-3.1V6.291a1.791,1.791,0,1,0-3.581,0V37.1a3.58,3.58,0,0,0,0,6.2v2.383a1.791,1.791,0,1,0,3.581,0V43.3a3.571,3.571,0,0,0,1.791-3.1Z" transform="translate(6.204 -4.5)" fill="#ff5700"/>
+    </g>
+  </g>
+</svg>

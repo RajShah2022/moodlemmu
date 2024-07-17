@@ -1,0 +1,122 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{#competencies}}
+<div class="competency_container row">
+    <div class="col-12 pull-left domain_content p-2">
+        <div class="col-12 col-xl-12 domain_container">
+            <div class="competency content_left">
+                <div class="d-flex flex-row flex-wrap justify-content-between align-items-center">
+                    <span class="competency_name"><h4 class="competency_title"><!-- {{# str }} competency,local_skillrepository {{/ str}} : --> {{ competency_name }}</h4></span>
+                    <span class="competency_org_name col-sm justify-content-start">{{# str }} open_costcenterid,local_costcenter {{/ str}}: {{ org_name }}
+                
+                    </span>    
+                    <div class="dropdown action_menu_dropdown ">
+                        <div  data-toggle="dropdown" class="px-2" aria-expanded="false">
+                            <i class="fa fa-ellipsis-h" aria-hidden="true" title="" aria-label=""></i>
+                        </div>
+                        <ul class="dropdown-menu dropdown-menu-right shadow-sm" >
+                            <li>{{{ competency_delete }}}</li>
+                            <li>{{{ competency_edit }}}</li>
+                            <li>{{{ comp_level_assignskill }}}</li>
+                            <!-- <li>{{{ assignlevel }}}</li> -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {{#competency_levels}}
+               <div class="details_comp_level_name">
+                     <!-- <summary class="comp_level_name">
+                        <span class="competency_level_skills_name justity-content-start">
+                           Proficiency Level: {{ comp_level_name }}
+                        </span>
+                        <span class='pull-right mr-15'>
+                            <span class="competency_level_skill_assignlevel justify-content-start col-sm">
+                                {{!  }}
+                                {{{ comp_level_assignskill }}}
+                            </span>
+                            <span class="competency_level_skill_assignlevel justify-content-start col-sm">
+                                {{!  }}
+                                <a href="javascript:void(0)" class="removeCompetencyLevel" data-costcenterid="{{globalCostcenterid}}" data-competencyid="{{competency_id}}" data-levelid="{{comp_level_id}}" data-levelname="{{comp_level_name}}" data-competencyname="{{competency_name}}">
+                                    <i class="fa fa-times" title="{{#str}} purgecompetencylevel, local_skillrepository{{/str}}"></i>
+                                </a>
+                            </span>
+                        </span>
+                    </summary> -->
+                    <div class="competency_level_names content_left d-flex flex-row flex-wrap justify-content-start align-items-center">
+                        
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading p-3 bg-white text-dark d-flex justify-content-between align-items-center" data-toggle="collapse" data-target="#competency_level_skills{{competency_id}}" aria-expanded="false" aria-controls="competency_level_skills">
+                            <h6 class="mb-0">{{# str }} skills,local_skillrepository {{/ str}}</h6>
+                            <span class="collapse_icon"><i class="fa fa-caret-down"></i></span>
+                        </div>
+                        <div class="panel-body collapse" id="competency_level_skills{{competency_id}}" >
+                        {{#competency_level_skills}}
+                            <div class="panel panel-default">
+                                <div class="comp_level_skill_name panel-heading border mt-4 mb-3" data-toggle="collapse" data-target="#collapse-body{{comp_level_skill_id}}" aria-expanded="false">
+                                    <div class="competency_level_skills content_left d-flex justify-content-between w-100 flex-row p-2 flex-wrap justify-content-start align-items-center">
+                                    <div class="levels_name">
+                                        <span class="competency_level_skills_name d-flex flex-row flex-wrap justify-content-start align-items-center p-0 pr-1">{{# str }} skill,local_skillrepository {{/ str}}: {{ comp_level_skill_name }}</span>
+                                    </div>
+                                    <div class="edit_btns">
+                                        <span class="competency_level_skill_assignlevel d-flex flex-row flex-wrap justify-content-start align-items-center p-0 pl-lg-1">{{{ comp_level_skill_assignlevel }}}</span>
+                                        <span class="competency_level_skill_assignlevel d-flex flex-row flex-wrap justify-content-center align-items-end p-0 pl-lg-1">
+                                            <a href="javascript:void(0)" class="removeLevelSkill" data-costcenterid="{{globalCostcenterid}}" data-competencyid="{{competency_id}}" data-levelid="{{comp_level_id}}" data-skillid="{{comp_level_skill_id}}" data-levelname="{{comp_level_name}}" data-skillname="{{comp_level_skill_name}}">
+                                                <i class="fa fa-times" title="{{#str}} purgeskill, local_skillrepository{{/str}}"></i>
+                                            </a>
+                                        </span>
+                                    </div>
+                                    </div>
+                                    <div id="collapse-body{{comp_level_skill_id}}" class="comp_level_skill_level_name panel-body collapse mb-0 bg-white">
+                                    {{#skill_levels}}
+                                        <div class="competency_level_skill_levels content_left d-flex flex-row flex-wrap justify-content-start align-items-center px-3 py-2">
+                                            <span class="competency_level_skills_name d-flex flex-row flex-wrap justify-content-start align-items-center col-md-12 col-lg-4 p-0 pr-1">{{# str }} level,local_skillrepository {{/ str}}: <b>{{ comp_level_skill_level_name }}</b></span>
+                                            <span class="competency_level_skills_name d-flex flex-row flex-wrap justify-content-center align-items-center col-md-12 col-lg-4 p-0 pr-1">Courses : &nbsp <b>{{{skill_level_courses_count}}}</b></span>
+                                            <span class="competency_level_skill_assignlevel d-flex flex-row flex-wrap justify-content-between align-items-center col-md-12 col-lg-4 p-0 pr-1 pl-lg-1">{{{ comp_level_skill_assignskill_level_course }}}
+                                            {{{skill_level_remove}}}</span>
+                                        </div>
+                                {{/skill_levels}}
+                                </div>
+                                </div>
+                                
+                                
+                                
+                            </div>
+                        {{/competency_level_skills}}
+                        </div>
+                    </div>
+                </div>
+                {{/competency_levels}}
+            {{^competency_levels}}
+                <div class="alert alert-info text-center">{{# str }} levels_are_not_mandatory,local_skillrepository {{/ str}} </div>
+            {{/competency_levels}}
+            </details>
+        </div>
+    </div>
+</div>
+{{/competencies}}
+{{#js}}
+var toggler = $(".competency_level");
+var i;
+
+for (i = 0; i < toggler.length; i++) {
+  toggler[i].addEventListener("click", function() {
+    this.parentElement.querySelector(".competency_level_skills").classList.toggle("active");
+    this.classList.toggle("check-box");
+  });
+}
+{{/js}}

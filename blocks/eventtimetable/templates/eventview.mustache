@@ -1,0 +1,76 @@
+<div>
+    {{# companyview}}
+    <div class="d-flex my-2">
+        <span class="mr-2"><i class="fa fa-users"></i> Company: </span>
+        <div>{{orgname}}</div>
+    </div>
+    {{/ companyview}}
+    {{# coursename}}
+    <div class="d-flex my-2">
+        <span class="mr-2"><i class="fa fa-file-o"></i></span>
+        <div><a href='{{courseurl}}'>{{coursename}}</a></div>
+    </div>
+    {{/ coursename}}
+    {{# description}}
+    <div class="d-flex my-2">
+        <span class="mr-2"><i class="fa fa-info-circle"></i></span>
+        <!-- <div>{{{description}}}</div> -->
+        <div style='word-break:break-all; word-wrap:break-word;'>{{{description}}}</div>
+    </div>
+    {{/ description}}
+    {{# instructors}}
+    <div class="d-flex my-2">
+        <span class="mr-2"><i class="fa fa-user mr-1"></i> Instructor:</span>
+        <div>{{instructors}}</div>
+    </div>
+    {{/ instructors}}
+    {{# ncinstructors}}
+    <div class="d-flex my-2">
+        <span class="mr-2"><i class="fa fa-user-secret mr-1"></i>Non Contact Instructor(s):</span>
+        <div>{{ncinstructors}}</div>
+    </div>
+    {{/ ncinstructors}}
+    {{# location}}
+    <div class="d-flex my-2">
+        <span class="mr-2"><i class="fa fa-map-marker mr-1"></i>Location:</span>
+        <div>{{location}}</div>
+    </div>
+    {{/ location}}
+    <div class="d-flex my-2 ">
+        <div class="mr-4"> <span class="text-muted"><b>Start : </b></span> {{startdatetime}} </div>
+        {{# enddatetime}}
+            <div > <span class="text-muted"><b>End : </b></span> {{enddatetime}} </div>
+        {{/ enddatetime}}
+    </div>
+    {{# is_admin}}
+    <div class="text-right">
+        <a class="btn btn-primary" href="{{dataurl}}">{{launchstring}}</a>
+    </div>
+    {{/ is_admin}}
+    {{^ is_admin}}
+    {{# is_enrolled}}
+        <div class="text-right">
+            <a class="btn btn-primary" href="{{dataurl}}">{{launchstring}}</a>
+        </div>
+    {{/ is_enrolled}}
+    {{^ is_enrolled}}
+    <div class="text-right">
+        {{^ approvalreqd}}
+        <a href="javascript:void(0);" class="btn btn-primary" alt = "{{enroltocr}}" title = "{{enroltocr}}" onclick="(function(e){ require('local_classroom/classroom').ManageclassroomStatus({action:'selfenrol', id: {{classroomid}}, classroomid:{{classroomid}},actionstatusmsg:'classroom_self_enrolment',classroomname:'{{coursename}}'}) })(event)" >{{enroltocr}}</a>
+        {{/ approvalreqd}}
+        {{# approvalreqd}}
+            {{^is_requested}}
+                <a href="javascript:void(0);" class="btn btn-primary" alt="{{enroltocr}}" title="{{enroltocr}}" onclick="(function(e){ require('local_request/requestconfirm').init({componentid:{{classroomid}}, component:'classroom', action:'add', componentname:'{{coursename}}' }) })(event)">{{enroltocr}}</a>
+            {{/is_requested}}
+            {{#is_requested}}
+                <div class="text-right">
+                    <a class="btn btn-primary">Waiting for Approval</a>
+                </div>
+            {{/is_requested}}
+
+        {{/ approvalreqd}}
+    </div>
+    {{/ is_enrolled}}
+    {{/ is_admin}}
+</div>
+

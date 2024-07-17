@@ -1,0 +1,57 @@
+<div class="details_comp_level_name">
+    {{#response}}
+        <div class="panel panel-default border rounded mb-3">
+
+            <div class="panel-heading p-3 bg-white text-dark d-flex justify-content-between align-items-center border-bottom" data-toggle="collapse" data-target="#collapse-body{{id}}" aria-expanded="false" aria-controls="competency_level_skills">
+                <b><!-- {{# str}} competency, local_skillrepository{{/ str}} : -->  {{#name}}{{name}}{{/name}}</b>
+                <div class="d-flex align-items-center">
+                    <span class="collapse_icon ml-3"><i class="fa fa-angle-down"></i></span>
+                </div>
+            </div>
+            <div class="panel-body mx-3 p-2 collapse" id="collapse-body{{id}}" >
+                <table class="generaltable dataTable quedit matrix" id="skill_repository" role="grid" aria-describedby="skill_repository">
+                    <thead>
+                        <tr role="row">
+                            <th class="header text-left" tabindex="0">{{# str}} course, local_courses{{/ str}}</th>
+                            <th class="header text-left" tabindex="0">{{# str}} status, local_courses{{/ str}}</th>
+                             <th class="header text-left" tabindex="0">{{# str}} achievedon, local_skillrepository{{/ str}}</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody id="user_competency_tbody">
+                        {{#course}}
+                        <tr>               
+                            <td class="text-left" >{{fullname}}</td>    
+                            <td class="text-left" >
+                                {{#timecompleted}}
+                                    {{# str}} completed, local_skillrepository{{/ str}}
+                                {{/timecompleted}}
+                                {{^timecompleted}}
+                                    {{{enrolled}}}
+                                {{/timecompleted}}
+                            </td>    
+                            <td class="text-left" >
+                                {{#timecompleted}}
+                                    {{timecompleted}}
+                                {{/timecompleted}}
+                                {{^timecompleted}}
+                                    {{# str}} n/a, local_skillrepository{{/ str}}
+                                {{/timecompleted}}
+                            </td>    
+                        </tr>
+                       {{/course}}
+                       {{^course}}
+                            <tr>
+                                <td>
+                                    {{# str}} no_courses_data, local_costcenter{{/ str}}                        
+                                </td>
+                            </tr>
+                       {{/course}}
+                       
+                       
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {{/response}}
+</div>

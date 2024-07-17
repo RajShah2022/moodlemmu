@@ -1,0 +1,224 @@
+#page-blocks-trainerdashboard-dashboard .trainermanhours_table,
+#page-blocks-trainerdashboard-dashboard .conductedtrainings_table,
+#page-blocks-trainerdashboard-dashboard .trainerlist_table,
+#page-blocks-trainerdashboard-dashboard .upcomingtrainings_table{
+	border: 1px solid #ddd;
+    border-radius: 5px;
+    position: relative;
+}
+#page-blocks-trainerdashboard-dashboard .trainermanhours_table .table_header,
+#page-blocks-trainerdashboard-dashboard .conductedtrainings_table .table_header,
+#page-blocks-trainerdashboard-dashboard .trainerlist_table .table_header,
+#page-blocks-trainerdashboard-dashboard .upcomingtrainings_table .table_header{
+    border-bottom: 1px solid #ddd;
+    padding: 15px;
+    font-size: 15px;
+    background-color: #f4f4f9;
+}
+#page-blocks-trainerdashboard-dashboard .trainermanhours_table .global_filter_structure,
+#page-blocks-trainerdashboard-dashboard .conductedtrainings_table .global_filter_structure,
+#page-blocks-trainerdashboard-dashboard .trainerlist_table .global_filter_structure,
+#page-blocks-trainerdashboard-dashboard .upcomingtrainings_table .global_filter_structure{
+	position: absolute;
+	top:12px;
+	right: 20px;
+}
+#page-blocks-trainerdashboard-dashboard .trainermanhours_table .global_filter_structure input,
+#page-blocks-trainerdashboard-dashboard .conductedtrainings_table .global_filter_structure input,
+#page-blocks-trainerdashboard-dashboard .trainerlist_table .global_filter_structure input,
+#page-blocks-trainerdashboard-dashboard .upcomingtrainings_table .global_filter_structure input{
+	box-shadow: none;
+}
+#page-blocks-trainerdashboard-dashboard .trainermanhours_table #status_tabs,
+#page-blocks-trainerdashboard-dashboard .conductedtrainings_table #status_tabs,
+#page-blocks-trainerdashboard-dashboard .trainerlist_table #status_tabs,
+#page-blocks-trainerdashboard-dashboard .upcomingtrainings_table #status_tabs{
+	float: none;
+}
+#page-blocks-trainerdashboard-dashboard #status_tabs,
+#page-blocks-trainerdashboard-dashboard #status_tabs .alert-info,
+#page-blocks-trainerdashboard-dashboard .trainermanhours_table #status_tabs .alert-info,
+#page-blocks-trainerdashboard-dashboard .conductedtrainings_table #status_tabs .alert-info,
+#page-blocks-trainerdashboard-dashboard .conductedtrainings_table #conductedtrainingsdashboards .generaltable#sessionsdata{
+	float: none;
+}
+#page-blocks-trainerdashboard-dashboard .trainermanhours_table table thead,
+#page-blocks-trainerdashboard-dashboard .conductedtrainings_table table thead,
+#page-blocks-trainerdashboard-dashboard .trainerlist_table table thead,
+#page-blocks-trainerdashboard-dashboard .upcomingtrainings_table table thead{
+    background-color: #ffdbbe;
+    background-image: none;
+}
+#page-blocks-trainerdashboard-dashboard .trainermanhours_table table thead th,
+#page-blocks-trainerdashboard-dashboard .conductedtrainings_table table thead th,
+#page-blocks-trainerdashboard-dashboard .trainerlist_table table thead th,
+#page-blocks-trainerdashboard-dashboard .upcomingtrainings_table table thead th{
+	color: #000;
+}
+#page-blocks-trainerdashboard-dashboard .trainerlist_table table tbody td,
+#page-blocks-trainerdashboard-dashboard .upcomingtrainings_table table tbody td{
+	font-weight: 600;
+}
+#page-blocks-trainerdashboard-dashboard .trainermanhours_table table tbody td:nth-child(3), 
+#page-blocks-trainerdashboard-dashboard .trainerlist_table table tbody td:nth-child(3) a{
+    color: #ff5f35;
+    font-weight: 600;
+}
+#page-blocks-trainerdashboard-dashboard .trainerlist_table table tbody td:nth-child(4) a{
+    color: #049623;
+    font-weight: 600;
+}
+#page-blocks-trainerdashboard-dashboard .trainerlist_table table tbody td:nth-child(5) a{
+    color: #00249e;
+    font-weight: 600;
+}
+#page-blocks-trainerdashboard-dashboard .trainermanhours_table table tbody td{
+    color: #00249e;
+    font-weight: 600;
+}
+#page-blocks-trainerdashboard-dashboard .trainermanhours_table table tbody td:nth-child(1){
+    color: #000;
+    font-weight: 600;
+}
+#page-blocks-trainerdashboard-dashboard #trainermanhoursdashboards .pagination,
+#page-blocks-trainerdashboard-dashboard #trainermanhoursdashboards [data-region="paging-control-container"],
+#page-blocks-trainerdashboard-dashboard #conductedtrainingsdashboards .pagination,
+#page-blocks-trainerdashboard-dashboard #conductedtrainingsdashboards [data-region="paging-control-container"],
+#page-blocks-trainerdashboard-dashboard #trainerslistdashboards .pagination,
+#page-blocks-trainerdashboard-dashboard #trainerslistdashboards [data-region="paging-control-container"]{
+	float: none;
+}
+#page-blocks-trainerdashboard-dashboard .trainermanhours_table table tbody tr:nth-of-type(even),
+#page-blocks-trainerdashboard-dashboard .trainerlist_table table tbody tr:nth-of-type(even) {
+    background-color: #00000012;
+    border-bottom: 1px solid #e1e1e1;
+    border-top: 1px solid #e1e1e1;
+}
+#page-blocks-trainerdashboard-dashboard .trainermanhours_table table tbody tr:nth-of-type(odd),
+#page-blocks-trainerdashboard-dashboard .trainerlist_table table tbody tr:nth-of-type(odd){
+	background-color: #fff;
+}
+#page-blocks-trainerdashboard-dashboard .trainermanhours_table table,
+#page-blocks-trainerdashboard-dashboard .trainerlist_table table{
+	box-shadow: none;
+}
+#page-blocks-trainerdashboard-dashboard .trainerlist_table table td img.userpic{
+	border-radius: 50%;
+}
+#page-blocks-trainerdashboard-dashboard .total_trainings .totalicon{
+	background-image: url('[[pix:block_trainerdashboard|totalicon]]');
+	background-size: cover;
+	background-repeat: no-repeat;
+	width:60px;
+	height: 60px;
+}
+#page-blocks-trainerdashboard-dashboard .completed_trainings .completedicon{
+	background-image: url('[[pix:block_trainerdashboard|completedicon]]');
+	background-size: cover;
+	background-repeat: no-repeat;
+	width:60px;
+	height: 60px;
+}
+#page-blocks-trainerdashboard-dashboard .upcoming_trainings .upcomingicon{
+	background-image: url('[[pix:block_trainerdashboard|upcomingicon]]');
+	background-size: cover;
+	background-repeat: no-repeat;
+	width:60px;
+	height: 60px;
+}
+#page-blocks-trainerdashboard-dashboard .users_count .usericon{
+	background-image: url('[[pix:block_trainerdashboard|usericon]]');
+	background-size: cover;
+	background-repeat: no-repeat;
+	width:60px;
+	height: 60px;
+}
+#page-blocks-trainerdashboard-dashboard .total_trainings .count_value,
+#page-blocks-trainerdashboard-dashboard .completed_trainings .count_value,
+#page-blocks-trainerdashboard-dashboard .upcoming_trainings .count_value,
+#page-blocks-trainerdashboard-dashboard .users_count .count_value{
+	font-size: 25px;
+	font-weight: 700;
+	color: #000;
+}
+#page-blocks-trainerdashboard-dashboard .total_trainings{
+	background-color: #ffe5d0;
+	box-shadow: 0 5px 6px #ddd;
+}
+#page-blocks-trainerdashboard-dashboard .completed_trainings{
+	background-color: #d4fedb;
+	box-shadow: 0 5px 6px #ddd;
+}
+#page-blocks-trainerdashboard-dashboard .upcoming_trainings{
+	background-color: #cbf8fe;
+	box-shadow: 0 5px 6px #ddd;
+}
+#page-blocks-trainerdashboard-dashboard .users_count{
+	background-color: #fff2d8;
+	box-shadow: 0 5px 6px #ddd;
+}
+#page-blocks-trainerdashboard-dashboard .classroom_data .text-muted,
+#page-blocks-trainerdashboard-dashboard .classroom_data{
+	font-size: 12px;
+}
+
+#page-blocks-trainerdashboard-dashboard .conducted_trainings_cards .col-md-4:nth-child(3n+3) .classroom_card{
+	background-color: #ffeae5;
+}
+#page-blocks-trainerdashboard-dashboard .conducted_trainings_cards .col-md-4:nth-child(3n+1) .classroom_card{
+	background-color: #fffbe6;
+}
+#page-blocks-trainerdashboard-dashboard .conducted_trainings_cards .col-md-4:nth-child(3n+2) .classroom_card{
+	background-color: #e3ffff;
+}
+#page-blocks-trainerdashboard-dashboard .conducted_trainings_cards .col-md-4:nth-child(3n+3) .userinitials{
+	background-color:#efb3a5;
+	font-weight: 600;
+}
+#page-blocks-trainerdashboard-dashboard .conducted_trainings_cards .col-md-4:nth-child(3n+1) .userinitials{
+	background-color:#ccc58f;
+	font-weight: 600;
+}
+#page-blocks-trainerdashboard-dashboard .conducted_trainings_cards .col-md-4:nth-child(3n+2) .userinitials{
+	background-color:#abe3e4;
+	font-weight: 600;
+}
+#page-blocks-trainerdashboard-dashboard input#global_filter_trainermanhoursdashboards[placeholder="Search"]:before {
+    content: "\f002";
+    font-family: 'FontAwesome 6 Free';
+    display: inline-block;
+    font-size: 20px;
+}
+#page-blocks-trainerdashboard-dashboard input[placeholder="Search"]{
+	font-size: 13px;
+	padding-left: 1rem;
+}
+#page-blocks-trainerdashboard-dashboard .conducted_trainings_cards .attendacecount .status .tag-success{
+	color: #01962c;
+}
+#page-blocks-trainerdashboard-dashboard .conducted_trainings_cards .attendacecount .status .tag-warning{
+	color: #ff0008;
+}
+
+
+.block_trainerdashboard .global_filter_structure {
+	margin-bottom: 10px;
+}
+@media(max-width: 767px) {
+    #page-blocks-trainerdashboard-dashboard #trainerslistdashboards .generaltable,
+    #page-blocks-trainerdashboard-dashboard #upcomingtrainingsdashboards .generaltable,
+    #page-blocks-trainerdashboard-dashboard #trainermanhoursdashboards .generaltable {
+	    overflow-x: auto;
+	    display: block !important;
+	}
+
+}
+@media(max-width: 1023px) {
+	#page-blocks-trainerdashboard-dashboard #upcomingtrainingsdashboards .generaltable{
+		overflow-x: auto;
+		display: block !important;
+	}
+}
+#page-blocks-trainerdashboard-dashboard .global_filter_structure {
+    display: none !important;
+}

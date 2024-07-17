@@ -1,0 +1,13 @@
+#page-local-custom_matrix-index #fgroup_id_matrix .col-md-3{
+    display: none !important;
+}
+#page-local-custom_matrix-index #fgroup_id_matrix .col-md-9{
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+}
+#page-local-custom_matrix-index #fgroup_id_matrix .quedit{
+    width: 100% !important;
+}
+#page-local-custom_matrix-index #fgroup_id_matrix .quedit .performancetype{
+    background: antiquewhite;
+}

@@ -1,0 +1,69 @@
+<div class="d-flex justify-content-end">
+    {{^is_trainer}}
+        {{# moduleinfo.0}}
+        <div class="">
+            <div class="form-group d-flex align-items-center w-100">
+                <div class="col-form-label mr-2"> 
+                    <!-- <label class="mb-0">Master Course</label> -->
+                </div>
+                <div class="form-inline flex-grow-1">
+                    <select class="form-control w-100 eventcalendar_select_elem" id="moduletype" data-action = "get_moduleids" data-dependentselectvalue = "Select Here" data-dependentelem = "moduleids">
+                        {{#moduleinfo}}
+                            <option value="{{id}}">{{fullname}}</option>
+                        {{/moduleinfo}}
+                    </select>
+                </div>
+            </div>
+        </div>
+        {{/ moduleinfo.0}}
+
+        {{^ moduleinfo.0}}
+            <input class="hidden" name="moduletype" id="moduletype" value=''/>
+        {{/ moduleinfo.0}}
+
+        {{# moduleidsinfo.0}}
+        <div class="">
+            <div class="form-group d-flex align-items-center w-100">
+                <div class="col-form-label mr-2">
+                </div>
+                <div class="form-inline flex-grow-1">
+                    <select class="form-control w-100 eventcalendar_select_elem" id="moduleids" data-action = "" data-dependentselectvalue = "Select" data-dependentelem = "">
+                        {{#moduleidsinfo}}
+                            <option value="{{id}}">{{fullname}}</option>
+                        {{/moduleidsinfo}}
+                    </select>
+                </div>
+            </div>
+        </div>
+        {{/ moduleidsinfo.0}}
+
+        {{^ moduleidsinfo.0}}
+            <input class="hidden" name="moduleids" id="moduleids" value=''/>
+        {{/ moduleidsinfo.0}}
+    {{/is_trainer}}
+    {{#is_trainer}}
+        {{# moduleidsinfo.0}}
+        <div class="">
+            <div class="form-group d-flex align-items-center w-100">
+                <div class="col-form-label mr-2">
+                </div>
+                <div class="form-inline flex-grow-1">
+                    <select class="form-control w-100 eventcalendar_select_elem" id="moduleids">
+                        {{#moduleidsinfo}}
+                            <option value="{{id}}">{{fullname}}</option>
+                        {{/moduleidsinfo}}
+                    </select>
+                </div>
+            </div>
+        </div>
+        {{/ moduleidsinfo.0}}
+
+        {{^ moduleidsinfo.0}}
+            <input class="hidden" name="moduleids" id="moduleids" value=''/>
+        {{/ moduleidsinfo.0}}
+    {{/is_trainer}}
+</div>
+
+<div class="row">
+    <div id="ec" class="col"></div>
+</div>

@@ -1,0 +1,1077 @@
+#page-local-skillrepository-index #fitem_id_category .felement.fselect,
+#page-local-skillrepository-index #fitem_id_sub_category .felement.fselect {
+    display: inline!important;
+    float: left;
+    width: 20%!important;
+    margin-left: 3.5%!important
+}
+
+.add_category {
+    margin-left: 1%;
+    cursor: pointer
+}
+
+#popup_submit {
+    margin-left: 30%
+}
+
+#page-local-skillrepository-index .ui-button-text {
+    display: none!important
+}
+
+body.path-local-skillrepository .ui-dialog .ui-dialog-titlebar-close span {
+    margin-left: -9px!important;
+    margin-top: -8px!important
+}
+
+#shortnameError,
+.ui-dialog #nameError {
+    display: inline-block;
+    border: 1px solid #eed3d7;
+    border-radius: 4px;
+    background-color: #f2dede;
+    padding: 4px;
+    margin-bottom: 4px;
+    color: #b94a48
+}
+
+span.ui-button-text {
+    float: left!important;
+    width: 100%!important;
+    font-size: 10px!important
+}
+
+#costcenter-form_caption {
+    float: right
+}
+
+#page-local-skillrepository-index div[role=main] {
+    position: relative
+}
+
+#page-local-skillrepository-index #costcenter-form_caption a {
+    position: absolute;
+    top: 28px;
+    font-size: 20px;
+    right: 5px
+}
+
+#skill_repository_wrapper {
+    width: 100%;
+    float: left;
+    overflow-x: auto;
+    overflow-y: hidden
+}
+
+#page-local-skillrepository-index .collapsibleregion.collapsed {
+    height: 25px!important
+}
+
+#page-local-skillrepository-index #costcenter-form_caption a img {
+    display: none!important
+}
+
+#costcenter-form_caption a img.add_img {
+    display: -webkit-inline-box;
+    display: initial!important;
+    padding-right: 10px
+}
+
+body.path-local-skillrepository span.ui-button-icon-primary.ui-icon.ui-icon-closethick {
+    background-image: url([[pix:theme|/images/ui-icons_228ef1_256x240]])!important
+}
+
+.ui-dialog-titlebar {
+    border-radius: 0!important;
+    padding-left: 0;
+    padding-right: 0;
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0
+}
+
+.ui-dialog {
+    padding: 0!important;
+    margin: 0!important;
+    border-radius: 0!important
+}
+
+#page-local-skillrepository-index .ftoggler {
+    display: none
+}
+
+#page-local-skillrepository-index .ui-widget-content {
+    border: 0!important
+}
+
+#page-local-skillrepository-index .bulkupload {
+    float: right;
+    position: relative;
+    right: 163px;
+    top: -37px
+}
+
+.bulkupload a {
+    color: #fff!important
+}
+
+#dialog-confirm {
+    height: auto!important
+}
+
+.ui-button-text-only .ui-button-text {
+    padding: .4em 1em .4em .2em!important
+}
+
+#dialog_box div.fdescription.required {
+    margin-left: 20px!important
+}
+
+.active .add_category {
+    margin-left: 8%
+}
+
+#page-local-skillrepository-skill_category div[role=main] {
+    position: relative
+}
+
+#page-local-skillrepository-skill_category .ftoggler {
+    display: none
+}
+
+table#institutes th {
+    color: #336799
+}
+
+#page-local-skillrepository-skillinfo .emptymsg {
+    text-align: center;
+    padding: 12px 0;
+    box-shadow: 0 0 11px 0 #d8e3ff inset
+}
+
+#page-local-skillrepository-skillinfo #skilldetails {
+    width: 100%
+}
+
+#page-local-skillrepository-skillinfo .skill_descr {
+    margin-top: 15px;
+    margin-left: 15px
+}
+
+#page-local-skillrepository-skillinfo .skill_addinfo {
+    background-color: #d8e3ff;
+    width: 100%;
+    padding: 7px
+}
+
+#page-local-skillrepository-skillinfo #additionalinfo {
+    margin-top: 30px
+}
+
+#page-local-skillrepository-skillinfo .skillcourses {
+    margin-top: 20px
+}
+
+#page-local-skillrepository-skillinfo .noskillcoursesmsg {
+    margin-left: 15px
+}
+
+#page-local-skillrepository-index table.dataTable thead .sorting {
+    background-color: #2b2f3b;
+    color: #fff
+}
+
+#page-local-skillrepository-index .generaltable.dataTable.no-footer td img.iconsmall {
+    padding: 0 10px;
+    cursor: pointer
+}
+
+#page-local-skillrepository-index .dataTables_length {
+    display: none
+}
+
+#page-local-skillrepository-index #skill_repository_filter {
+    float: right;
+    clear: both
+}
+
+#skill_page_buttons .btn-primary a {
+    color: #fff
+}
+
+body.path-local-skillrepository #region-main .card.card-block {
+    overflow-x: visible
+}
+
+body.path-local-skillrepository .course_extended_menu_list {
+    top: -40px
+}
+
+body#page-local-skillrepository-level #region-main .card.card-block {
+    overflow-x: visible
+}
+
+body#page-local-skillrepository-level .course_extended_menu_list {
+    top: -16px;
+    right: 20px
+}
+
+.openLMStransition.local_skillrepository .modal-footer .btn {
+    margin-right: 5px
+}
+
+#skill_repository_wrapper .dt-buttons i.icon {
+    margin-right: 0
+}
+
+#page-local-skillrepository-level #all_levels_display_table_wrapper {
+    overflow: auto
+}
+
+#page-local-skillrepository-skill_category .course_extended_menu_list {
+    right: 0
+}
+
+#manage_skills {
+    width: 100%;
+    float: left;
+    overflow: auto;
+    margin-top: 15px
+}
+
+.fas {
+    font-family: FontAwesome
+}
+
+.sm_main_container {
+    margin-top: 1rem
+}
+
+.sm_main_container {
+    overflow: auto
+}
+
+/*STAR-4*/
+.skillmatrix {
+    overflow: auto;
+    /*-webkit-box-shadow: 1px 2px 6px #ddd;
+    -moz-box-shadow: 1px 2px 6px #ddd;
+    -o-box-shadow: 1px 2px 6px #ddd;
+    box-shadow: 1px 2px 6px #ddd;*/
+/*    border: 1px solid #ddd;*/
+    margin: auto;
+    margin-top: .5rem;
+    margin-bottom: .5rem;
+    min-width: min-content;
+    /*width: min-content*/ 
+    padding:0 1rem;
+    background-color: #fff;
+}
+
+.skillmatrix_container.positiondata {
+    min-width: 128px;
+    max-width: 128px;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    font-size: 14px;
+    /*font-weight: 600;*/
+    /*max-width: 190px;*/
+    word-break: break-all;
+    padding: 14px 5px;
+    background-color: #c2c2c2;
+    color: #000;
+    border-radius: 0.2rem;
+}
+.skillmatrix_container.leveldata .skill_data:first-child .levelname {
+    min-width: 170px;
+}
+
+.skillmatrix_container.positiondata:first-child {
+    min-width: 170px;
+}
+.skillmatrix_container.skill_data:first-child {
+
+}
+.comp_level_name .competency_level_skills_name{
+    color: #de640c;
+}
+.comp_level_skill_name .competency_level_skills {
+    color: #329001;
+}
+
+.skillmatrix_container.competency_data {
+    width: 100%;
+    font-weight: 500;
+    background-color: #fff;
+    padding: 1rem 0;
+    margin-right: 0;
+    font-size: 22px;
+}
+.skillmatrix_container.skill_data span.skillname {
+    font-weight: 500;
+    margin-right: 0;
+    margin-left: 5px
+}
+
+.skillmatrix_container.leveldata .skill_data:first-child {
+    min-width: 170px;
+/*    padding-left: 10px;*/
+    /*border-right: none*/
+    width: 170px;
+}
+
+.skillmatrix_container {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flex;
+    display: -o-flex;
+    display: -moz-flex;
+    display: flex;
+/*    margin-right: 5px;*/
+    flex: 0 1 auto;
+    flex-flow: row wrap
+}
+
+.skillmatrix_container.competency {
+    padding: 0;
+    margin-right: 0
+}
+
+.skillmatrix_container.positionsinfo {
+/*    border-bottom: 1px solid #ddd;*/
+    margin-right: 0;
+/*    padding-bottom: .2rem;*/
+    /*margin-bottom: .2rem;*/
+    background-color: #fff;
+    color: #fff;
+    gap: 6px;
+    padding-top: 1rem;
+    flex-flow: row;
+}
+
+.skillmatrix_container.competency_data+.skillmatrix_container {
+    padding: 10px 13px;
+    margin: 0;
+}
+.skillmatrix_container .competency_level {
+    padding: 5px 13px;
+    width: 100%;
+    margin-right: 0px;
+}
+.skillmatrix_container .competency_level:last-child {
+    margin-bottom: 15px;
+}
+.comp_level {
+/*    box-shadow: 5px 8px 8px #eee;*/
+    width: 100%;
+    float: left;
+}
+.skillmatrix_container.leveldata {
+    margin-right: 0;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    /*border-bottom: 1px solid #ececec;
+    -webkit-box-shadow: 0 1px 2px 0 #eee;
+    -moz-box-shadow: 0 1px 2px 0 #eee;
+    -o-box-shadow: 0 1px 2px 0 #eee;
+    box-shadow: 0 1px 2px 0 #eee;*/
+    gap: 6px;
+}
+
+/*.skillmatrix_container.leveldata:hover {
+    -webkit-box-shadow: 0 3px 5px 0 #ddd;
+    -moz-box-shadow: 0 3px 5px 0 #ddd;
+    -o-box-shadow: 0 3px 5px 0 #ddd;
+    box-shadow: 0 3px 5px 0 #ddd
+}*/
+.skillmatrix_container.skill_data:last-child {
+    border-right: none;
+}
+.skillmatrix_container.skill_data {
+/*    border-right: 1px solid #dde4ec;*/
+    margin-right: 0;
+    width: 128px;
+}
+
+/*.skillmatrix_container.skill_data:nth-child(2) {
+    border-left: 1px solid #eee
+}*/
+
+/*.skillmatrix_container.leveldata:last-child {
+    margin-bottom: 1rem
+}*/
+
+.skillmatrix_container.skill_data:last-child {
+    margin-right: 0
+}
+
+.skillmatrix_container .levelname {
+    min-width: 128px;
+    text-align: center;
+/*    padding: 6px 0;*/
+    display: flex;
+    justify-content: center;
+    height: 50px;
+    align-items: center;
+    margin-bottom: 6px;
+}
+.skillmatrix_container .levelnameclass {
+    background-color: #F4F3F4;
+    color: #237585;
+    border-radius: 0.2rem;
+}
+
+.skmFixed {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-flow: row
+}
+
+#page-local-skillrepository-level .course_extended_menu_list {
+    top: -20px
+}
+
+.skillmatrix_container.skill_data span.levelname a {
+    color: #fff;
+    background-color: #99DF8F;
+    text-decoration: none;
+    display: inline-block;
+    margin: 5px 0;
+    border: 1px solid;
+    text-align: center;
+    padding: 0px 12px;
+    -webkit-border-radius: .2rem;
+    -moz-border-radius: .2rem;
+    -o-border-radius: .2rem;
+    border-radius: .2rem;
+    font-size: 16px;
+/*    min-width: 38px;*/
+/*    max-width: 38px;*/
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /*height: 27px*/
+}
+
+.skillmatrix_container.skill_data span.levelname span {
+    /*color: #fff;*/
+    background-color: #deeef0;
+    min-width: 60px;
+    display: inline-block;
+    margin: 5px 0;
+    /*border: 1px solid;*/
+    text-align: center;
+    padding: 5px 15px;
+    -webkit-border-radius: .2rem;
+    -moz-border-radius: .2rem;
+    -o-border-radius: .2rem;
+    border-radius: .2rem
+}
+
+#page-local-skillrepository-skillmatrix .fifth input#id_theme_level5,
+#page-local-skillrepository-skillmatrix .first input#id_theme_level1,
+#page-local-skillrepository-skillmatrix .fourth input#id_theme_level4,
+#page-local-skillrepository-skillmatrix .second input#id_theme_level2,
+#page-local-skillrepository-skillmatrix .sixth input#id_theme_level6,
+#page-local-skillrepository-skillmatrix .third input#id_theme_level3 {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -ms-appearance: none;
+    -o-appearance: none;
+    appearance: none;
+    position: relative;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    transition: all .15s ease-out 0s;
+    color: #fff;
+    cursor: pointer;
+    display: inline-block;
+    margin-right: .5rem;
+    outline: 0;
+    position: relative;
+    z-index: 1000
+}
+
+#page-local-skillrepository-skillmatrix .fifth input#id_theme_level5:checked::before,
+#page-local-skillrepository-skillmatrix .first input#id_theme_level1:checked::before,
+#page-local-skillrepository-skillmatrix .fourth input#id_theme_level4:checked::before,
+#page-local-skillrepository-skillmatrix .second input#id_theme_level2:checked::before,
+#page-local-skillrepository-skillmatrix .sixth input#id_theme_level6:checked::before,
+#page-local-skillrepository-skillmatrix .third input#id_theme_level3:checked::before {
+    height: 20px;
+    width: 20px;
+    position: absolute;
+    content: '✔';
+    display: inline-block;
+    font-size: 26.66667px;
+    text-align: center;
+    line-height: 20px
+}
+
+#page-local-skillrepository-skillmatrix .fifth input#id_theme_level5:checked::after,
+#page-local-skillrepository-skillmatrix .first input#id_theme_level1:checked::after,
+#page-local-skillrepository-skillmatrix .fourth input#id_theme_level4:checked::after,
+#page-local-skillrepository-skillmatrix .second input#id_theme_level2:checked::after,
+#page-local-skillrepository-skillmatrix .sixth input#id_theme_level6:checked::after,
+#page-local-skillrepository-skillmatrix .third input#id_theme_level3:checked::after {
+    -webkit-animation: click-wave .65s;
+    -moz-animation: click-wave .65s;
+    animation: click-wave .65s;
+    content: '';
+    display: block;
+    position: relative;
+    z-index: 100
+}
+
+#page-local-skillrepository-skillmatrix .first input#id_theme_level1 {
+    background-color: #c80500
+}
+
+#page-local-skillrepository-skillmatrix .first input#id_theme_level1:checked {
+    background: #c80500
+}
+
+#page-local-skillrepository-skillmatrix .second input#id_theme_level2 {
+    background-color: #ff9427
+}
+
+#page-local-skillrepository-skillmatrix .second input#id_theme_level2:checked {
+    background: #ff9427
+}
+
+#page-local-skillrepository-skillmatrix .third input#id_theme_level3 {
+    background-color: #d074ff
+}
+
+#page-local-skillrepository-skillmatrix .third input#id_theme_level3:checked {
+    background: #d074ff
+}
+
+#page-local-skillrepository-skillmatrix .fourth input#id_theme_level4 {
+    background-color: #48a173
+}
+
+#page-local-skillrepository-skillmatrix .fourth input#id_theme_level4:checked {
+    background: #48a173
+}
+
+#page-local-skillrepository-skillmatrix .fifth input#id_theme_level5 {
+    background-color: #3f8bc8
+}
+
+#page-local-skillrepository-skillmatrix .fifth input#id_theme_level5:checked {
+    background: #3f8bc8
+}
+
+#page-local-skillrepository-skillmatrix .sixth input#id_theme_level6 {
+    background-color: #e82789
+}
+
+#page-local-skillrepository-skillmatrix .sixth input#id_theme_level6:checked {
+    background: #e82789
+}
+
+/*#page-local-skillrepository-skillmatrix .skillmatrix_container.skill_data span.levelname.level1 a {
+    background-color: #c80500!important;
+}
+
+#page-local-skillrepository-skillmatrix .skillmatrix_container.skill_data span.levelname.level2 a {
+    background-color: #ff9427!important;
+}
+
+#page-local-skillrepository-skillmatrix .skillmatrix_container.skill_data span.levelname.level3 a {
+    background-color: #d074ff!important;
+}
+
+#page-local-skillrepository-skillmatrix .skillmatrix_container.skill_data span.levelname.level4 a {
+    background-color: #48a173!important;
+}
+
+#page-local-skillrepository-skillmatrix .skillmatrix_container.skill_data span.levelname.level5 a {
+    background-color: #3f8bc8!important;
+}
+
+#page-local-skillrepository-skillmatrix .skillmatrix_container.skill_data span.levelname.level6 a {
+    background-color: #e82789!important;
+}*/
+
+#page-local-skillrepository-skillmatrix .skillmatrix_container.skill_data span.levelname.nolevel a {
+    background-color: #FF5F54 !important;
+}
+#page-local-skillrepository-skillmatrix .skillmatrix_container.skill_data span.levelname.nolevel a.skillassigned {
+    background-color: #99DF8F !important;
+}
+
+.manage_skill_icon_wrap {
+    background-repeat: no-repeat;
+    background-position: center
+}
+
+#page-local-skillrepository-competency summary {
+    font-size: 1.140625rem
+}
+
+#page-local-skillrepository-competency summary.comp_level_name {
+    outline: 0;
+    margin-left: 15px
+}
+
+.competency_name {
+    color: #2d78a0
+}
+
+.competency_title {
+    font-weight: 400;
+    margin-bottom: 0
+}
+
+#page-local-skillrepository-competency summary.comp_level_skill_name {
+    margin-left: 30px
+}
+
+#page-local-skillrepository-competency details details details {
+    padding-left: 40px
+}
+
+#page-local-skillrepository-competency .competency_level_skill_levels,
+#page-local-skillrepository-competency .competency_level_skills {
+    width: 98%;
+    margin-left: 2%
+}
+
+.domain_content {
+    background-color: #ecf0f5
+}
+
+.domain_container {
+    background-color: #fff;
+    padding: .5rem 1rem
+}
+
+#page-local-skillrepository-skillmatrix .skillmatrix_container.competency_level_data {
+    width: 100%;
+    font-weight: 500;
+    background-color: #ebedec;
+    padding: 5px 15px;
+    margin-right: 0;
+    margin-top: 5px;
+    font-size: 19px
+}
+.skillname {
+    font-size: 17px;
+    padding: 7px 0px;
+/*    border-bottom: 1px solid #deeef0;*/
+    color: #EB851F;
+    font-weight: 500;
+}
+#page-local-skillrepository-competency .competency_level_names {
+    margin-left: 30px
+}
+
+#page-local-skillrepository-competency .ftoggler {
+    display: none
+}
+
+.levelnameclass.skillassigned {
+    position: relative
+}
+
+.levelnameclass.skillassigned:before {
+    /*animation-name: colorblink;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+    animation-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);*/
+    content: "\f00c" !important;
+    top: 0px;
+    color: #fff !important;
+    font-family: FontAwesome;
+    /*font-size: 20px;*/
+    right: 0;
+}
+.levelnameclass.assignlevel:before {
+    /*animation-name: colorblink;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;*/
+    content: "\f00d";
+    color: #ffe3e3;
+    font-family: FontAwesome;
+    /*font-size: 20px;*/
+}
+
+@-webkit-keyframes colorblink {
+    0% {
+        opacity: 0
+    }
+    100% {
+        opacity: 1
+    }
+}
+
+@keyframes colorblink {
+    0% {
+        opacity: 0
+    }
+    100% {
+        opacity: 1
+    }
+}
+
+#page-local-skillrepository-competency summary.comp_level_skill_level_name,
+#page-local-skillrepository-competency summary.comp_level_skill_name {
+    display: flex;
+    width: 95%;
+    align-items: center;
+    margin: 10px 0 10px 5%
+}
+
+#page-local-skillrepository-competency #department-index tr {
+    background-color: transparent
+}
+
+#page-local-skillrepository-competency #department-index th:empty {
+    display: none
+}
+#page-local-skillrepository-level #all_levels_display_table .dataTables_empty {
+    text-align: center;
+}
+
+@media(max-width:767px) {
+    #page-local-skillrepository-skill_category .course_extended_menu_list,
+    #page-local-skillrepository-skillmatrix .course_extended_menu_list {
+        position: absolute
+    }
+}
+
+@media(max-width:640px) {
+    #skill_repository_wrapper .dt-buttons {
+        text-align: left
+    }
+    #page-local-skillrepository-skillmatrix #fitem_id_costcenterid {
+        display: block
+    }
+    #page-local-skillrepository-skillmatrix .form-inline[data-fieldtype=autocomplete].col-md-9,
+    #page-local-skillrepository-skillmatrix .mform .autocomplete .Domain,
+    #page-local-skillrepository-skillmatrix .mform .autocomplete .Organization {
+        padding-left: 0
+    }
+}
+
+@media(max-width:375px) {
+    #page-local-skillrepository-skillmatrix .course_extended_menu_list {
+        top: -16px!important;
+        right: 30px
+    }
+}
+
+/*competency level table changes*/
+#page-local-skillrepository-competency .table-responsive{
+    padding: 10px;
+}
+#page-local-skillrepository-competency .table-responsive .competency_container{
+    margin: 0;
+}
+#page-local-skillrepository-competency .competency_level_skills,
+#page-local-skillrepository-competency .competency_level_skill_levels{
+    margin-left: 0;
+    width: 100%;
+}
+#page-local-skillrepository-competency .competency_level_skills .edit_btns {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+/*#page-local-skillrepository-competency .competency_container .details_comp_level_name:hover .panel-body {
+    display: block !important;
+}
+#page-local-skillrepository-competency .competency_container .details_comp_level_name .panel-body {
+    display: none;
+}*/
+
+.skillmatrix_container .levelname .levelnameclass.assignlevel.skillassigned:before {
+    color: #FFFFFF !important;
+}
+
+/*competancies view page css*/
+#page-local-skillrepository-competency_view .catcourses_list .course_name a{
+    font-size: 20px;
+    text-transform: capitalize;
+}
+#page-local-skillrepository-competency_view .catcourses_list .skill_count,
+#page-local-skillrepository-competency_view .catcourses_list .level_count{
+    background-color: #f6f6f6;
+    padding: 3px 20px;
+    border-radius: 25px;
+}
+#page-local-skillrepository-competency_view .catcourses_list .level_count{
+    color: #ff5515;
+}
+#page-local-skillrepository-competency_view .catcourses_list .action_menu_dropdown{
+    background-color: #dfdfdf;
+    border-radius: 50%;
+    padding: 2px 6px;
+    text-align: center;
+}
+#page-local-skillrepository-competency_view .catcourses_list .org_name{
+    font-size: 12px;
+}
+#page-local-skillrepository-competency_view .course_container .competency_icon{
+    background-color: #2e3996;
+    border-radius: 6px;
+    margin-right: 10px;
+    display: flex;
+    width: 45px;
+    height: 45px;
+    justify-content: center;
+    align-items: center;
+}
+#page-local-skillrepository-competency_view .course_container{
+    box-shadow: 0 1px 4px lightgrey!important;
+}
+#page-local-skillrepository-competency_view .course_container .competency_icon .course_icon{
+    background-image: url('[[pix:local_skillrepository|data]]');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 25px;
+    height: 25px;
+    display: inline-block;
+    flex-shrink: 0;
+}
+#page-local-skillrepository-view .skill_icon{
+    background-image: url('[[pix:local_skillrepository|skills]]');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 40px;
+    height: 40px;
+    display: inline-block;
+    flex-shrink: 0;
+}
+#page-local-skillrepository-view .level_icon{
+    background-image: url('[[pix:local_skillrepository|levels]]');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 40px;
+    height: 40px;
+    display: inline-block;
+    flex-shrink: 0;
+}
+#page-local-skillrepository-view .achieve_icon{
+    background-image: url('[[pix:local_skillrepository|userachieved]]');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 40px;
+    height: 40px;
+    display: inline-block;
+    flex-shrink: 0;
+}
+#page-local-skillrepository-view .competency_container .details_comp_level_name .panel-heading{
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+#page-local-skillrepository-view .details_comp_level_name .panel-heading[aria-expanded="true"] .collapse_icon i:before{
+    content: none;
+}
+#page-local-skillrepository-view .details_comp_level_name .panel-heading[aria-expanded="true"] .collapse_icon i:after{
+    content: "\f106";
+    font-family: 'FontAwesome';
+    display: inline-block;
+    color: #000;
+}
+#page-local-skillrepository-view .details_comp_level_name .assignuser_icon{
+    background-image: url('[[pix:local_skillrepository|adduser]]');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 0;
+}
+#page-local-skillrepository-view .details_comp_level_name .assign_icon,
+#page-local-skillrepository-view .details_comp_level_name .removeLevelSkill{
+    border-radius: 50%;
+    background-color: #2e3996;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4px;
+    margin-right: 1rem;
+}
+#page-local-skillrepository-view .details_comp_level_name .removeLevelSkill{
+    background-color: #ff5515;
+    color: #fff;
+    padding: 6px 8px;
+}
+#page-local-skillrepository-view .level_count,
+#page-local-skillrepository-view .skill_count{
+    color: #455d6d;
+}
+#page-local-skillrepository-view .card-title .text-muted{
+    color: #929fab !important;
+}
+#page-local-skillrepository-view .details_comp_level_name .collapse_icon i{
+    font-size: 20px;
+    color: #000;
+}
+#page-local-skillrepository-view .details_comp_level_name .competency_level_skills_name a,
+#page-local-skillrepository-view .details_comp_level_name .competency_level_skill_assignlevel .assigncourse_icon{
+    color: #2e3996;
+    text-decoration: underline;
+}
+#page-local-skillrepository-view .details_comp_level_name .competency_level_skill_levels:not(:last-child){
+    border-bottom: 1px solid #ddd;
+}
+#page-local-skillrepository-view .details_comp_level_name .competency_level_skill_assignlevel .removelevelSkill{
+    color: #ff5515;
+    text-decoration:underline;
+}
+#page-local-skillrepository-view .assignskill_icon{
+    display: flex;
+    justify-content: end;
+}
+#page-local-skillrepository-view .assignskill_icon .icon{
+    background-color: #2e3996;
+    border-radius: 50%;
+    padding: 5px;
+    color: #fff;
+    font-size: 14px;
+}
+#page-local-skillrepository-view .competencyskill_view .desc_icon{
+    background-image: url('[[pix:local_skillrepository|description]]');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    margin-right: 0;
+}
+@media(max-width:424px){
+    #page-local-skillrepository-competency_view .catcourses_list .skill_count,
+    #page-local-skillrepository-competency_view .catcourses_list .level_count{
+        display: flex;
+        padding: 3px 16px;
+    }
+}
+
+
+#page-local-skillrepository-skillmatrix #region-main {
+    background-color: transparent;
+}
+#page-local-skillrepository-skillmatrix form {
+    background-color: #fff;
+    box-shadow: -2px 2px 5px 2px #dbdbdb;
+    border-radius: 4px;
+    padding: 1.5rem 1rem;
+}
+#page-local-skillrepository-skillmatrix #fitem_id_costcenterid,
+#page-local-skillrepository-skillmatrix #fitem_domainselect {
+    width: 40%;
+    float: left;
+}
+#page-local-skillrepository-skillmatrix #fitem_id_costcenterid .col-md-3,
+#page-local-skillrepository-skillmatrix #fitem_domainselect .col-md-3 {
+    display: flex;
+    align-items: center;
+}
+#page-local-skillrepository-skillmatrix #fitem_id_costcenterid .col-md-9,
+#page-local-skillrepository-skillmatrix #fitem_domainselect .col-md-9 {
+    flex: 0 0 66.6666666667%;
+    max-width: 66.6666666667%;
+}
+#page-local-skillrepository-skillmatrix #fgroup_id_buttonar {
+    width: 20%;
+}
+#page-local-skillrepository-skillmatrix form .fitem .felement .form-autocomplete-selection [role=option] {
+    border-radius: 5px;
+}
+#page-local-skillrepository-skillmatrix form .fitem .felement #id_submitbutton{
+    background-color: #007684;
+    padding: 0.3rem 0.75rem;
+    font-size: 14px;
+}
+#page-local-skillrepository-skillmatrix form .fitem .felement #id_cancel{
+    background-color: #f5822d;
+    border-color: #f5822d;;
+    padding: 0.3rem 0.75rem;
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    #page-local-skillrepository-skillmatrix #fitem_id_costcenterid .col-md-3,
+    #page-local-skillrepository-skillmatrix #fitem_domainselect .col-md-3 {
+        flex: 0 0 33.3333333333%;
+        max-width: 33.3333333333%;
+    }
+}
+
+@media (max-width: 1299px) {
+    #page-local-skillrepository-skillmatrix #fitem_id_costcenterid, 
+    #page-local-skillrepository-skillmatrix #fitem_domainselect {
+        width: 100%;
+    }
+    #page-local-skillrepository-skillmatrix #fgroup_id_buttonar {
+        width: 100%;
+    }
+    #page-local-skillrepository-skillmatrix .form-inline[data-fieldtype=autocomplete].col-md-9, 
+    #page-local-skillrepository-skillmatrix .mform .autocomplete .Domain, 
+    #page-local-skillrepository-skillmatrix .mform .autocomplete .Organization {
+        padding-left: 15px;
+    }
+}
+@media (max-width: 576px){
+    #page-local-skillrepository-skillmatrix .autocomplete .form-autocomplete-downarrow {
+        right: 30px !important;
+        left: auto !important;
+        bottom: 3px !important;
+        top: auto !important;
+    }
+}
+
+#page-local-skillrepository-competency_view .catcourses_list .level_count {
+    display: none;
+}
+
+#page-local-skillrepository-view .details_comp_level_name .panel.panel-default {
+    border: 1px solid #c5e2ff!important;
+    overflow: hidden;
+}
+#page-local-skillrepository-view .competency_container .details_comp_level_name > .panel > .panel-heading {
+    background-color: #f1f8ff!important;
+}
+#page-local-skillrepository-view .details_comp_level_name .panel.panel-default h6 {
+    padding:7px;
+}
+
+#page-local-skillrepository-user_competency .details_comp_level_name>.panel>.panel-heading {
+    background-color: #f1f8ff!important;
+    cursor: pointer;
+}
+#page-local-skillrepository-user_competency .details_comp_level_name .panel-heading {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+#page-local-skillrepository-user_competency .skillprfltabs_container {
+    margin-bottom: 2rem;
+}
+#page-local-skillrepository-user_competency .details_comp_level_name table {
+    border: 1px solid #c5e2ff!important;
+    border-radius: 0.5rem!important;
+    overflow: hidden;
+}

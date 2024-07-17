@@ -1,0 +1,73 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_courses/catalog
+
+    This template renders the courses content for the courses plugin.
+
+    Example context (json):
+    {}
+}}
+{{#response}}
+    {{! card view }}
+    {{#viewtypeCard}}
+        <div class="row clearfix">
+            {{#records}}
+                <div class="{{cardClass}} catcourses_list mb-3 {{course_class}} ">
+                    <div class="d-flex p-3 w-full border course_container shadow">
+                        <div class="competency_icon"><span class="course_icon"></span></div>
+                        <div class="coursecontent w-100 d-flex flex-column justify-content-between">
+                            <div class="d-flex mt-1">
+                                <h5 class="flex-grow-1 course_name m-0">
+                                    <a href="{{wwwroot}}/local/skillrepository/view.php?competencyid={{id}}" title="{{ name }}" class="text-dark">{{ name }}</a>
+                                </h5>
+                                <div>
+                                    <div class="dropdown action_menu_dropdown">
+                                        <span  data-toggle="dropdown" class="px-2" aria-expanded="false">
+                                            <i class="fa fa-ellipsis-v"></i>
+                                        </span>
+                                        <div class="dropdown-menu dropdown-menu-right shadow-sm">
+
+                                            {{#edit}}
+                                                {{{edit}}}
+                                            {{/edit}}
+                                            {{#delete}}
+                                                {{{delete}}}
+                                            {{/delete}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex mb-2">
+                                <span class="org_name ml-1">Organization : {{organisationname}}</span>
+                            </div>
+
+                            <div class="description my-3">
+                                <span class="org_name ml-1">Description :</span>{{{description}}}</div>
+                            <div class="d-flex mb-2">
+                                <div class="skill_count text-dark mr-4"><span>{{# str }} skills,local_skillrepository {{/ str}} : </span> <span class="ml-1">{{skillcount}}</span></div>
+                                <div class="level_count"><span>{{# str }} level,local_skillrepository {{/ str}} : </span> <span class="ml-1">{{levelcount}}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {{/records}}
+        </div>
+    {{/viewtypeCard}}
+{{/response}}
+
+

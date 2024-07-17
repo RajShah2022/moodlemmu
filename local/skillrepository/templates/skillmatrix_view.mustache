@@ -1,0 +1,107 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+
+<div class="skillmatrix_container sm_main_container">
+    <div class="skillmatrix">
+        <div class="skillmatrix_container positionsinfo">
+            {{#positionnames}}
+            <div class="skillmatrix_container positiondata">
+                <span class="positionnames">{{.}}</span>
+            </div>
+            {{/positionnames}}
+            {{^ positionnames }}
+                <p class="w-full pull-left alert alert-info text-center">{{# str}}nopositionrecords, local_skillrepository {{/ str}}</p>
+            {{/ positionnames }}
+        </div>
+        {{#data}}
+            <div class="col-12 pull-left skillmatrix_container competency">
+                <div class="skillmatrix_container competency_data">
+                    <span class="competencyname">{{# str }} category,local_skillrepository {{/ str}} : {{comptname}}</span>
+                </div>
+                {{#comp_levels}}
+                    <div class="col-12 pull-left skillmatrix_container competency_level p-0">
+                        <div class="comp_level">
+                        <!-- <div class="skillmatrix_container competency_level_data">
+                            <span class="competency_level_name">{{# str }} proficiencylevel,local_skillrepository {{/ str}} : {{com_level_name}}</span>
+                        </div> -->
+                        <div class="skillmatrix_container {{^ skills }}w-full mt-2{{/ skills }}">
+                            {{#skills}}
+                            <div class="w-full skillname">{{# str }} skill,local_skillrepository {{/ str}} : {{skillname}}</div>
+                            <div class="skillmatrix_container leveldata">
+                                <div class="skillmatrix_container skill_data">
+                                    {{# levelindexes}}
+                                        <div class="skillmatrix_container skill_inner_data">
+
+                                                <span class="levelnameclass levelname">{{levellabel}}
+                                            </span>
+                                        </div>
+                                    {{/ levelindexes}}
+                                </div>
+                                {{#levelnames}}
+                                <div class="skillmatrix_container skill_data">
+                                    {{# levels}}
+                                    <div class="skillmatrix_container skill_inner_data">
+                                    <span class="levelname {{lev_theme}}">{{{levellink}}}</span>
+                                </div>
+                                    {{/ levels}}
+                                </div>
+                                {{/levelnames}}
+                            </div>
+                            {{/skills}}
+                            {{^ skills }}
+                                <p class="mx-auto alert alert-info text-center mb-2 py-2">{{# str}}noskillrecords, local_skillrepository {{/ str}}</p>
+                            {{/ skills }}
+                        </div>
+                        </div>
+                    </div>
+                {{/comp_levels}}
+            </div>
+        {{/data}}
+
+        {{^ data }}
+            <p class="w-full pull-left alert alert-info text-center">{{# str}}nocompetencyrecords, local_skillrepository {{/ str}}</p>
+        {{/ data }}
+    </div>
+</div>
+{{#js}}
+// code added by Raghuvaran for fixed skillmatrix header when scroll up
+function amountscrolled(){
+//     var winheight = $(window).height();
+//     var docheight = $(document).height();
+    var scrollTop = $(window).scrollTop();
+    var skillmatrix = $(".skillmatrix").offset();
+    // var skillmatrixTopValue = skillmatrix.top;
+    var headerHeight = $("nav.fixed-top").outerHeight();
+    var skmFixed = skillmatrix.top - headerHeight;
+    
+    var sm_containerHeight = $(".skillmatrix").offset().top;
+    if(scrollTop >= skmFixed){
+        var TableHeaderPosition = scrollTop - skmFixed;
+        $(".positionsinfo").addClass('skmFixed');
+        $(".skmFixed").css({"top": TableHeaderPosition + 'px'});
+    }else {
+        $(".positionsinfo").removeClass('skmFixed');
+        $(".positionsinfo").css({"top": "inherit"});
+    }
+//     console.log('skmFixed ' + skmFixed + 'px scrolled');
+//     console.log('scrollTop ' + scrollTop);
+}
+ 
+$(window).on("scroll", function(){
+    amountscrolled();
+});
+{{/js}}

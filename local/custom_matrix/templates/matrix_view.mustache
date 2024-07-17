@@ -1,0 +1,143 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+
+    ddd
+
+}}
+<div style="text-align:right;margin-left:95%;">  
+    <a href="{{globals.config.wwwroot}}/local/custom_matrix/template.php" title="{{# str}} back_button, local_custom_matrix{{/ str}}">
+    <i id="download_users">{{# str}} back_button, local_custom_matrix{{/ str}}</i>
+    </a>
+</div>
+
+<div style="margin-top:10%;margin-left:40%; position:absolute;" class="loadElement"></div>
+<input name="templateid" type="hidden" value="{{templateid}}" id="templateid">
+<input name="orgid" type="hidden" value="{{orgid}}" id="orgid">
+
+    <table class="generaltable dataTable quedit matrix" id="skill_repository" role="grid" aria-describedby="skill_repository">
+        <thead>
+            <tr role="row">
+                {{#show}}
+                <th></th>
+                {{/show}}
+                <th class="header text-left" tabindex="0">
+                    {{# str}} performancefieldname, local_custom_matrix{{/ str}}                   
+                </th>
+                <th class="header text-left" tabindex="0">
+                    {{# str}} rowperformanceparams , local_custom_matrix{{/ str}}
+                </th>          
+                <th class="header text-left" tabindex="0">{{# str}} rowperformancemaxscore, local_custom_matrix{{/ str}}</th>
+                <th class="header text-left" tabindex="0">{{# str}} performanceweightage, local_custom_matrix{{/ str}}</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            {{#response}}
+                <tr>                    
+                    {{#parentid}}
+                    {{#show}}
+                    <td class="text-left" ><input type="checkbox" name="data_{{id}}_check" id="check_{{id}}" value="1"></td>
+                    {{/show}}
+                    <td class="text-left" ></td>    
+                    <td class="text-center" ><h6>
+                            {{fullname}}
+                            <div class="input-group">                    
+                            <input name="data_{{id}}_performancetype" type="hidden" value="{{fullname}}" id="performancetype_{{id}}">
+                            <input name="data_{{id}}_parentid" type="hidden" value="{{parentid}}" id="parentid_{{id}}">
+                             <input name="data_{{id}}_id" type="hidden" value="{{id}}" id="id_{{id}}">
+                             <input name="data_{{id}}_pmid" type="hidden" value="{{pmid}}" id="pmid_{{id}}">  
+                            <input name="data_{{id}}_path" type="hidden" value="{{path}}" id="path_{{id}}">    
+                            <input name="data_{{id}}_type" type="hidden" value="{{type}}" id="type_{{id}}">              
+                            </div>
+                
+                        </h6></td>  
+                     {{#show}}   
+                    <td class="text-center">
+                        <div class="form-group  fitem  ">
+                            <span data-fieldtype="text">
+                            <input type="number" class="form-control" style="width:40%;margin:0 auto;" name="data_{{id}}_maxscore" id="maxscore_{{id}}" value="{{maxscore}}">
+                            </span>
+                            <div class="form-control-feedback invalid-feedback" id="maxscore_error_{{id}}">                                
+                            </div>
+                        </div> 
+                    </td>
+                    {{/show}}
+                    {{^show}}
+                        <td class="text-center"><h6>{{maxscore}}</h6></td>
+                    {{/show}}
+                    <td class="text-center" ></td>   
+                    {{/parentid}}  
+                    {{^ parentid}} 
+                    {{#show}}  
+                    <td class="text-left" ><input type="checkbox" name="data_{{id}}_check" id="check_{{id}}" value="1"></td>
+                    {{/show}}
+                    <td class="text-left" style="text-align: left;">
+                        <h6>
+                            {{fullname}}
+                            <div class="input-group">                    
+                            <input name="data_{{id}}_performancetype" type="hidden" value="{{fullname}}" id="performancetype_{{id}}">
+                            <input name="data_{{id}}_parentid" type="hidden" value="{{parentid}}" id="parentid_{{id}}">
+                            <input name="data_{{id}}_id" type="hidden" value="{{id}}" id="parentid_{{id}}">
+                            <input name="data_{{id}}_pmid" type="hidden" value="{{pmid}}" id="pmid_{{id}}">
+                            <input name="data_{{id}}_path" type="hidden" value="{{path}}" id="path_{{id}}">
+                            <input name="data_{{id}}_type" type="hidden" value="{{type}}" id="type_{{id}}">                             
+                            </div>            
+                        </h6>
+                    </td> 
+                    <td class="text-center"></td>    
+                    <td class="text-center"></td> 
+                    {{#show}}   
+                        <td class="text-center">
+                            <div class="form-group  fitem  ">
+                                <span data-fieldtype="text">
+                                <input type="number" class="form-control" style="width:40%;" name="data_{{id}}_weight" id="weight_{{id}}" value="{{weightage}}">
+                                </span>
+                                <div class="form-control-feedback invalid-feedback" id="weight_error_{{id}}">
+                                    
+                                </div>
+                            </div>  
+                        </td> 
+                    {{/show}}   
+                    {{^show}} 
+                         <td class="text-left"><h6>{{weightage}}</h6></td> 
+                    {{/show}}                
+                    {{/parentid}}                                          
+                </tr>
+            {{/response}}
+            {{^response}} 
+             <tr><td colspan="5">No records found please contact to admin</td></tr> 
+            {{/response}}
+        </tbody>
+    </table>
+    {{#show}}
+    <div class="col-md-9 form-inline felement" data-fieldtype="group">
+        <div class="form-group  fitem">
+            <span>
+                <input type="button" class="btn btn-primary" name="submitbutton" id="id_submitbutton" onclick="(function(e){ require('local_custom_matrix/matrix').saveMatrixdata() })(event)" value="Save changes">
+            </span>
+           
+        </div>
+                 
+        <div class="form-group  fitem btn-cancel" style="padding-left: 3px;">
+            <span >
+                <input type="submit" class="btn btn-secondary" onclick="(function(e){ require('local_custom_matrix/matrix').cancelMatrix('{{globals.config.wwwroot}}/local/custom_matrix/index.php') })(event)" name="cancel" id="id_cancel" value="Cancel" >
+            </span>
+           
+        </div>
+    </div>
+    {{/show}}
+

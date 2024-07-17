@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="50" height="50" viewBox="0 0 50 50">
+  <defs>
+    <clipPath id="clip-notification">
+      <rect width="50" height="50"/>
+    </clipPath>
+  </defs>
+  <g id="notification" clip-path="url(#clip-notification)">
+    <path id="notification-2" data-name="notification" d="M41.921,30.071l-4.05-4.05v-6.9a15.1,15.1,0,0,0-13.5-15v-3h-3v3a15.223,15.223,0,0,0-13.5,15v6.9l-4.05,4.05a1.365,1.365,0,0,0-.449,1.049v4.5a1.409,1.409,0,0,0,1.5,1.5h10.5a7.5,7.5,0,0,0,15,0h10.5a1.409,1.409,0,0,0,1.5-1.5v-4.5A1.365,1.365,0,0,0,41.921,30.071ZM22.873,41.619a4.5,4.5,0,0,1-4.5-4.5h9a4.5,4.5,0,0,1-4.5,4.5Zm16.5-7.5h-33v-2.4l4.05-4.05a1.365,1.365,0,0,0,.449-1.049v-7.5a12,12,0,0,1,24,0v7.5a1.365,1.365,0,0,0,.449,1.049l4.05,4.05Z" transform="translate(2.627 1.875)"/>
+  </g>
+</svg>

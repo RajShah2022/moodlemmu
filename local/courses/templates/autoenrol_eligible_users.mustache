@@ -1,0 +1,59 @@
+
+<p style="margin-left: 30em; font-size: medium;">
+{{^enrolid}}
+<input type="checkbox" title="Enable Auto enrolment" value="Enable Auto enrolment" onclick="(function(e){ require('local_courses/courseAjaxform').courseautoenrol({courseid:{{courseid}},enrolid:{{enrolid}} }) })(event)">
+- click here to enable Auto Enrollment
+{{/enrolid}}
+{{#enrolid}}
+{{#enrol_status}}
+
+<input type="checkbox" title="Enable Auto enrolment" value="Enable Auto enrolment" onclick="(function(e){ require('local_courses/courseAjaxform').courseautoenrol({courseid:{{courseid}},enrolid:{{enrolid}} }) })(event)">
+- click here to enable Auto Enrollment
+{{/enrol_status}}
+{{^enrol_status}}
+
+<input type="checkbox" title="disable Auto enrolment" value="Disable Auto enrolment" onclick="(function(e){ require('local_courses/courseAjaxform').courseautoenrol({courseid:{{courseid}},enrolid:{{enrolid}} }) })(event) " checked>
+- click here to disable Auto Enrollment
+{{/enrol_status}}
+{{/enrolid}}
+</p>
+<p class="pull-right m-0 course_extended_menu_itemlink">
+            {{{courseautoenrol_log}}}
+            <a href='courses.php' title='Back' class='course_extended_menu_itemlink'>
+                <i class='icon fa fa-reply'></i>
+            </a>
+</p>
+
+<br>
+<p><h3 class="pull-left m-0 catnaming" >Eligible users which are not enrolled: {{#user_count}}{{user_count}}{{/user_count}}</h3></p>
+<div class=" pull-right">{{#users}}
+    <!-- {{{users}}} -->
+                 <a href="javascript:void(0)" class="btn" title="{{#str}}confirmenroll, local_courses{{/str}}" onclick="(function(e){ require('local_courses/courses').enrollUsers({ action: 'enroll_users' ,id:1,context:1, courseid:'{{courseid}}'}) })(event)">
+                     Click here to enroll users</i>
+                 </a>
+    {{/users}} <br> </div>
+    
+<table  class="generaltable">
+    <thead>
+        <tr>
+            <th>{{# str}}user_fullname, local_courses {{/ str}}</th>
+            <th>{{# str}}email, local_courses{{/ str}}</th>
+            <th>{{# str}}idnumber, local_courses{{/ str}}</th>
+            <th>{{# str}}platform, local_courses{{/ str}}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#tabledata}}
+        <tr>
+            <td>{{user_fullname}}</td>
+            <td>{{ email }}</td>
+            <td>{{ idnumber }}</td>
+            <td>{{platform}}</td>
+        </tr>
+       {{/tabledata}}
+    </tbody>
+</table>
+{{^tabledata}}
+<div class='w-full pull-left text-center alert alert-info'>No users available.</div>
+{{/ tabledata}}
+

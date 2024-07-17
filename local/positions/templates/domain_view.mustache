@@ -1,0 +1,66 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+<div class="costcenter_container row">
+    <div class="col-12 pull-left domain_content p-2">
+        <div class="col-12 col-xl-12 pull-left domain_container">
+            <div class="content_left"><!-- <i class="fas dept_img fa-university"></i> -->
+                <h4 class="domain_name">{{ domainname }}</h4>
+                <div class="d-flex flex-row flex-wrap justify-content-start align-items-center">
+                    <div class="position_info d-flex flex-row flex-wrap justify-content-start align-items-center col-md-12 col-lg-6 p-0 pr-1">
+                        <div class="position_lable position_string mr-1">{{# str}}open_costcenterid, local_costcenter{{/ str}}<span class="domain_colon pull-right ml-1">:</span> </div>
+                        <div class="position_count text-truncate"><b>{{ org_name }}</b></div>
+                    </div>
+                    {{# showsubdept_content}}
+                        <div class="position_info d-flex flex-row flex-wrap justify-content-start align-items-center col-md-12 col-lg-6 p-0 pl-lg-1">
+                            <div class="position_lable position_string mr-1">{{# str}}open_subdepartment, local_costcenter{{/ str}}<span class="domain_colon pull-right ml-1">:</span> </div>
+                            <div class="position_count text-truncate"><b>{{totalsubdepts}}</b></div>
+                        </div>
+                    {{/ showsubdept_content}}
+                    {{^ showsubdept_content}}
+                        <div class="position_info d-flex flex-row flex-wrap justify-content-start align-items-center col-md-12 col-lg-6 p-0 pl-lg-1">
+                            <div class="position_lable position_string mr-1">{{# str}}hierarchy, local_positions{{/ str}}<span class="domain_colon pull-right ml-1">:</span> </div>
+                            <div class="position_count text-truncate">
+                                {{#position_hira_link}}
+                                    <a href="{{position_hira_link}}"><b>{{parentpositionscount}}</b></a>
+                                {{/position_hira_link}}
+                                {{^position_hira_link}}
+                                    <b>{{parentpositionscount}}</b>
+                                {{/position_hira_link}}
+                            </div>
+                        </div>
+                    {{/ showsubdept_content}}
+                </div>
+                <div class="pull-right showoptions">
+                    <span  class="pull-right" data-action="showoptions{{{ domainid }}}" onmouseenter="(function(e){ require('theme_epsilon/quickactions').quickactionsCall({ selector:'showoptions{{domainid}}' }) })(event)" onmouseleave="(function(e){require('theme_epsilon/quickactions').quickactionsCall({ selector:'showoptions{{domainid}}' }) })(event)"><i class="fa fa-ellipsis-h options"></i>
+                    </span>
+                    <ul class="col-12 p-0 options_container" id="showoptions{{{domainid}}}">
+                        {{# delete}}
+                        <li>
+                            {{{ deleteicon }}}
+                        </li>
+                        {{/ delete}}
+                        {{# edit}}
+                        <li>
+                            {{{ editicon }}}
+                        </li>
+                        {{/ edit}}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,90 @@
+/*@media(max-width: 1200px){
+	#block-region-layerone_one .block.block_myskills{height:437px;}
+}*/
+#block-region-layerone_one .block.block_myskills #all_skills_acquired tbody td {line-height:30px; padding-bottom: 0px;}
+#block-region-layerone_one .block.block_myskills #all_skills_acquired p {margin:5px;}
+#block-region-layerone_one .block.block_myskills #all_skills_acquired th,#block-region-layerone_one .block.block_myskills #all_skills_acquired td{background-image: none;}
+.block.block_myskills .content {min-height: 240px;}
+.block_myskills #manageblockskillid .paged-content-page-container+.m-t-1 {display: inline-block;width: 100%;margin: 0rem auto .5rem auto !important;}
+.block_myskills #all_skills_acquired>thead {background: transparent;}
+.block.block_myskills #all_skills_acquired th {color: #000;}
+/*code written for Mozilla by Raghuvaran*/
+@-moz-document url-prefix() {
+	.block.block_myskills .content {margin-bottom: 1rem;}
+}
+#all_skills_acquired_wrapper{width: 100%;float: left;overflow: auto;}
+#page-my-index .block-region .block_myskills .content{
+	border: 1px solid #ccc;
+    border-radius: 8px;
+	margin: 0 1.25rem 1.25rem;
+	padding: 0;
+}
+#display_skilldata {
+    /*background-color: #eee;*/
+    background-color: white;
+    padding: 20px 4px 8px
+}
+.block.block_myskills #profile_course_content {
+    border: none;
+}
+.block.block_myskills #profile_course_content tr {
+    background: none;
+}
+
+/*#page-my-index .block-region .block_myskills .content{
+	border: 1px solid #ccc;
+	margin: 0 1.25rem 0;
+	padding: 0;
+}*/
+#page-my-index .block-region .block_myskills .content .skillprfltabs_container{
+	padding:0;
+}
+#page-my-index .block-region .block_myskills .content .skillprfltabs_container .nav-tabs{
+    justify-content: center;
+    /* background: #adadad; */
+    min-height: 54px;
+}
+/*#page-my-index .block-region .block_myskills .content .skillprfltabs_container .nav-tabs .nav-item{
+	width: 31%;
+}*/
+
+#page-my-index .block-region .block_myskills .content .skillprfltabs_container .Comcourses_tab_content{
+	width:100%;
+    padding: 0px 50px;
+}
+.block .skillprfltabs_container .nav-tabs .nav-item:last-child .nav-link:before,.block .skillprfltabs_container .nav-tabs .nav-item:last-child .nav-link:after {
+    display: none;
+}
+.block_myskills .card-body .card-text.content.mt-3{
+    box-shadow: 0 0 16px 2px rgba(0,0,0,.14);
+    margin-bottom: 20px;
+}
+.block .skillprfltabs_container .nav-tabs .nav-item{
+    width:33.3%;
+}
+.block .skillprfltabs_container .nav-tabs .nav-link.active:before{
+    border-left: 1.7rem solid #0076b8;
+    border-top: 1.7rem solid transparent;
+    border-bottom: 1.7rem solid transparent;
+    top: 0px;
+    position: absolute;
+    right: -27px;
+}
+.block .skillprfltabs_container .nav-tabs .nav-link:after{
+    top: 0px;
+    right: -28px;
+    border-left: 1.7rem solid #fff;
+    border-top: 1.7rem solid transparent;
+    border-bottom: 1.7rem solid transparent;
+}
+.block .skillprfltabs_container .nav-tabs .nav-link:before{
+	top: 0px;
+    position: absolute;
+    right: -27px;
+    bottom: 0;
+    width: 0;
+    height: 0;
+    border-left: 1.7rem solid #adadad;
+    border-top: 1.7rem solid transparent;
+    border-bottom: 1.7rem solid transparent;
+}

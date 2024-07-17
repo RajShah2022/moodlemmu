@@ -1,0 +1,47 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{#response}}
+{{#viewtypeCard}}
+<table id ="manage_learningplan" class="generaltable">
+    <thead>
+        <tr>
+            <th>{{#str}}program_name, local_program{{/str}}</th>
+            <th>{{#str}}levels, local_program{{/str}}</th>
+            <th>{{#str}}enrolled, local_program{{/str}}</th>
+            <th>{{#str}}completed, local_program{{/str}}</th>
+            <th>{{#str}}actions, local_program{{/str}}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#records}}
+            {{# hasprograms}}
+            <tr class="{{^hide}}disabled{{/hide}}">
+                <td>
+                    <a href="view.php?bcid={{programid}}" title="{{ program }}">{{ program }}</a>
+                </td>            
+                <td>{{totallevels}}</td>
+                <td>{{enrolled_users}}</td>
+                <td>{{completed_users}}</td>
+                <td>{{{actions}}}
+                </td>
+            </tr>
+            {{/ hasprograms}}
+        {{/records}}
+    </tbody>
+</table>
+{{/viewtypeCard}}
+{{/response}}

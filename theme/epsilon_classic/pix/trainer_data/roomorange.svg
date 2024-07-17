@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="50" height="50" viewBox="0 0 50 50">
+  <defs>
+    <clipPath id="clip-roomorange">
+      <rect width="50" height="50"/>
+    </clipPath>
+  </defs>
+  <g id="roomorange" clip-path="url(#clip-roomorange)">
+    <g id="room" transform="translate(3.999 4)">
+      <path id="Path_12866" data-name="Path 12866" d="M38.206,36.858V7.474h-7.7V.914L7.422,4.9V36.858h-6.3v2.8h7.6l21.785,3V10.272h4.9V39.656h7.7v-2.8ZM27.711,39.45,10.219,37.037V7.252L27.711,4.237Z" transform="translate(-1.125 -0.914)" fill="#ff5700"/>
+      <path id="Path_12867" data-name="Path 12867" d="M18,16.313h2.8v5.6H18Z" transform="translate(2.989 2.84)" fill="#ff5700"/>
+    </g>
+  </g>
+</svg>

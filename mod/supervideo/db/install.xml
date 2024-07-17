@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="mod/supervideo/db" VERSION="20230406" COMMENT="XMLDB file for supervideo module."
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
+    <TABLES>
+        <TABLE NAME="supervideo" COMMENT="Each record is a supervideo resource.">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="intro" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="videourl" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="playersize" TYPE="char" LENGTH="15" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="showcontrols" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="autoplay" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="grade_approval" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="completionpercent" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="course" UNIQUE="false" FIELDS="course"/>
+                <INDEX NAME="playersize" UNIQUE="false" FIELDS="playersize"/>
+                <INDEX NAME="showcontrols" UNIQUE="false" FIELDS="showcontrols"/>
+                <INDEX NAME="autoplay" UNIQUE="false" FIELDS="autoplay"/>
+            </INDEXES>
+        </TABLE>
+        <TABLE NAME="supervideo_view" COMMENT="Save student Video views (Youtube/Vimeo/Google Drive/Upload).">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="cm_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="user_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+                <FIELD NAME="currenttime" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="duration" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="percent" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="mapa" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="cm_id" UNIQUE="false" FIELDS="cm_id"/>
+                <INDEX NAME="user_id" UNIQUE="false" FIELDS="user_id"/>
+            </INDEXES>
+        </TABLE>
+        <TABLE NAME="supervideo_auth" COMMENT="Stores tokens for authenticating users for different actions">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+                <FIELD NAME="user_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Id of the user that created the token"/>
+                <FIELD NAME="created_at" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Timestamp for when token was created"/>
+                <FIELD NAME="secret" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" COMMENT="Secret used to generate the authentication token"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+        </TABLE>
+    </TABLES>
+</XMLDB>

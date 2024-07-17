@@ -1,0 +1,35 @@
+<p class="pull-right m-0 course_extended_menu_itemlink">
+            <a href="courseautoenrol.php?id={{courseid}}" title='Back' class='course_extended_menu_itemlink'>
+                <i class='icon fa fa-reply'></i>
+            </a>
+</p>
+<br>
+<p><h3 class="pull-left m-0 catnaming" >Auto enrolled users list:  {{#user_count}}{{user_count}}{{/user_count}}</h3></p>
+
+<table  class="generaltable">
+    <thead>
+        <tr>
+            <th>{{# str}}user_fullname, local_courses {{/ str}}</th>
+            <th>{{# str}}email, local_courses{{/ str}}</th>
+            <th>{{# str}}idnumber, local_courses{{/ str}}</th>
+            <th>{{# str}}platform, local_courses{{/ str}}</th>
+            <th>{{# str}}enrolled_date, local_courses{{/ str}}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#tabledata}}
+      
+        <tr>
+            <td>{{user_fullname}}</td>
+            <td>{{ email }}</td>
+            <td>{{ idnumber }}</td>
+            <td>{{platform}}</td>
+            <td>{{timecreated}}</td>
+        </tr>
+       {{/tabledata}}
+    </tbody>
+</table>
+{{^tabledata}}
+<div class='w-full pull-left text-center alert alert-info'>No users enrolled yet.</div>
+{{/ tabledata}}
+

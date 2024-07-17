@@ -1,0 +1,72 @@
+{{!
+    This file is part of eAbyas
+    Copyright eAbyas Info Solutons Pvt Ltd, India
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or
+    (at your option) any later version.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+    @author Narendra  <narendra.patel@moodle.in>
+}}
+{{# records}}
+    <div class= "row" style=" margin: auto; ">
+        <div class="col-md-3">
+            <div class="total_trainings border rounded p-3 d-flex justify-content-between align-items-center">
+                <div class="totalicon"></div>
+                <div class="d-flex flex-column align-items-center">
+                    <a class="count_value" href="javascript:void(0)" data-fg="vmtotaltrainings" data-plugin="block_trainerdashboard" data-method="trainerslist"  data-id="{{userid}}" data-triggertype="totaltrainings" data-params='{{viewmorestatus}}' >{{total_classroomtrainings}}</a>
+                    <p class="text-muted"><b>{{#str}}total_classroomtrainings,block_trainerdashboard{{/str}}</b></p>
+                </div>
+            </div>
+        </div>
+    
+        <div class="col-md-3" >
+            <div class="completed_trainings border rounded p-3 d-flex justify-content-between align-items-center">
+                <div class="completedicon"></div>
+                <div class="d-flex flex-column align-items-center">
+                    <a class="count_value" href="javascript:void(0)" data-fg="vmcmpltdtrainings" data-plugin="block_trainerdashboard" data-method="trainerslist"  data-id="{{userid}}" data-triggertype="completedtrainings"  data-params='{{viewmorestatus}}' >{{completed_classroomtrainings}}</a>
+                    <p class="text-muted"><b>{{#str}}completed_classroomtrainings,block_trainerdashboard{{/str}}</b></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3" >
+            <div class="upcoming_trainings border rounded p-3 d-flex justify-content-between align-items-center">
+                <div class="upcomingicon"></div>
+                <div class="d-flex flex-column align-items-center">
+                    <a class="count_value" href="javascript:void(0)" data-fg="vmupcmngtrainings" data-plugin="block_trainerdashboard" data-method="trainerslist"  data-id="{{userid}}" data-triggertype="upcomingtrainings" data-params='{{viewmorestatus}}' >{{upcoming_classroomtrainings}}</a>
+                    <p class="text-muted"><b>{{#str}}upcoming_classroomtrainings,block_trainerdashboard{{/str}}</b></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="users_count border rounded p-3 d-flex justify-content-between align-items-center">
+                <div class="usericon"></div>
+                <div class="d-flex flex-column align-items-center">
+                    <div class="count_value">{{totaluserscovered}}</div>
+                    <p class="text-muted"><b>{{#str}}totaluserscovered,block_trainerdashboard{{/str}}</b></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- <style>
+        .col-md-3 i{
+            visibility:hidden;
+        }
+        .col-md-3:hover i{
+            position: absolute;
+            right: 0px;
+            visibility:visible;
+        }
+    </style> -->
+{{/ records}}
+{{^ records}}
+	<div class = 'w-100 pull-left alert alert-info'>{{nodata}}</div>
+{{/ records}}

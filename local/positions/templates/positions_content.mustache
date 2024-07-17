@@ -1,0 +1,58 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}    
+
+<div class="col-md-12 col-sm-12 col-12 pull-left dept_content domain_pos_container" {{^ hira_positions}} id = "nochild_position"{{/ hira_positions}}>
+        <span class="sideline"></span>
+            <div class="col-md-12 col-sm-12 col-12 pull-left singlepos_container py-3 position_container">
+                <div class="singlepos_topcontent">
+                    <span class="connent_line"></span>
+                    <div class="col-12 pull-left dept_topleft p-0">
+                        <div class="pull-left m-0"><h4 class="m-0">{{ positionfullname }}</h4></div>
+                    </div>
+                    <div class="dept_topright p-0 content_left">
+                          <div class="showoptions{{{ deptid }}} actionicons pull-right">
+                            <span  class="pull-right showoptions" data-action="showoptions{{{ deptid }}}" onmouseenter="(function(e){ require('theme_epsilon/quickactions').quickactionsCall({ selector:'showoptions{{deptid}}' }) })(event)" onmouseleave="(function(e){require('theme_epsilon/quickactions').quickactionsCall({ selector:'showoptions{{deptid}}' }) })(event)"><i class="fa fa-ellipsis-h options"></i>
+                            </span>
+                            <ul class="col-md-12 col-sm-12 col-12 p-0 options_container" id = "showoptions{{{ deptid }}}">
+                            <li> {{{editposition}}} </li>
+                            <li> {{{deleteposition}}} </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 col-sm-12 col-12 dept_btmcontent pull-left">
+                {{# hira_positions}}
+                    {{# parentpositions}}
+                    <div class="w-full d-inline-block postionsline-container" style="padding-left: {{stylevalue}};">
+                        <span class="pos-connector" style="left: calc({{stylevalue}} - 20px);"></span>
+                        <div class="w-full pull-left mt-3 dept_details dept_users postionsround-container indent-{{depth}}">
+                            <div class="pull-left col-lg-12 col-md-12 col-sm-12 col-12 px-2 deptdetails_left">
+                                <span class="pull-left pr-2 userscolor"><i class="fa fa-user-plus" aria-hidden="true"></i></span>
+                                <span class="details_string pull-left">{{childpositions}}</span>
+                                <span class="pull-right details_count userscolor">{{{edit}}}</span>
+                                <span class="pull-right details_count userscolor mr-1">{{{delete}}}</span>
+                            </div> 
+                        </div>
+                    </div>
+                    {{/ parentpositions}}
+                {{/ hira_positions}}
+                {{^ hira_positions}}
+                    <div class="alert alert-info text-center">{{# str}}nochild_position, local_positions{{/ str}}</div>
+                {{/ hira_positions}}
+            </div>
+        </div>

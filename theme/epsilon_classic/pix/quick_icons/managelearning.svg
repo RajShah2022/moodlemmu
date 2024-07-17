@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="60" height="60" viewBox="0 0 60 60">
+  <defs>
+    <clipPath id="clip-managelearning">
+      <rect width="60" height="60"/>
+    </clipPath>
+  </defs>
+  <g id="managelearning" clip-path="url(#clip-managelearning)">
+    <path id="Path_94861" data-name="Path 94861" d="M.016.422,3.063.516,3.031,27.438H.719Z" transform="translate(36 14)" fill="#f3c9c0"/>
+    <path id="Path_94862" data-name="Path 94862" d="M.016.422H2.281l.75,27.016H-.508Z" transform="translate(21 9.578)" fill="#f3c9c0"/>
+    <path id="map-blue" d="M0,38.027V62.384a1.125,1.125,0,0,0,1.54,1.048l9.713-4.424V32l-9.84,3.932A2.265,2.265,0,0,0,0,38.027Zm13.5,20.98,13.5,4.5V36.5L13.5,32ZM38.971,32.084,29.258,36.5V63.509L39.1,59.57a2.245,2.245,0,0,0,1.414-2.089V33.125A1.122,1.122,0,0,0,38.971,32.084Z" transform="translate(9.744 -22)" fill="#dd5136"/>
+  </g>
+</svg>

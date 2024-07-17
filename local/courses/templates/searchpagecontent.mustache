@@ -1,0 +1,83 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template catalog/elarning list
+
+    Displays elarning
+   
+}}
+<span class="courseimg_strip">Strip</span>
+<div class="d-flex my-3 flex-column shadow border rounded overflow-hidden coursecard_container">
+    <div class=" card-img-top courseimg_container p-0">
+        <a ng-if="record.enroll == 0" title="<% record.fullname %>">
+            <div style="background-image: url('<% record.bannerimage %>')" alt="<% record.fullname %>" class="courseimg_bg p-2">
+                <span class="CstripCnt"> <span class="elearning"><% record.learningtype %></span> </span>
+            </div>
+        </a>
+        <a ng-if="record.enroll == 1" title="<% record.fullname %>">
+            <div style="background-image: url('<% record.bannerimage %>')" alt="<% record.fullname %>" class="courseimg_bg p-2">
+                <span class="CstripCnt"> <span class="elearning"><% record.learningtype %></span> </span>
+            </div>
+        </a>
+    </div>
+    <div class=" card-body readyCCnt coursecontent">
+        <div class="d-flex w-full course_name_container ">
+            <div>
+                <span class="CstripCntLt" ng-if="record.open_learningformat==2 && record.open_status != 2 && record.open_status" >
+                    <span class="elearning"><% record.statusstring %></span> 
+                </span>
+                <a ng-if="record.enroll == 0" class="d-block C_titile link text-decoration-none" title="<% record.fullname %>">
+                    <h4 class="course_name m-y-1 card-title course-title">
+                        <% record.course_shortname %>
+                    </h4>
+                </a>
+                <a ng-if="record.enroll == 1" class="d-block C_titile link text-decoration-none" title="<% record.fullname %>">
+                    <h4 class="course_name m-y-1 card-title course-title">
+                        <% record.course_shortname %>
+                    </h4>
+                </a>
+            </div>
+            
+        </div>
+        <div class="card-text course-desc">
+            <div class="coursedesc w-full" ng-if="record.summary">
+                <div class="desc"  ng-bind-html="record.summary | unsafe" ></div>
+            </div>
+            <div class="coursedesc w-full" ng-if="!record.summary">
+                <div  class="desc" >
+                    <p class="alert alert-info">{{# str}}descriptionisnotavailable, local_search{{/ str}}</p>
+                </div>
+            </div>
+
+        </div>
+     
+        <div class=" w-full mt-auto">
+            <div class="endrolled_details_div">
+                <span ng-if="record.skill">
+                <span class="d-block"><small><strong>Skill</strong></small></span>
+                <span class = "course_skill_category"><% record.skill %></span>
+                </span>
+            </div>
+            <div class="action_div d-flex">
+                
+                <div ng-bind-html="record.selfenrol | unsafe" class="ng-scope enrolled<% record.id %>"></div>
+                <div ng-bind-html="record.redirect | unsafe" ></div>
+                
+            </div>
+        </div>
+    </div>
+</div>

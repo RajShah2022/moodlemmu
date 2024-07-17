@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="mod/quiz/accessrule/shinkan/db" VERSION="2023092700"
+       COMMENT="XMLDB file for Moodle mod/quiz/accessrule/shinkan"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd"
+>
+    <TABLES>
+        <TABLE NAME="quizaccess_shinkan" COMMENT="Stores all the settings for this accessrule">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="quizid"/>
+                <FIELD NAME="quizid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" SEQUENCE="false"
+                       COMMENT="Foreign key related to quiz.id." PREVIOUS="id" NEXT="proctoringrequired"/>
+                <FIELD NAME="proctoringrequired" TYPE="int" LENGTH="2" NOTNULL="true" UNSIGNED="false" DEFAULT="0"
+                       SEQUENCE="false" COMMENT="If 1 then the quiz require identity validation." PREVIOUS="quizid"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="quizid"/>
+                <KEY NAME="quizid" TYPE="foreign-unique" FIELDS="quizid" REFTABLE="quiz" REFFIELDS="id"
+                     PREVIOUS="primary"/>
+            </KEYS>
+        </TABLE>
+
+        <TABLE NAME="quizaccess_shinkan_logs" COMMENT="Stores all validations for reporting">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="courseid"/>
+                <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" SEQUENCE="false"
+                       COMMENT="Course id." PREVIOUS="id" NEXT="quizid"/>
+                <FIELD NAME="quizid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" SEQUENCE="false"
+                       COMMENT="Quiz id" PREVIOUS="courseid" NEXT="userid"/>
+                <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false"
+                       COMMENT="User who validate identity" PREVIOUS="quizid" NEXT="attemptid"/>
+                <FIELD NAME="attemptid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false"
+                       COMMENT="quiz attempt id" PREVIOUS="userid" NEXT="type"/>
+                <FIELD NAME="type" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Action Type"/>
+                <FIELD NAME="response" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Response from Shinkan APIs" PREVIOUS="userid" NEXT="timemodified" />
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false"
+                       COMMENT="Validation process date and time" PREVIOUS="status"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="quizid"/>
+            </KEYS>
+        </TABLE>
+
+    </TABLES>
+</XMLDB>
