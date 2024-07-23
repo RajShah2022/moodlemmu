@@ -314,9 +314,9 @@ function xmldb_local_courses_install(){
         $dbman->create_table($table);
     }
 
-    $corecomponent = new \core_component();
-    $pluginexist = $corecomponent::get_plugin_directory('local', 'custom_matrix');
-    if($pluginexist ){
+    // $corecomponent = new \core_component();
+    // $pluginexist = $corecomponent::get_plugin_directory('local', 'custom_matrix');
+    // if($pluginexist ){
         $table = new xmldb_table('course');
         if ($dbman->table_exists($table)) {
             $field1 = new xmldb_field('performancecatid');
@@ -330,7 +330,7 @@ function xmldb_local_courses_install(){
                 $dbman->add_field($table, $field2);
             } 
         }
-    }
+    // }
 
     $table = new xmldb_table('user_info_field');
     if ($dbman->table_exists($table)) {        
