@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of eAbyas
  *
@@ -21,6 +22,13 @@
  * @package BizLMS
  * @subpackage local_custom_category
  */
+
+use core_external\external_api;
+use core_external\external_function_parameters;
+use core_external\external_multiple_structure;
+use core_external\external_single_structure;
+use core_external\external_value;
+
 defined('MOODLE_INTERNAL') || die;
 require_once("$CFG->libdir/externallib.php");
 class local_custom_category_external extends external_api {
@@ -38,15 +46,14 @@ class local_custom_category_external extends external_api {
         );
     }
 
-    public static function submit_custom_category_form($contextid, $jsonformdata){
+    public static function submit_custom_category_form($contextid, $jsonformdata) {
         global $PAGE, $CFG;
 
         require_once($CFG->dirroot . '/local/custom_category/lib.php');
         // We always must pass webservice params through validate_parameters.
         $params = self::validate_parameters(self::submit_custom_category_form_parameters(), ['contextid' => $contextid, 'jsonformdata' => $jsonformdata]);
 
-
-        $context =(new \local_custom_category\lib\accesslib())::get_module_context();
+        $context = (new \local_custom_category\lib\accesslib())::get_module_context();
         // We always must call validate_context in a webservice.
         self::validate_context($context);
         $data = array();
@@ -57,15 +64,14 @@ class local_custom_category_external extends external_api {
 
         $repositoryinsert  = new local_custom_category\lib();
         $valdata = $mform->get_data();
-      
-         if($valdata){
+
+        if ($valdata) {
             $repositoryinsert->custom_category_operations($valdata);
         } else {
             // Generate a warning.
             throw new moodle_exception('Error in creation');
         }
     }
-
 
     /**
      * Returns description of method result value.
@@ -106,7 +112,7 @@ class local_custom_category_external extends external_api {
         $contextid,
         $filterdata
     ) {
-        global $OUTPUT, $CFG, $USER,$PAGE;
+        global $OUTPUT, $CFG, $USER, $PAGE;
         require_once($CFG->dirroot . '/local/custom_category/lib.php');
         require_login();
         $PAGE->set_url('/local/custom_category/index.php', array());
@@ -133,19 +139,18 @@ class local_custom_category_external extends external_api {
         $stable->length = $limit;
         $parentcatid = $decodedata->parentcatid;
         $stable->parentcatid = $parentcatid;
-        $result_custom_category = custom_category_details($stable,$filtervalues);
+        $result_custom_category = custom_category_details($stable, $filtervalues);
         $totalcount = $result_custom_category['count'];
-        $data=$result_custom_category['data'];
+        $data = $result_custom_category['data'];
         return [
             'is_admin' => is_siteadmin(),
             'totalcount' => $totalcount,
-            'records' =>$data,
+            'records' => $data,
             'options' => $options,
             'dataoptions' => $dataoptions,
             'filterdata' => $filterdata,
             'parentcatid' => $parentcatid,
         ];
-
     }
 
     /**

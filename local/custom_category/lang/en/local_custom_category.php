@@ -23,13 +23,14 @@
  * @copyright  2015 Naveen <naveen@eabyas.in>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-$string['pluginname'] = 'Custom Fields';
-$string['manage_custom_category'] = 'Custom Fields';
+$string['pluginname'] = 'Custom Categories';
+$string['manage_custom_category'] = 'Custom Categories';
 $string['addnewcustom_category'] = 'Create Category';
 $string['name'] = 'Name';
 $string['shortname'] = 'Shortname';
 $string['custom_category'] = 'Category';
 $string['parent'] = 'Parent Category';
+$string['performance_categories'] = 'Custom Categories';
 $string['action'] = 'Action';
 $string['updatecuscategory'] = 'Update Category';
 $string['shortnameexists'] = 'Shortname Already Exist';
@@ -43,6 +44,7 @@ $string['open_costcenteridlocal_custom_category'] = 'Company';
 $string['open_costcenteridlocal_custom_category_help'] = 'Company of category';
 $string['custom_category:view_custom_category'] = 'custom_category:view_custom_category';
 $string['custom_category:create_custom_category'] = 'custom_category:create_custom_category';
+$string['custom_category:manage_custom_category'] = 'custom_category:manage_custom_category';
 $string['delete_title'] = 'Delete';
 $string['gotochild'] = 'Child Categories';
 $string['edit_title'] = 'Edit';
@@ -53,3 +55,8 @@ $string['fieldname'] = 'Field Name';
 $string['fieldvalue'] = 'Field Value';
 $string['showadvance'] = 'Show Advance';
 $string['showadvancefeature'] = 'Show advance feature of category';
+$string['type'] = 'Type';
+$string['type_help'] = 'Type of Category';
+$string['selecttype'] = 'Select Type';
+$string['internalcat'] = 'Learnings & Trainings';
+$string['externalcat'] = 'External';

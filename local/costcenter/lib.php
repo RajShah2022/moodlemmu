@@ -92,14 +92,14 @@ class costcenter {
 
         if (empty($fromcostcenter)) {
             if (empty($activecostcenterlist))
-                print_error('notassignedcostcenter', 'local_costcenter');
+                throw new \moodle_exception('notassignedcostcenter', 'local_costcenter');
         }
         
         $assigned_costcenters = costcenter_items();
         
         if (empty($fromcostcenter)) {
             if (empty($assigned_costcenters)) {
-                print_error('notassignedcostcenter', 'local_costcenter');
+                throw new \moodle_exception('notassignedcostcenter', 'local_costcenter');
             } else
                 return $assigned_costcenters;
         } else
@@ -554,26 +554,52 @@ function local_costcenter_leftmenunode(){
 * Author sarath
 * @return  plugins count with all modules
 */
-function local_costcenter_plugins_count($costcenterid, $departmentid=false, $subdepartmentid=false, $l4departmentid=false, $l5departmentid=false){
+function local_costcenter_plugins_count($costcenterid, $departmentid = false, $subdepartmentid = false, $l4departmentid = false, $l5departmentid = false) {
     global $CFG;
     $core_component = new core_component();
     $local_pluginlist = $core_component::get_plugin_list('local');
     $deparray = array();
-    $deparray['datacount']=0;
-    foreach($local_pluginlist as $key => $local_pluginname){
-        if(file_exists($CFG->dirroot.'/local/'.$key.'/lib.php')){
-            require_once($CFG->dirroot.'/local/'.$key.'/lib.php');
-            $functionname = 'costcenterwise_'.$key.'_count';
-            if(function_exists($functionname)){               
-                $data = $functionname($costcenterid,$departmentid, $subdepartmentid, $l4departmentid, $l5departmentid);              
-                foreach($data as  $key => $val){
-                    $deparray[$key] = $val;
+    $deparray['datacount'] = 0;
+    foreach ($local_pluginlist as $key => $local_pluginname) {
+        if (in_array($key, ['users', 'courses', 'classroom', 'learningplan', 'program', 'onlineexams'])) {
+            if (file_exists($CFG->dirroot . '/local/' . $key . '/lib.php')) {
+                require_once($CFG->dirroot . '/local/' . $key . '/lib.php');
+                $functionname = 'costcenterwise_' . $key . '_count';
+                if (function_exists($functionname)) {
+                    $data = $functionname($costcenterid, $departmentid, $subdepartmentid, $l4departmentid, $l5departmentid);
+                    foreach ($data as  $key => $val) {
+                        $deparray[$key] = $val;
 
-                    if (gettype($val) != 'string' && preg_match("/count/", $key)){
+                        if (gettype($val) != 'string' && preg_match("/count/", $key)) {
 
-                       $deparray['datacount']=$deparray['datacount']+$val;
+                            $deparray['datacount'] = $deparray['datacount'] + $val;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return $deparray;
+}
 
+function local_plugins_datacount($costcenterid, $departmentid = false, $subdepartmentid = false, $l4departmentid = false, $l5departmentid = false) {
+    global $CFG;
+    $core_component = new core_component();
+    $local_pluginlist = $core_component::get_plugin_list('local');
+    $deparray = array();
+    $deparray['datacount'] = 0;
 
+    $localplugins = ['classroom', 'learningplan', 'program', 'onlineexams', 'courses', 'users'];
+    foreach ($local_pluginlist as $key => $local_pluginname) {
+        if (in_array($key, $localplugins)) {
+            if (file_exists($CFG->dirroot . '/local/' . $key . '/lib.php')) {
+                require_once($CFG->dirroot . '/local/' . $key . '/lib.php');
+                $functionname = 'costcenterwise_' . $key . '_datacount';
+                if (function_exists($functionname)) {
+                    $data = $functionname($costcenterid, $departmentid, $subdepartmentid, $l4departmentid, $l5departmentid);
+                    if (!empty($data['datacount']) && $data['datacount'] > 0) {
+                        $deparray['datacount'] = $data['datacount'];
+                        return $deparray;
                     }
                 }
             }

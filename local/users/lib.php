@@ -27,7 +27,7 @@ use local_users\output\team_status_lib;
 
 defined('MOODLE_INTERNAL') || die;
 require_once($CFG->libdir . '/formslib.php');
-require_once($CFG->dirroot.'/user/editlib.php');
+require_once($CFG->dirroot . '/user/editlib.php');
 require_once($CFG->dirroot . '/local/costcenter/lib.php');
 
 /**
@@ -42,9 +42,9 @@ function local_users_output_fragment_new_create_user($args) {
     $o = '';
     $formdata = [];
     if (!empty($args->jsonformdata)) {
-        
+
         $serialiseddata = json_decode($args->jsonformdata);
-        if(is_object($serialiseddata)){
+        if (is_object($serialiseddata)) {
             $serialiseddata = serialize($serialiseddata);
         }
         parse_str($serialiseddata, $formdata);
@@ -64,34 +64,45 @@ function local_users_output_fragment_new_create_user($args) {
         $data = $DB->get_record('user', array('id' => $args->id));
         unset($data->password);
 
-        $reportingmanger= $DB->record_exists('user', ['id' => $data->open_supervisorid, 'deleted' => 0, 'suspended' => 0]);
+        $reportingmanger = $DB->record_exists('user', ['id' => $data->open_supervisorid, 'deleted' => 0, 'suspended' => 0]);
 
-        if(!$reportingmanger){
-             unset($data->open_supervisorid);
+        if (!$reportingmanger) {
+            unset($data->open_supervisorid);
         }
 
         useredit_load_preferences($data);
-        $customdata = array('editoroptions' => $editoroptions,
+        $customdata = array(
+            'editoroptions' => $editoroptions,
             'form_status' => $args->form_status, 'id' => $data->id,
-            'open_positionid' => $data->open_positionid, 'open_domainid' => $data->open_domainid, 'open_path' => $data->open_path);
+            'open_positionid' => $data->open_positionid, 'open_domainid' => $data->open_domainid, 'open_path' => $data->open_path
+        );
         local_costcenter_set_costcenter_path($customdata);
-        local_users_set_userprofile_datafields($customdata,$data);
-        $mform = new local_users\forms\create_user(null, $customdata,
-            'post', '', null, true, $formdata);
+        local_users_set_userprofile_datafields($customdata, $data);
+        $mform = new local_users\forms\create_user(
+            null,
+            $customdata,
+            'post',
+            '',
+            null,
+            true,
+            $formdata
+        );
         $data->open_costcenterid = $formdata['open_costcenterid'];
         profile_load_data($data);
         $mform->set_data($data);
     } else {
-        $customdata = array('editoroptions' => $editoroptions,
-            'form_status' => $args->form_status);
+        $customdata = array(
+            'editoroptions' => $editoroptions,
+            'form_status' => $args->form_status
+        );
         local_costcenter_set_costcenter_path($customdata);
-        local_users_set_userprofile_datafields($customdata,$args);
+        local_users_set_userprofile_datafields($customdata, $args);
         $mform = new local_users\forms\create_user(null, $customdata, 'post', '', null, true, $formdata);
     }
 
     if (!empty($args->jsonformdata) && strlen($args->jsonformdata) > 2) {
         // If we were passed non-empty form data we want the mform to call validation functions and show errors.
-        if(!isset($formdata['skipvalidation'])){
+        if (!isset($formdata['skipvalidation'])) {
             $mform->is_validated();
         }
     }
@@ -122,12 +133,12 @@ function local_users_output_fragment_new_create_user($args) {
  * @param  integer $page           [page value]
  * @param  integer $perpage        [entities per page]
  */
-function users_filter ($mform, $query='', $searchanywhere=false, $page=0, $perpage=25) {
+function users_filter($mform, $query = '', $searchanywhere = false, $page = 0, $perpage = 25) {
     global $DB, $USER;
 
     $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
 
-    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='open_path');
+    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'open_path');
 
     $userslist = array();
     $data = data_submitted();
@@ -138,8 +149,7 @@ function users_filter ($mform, $query='', $searchanywhere=false, $page=0, $perpa
 
         $userslist_sql = "SELECT id, concat(firstname,' ',lastname) as fullname FROM {user}
          WHERE id > :adminuserid AND deleted = :deleted AND suspended = :suspended AND id <> :userid  ";
-
-    } else{
+    } else {
 
         $userslist_sql = "SELECT id, concat(firstname,' ',lastname) as fullname FROM {user}
          WHERE id > :adminuserid AND deleted = :deleted
@@ -155,26 +165,26 @@ function users_filter ($mform, $query='', $searchanywhere=false, $page=0, $perpa
             $userslist_sql .= " AND $likesql ";
         }
     }
-    if (isset($data->users)&&!empty(($data->users))) {
+    if (isset($data->users) && !empty(($data->users))) {
 
         list($usersql, $userparam) = $DB->get_in_or_equal($data->users, SQL_PARAMS_NAMED);
         $userslist_sql .= " AND id $usersql ";
         $userslistparams = $userparam + $userslistparams;
     }
-    if (!empty($query)||empty($mform)) {
+    if (!empty($query) || empty($mform)) {
         $userslist = $DB->get_records_sql($userslist_sql, $userslistparams, $page, $perpage);
         return $userslist;
     }
-    if ((isset($data->users)&&!empty($data->users))) {
-         $userslist = $DB->get_records_sql_menu($userslist_sql, $userslistparams, $page, $perpage);
+    if ((isset($data->users) && !empty($data->users))) {
+        $userslist = $DB->get_records_sql_menu($userslist_sql, $userslistparams, $page, $perpage);
     }
 
     $options = array(
-                    'ajax' => 'local_courses/form-options-selector',
-                    'multiple' => true,
-                    'data-action' => 'users',
-                    'data-options' => json_encode(array('id' => 0)),
-                    'placeholder' => get_string('users')
+        'ajax' => 'local_courses/form-options-selector',
+        'multiple' => true,
+        'data-action' => 'users',
+        'data-options' => json_encode(array('id' => 0)),
+        'placeholder' => get_string('users')
     );
     $select = $mform->addElement('autocomplete', 'users', '', $userslist, $options);
     $mform->setType('users', PARAM_RAW);
@@ -187,12 +197,12 @@ function users_filter ($mform, $query='', $searchanywhere=false, $page=0, $perpa
  * @param  integer $page           [page value]
  * @param  integer $perpage        [entities per page]
  */
-function email_filter($mform, $query='', $searchanywhere=false, $page=0, $perpage=25) {
+function email_filter($mform, $query = '', $searchanywhere = false, $page = 0, $perpage = 25) {
     global $DB, $USER;
 
     $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
 
-    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='open_path');
+    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'open_path');
 
     $userslist = array();
     $data = data_submitted();
@@ -213,18 +223,18 @@ function email_filter($mform, $query='', $searchanywhere=false, $page=0, $perpag
             $userslist_sql .= " AND $likesql ";
         }
     }
-    if (isset($data->email)&&!empty(($data->email))) {
+    if (isset($data->email) && !empty(($data->email))) {
 
         list($mailsql, $mailparam) = $DB->get_in_or_equal($data->email, SQL_PARAMS_NAMED);
         $userslist_sql .= " AND id $mailsql ";
         $userslistparams = $mailparam + $userslistparams;
     }
     $userslist_sql .= " AND email != ''";
-    if (!empty($query)||empty($mform)) {
+    if (!empty($query) || empty($mform)) {
         $userslist = $DB->get_records_sql($userslist_sql, $userslistparams, $page, $perpage);
         return $userslist;
     }
-    if ((isset($data->email)&&!empty($data->email))) {
+    if ((isset($data->email) && !empty($data->email))) {
 
         $userslist = $DB->get_records_sql_menu($userslist_sql, $userslistparams, $page, $perpage);
     }
@@ -233,9 +243,9 @@ function email_filter($mform, $query='', $searchanywhere=false, $page=0, $perpag
         'multiple' => true,
         'data-action' => 'email',
         'data-options' => json_encode(array('id' => 0)),
-        'placeholder' => get_string('select_email','local_users')
+        'placeholder' => get_string('select_email', 'local_users')
     );
-    $select = $mform->addElement ('autocomplete', 'email', get_string('email','local_users'), $userslist, $options);
+    $select = $mform->addElement('autocomplete', 'email', get_string('email', 'local_users'), $userslist, $options);
     $mform->setType('email', PARAM_RAW);
 }
 /**
@@ -246,12 +256,12 @@ function email_filter($mform, $query='', $searchanywhere=false, $page=0, $perpag
  * @param  integer $page           [page value]
  * @param  integer $perpage        [entities per page]
  */
-function employeeid_filter ($mform, $query='', $searchanywhere=false, $page=0, $perpage=25) {
+function employeeid_filter($mform, $query = '', $searchanywhere = false, $page = 0, $perpage = 25) {
     global $DB, $USER;
 
     $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
 
-    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='open_path');
+    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'open_path');
 
     $userslist = array();
     $data = data_submitted();
@@ -272,16 +282,16 @@ function employeeid_filter ($mform, $query='', $searchanywhere=false, $page=0, $
             $userslist_sql .= " AND $likesql ";
         }
     }
-    if (isset($data->idnumber)&&!empty(($data->idnumber))) {
+    if (isset($data->idnumber) && !empty(($data->idnumber))) {
         list($idsql, $idparam) = $DB->get_in_or_equal($data->idnumber, SQL_PARAMS_NAMED);
         $userslist_sql .= " AND id $idsql ";
         $userslistparams = $idparam + $userslistparams;
     }
-    if (!empty($query)||empty($mform)) {
+    if (!empty($query) || empty($mform)) {
         $userslist = $DB->get_records_sql($userslist_sql, $userslistparams, $page, $perpage);
         return $userslist;
     }
-    if ((isset($data->idnumber)&&!empty($data->idnumber))) {
+    if ((isset($data->idnumber) && !empty($data->idnumber))) {
         $userslist = $DB->get_records_sql_menu($userslist_sql, $userslistparams);
     }
     $options = array(
@@ -303,7 +313,7 @@ function designation_filter($mform) {
 
     $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
 
-    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='open_path');
+    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'open_path');
 
     $userslistparams = array('adminuserid' => 2, 'deleted' => 0, 'suspended' => 0, 'userid' => $USER->id);
     if (is_siteadmin() || has_capability('local/costcenter:manage_multiorganizations', $categorycontext)) {
@@ -314,8 +324,13 @@ function designation_filter($mform) {
           :suspended AND open_designation IS NOT NULL AND open_designation !=''  AND id <> :userid $costcenterpathconcatsql";
     }
     $userslist = $DB->get_records_sql_menu($userslist_sql, $userslistparams);
-    $select = $mform->addElement('autocomplete', 'designation', '',
-     $userslist, array('placeholder' => get_string('select_designation', 'local_users')));
+    $select = $mform->addElement(
+        'autocomplete',
+        'designation',
+        '',
+        $userslist,
+        array('placeholder' => get_string('select_designation', 'local_users'))
+    );
     $mform->setType('idnumber', PARAM_RAW);
     $select->setMultiple(true);
 }
@@ -325,34 +340,34 @@ function states_filter($mform) {
 
     $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
 
-
-    if(is_siteadmin()){
+    if (is_siteadmin()) {
 
         $stateslist_sql = "SELECT id, states_name FROM {local_states} ";
+    } else {
 
-    }else{
+        $costcenterpaths = (new \local_costcenter\lib\accesslib())::get_user_role_switch_path();
 
-       $costcenterpaths = (new \local_costcenter\lib\accesslib())::get_user_role_switch_path();
+        $orgids = array();
 
-       $orgids=array();
+        foreach ($costcenterpaths as $costcenterpath) {
 
-       foreach($costcenterpaths as $costcenterpath){
+            list($zero, $org, $ctr, $bu, $cu, $territory) = explode("/", $costcenterpath);
 
-         list($zero, $org, $ctr, $bu, $cu, $territory) = explode("/",$costcenterpath);
-
-         $orgids[$org]=$org;
-
-       }
-       $implodeorgids=implode(',',$orgids);
+            $orgids[$org] = $org;
+        }
+        $implodeorgids = implode(',', $orgids);
 
         $stateslist_sql = "SELECT id, states_name FROM {local_states} WHERE costcenterid in ($implodeorgids) ";
-
-
     }
 
     $stateslist = $DB->get_records_sql_menu($stateslist_sql);
-    $select = $mform->addElement('autocomplete', 'states', '',
-     $stateslist, array('placeholder' => get_string('states', 'local_users')));
+    $select = $mform->addElement(
+        'autocomplete',
+        'states',
+        '',
+        $stateslist,
+        array('placeholder' => get_string('states', 'local_users'))
+    );
     $mform->setType('states', PARAM_RAW);
     $select->setMultiple(true);
 }
@@ -362,33 +377,35 @@ function district_filter($mform) {
 
     $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
 
-    if(is_siteadmin()){
+    if (is_siteadmin()) {
 
         $districtlist_sql = "SELECT id, district_name FROM {local_district} ";
+    } else {
 
-    }else{
+        $costcenterpaths = (new \local_costcenter\lib\accesslib())::get_user_role_switch_path();
 
-       $costcenterpaths = (new \local_costcenter\lib\accesslib())::get_user_role_switch_path();
+        $orgids = array();
 
-       $orgids=array();
+        foreach ($costcenterpaths as $costcenterpath) {
 
-       foreach($costcenterpaths as $costcenterpath){
+            list($zero, $org, $ctr, $bu, $cu, $territory) = explode("/", $costcenterpath);
 
-         list($zero, $org, $ctr, $bu, $cu, $territory) = explode("/",$costcenterpath);
-
-         $orgids[$org]=$org;
-
-       }
-       $implodeorgids=implode(',',$orgids);
+            $orgids[$org] = $org;
+        }
+        $implodeorgids = implode(',', $orgids);
 
         $districtlist_sql = "SELECT id, district_name FROM {local_district} WHERE costcenterid in ($implodeorgids) ";
-
     }
 
     $districtlist = $DB->get_records_sql_menu($districtlist_sql);
 
-    $select = $mform->addElement('autocomplete', 'district', '',
-     $districtlist, array('placeholder' => get_string('district', 'local_users')));
+    $select = $mform->addElement(
+        'autocomplete',
+        'district',
+        '',
+        $districtlist,
+        array('placeholder' => get_string('district', 'local_users'))
+    );
     $mform->setType('district', PARAM_RAW);
     $select->setMultiple(true);
 }
@@ -398,35 +415,35 @@ function subdistrict_filter($mform) {
 
     $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
 
+    if (is_siteadmin()) {
 
-
-    if(is_siteadmin()){
-
-       $subdistrictlist_sql = "SELECT id, subdistrict_name FROM {local_subdistrict} ";
-
-    }else{
+        $subdistrictlist_sql = "SELECT id, subdistrict_name FROM {local_subdistrict} ";
+    } else {
 
         $costcenterpaths = (new \local_costcenter\lib\accesslib())::get_user_role_switch_path();
 
-       $orgids=array();
+        $orgids = array();
 
-       foreach($costcenterpaths as $costcenterpath){
+        foreach ($costcenterpaths as $costcenterpath) {
 
-         list($zero, $org, $ctr, $bu, $cu, $territory) = explode("/",$costcenterpath);
+            list($zero, $org, $ctr, $bu, $cu, $territory) = explode("/", $costcenterpath);
 
-         $orgids[$org]=$org;
-
-       }
-       $implodeorgids=implode(',',$orgids);
+            $orgids[$org] = $org;
+        }
+        $implodeorgids = implode(',', $orgids);
 
         $subdistrictlist_sql = "SELECT id, subdistrict_name FROM {local_subdistrict} WHERE costcenterid in ($implodeorgids) ";
-
     }
 
     $subdistrictlist = $DB->get_records_sql_menu($subdistrictlist_sql);
 
-    $select = $mform->addElement('autocomplete', 'subdistrict', '',
-     $subdistrictlist, array('placeholder' => get_string('subdistrict', 'local_users')));
+    $select = $mform->addElement(
+        'autocomplete',
+        'subdistrict',
+        '',
+        $subdistrictlist,
+        array('placeholder' => get_string('subdistrict', 'local_users'))
+    );
     $mform->setType('subdistrict', PARAM_RAW);
     $select->setMultiple(true);
 }
@@ -436,34 +453,35 @@ function village_filter($mform) {
 
     $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
 
+    if (is_siteadmin()) {
 
-    if(is_siteadmin()){
+        $villagelist_sql = "SELECT id, village_name FROM {local_village} ";
+    } else {
 
-       $villagelist_sql = "SELECT id, village_name FROM {local_village} ";
+        $costcenterpaths = (new \local_costcenter\lib\accesslib())::get_user_role_switch_path();
 
-    }else{
+        $orgids = array();
 
-       $costcenterpaths = (new \local_costcenter\lib\accesslib())::get_user_role_switch_path();
+        foreach ($costcenterpaths as $costcenterpath) {
 
-       $orgids=array();
+            list($zero, $org, $ctr, $bu, $cu, $territory) = explode("/", $costcenterpath);
 
-       foreach($costcenterpaths as $costcenterpath){
-
-         list($zero, $org, $ctr, $bu, $cu, $territory) = explode("/",$costcenterpath);
-
-         $orgids[$org]=$org;
-
-       }
-       $implodeorgids=implode(',',$orgids);
+            $orgids[$org] = $org;
+        }
+        $implodeorgids = implode(',', $orgids);
 
         $villagelist_sql = "SELECT id, village_name FROM {local_village}  WHERE costcenterid in ($implodeorgids) ";
-
     }
 
     $villagelist = $DB->get_records_sql_menu($villagelist_sql);
 
-    $select = $mform->addElement('autocomplete', 'village', '',
-     $villagelist, array('placeholder' => get_string('village', 'local_users')));
+    $select = $mform->addElement(
+        'autocomplete',
+        'village',
+        '',
+        $villagelist,
+        array('placeholder' => get_string('village', 'local_users'))
+    );
     $mform->setType('village', PARAM_RAW);
     $select->setMultiple(true);
 }
@@ -476,13 +494,13 @@ function location_filter($mform) {
 
     $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
 
-    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='u.open_path');
+    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'u.open_path');
 
     $userslistparams = array('adminuserid' => 2, 'deleted' => 0, 'suspended' => 0, 'userid' => $USER->id);
     if (is_siteadmin() || has_capability('local/costcenter:manage_multiorganizations', $categorycontext)) {
         $userslist_sql = "SELECT u.city, u.city AS name FROM {user} AS u WHERE
          u.id > :adminuserid AND u.deleted = :deleted AND u.suspended = :suspended AND u.id <> :userid ";
-    } else  {
+    } else {
         $userslist_sql = "SELECT u.city, u.city AS name FROM {user} AS u WHERE u.id > :adminuserid
           AND u.deleted = :deleted AND u.suspended = :suspended
           AND u.id <> :userid $costcenterpathconcatsql";
@@ -490,7 +508,7 @@ function location_filter($mform) {
     $userslist_sql .= " AND u.city != '' AND u.city IS NOT NULL GROUP BY u.city ";
     $userslist = $DB->get_records_sql_menu($userslist_sql, $userslistparams);
     $select = $mform->addElement('autocomplete', 'location', '', $userslist, array('placeholder' =>
-     get_string('location', 'local_users')));
+    get_string('location', 'local_users')));
     $mform->setType('idnumber', PARAM_RAW);
     $select->setMultiple(true);
 }
@@ -503,13 +521,13 @@ function hrmsrole_filter($mform) {
     global $DB, $USER;
     $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
 
-    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='u.open_path');
+    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'u.open_path');
 
     $userslistparams = array('adminuserid' => 2, 'deleted' => 0, 'suspended' => 0, 'userid' => $USER->id);
     if (is_siteadmin() || has_capability('local/costcenter:manage_multiorganizations', $categorycontext)) {
         $userslist_sql = "SELECT u.open_hrmsrole, u.open_hrmsrole as name FROM {user} AS u WHERE u.id >
          :adminuserid AND u.deleted = :deleted AND u.suspended = :suspended AND u.id <> :userid ";
-    } else  {
+    } else {
         $userslist_sql = "SELECT u.open_hrmsrole, u.open_hrmsrole as name FROM
          {user} AS u WHERE u.id > :adminuserid
           AND u.deleted = :deleted AND u.suspended = :suspended $costcenterpathconcatsql";
@@ -517,8 +535,34 @@ function hrmsrole_filter($mform) {
     $userslist_sql .= " AND u.open_hrmsrole != '' AND u.open_hrmsrole IS NOT NULL GROUP BY u.open_hrmsrole ";
     $userslist = $DB->get_records_sql_menu($userslist_sql, $userslistparams);
     $select = $mform->addElement('autocomplete', 'hrmsrole', '', $userslist, array('placeholder' =>
-     get_string('open_hrmsrole', 'local_users')));
+    get_string('open_hrmsrole', 'local_users')));
     $mform->setType('hrmsrole', PARAM_RAW);
+    $select->setMultiple(true);
+}
+/**
+ * Description: User project filter code
+ * @param  [mform object]  $mform          [the form object where the form is initiated]
+ */
+function project_filter($mform) {
+    global $DB, $USER;
+    $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
+
+    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'u.open_path');
+
+    $userslistparams = array('adminuserid' => 2, 'deleted' => 0, 'suspended' => 0, 'userid' => $USER->id);
+    if (is_siteadmin() || has_capability('local/costcenter:manage_multiorganizations', $categorycontext)) {
+        $userslist_sql = "SELECT u.open_project, u.open_project as name FROM {user} AS u WHERE u.id >
+         :adminuserid AND u.deleted = :deleted AND u.suspended = :suspended AND u.id <> :userid ";
+    } else {
+        $userslist_sql = "SELECT u.open_project, u.open_project as name FROM
+         {user} AS u WHERE u.id > :adminuserid
+          AND u.deleted = :deleted AND u.suspended = :suspended $costcenterpathconcatsql";
+    }
+    $userslist_sql .= " AND u.open_project != '' AND u.open_project IS NOT NULL GROUP BY u.open_project ";
+    $userslist = $DB->get_records_sql_menu($userslist_sql, $userslistparams);
+    $select = $mform->addElement('autocomplete', 'project', '', $userslist, array('placeholder' =>
+    get_string('open_project', 'local_users')));
+    $mform->setType('project', PARAM_RAW);
     $select->setMultiple(true);
 }
 
@@ -531,13 +575,13 @@ function band_filter($mform) {
 
     $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
 
-    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='open_path');
+    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'open_path');
 
     $userslistparams = array('adminuserid' => 2, 'deleted' => 0, 'suspended' => 0, 'userid' => $USER->id);
     if (is_siteadmin() || has_capability('local/costcenter:manage_multiorganizations', $categorycontext)) {
-        $userslist_sql = "SELECT id, open_band FROM {user} WHERE id > :adminuserid AND deleted = :deleted 
+        $userslist_sql = "SELECT id, open_band FROM {user} WHERE id > :adminuserid AND deleted = :deleted
          AND suspended = :suspended AND open_band IS NOT NULL AND open_band != '' AND id <> :userid ";
-    } else  {
+    } else {
         $userslist_sql = "SELECT id, open_band FROM {user} WHERE id > :adminuserid  AND deleted = :deleted AND suspended = :suspended AND open_band IS NOT NULL AND open_band != '' AND id <> :userid $costcenterpathconcatsql";
     }
     $userslist = $DB->get_records_sql_menu($userslist_sql, $userslistparams);
@@ -555,13 +599,13 @@ function customername_filter($mform) {
 
     $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
 
-    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='open_path');
+    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'open_path');
 
     $userslistparams = array('adminuserid' => 2, 'deleted' => 0, 'suspended' => 0, 'userid' => $USER->id);
     if (is_siteadmin() || has_capability('local/costcenter:manage_multiorganizations', $categorycontext)) {
-        $userslist_sql = "SELECT id, open_customername FROM {user} WHERE id > :adminuserid AND deleted = :deleted 
+        $userslist_sql = "SELECT id, open_customername FROM {user} WHERE id > :adminuserid AND deleted = :deleted
          AND suspended = :suspended AND open_customername IS NOT NULL AND open_customername != '' AND id <> :userid ";
-    } else  {
+    } else {
         $userslist_sql = "SELECT id, open_customername FROM {user} WHERE id > :adminuserid  AND deleted = :deleted AND suspended = :suspended AND open_customername IS NOT NULL AND open_customername != '' AND id <> :userid $costcenterpathconcatsql";
     }
     $userslist = $DB->get_records_sql_menu($userslist_sql, $userslistparams);
@@ -579,13 +623,12 @@ function username_filter($mform) {
 
     $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
 
-    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='open_path');
+    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'open_path');
 
     $userslistparams = array('adminuserid' => 2, 'deleted' => 0, 'suspended' => 0, 'userid' => $USER->id);
     if (is_siteadmin() || has_capability('local/costcenter:manage_multiorganizations', $categorycontext)) {
         $userslist_sql = "SELECT id, username FROM {user} WHERE id > :adminuserid AND deleted = :deleted
          AND suspended = :suspended AND id <> :userid";
-
     } else {
 
         $userslist_sql = "SELECT id, username FROM {user} WHERE id > :adminuserid  AND deleted = :deleted AND suspended = :suspended AND id <> :userid $costcenterpathconcatsql";
@@ -604,7 +647,7 @@ function custom_filter($mform) {
 
     $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
 
-    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='open_path');
+    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'open_path');
 
     $filterv = $DB->get_field('local_filters', 'filters', array('plugins' => 'users'));
     $filterv = explode(',', $filterv);
@@ -613,13 +656,13 @@ function custom_filter($mform) {
         if (is_siteadmin() || has_capability('local/costcenter:manage_multiorganizations', $categorycontext)) {
             $userslist_sql = "SELECT id, $fieldvalue FROM {user} WHERE id > :adminuserid AND deleted =
              :deleted AND suspended = :suspended AND id <> :userid ";
-        } else  {
+        } else {
             $userslist_sql = "SELECT id, $fieldvalue FROM {user} WHERE id > :adminuserid  AND deleted = :deleted AND suspended = :suspended AND
               id <> :userid $costcenterpathconcatsql";
         }
         $userslist = $DB->get_records_sql_menu($userslist_sql, $userslistparams);
         $select = $mform->addElement('autocomplete', $fieldvalue, '', $userslist, array('placeholder'
-         => get_string($fieldvalue, 'local_users')));
+        => get_string($fieldvalue, 'local_users')));
         $mform->setType($fieldvalue, PARAM_RAW);
         $select->setMultiple(true);
     }
@@ -634,90 +677,108 @@ function custom_filter($mform) {
 function globaltargetaudience_elementlist($mform, $elementlist, $costcenter = null) {
     global $CFG, $DB, $USER;
     $context = (new \local_users\lib\accesslib())::get_module_context();
-  $element= $mform->_elements[15];
- if($element->_attributes['name']=='evaluationhdr')
- {
-$options = array(
-    'ajax' => 'local_users/form-options-selector',
-    'multiple' => true,
-    'data-contextid' => $context->id,
-    'data-action' => 'eval_group_selector',
-    'data-options' => json_encode(array('organizationselect' => 'open_costcenterid_select')),
-    'class' => 'trainerselect',
-    'data-parentclass' => 'open_costcenterid_select',
-    'data-class' => 'open_costcenterid_select',
-);  
-    $params = array();
-    $params['deleted'] = 0;
-    $params['suspended'] = 0;
-    if ($mform->modulecostcenterpath == 0 ) {
-        $main_sql = "";
-    } else  {
-        $costcenterpath = $mform->modulecostcenterpath ? $mform->modulecostcenterpath : $USER->open_path;
+    $element = $mform->_elements[15];
+    if ($element->_attributes['name'] == 'evaluationhdr') {
+        $options = array(
+            'ajax' => 'local_users/form-options-selector',
+            'multiple' => true,
+            'data-contextid' => $context->id,
+            'data-action' => 'eval_group_selector',
+            'data-options' => json_encode(array('organizationselect' => 'open_costcenterid_select')),
+            'class' => 'trainerselect',
+            'data-parentclass' => 'open_costcenterid_select',
+            'data-class' => 'open_costcenterid_select',
+        );
+        $params = array();
+        $params['deleted'] = 0;
+        $params['suspended'] = 0;
+        if ($mform->modulecostcenterpath == 0) {
+            $main_sql = "";
+        } else {
+            $costcenterpath = $mform->modulecostcenterpath ? $mform->modulecostcenterpath : $USER->open_path;
 
-        $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='u.open_path',$costcenterpath);
+            $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'u.open_path', $costcenterpath);
 
-        $main_sql = " AND u.suspended = :suspended AND u.deleted =:deleted $costcenterpathconcatsql ";
-    }
-    $dbman = $DB->get_manager();
-    $grouplist[0] = array('id'=>0,'fullname'=>get_string('all')) ;
-    $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='g.open_path',$costcenterpath);
-    $grouplist += $DB->get_records_sql_menu("SELECT c.id, c.name as fullname FROM {local_groups} g, {cohort} c
+            $main_sql = " AND u.suspended = :suspended AND u.deleted =:deleted $costcenterpathconcatsql ";
+        }
+        $dbman = $DB->get_manager();
+        $grouplist[0] = array('id' => 0, 'fullname' => get_string('all'));
+        $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'g.open_path', $costcenterpath);
+        $grouplist += $DB->get_records_sql_menu(
+            "SELECT c.id, c.name as fullname FROM {local_groups} g, {cohort} c
     WHERE c.visible = :visible AND c.id = g.cohortid  $costcenterpathconcatsql ",
-     array( 'visible' => 1));
-    if (in_array('group', $elementlist)) {
-        $selectgroup = $mform->addElement('autocomplete', 'open_group', get_string('open_group', 'local_users')
-           , $grouplist ,$options);
-        $mform->setType('open_group', PARAM_RAW);
-        $mform->addHelpButton('open_group', 'groups', 'local_users');
-        $selectgroup->setMultiple(true);
-    }
-}else{
-    if (in_array('group', $elementlist)) {
-        $groupslist[null] = get_string('all');
+            array('visible' => 1)
+        );
+        if (in_array('group', $elementlist)) {
+            $selectgroup = $mform->addElement(
+                'autocomplete',
+                'open_group',
+                get_string('open_group', 'local_users'),
+                $grouplist,
+                $options
+            );
+            $mform->setType('open_group', PARAM_RAW);
+            $mform->addHelpButton('open_group', 'groups', 'local_users');
+            $selectgroup->setMultiple(true);
+        }
+    } else {
+        if (in_array('group', $elementlist)) {
+            $groupslist[null] = get_string('all');
 
-            $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='g.open_path',$costcenterpath);
-            if(is_siteadmin())
-            {
-                $costcenterpathconcatsql = "AND ( (  g.open_path LIKE '/".$costcenter."/%'  OR  g.open_path LIKE '/".$costcenter."'  ) )";
+            $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'g.open_path', $costcenterpath);
+            if (is_siteadmin()) {
+                $costcenterpathconcatsql = "AND ( (  g.open_path LIKE '/" . $costcenter . "/%'  OR  g.open_path LIKE '/" . $costcenter . "'  ) )";
             }
 
-            $groupslist += $DB->get_records_sql_menu("SELECT c.id, c.name FROM {local_groups} g, {cohort} c
+            $groupslist += $DB->get_records_sql_menu(
+                "SELECT c.id, c.name FROM {local_groups} g, {cohort} c
               WHERE c.visible = :visible AND c.id = g.cohortid $costcenterpathconcatsql ",
-               array( 'visible' => 1));
+                array('visible' => 1)
+            );
 
-        $selectgroup = $mform->addElement('autocomplete', 'open_group', get_string('open_group', 'local_users')
-            , $groupslist);
-        $mform->setType('open_group', PARAM_RAW);
-        $mform->addHelpButton('open_group', 'groups', 'local_users');
-        $selectgroup->setMultiple(true);
+            $selectgroup = $mform->addElement(
+                'autocomplete',
+                'open_group',
+                get_string('open_group', 'local_users'),
+                $groupslist
+            );
+            $mform->setType('open_group', PARAM_RAW);
+            $mform->addHelpButton('open_group', 'groups', 'local_users');
+            $selectgroup->setMultiple(true);
+        }
     }
-}
     if (in_array('hrmsrole', $elementlist)) {
         $hrmsrole_details[null] = get_string('all');
         $hrmsrole_sql = "SELECT u.open_hrmsrole, u.open_hrmsrole AS hrmsrolevalue FROM {user} AS u WHERE u.id
          > 2 $main_sql AND u.open_hrmsrole IS NOT NULL GROUP BY u.open_hrmsrole";
         $hrmsrole_details += $DB->get_records_sql_menu($hrmsrole_sql, $params);
-        $selecthrmsrole = $mform->addElement('autocomplete', 'open_hrmsrole',  get_string('hrmrole', 'local_users'),
-         $hrmsrole_details);
+        $selecthrmsrole = $mform->addElement(
+            'autocomplete',
+            'open_hrmsrole',
+            get_string('hrmrole', 'local_users'),
+            $hrmsrole_details
+        );
         $mform->setType('open_hrmsrole', PARAM_RAW);
         $mform->addHelpButton('open_hrmsrole', 'role', 'local_users');
         $selecthrmsrole->setMultiple(true);
     }
     if (in_array('designation', $elementlist)) {
-            $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='u.open_path',$costcenterpath);
-            if(is_siteadmin())
-            {
-                $costcenterpathconcatsql = "AND ( (  u.open_path LIKE '/".$costcenter."/%'  OR  u.open_path LIKE '/".$costcenter."'  ) )";
-            }
+        $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'u.open_path', $costcenterpath);
+        if (is_siteadmin()) {
+            $costcenterpathconcatsql = "AND ( (  u.open_path LIKE '/" . $costcenter . "/%'  OR  u.open_path LIKE '/" . $costcenter . "'  ) )";
+        }
 
         $designation_details[null] = get_string('all');
         $designation_sql = "SELECT u.open_designation,u.open_designation AS designationvalue FROM {user} AS
          u WHERE u.id > 2 $main_sql AND u.open_designation IS NOT NULL AND u.open_designation !='' $costcenterpathconcatsql ";
 
         $designation_details += $DB->get_records_sql_menu($designation_sql, $params);
-        $selectdesignation = $mform->addElement('autocomplete', 'open_designation',
-         get_string('open_designation', 'local_users'), $designation_details);
+        $selectdesignation = $mform->addElement(
+            'autocomplete',
+            'open_designation',
+            get_string('open_designation', 'local_users'),
+            $designation_details
+        );
         $mform->setType('open_designation', PARAM_RAW);
         $mform->addHelpButton('open_designation', 'designation', 'local_users');
         $selectdesignation->setMultiple(true);
@@ -727,10 +788,12 @@ $options = array(
         $location_sql = "SELECT u.city, u.city AS locationvalue FROM {user} AS u WHERE u.id > 2 $main_sql AND
          u.city IS NOT NULL GROUP BY u.city    ";
         $location_details += $DB->get_records_sql_menu($location_sql, $params);
-        $selectlocation = $mform->addElement('autocomplete', 'open_location', get_string('open_location',
-         'local_users'), $location_details);
+        $selectlocation = $mform->addElement('autocomplete', 'open_location', get_string(
+            'open_location',
+            'local_users'
+        ), $location_details);
         $mform->setType('open_location', PARAM_RAW);
-         $mform->addHelpButton('open_location', 'location', 'local_users');
+        $mform->addHelpButton('open_location', 'location', 'local_users');
         $selectlocation->setMultiple(true);
     }
 
@@ -755,14 +818,19 @@ function local_users_leftmenunode() {
     $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
     $usersnode = '';
     $key = '';
-    if (has_capability('local/users:manage', $categorycontext) || has_capability('local/users:view',
-      $categorycontext) || is_siteadmin()) {
+    if (has_capability('local/users:manage', $categorycontext) || has_capability(
+        'local/users:view',
+        $categorycontext
+    ) || is_siteadmin()) {
         $usersnode .= html_writer::start_tag('li', array('id' => 'id_leftmenu_users', 'class' => 'pull-left user_nav_div users'));
-            $users_url = new moodle_url('/local/users/index.php');
-            $users = html_writer::link($users_url, '<i class="fa fa-user-plus" aria-hidden="true"></i>
-                <span class="user_navigation_link_text">'.get_string('manage_users', 'local_users').'</span>',
-                 array('class' => 'user_navigation_link'));
-            $usersnode .= $users;
+        $users_url = new moodle_url('/local/users/index.php');
+        $users = html_writer::link(
+            $users_url,
+            '<i class="fa fa-user-plus" aria-hidden="true"></i>
+                <span class="user_navigation_link_text">' . get_string('manage_users', 'local_users') . '</span>',
+            array('class' => 'user_navigation_link')
+        );
+        $usersnode .= $users;
         $usersnode .= html_writer::end_tag('li');
         $key = array('2' => $usersnode);
     }
@@ -776,8 +844,7 @@ function local_users_quicklink_node() {
 
     $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
 
-    $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='open_path',$orgid);
-
+    $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'open_path', $orgid);
 
     $local_users = '';
     if (is_siteadmin() || has_capability('local/users:view', $categorycontext)) {
@@ -795,24 +862,22 @@ function local_users_quicklink_node() {
         $inactiveparams['suspended'] = 1;
         $inactiveparams['deleted'] = 0;
 
-        if ((is_siteadmin() || has_capability('local/costcenter:manage_multiorganizations', $categorycontext)) && $orgid ==0) {
+        if ((is_siteadmin() || has_capability('local/costcenter:manage_multiorganizations', $categorycontext)) && $orgid == 0) {
             $sql .= "";
-        } else  {
+        } else {
             //costcenterid concating
             $sql .= $costcenterpathconcatsql;
-
         }
 
-        $count_activeusers = $DB->count_records_sql($sql.$suspendsql, $activeparams);
-        $count_inactiveusers = $DB->count_records_sql($sql.$suspendsql, $inactiveparams);
+        $count_activeusers = $DB->count_records_sql($sql . $suspendsql, $activeparams);
+        $count_inactiveusers = $DB->count_records_sql($sql . $suspendsql, $inactiveparams);
         $count_users = $DB->count_records_sql($sql, $params);
 
-
         if ($count_activeusers == 0 || $count_users == 0) {
-                $percentage = 0;
+            $percentage = 0;
         } else {
-                $percent = round(($count_activeusers / $count_users) * 100);
-                $percent = (int)$percent;
+            $percent = round(($count_activeusers / $count_users) * 100);
+            $percent = (int)$percent;
         }
 
         //local users count content
@@ -826,12 +891,15 @@ function local_users_quicklink_node() {
         if (has_capability('local/users:create', $categorycontext) || is_siteadmin()) {
             $displayline = true;
             $hascapablity = true;
-            $countinformation['create_element'] = html_writer::link('javascript:void(0)', get_string('create'),
-             array('class' => 'quick_nav_link goto_local_users course_extended_menu_itemlink', 'data-action' =>
-              'createusermodal', 'title' => get_string('createuser', 'local_users'), 'data-action' =>
-               'createusermodal',  'onclick' => '(function(e){ require
-                ("local_users/newuser").init({selector:"createusermodal", context:1, userid:'.$USER->id.',
-                form_status:0}) })(event)'));
+            $countinformation['create_element'] = html_writer::link(
+                'javascript:void(0)',
+                get_string('create'),
+                array('class' => 'quick_nav_link goto_local_users course_extended_menu_itemlink', 'data-action' =>
+                'createusermodal', 'title' => get_string('createuser', 'local_users'), 'data-action' =>
+                'createusermodal',  'onclick' => '(function(e){ require
+                ("local_users/newuser").init({selector:"createusermodal", context:1, userid:' . $USER->id . ',
+                form_status:0}) })(event)')
+            );
         }
         $countinformation['node_header_string'] = get_string('manage_br_users', 'local_users');
         $countinformation['pluginname'] = 'users';
@@ -839,7 +907,7 @@ function local_users_quicklink_node() {
         $countinformation['contextid'] = $categorycontext->id;
         $countinformation['userid'] = $USER->id;
         $countinformation['create'] = $hascapablity;
-        $countinformation['viewlink_url'] = $CFG->wwwroot.'/local/users/index.php';
+        $countinformation['viewlink_url'] = $CFG->wwwroot . '/local/users/index.php';
         $countinformation['view'] = true;
         $countinformation['displaystats'] = true;
         $countinformation['percentage'] = $percent;
@@ -848,10 +916,10 @@ function local_users_quicklink_node() {
         $countinformation['inactive_string'] = get_string('inactive_string', 'block_quick_navigation');
         $countinformation['count_active'] = $count_activeusers;
         if ($count_activeusers >= 0) {
-            $countinformation['count_activelink_url'] = $CFG->wwwroot.'/local/users/index.php?status=active';
+            $countinformation['count_activelink_url'] = $CFG->wwwroot . '/local/users/index.php?status=active';
         }
         if ($count_inactiveusers >= 0) {
-             $countinformation['count_inactivelink_url'] = $CFG->wwwroot.'/local/users/index.php?status=inactive';
+            $countinformation['count_inactivelink_url'] = $CFG->wwwroot . '/local/users/index.php?status=inactive';
         }
         $countinformation['space_count'] = 'two';
         $countinformation['view_type'] = $PAGE->theme->settings->quicknavigationview;
@@ -860,95 +928,95 @@ function local_users_quicklink_node() {
     return array('1' => $local_users);
 }
 
-
 /*
 * Author Sarath
 * return count of users under selected costcenter
 * @return  [type] int count of users
 */
-function costcenterwise_users_count($costcenter, $department = false, $subdepartment=false, $l4department=false, $l5department=false) {
+function costcenterwise_users_count($costcenter, $department = false, $subdepartment = false, $l4department = false, $l5department = false) {
     global $USER, $DB, $CFG;
-        $params = array();
+    $params = array();
 
-        $params['costcenterpath'] = '%/'.$costcenter.'/%';
-        $countusersql = "SELECT count(u.id) FROM {user} u WHERE concat('/',u.open_path,'/') LIKE :costcenterpath  AND deleted = 0";
+    $params['costcenterpath'] = '%/' . $costcenter . '/%';
+    $countusersql = "SELECT count(u.id) FROM {user} u WHERE concat('/',u.open_path,'/') LIKE :costcenterpath  AND deleted = 0";
     if ($department) {
-            $countusersql .= " AND concat('/',u.open_path,'/') LIKE :departmentpath ";
-            $params['departmentpath'] = '%/'.$department.'/%';
+        $countusersql .= " AND concat('/',u.open_path,'/') LIKE :departmentpath ";
+        $params['departmentpath'] = '%/' . $department . '/%';
     }
     if ($subdepartment) {
-            $countusersql .= " AND concat('/',u.open_path,'/') LIKE :subdepartmentpath ";
-            $params['subdepartmentpath'] = '%/'.$subdepartment.'/%';
+        $countusersql .= " AND concat('/',u.open_path,'/') LIKE :subdepartmentpath ";
+        $params['subdepartmentpath'] = '%/' . $subdepartment . '/%';
     }
     if ($l4department) {
-            $countusersql .= " AND concat('/',u.open_path,'/') LIKE :l4departmentpath ";
-            $params['l4departmentpath'] = '%/'.$l4department.'/%';
+        $countusersql .= " AND concat('/',u.open_path,'/') LIKE :l4departmentpath ";
+        $params['l4departmentpath'] = '%/' . $l4department . '/%';
     }
     if ($l5department) {
-            $countusersql .= " AND concat('/',u.open_path,'/') LIKE :l5departmentpath ";
-            $params['l5departmentpath'] = '%/'.$l5department.'/%';
+        $countusersql .= " AND concat('/',u.open_path,'/') LIKE :l5departmentpath ";
+        $params['l5departmentpath'] = '%/' . $l5department . '/%';
     }
-        $activesql = " AND suspended = 0 ";
-        $inactivesql = " AND suspended = 1 ";
-        $countusers = $DB->count_records_sql($countusersql, $params);
-        $activeusers = $DB->count_records_sql($countusersql.$activesql, $params);
-        $inactiveusers = $DB->count_records_sql($countusersql.$inactivesql, $params);
+    $activesql = " AND suspended = 0 ";
+    $inactivesql = " AND suspended = 1 ";
+    $countusers = $DB->count_records_sql($countusersql, $params);
+    $activeusers = $DB->count_records_sql($countusersql . $activesql, $params);
+    $inactiveusers = $DB->count_records_sql($countusersql . $inactivesql, $params);
     if ($countusers >= 0) {
         if ($costcenter) {
-                $viewlink_url = $CFG->wwwroot.'/local/users/index.php?costcenterid='. $costcenter;
+            $viewlink_url = $CFG->wwwroot . '/local/users/index.php?costcenterid=' . $costcenter;
         }
         if ($department) {
-                $viewlink_url = $CFG->wwwroot.'/local/users/index.php?costcenterid='. $costcenter.'&departmentid='. $department;
+            $viewlink_url = $CFG->wwwroot . '/local/users/index.php?costcenterid=' . $costcenter . '&departmentid=' . $department;
         }
         if ($subdepartment) {
-                $viewlink_url = $CFG->wwwroot.'/local/users/index.php?costcenterid='. $costcenter.'&departmentid='. $department.'&subdepartmentid='. $subdepartment;
+            $viewlink_url = $CFG->wwwroot . '/local/users/index.php?costcenterid=' . $costcenter . '&departmentid=' . $department . '&subdepartmentid=' . $subdepartment;
         }
         if ($l4department) {
-                $viewlink_url = $CFG->wwwroot.'/local/users/index.php?costcenterid='. $costcenter.'&departmentid='. $department.'&subdepartmentid='. $subdepartment.'&l4department='.$l4department;
+            $viewlink_url = $CFG->wwwroot . '/local/users/index.php?costcenterid=' . $costcenter . '&departmentid=' . $department . '&subdepartmentid=' . $subdepartment . '&l4department=' . $l4department;
         }
         if ($l5department) {
-                $viewlink_url = $CFG->wwwroot.'/local/users/index.php?costcenterid='. $costcenter.'&departmentid='. $department.'&subdepartmentid='. $subdepartment.'&l4department='.$l4department.'&l5department='.$l5department;
+            $viewlink_url = $CFG->wwwroot . '/local/users/index.php?costcenterid=' . $costcenter . '&departmentid=' . $department . '&subdepartmentid=' . $subdepartment . '&l4department=' . $l4department . '&l5department=' . $l5department;
         }
     }
     if ($activeusers >= 0) {
         if ($costcenter) {
-                $count_activelink_url = $CFG->wwwroot.'/local/users/index.php?status=active&costcenterid='.$costcenter;
+            $count_activelink_url = $CFG->wwwroot . '/local/users/index.php?status=active&costcenterid=' . $costcenter;
         }
         if ($department) {
-                $count_activelink_url = $CFG->wwwroot.'/local/users/index.php?status=active&costcenterid='.$costcenter.'&departmentid='.$department;
+            $count_activelink_url = $CFG->wwwroot . '/local/users/index.php?status=active&costcenterid=' . $costcenter . '&departmentid=' . $department;
         }
         if ($subdepartment) {
-                $count_activelink_url = $CFG->wwwroot.'/local/users/index.php?status=active&costcenterid='.$costcenter.'&departmentid='.$department.'&subdepartmentid='.$subdepartment;
-            }
+            $count_activelink_url = $CFG->wwwroot . '/local/users/index.php?status=active&costcenterid=' . $costcenter . '&departmentid=' . $department . '&subdepartmentid=' . $subdepartment;
+        }
         if ($l4department) {
-                $count_activelink_url = $CFG->wwwroot.'/local/users/index.php?status=active&costcenterid='.$costcenter.'&departmentid='.$department.'&subdepartmentid='.$subdepartment.'&l4department='.$l4department;
+            $count_activelink_url = $CFG->wwwroot . '/local/users/index.php?status=active&costcenterid=' . $costcenter . '&departmentid=' . $department . '&subdepartmentid=' . $subdepartment . '&l4department=' . $l4department;
         }
         if ($l5department) {
-                $count_activelink_url = $CFG->wwwroot.'/local/users/index.php?status=active&costcenterid='.$costcenter.'&departmentid='.$department.'&subdepartmentid='.$subdepartment.'&l4department='.$l4department.'&l5department='.$l5department;
+            $count_activelink_url = $CFG->wwwroot . '/local/users/index.php?status=active&costcenterid=' . $costcenter . '&departmentid=' . $department . '&subdepartmentid=' . $subdepartment . '&l4department=' . $l4department . '&l5department=' . $l5department;
         }
     }
     if ($inactiveusers >= 0) {
         if ($costcenter) {
-                $count_inactivelink_url = $CFG->wwwroot.'/local/users/index.php?status=inactive&costcenterid='.$costcenter;
+            $count_inactivelink_url = $CFG->wwwroot . '/local/users/index.php?status=inactive&costcenterid=' . $costcenter;
         }
         if ($department) {
-                $count_inactivelink_url = $CFG->wwwroot.'/local/users/index.php?status=inactive&costcenterid='.$costcenter.'&departmentid='.$department;
+            $count_inactivelink_url = $CFG->wwwroot . '/local/users/index.php?status=inactive&costcenterid=' . $costcenter . '&departmentid=' . $department;
         }
         if ($subdepartment) {
-                $count_inactivelink_url = $CFG->wwwroot.'/local/users/index.php?status=inactive&costcenterid='.$costcenter.'&departmentid='.$department.'&subdepartmentid='.$subdepartment;
+            $count_inactivelink_url = $CFG->wwwroot . '/local/users/index.php?status=inactive&costcenterid=' . $costcenter . '&departmentid=' . $department . '&subdepartmentid=' . $subdepartment;
         }
         if ($l4department) {
-                $count_inactivelink_url = $CFG->wwwroot.'/local/users/index.php?status=inactive&costcenterid='.$costcenter.'&departmentid='.$department.'&subdepartmentid='.$subdepartment.'&l4department='.$l4department;
+            $count_inactivelink_url = $CFG->wwwroot . '/local/users/index.php?status=inactive&costcenterid=' . $costcenter . '&departmentid=' . $department . '&subdepartmentid=' . $subdepartment . '&l4department=' . $l4department;
         }
         if ($l5department) {
-                $count_inactivelink_url = $CFG->wwwroot.'/local/users/index.php?status=inactive&costcenterid='.$costcenter.'&departmentid='.$department.'&subdepartmentid='.$subdepartment.'&l4department='.$l4department.'&l5department='.$l5department;
+            $count_inactivelink_url = $CFG->wwwroot . '/local/users/index.php?status=inactive&costcenterid=' . $costcenter . '&departmentid=' . $department . '&subdepartmentid=' . $subdepartment . '&l4department=' . $l4department . '&l5department=' . $l5department;
         }
     }
-    return array('totalusers' => $countusers, 'activeusercount' => $activeusers, 'inactiveusercount' =>
-     $inactiveusers, 'viewlink_url' => $viewlink_url, 'count_activelink_url' => $count_activelink_url,
-      'count_inactivelink_url' => $count_inactivelink_url);
+    return array(
+        'totalusers' => $countusers, 'activeusercount' => $activeusers, 'inactiveusercount' =>
+        $inactiveusers, 'viewlink_url' => $viewlink_url, 'count_activelink_url' => $count_activelink_url,
+        'count_inactivelink_url' => $count_inactivelink_url
+    );
 }
-
 
 /*
 * Author Sarath
@@ -960,12 +1028,12 @@ function manage_users_count($stable, $filterdata) {
 
     $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
 
-    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='u.open_path');
+    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'u.open_path');
 
-     $statustype = $stable->status;
-     $totalcostcentercount = $stable->costcenterid;
-     $totaldepartmentcount = $stable->departmentid;
-     $totalsubdepartmentcount = $stable->subdepartmentid;
+    $statustype = $stable->status;
+    $totalcostcentercount = $stable->costcenterid;
+    $totaldepartmentcount = $stable->departmentid;
+    $totalsubdepartmentcount = $stable->subdepartmentid;
     $countsql = "SELECT  count(u.id) ";
     $selectsql = "SELECT  u.*  ";
     $formsql = " FROM {user} AS u
@@ -973,16 +1041,16 @@ function manage_users_count($stable, $filterdata) {
     $params = array();
     if (is_siteadmin()) {
         $formsql .= "";
-    } else  {
+    } else {
         $formsql .= $costcenterpathconcatsql;
     }
     if (isset($filterdata->search_query) && trim($filterdata->search_query) != '') {
         $formsql .= " AND (u.username LIKE :search1 OR concat(u.firstname,' ',u.lastname)
          LIKE :search2 OR u.email LIKE :search3 OR u.open_employeeid LIKE :search4 )";
-        $params['search1'] = '%'.trim($filterdata->search_query).'%';
-        $params['search2'] = '%'.trim($filterdata->search_query).'%';
-        $params['search3'] = '%'.trim($filterdata->search_query).'%';
-        $params['search4'] = '%'.trim($filterdata->search_query).'%';
+        $params['search1'] = '%' . trim($filterdata->search_query) . '%';
+        $params['search2'] = '%' . trim($filterdata->search_query) . '%';
+        $params['search3'] = '%' . trim($filterdata->search_query) . '%';
+        $params['search4'] = '%' . trim($filterdata->search_query) . '%';
     }
     if (!empty($filterdata->idnumber)) {
         $idnumbers = explode(',', $filterdata->idnumber);
@@ -1001,12 +1069,12 @@ function manage_users_count($stable, $filterdata) {
     if (!empty($filterdata->filteropen_costcenterid)) {
         $organizations = explode(',', $filterdata->filteropen_costcenterid);
         $orgsql = [];
-        foreach($organizations AS $organisation){
+        foreach ($organizations as $organisation) {
             $orgsql[] = " concat('/',u.open_path,'/') LIKE :organisationparam_{$organisation}";
-            $params["organisationparam_{$organisation}"] = '%/'.$organisation.'/%';
+            $params["organisationparam_{$organisation}"] = '%/' . $organisation . '/%';
         }
-        if(!empty($orgsql)){
-            $formsql .= " AND ( ".implode(' OR ', $orgsql)." ) ";
+        if (!empty($orgsql)) {
+            $formsql .= " AND ( " . implode(' OR ', $orgsql) . " ) ";
         }
     }
     if (!empty($filterdata->filteropen_department)) {
@@ -1016,12 +1084,12 @@ function manage_users_count($stable, $filterdata) {
         // $params = array_merge($params, $relateddepartmentsparams);
         // $formsql .= " AND u.open_departmentid $relatededepartmentssql";
         $deptsql = [];
-        foreach($departments AS $department){
+        foreach ($departments as $department) {
             $deptsql[] = " concat('/',u.open_path,'/') LIKE :departmentparam_{$department}";
-            $params["departmentparam_{$department}"] = '%/'.$department.'/%';
+            $params["departmentparam_{$department}"] = '%/' . $department . '/%';
         }
-        if(!empty($deptsql)){
-            $formsql .= " AND ( ".implode(' OR ', $deptsql)." ) ";
+        if (!empty($deptsql)) {
+            $formsql .= " AND ( " . implode(' OR ', $deptsql) . " ) ";
         }
     }
     if (!empty($filterdata->filteropen_subdepartment)) {
@@ -1031,34 +1099,34 @@ function manage_users_count($stable, $filterdata) {
         // $params = array_merge($params, $relatedsubdepartmentparams);
         // $formsql .= " AND u.open_subdepartment $relatedesubdepartmentsql";
         $subdeptsql = [];
-        foreach($subdepartments AS $subdepartment){
+        foreach ($subdepartments as $subdepartment) {
             $subdeptsql[] = " concat('/',u.open_path,'/') LIKE :subdepartmentparam_{$subdepartment}";
-            $params["subdepartmentparam_{$subdepartment}"] = '%/'.$subdepartment.'/%';
+            $params["subdepartmentparam_{$subdepartment}"] = '%/' . $subdepartment . '/%';
         }
-        if(!empty($subdeptsql)){
-            $formsql .= " AND ( ".implode(' OR ', $subdeptsql)." ) ";
+        if (!empty($subdeptsql)) {
+            $formsql .= " AND ( " . implode(' OR ', $subdeptsql) . " ) ";
         }
     }
     if (!empty($filterdata->filteropen_level4department)) {
         $depart4level = explode(',', $filterdata->filteropen_level4department);
         $department4levelsql = [];
-        foreach($depart4level AS $department4level){
+        foreach ($depart4level as $department4level) {
             $department4levelsql[] = " concat('/',u.open_path,'/') LIKE :department4levelparam_{$department4level}";
-            $params["department4levelparam_{$department4level}"] = '%/'.$department4level.'/%';
+            $params["department4levelparam_{$department4level}"] = '%/' . $department4level . '/%';
         }
-        if(!empty($department4levelsql)){
-            $formsql .= " AND ( ".implode(' OR ', $department4levelsql)." ) ";
+        if (!empty($department4levelsql)) {
+            $formsql .= " AND ( " . implode(' OR ', $department4levelsql) . " ) ";
         }
     }
     if (!empty($filterdata->filteropen_level5department)) {
         $depart5level = explode(',', $filterdata->filteropen_level5department);
         $department5levelsql = [];
-        foreach($depart5level AS $department5level){
+        foreach ($depart5level as $department5level) {
             $department5levelsql[] = " concat('/',u.open_path,'/') LIKE :department5levelparam_{$department5level}";
-            $params["department5levelparam_{$department5level}"] = '%/'.$department5level.'/%';
+            $params["department5levelparam_{$department5level}"] = '%/' . $department5level . '/%';
         }
-        if(!empty($department5levelsql)){
-            $formsql .= " AND ( ".implode(' OR ', $department5levelsql)." ) ";
+        if (!empty($department5levelsql)) {
+            $formsql .= " AND ( " . implode(' OR ', $department5levelsql) . " ) ";
         }
     }
     if (!empty($filterdata->location)) {
@@ -1074,6 +1142,13 @@ function manage_users_count($stable, $filterdata) {
         $params = array_merge($params, $hrmsroleparams);
         $formsql .= " AND u.open_hrmsrole {$hrmsrolesql} ";
     }
+    if (!empty($filterdata->project)) {
+        $projects = explode(',', $filterdata->project);
+        list($projectssql, $projectsparam) = $DB->get_in_or_equal($projects, SQL_PARAMS_NAMED, 'project');
+        $params = array_merge($params, $projectsparam);
+        $formsql .= " AND u.open_project {$projectssql} ";
+    }
+
     if (!empty($filterdata->village)) {
         $villages = explode(',', $filterdata->village);
         list($villagesql, $villageparam) = $DB->get_in_or_equal($villages, SQL_PARAMS_NAMED, 'village');
@@ -1101,25 +1176,27 @@ function manage_users_count($stable, $filterdata) {
     if (!empty($filterdata->status)) {
         $status = explode(',', $filterdata->status);
         if (!(in_array('active', $status) && in_array('inactive', $status))) {
-            if (in_array('active' , $status)) {
+            if (in_array('active', $status)) {
                 $formsql .= " AND u.suspended = 0";
-            } else if (in_array('inactive' , $status)) {
+            } else if (in_array('inactive', $status)) {
                 $formsql .= " AND u.suspended = 1";
             }
         }
     }
     $ordersql = " ORDER BY u.id DESC ";
-    $totalusers = $DB->count_records_sql($countsql. $formsql/*.$ordersql*/, $params);
+    $totalusers = $DB->count_records_sql($countsql . $formsql/*.$ordersql*/, $params);
 
     $activesql = " AND u.suspended = :suspended ";
     $params['suspended'] = 0;
-    $activeusers = $DB->count_records_sql($countsql.$formsql.$activesql/*.$ordersql*/, $params);
+    $activeusers = $DB->count_records_sql($countsql . $formsql . $activesql/*.$ordersql*/, $params);
 
     $params['suspended'] = 1;
-    $inactiveusers = $DB->count_records_sql($countsql.$formsql.$activesql/*.$ordersql*/, $params);
-    $users = $DB->get_records_sql($selectsql.$formsql.$ordersql, $params, $stable->start, $stable->length);
-        return array('totalusers' => $totalusers, 'activeusercount' => $activeusers,
-         'inactiveusercount' => $inactiveusers, 'users' => $users);
+    $inactiveusers = $DB->count_records_sql($countsql . $formsql . $activesql/*.$ordersql*/, $params);
+    $users = $DB->get_records_sql($selectsql . $formsql . $ordersql, $params, $stable->start, $stable->length);
+    return array(
+        'totalusers' => $totalusers, 'activeusercount' => $activeusers,
+        'inactiveusercount' => $inactiveusers, 'users' => $users
+    );
 }
 
 /*
@@ -1144,11 +1221,11 @@ function manage_users_content($stable, $users/*,$filterdata*/) {
         $list['empid'] = ($user->open_employeeid) ? $user->open_employeeid : '--';
         $useremail = $user->email;
         if (strlen($useremail) > 24) {
-            $useremail = substr($useremail, 0, 24).'...';
+            $useremail = substr($useremail, 0, 24) . '...';
         }
         $list['email'] = !empty($useremail) ? $useremail : 'N/A';
         $organisationdata = array_filter(explode('/', $user->open_path));
-        $organisationnames = array_map(function($orgid){
+        $organisationnames = array_map(function ($orgid) {
             return \local_costcenter\lib\accesslib::get_costcenter_info($orgid, 'fullname');
         }, $organisationdata);
         $organization = $organisationnames[1];
@@ -1164,31 +1241,31 @@ function manage_users_content($stable, $users/*,$filterdata*/) {
         if (!$commercialarea) {
             $commercialarea = 'All';
         }
-        $orgstring = strlen($organization) > 24 ? substr($organization, 0, 24)."..." : $organization;
+        $orgstring = strlen($organization) > 24 ? substr($organization, 0, 24) . "..." : $organization;
         $list['org'] = $organization;
         $list['orgstring'] = $orgstring;
-        $deptstring = strlen($dept) > 24 ? substr($dept, 0, 24)."..." : $dept;
+        $deptstring = strlen($dept) > 24 ? substr($dept, 0, 24) . "..." : $dept;
         $designation = $user->open_designation;
-        $designationstring = strlen($user->open_designation) > 14 ? substr($user->open_designation, 0, 14).
-        "..." : $user->open_designation;
+        $designationstring = strlen($user->open_designation) > 14 ? substr($user->open_designation, 0, 14) .
+            "..." : $user->open_designation;
 
         $list['deptstring'] = $deptstring;
         $list['dept'] = $dept;
         $list['commercialunit'] = $commercialunit;
         $list['commercialarea'] = $commercialarea;
-        if($user->gender == 0){
+        if ($user->gender == 0) {
             $list['gender'] = 'Male';
-        } else if($user->gender == 1){
+        } else if ($user->gender == 1) {
             $list['gender'] = 'Female';
-        } else if($user->gender == 2){
+        } else if ($user->gender == 2) {
             $list['gender'] = 'Other';
         }
 
-        if($user->open_prefix == 1){
+        if ($user->open_prefix == 1) {
             $list['prefix'] = 'Mr';
-        } else if($user->open_prefix == 2){
+        } else if ($user->open_prefix == 2) {
             $list['prefix'] = 'Mrs';
-        } else if($user->open_prefix == 3){
+        } else if ($user->open_prefix == 3) {
             $list['prefix'] = 'Ms';
         }
 
@@ -1197,13 +1274,13 @@ function manage_users_content($stable, $users/*,$filterdata*/) {
         $list['grade'] = $user->open_grade ? $user->open_grade : '--';
         $list['phno'] = ($user->phone1) ? $user->phone1 : '--';
         $list['designation'] = $designation;
-        $list['dateofbirth'] = $user->open_dateofbirth ? date('d-M-Y',$user->open_dateofbirth) : '';
-        $list['dateofjoining'] = $user->open_joindate ? date('d-M-Y',$user->open_joindate) : '';
+        $list['dateofbirth'] = $user->open_dateofbirth ? date('d-M-Y', $user->open_dateofbirth) : '';
+        $list['dateofjoining'] = $user->open_joindate ? date('d-M-Y', $user->open_joindate) : '';
         $rolecount = $DB->get_record_sql("SELECT COUNT(ra.id) AS role
             FROM {role_assignments} AS ra
             JOIN {context} AS c ON c.id = ra.contextid AND c.contextlevel = 40
-            WHERE userid =".$user->id);
-        if($rolecount->role > 0){
+            WHERE userid =" . $user->id);
+        if ($rolecount->role > 0) {
             $list['rolecount'] = $rolecount->role;
         } else {
             $list['rolecount'] = false;
@@ -1212,7 +1289,7 @@ function manage_users_content($stable, $users/*,$filterdata*/) {
         if (!empty($user->open_supervisorid)) {
             $supervisior = $DB->get_field_sql("SELECT CONCAT(firstname,' ',lastname) AS fullname
                  FROM {user} WHERE id = :supervisiorid", array('supervisiorid' => $user->open_supervisorid));
-            $supervisiorstring = strlen($supervisior) > 12 ? substr($supervisior, 0, 12)."..." : $supervisior;
+            $supervisiorstring = strlen($supervisior) > 12 ? substr($supervisior, 0, 12) . "..." : $supervisior;
             $list['supervisor'] = $supervisior;
             $list['supervisiorstring'] = $supervisiorstring;
         } else {
@@ -1220,24 +1297,24 @@ function manage_users_content($stable, $users/*,$filterdata*/) {
         }
         $list['lastaccess'] = ($user->lastaccess) ? format_time(time() - $user->lastaccess) : get_string('never');
         $list['userid'] = $user->id;
-        $list['fullname'] = $list['prefix'] ? $list['prefix'].'. '.fullname($user) : fullname($user);
+        $list['fullname'] = $list['prefix'] ? $list['prefix'] . '. ' . fullname($user) : fullname($user);
         if (has_capability('local/users:manage', (new \local_users\lib\accesslib())::get_module_context()) || is_siteadmin()) {
             $list['visible'] = $user->suspended;
             $list['activeicon'] = 1;
-        }else{
+        } else {
             $list['activeicon'] = 0;
         }
         if (is_siteadmin() || has_capability('local/users:edit', (new \local_users\lib\accesslib())::get_module_context())) {
-                $list['editcap'] = 1;
+            $list['editcap'] = 1;
         } else {
-                $list['editcap'] = 0;
+            $list['editcap'] = 0;
         }
-        if (is_siteadmin() || has_capability('local/users:delete',(new \local_users\lib\accesslib())::get_module_context())) {
-                $list['delcap'] = 1;
+        if (is_siteadmin() || has_capability('local/users:delete', (new \local_users\lib\accesslib())::get_module_context())) {
+            $list['delcap'] = 1;
         } else {
-                $list['delcap'] = 0;
+            $list['delcap'] = 0;
         }
-            $data[] = $list;
+        $data[] = $list;
     }
     return $data;
 }
@@ -1251,15 +1328,17 @@ function users_filters_form($filterparams, $formdata = []) {
 
     require_once($CFG->dirroot . '/local/courses/filters_form.php');
 
-    $categorycontext=(new \local_users\lib\accesslib())::get_module_context();
+    $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
     if (is_siteadmin()) {
-        $mform = new filters_form(null, array('filterlist' => array( 'hierarchy_fields',/*'geographyfields',*/ 'email', 'employeeid', 'status'), 'courseid' => 1,
-             'enrolid' => 0, 'plugins' => array('users', 'costcenter'), 'filterparams' => $filterparams)+$formdata);
+        $mform = new filters_form(null, array(
+            'filterlist' => array('hierarchy_fields',/*'geographyfields',*/ 'email', 'employeeid', 'status', 'hrmsrole', 'designation', 'project'), 'courseid' => 1,
+            'enrolid' => 0, 'plugins' => array('users', 'costcenter'), 'filterparams' => $filterparams
+        ) + $formdata);
     } else {
-        $filters = array('hierarchy_fields',/* 'geographyfields',*/'email', 'employeeid', 'status');
+        $filters = array('hierarchy_fields',/* 'geographyfields',*/ 'email', 'employeeid', 'status', 'hrmsrole', 'designation', 'project');
 
         $mform = new filters_form(null, array('filterlist' => $filters, 'courseid' => 1, 'enrolid' => 0, 'plugins' => array('users', 'costcenter'), 'filterparams'
-          => $filterparams)+$formdata);
+        => $filterparams) + $formdata);
     }
     return $mform;
 }
@@ -1272,7 +1351,7 @@ function users_filters_form($filterparams, $formdata = []) {
 function manage_syncerrors_count($stable, $filterdata) {
     global $DB, $USER;
 
-    $categorycontext =(new \local_users\lib\accesslib())::get_module_context();
+    $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
     $params = array();
     $countsql = " SELECT count(id) ";
     $selectsql = "SELECT * ";
@@ -1283,14 +1362,13 @@ function manage_syncerrors_count($stable, $filterdata) {
         $fromsql .= " AND modified_by = :modified_by ";
         $params['modified_by'] = $USER->id;
     }
-    $count = $DB->count_records_sql($countsql.$fromsql, $params);
+    $count = $DB->count_records_sql($countsql . $fromsql, $params);
     $fromsql .= " ORDER BY id DESC ";
 
-    $syncerrors = $DB->get_records_sql($selectsql.$fromsql, $params, $stable->start, $stable->length);
+    $syncerrors = $DB->get_records_sql($selectsql . $fromsql, $params, $stable->start, $stable->length);
 
     return array('count' => $count, 'syncerrors' => $syncerrors);
 }
-
 
 /*
 * Author Sarath
@@ -1323,7 +1401,7 @@ function manage_syncerrors_content($stable, $filterdata) {
     return $data;
 }
 
-    /*
+/*
 * Author Sarath
 * return count  of sync statistics
 * @return  [type] int count of sync statistics
@@ -1345,13 +1423,12 @@ function manage_syncstatistics_count($stable, $filterdata) {
         $params['orgid'] = $orgpath[1];
     }
 
-    $count = $DB->count_records_sql($countsql.$fromsql, $params);
+    $count = $DB->count_records_sql($countsql . $fromsql, $params);
     $fromsql .= " ORDER BY id DESC";
 
-    $syncstatstics = $DB->get_records_sql($selectsql.$fromsql, $params, $stable->start, $stable->length);
+    $syncstatstics = $DB->get_records_sql($selectsql . $fromsql, $params, $stable->start, $stable->length);
     return array('count' => $count, 'syncstatstics' => $syncstatstics);
 }
-
 
 /*
 * Author Sarath
@@ -1371,7 +1448,7 @@ function manage_syncstatistics_content($stable, $filterdata) {
         $list['warningscount'] = $syncstatstic->warningscount;
         $list['supervisorwarningscount'] = $syncstatstic->supervisorwarningscount;
         $usercreated = $DB->get_record('user', array('id' => $syncstatstic->usercreated));
-        $list['usercreated'] = $usercreated->firstname. ' '. $usercreated->lastname;
+        $list['usercreated'] = $usercreated->firstname . ' ' . $usercreated->lastname;
         $list['createddate'] = \local_costcenter\lib::get_userdate("d/m/Y", $syncstatstic->timecreated);
         $list['modifieddate'] = \local_costcenter\lib::get_userdate("d/m/Y", $syncstatstic->timemodified);
         $list['checkbox'] = $syncstatstic->id;
@@ -1399,35 +1476,35 @@ function send_logins_user($user) {
 }
 function local_users_before_http_headers() {
     global $PAGE, $CFG;
-    require_once ($CFG->libdir.'/accesslib.php');
-    if ( !is_siteadmin()) {
+    require_once($CFG->libdir . '/accesslib.php');
+    if (!is_siteadmin()) {
         $PAGE->add_body_class('usersclass');
     }
 }
 
 //masterdata view capabilities checking here by narendra
-function masterdata_capabilities($active){
+function masterdata_capabilities($active) {
     $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
     $viewstates = false;
     $viewdistrict = false;
     $viewsubdistrict = false;
     $viewvillage = false;
 
-    if(is_siteadmin() || has_capability('usersprofilefields/states:view',$categorycontext)){
+    if (is_siteadmin() || has_capability('usersprofilefields/states:view', $categorycontext)) {
         $viewstates = true;
     }
-    if(is_siteadmin() || has_capability('usersprofilefields/district:view',$categorycontext)){
+    if (is_siteadmin() || has_capability('usersprofilefields/district:view', $categorycontext)) {
         $viewdistrict = true;
     }
-    if(is_siteadmin() || has_capability('usersprofilefields/subdistrict:view',$categorycontext)){
+    if (is_siteadmin() || has_capability('usersprofilefields/subdistrict:view', $categorycontext)) {
         $viewsubdistrict = true;
     }
-    if(is_siteadmin() || has_capability('usersprofilefields/village:view',$categorycontext)){
+    if (is_siteadmin() || has_capability('usersprofilefields/village:view', $categorycontext)) {
         $viewvillage = true;
     }
 
     $navbar = array(
-    $active.'active' => true,
+        $active . 'active' => true,
         'viewstates' => $viewstates,
         'viewdistrict' => $viewdistrict,
         'viewsubdistrict' => $viewsubdistrict,
@@ -1436,8 +1513,8 @@ function masterdata_capabilities($active){
     return $navbar;
 }
 
-function local_users_output_fragment_user_field_create($args){
-    global $CFG,$DB, $PAGE;
+function local_users_output_fragment_user_field_create($args) {
+    global $CFG, $DB, $PAGE;
     $args = (object) $args;
     $o = '';
     $context = $args->context;
@@ -1448,14 +1525,14 @@ function local_users_output_fragment_user_field_create($args){
         $serialiseddata = json_decode($args->jsonformdata);
         parse_str($serialiseddata, $formdata);
     }
-    if($args->id>0){
-        $tableData = $DB->get_record($args->tablename,array('id' => $args->id));
-        $mform = new $formClass(null,(array)$tableData, 'post', '', null, true, $formdata);
+    if ($args->id > 0) {
+        $tableData = $DB->get_record($args->tablename, array('id' => $args->id));
+        $mform = new $formClass(null, (array)$tableData, 'post', '', null, true, $formdata);
         $mform->set_data($tableData);
-    }else{
-        $mform = new $formClass(null,array(), 'post', '', null, true, $formdata);
+    } else {
+        $mform = new $formClass(null, array(), 'post', '', null, true, $formdata);
     }
-    if (!empty($args->jsonformdata) && strlen($args->jsonformdata) >2) {
+    if (!empty($args->jsonformdata) && strlen($args->jsonformdata) > 2) {
         // If we were passed non-empty form data we want the mform to call validation functions and show errors.
         $mform->is_validated();
     }
@@ -1466,65 +1543,63 @@ function local_users_output_fragment_user_field_create($args){
     return $o;
 }
 //global user profile form fields
-function local_users_get_userprofile_fields($mform, $ajaxformdata, $customdata,$allenable = false, $pluginname, $context, $multiple = false, $prefix = ''){
+function local_users_get_userprofile_fields($mform, $ajaxformdata, $customdata, $allenable = false, $pluginname, $context, $multiple = false, $prefix = '') {
     global $DB, $USER;
-
 
     $fields = (new \local_users\lib\accesslib())::get_userprofile_fields();
 
     $costcenterfields = local_costcenter_get_fields();
 
-    $firstdepth=current($costcenterfields);
+    $firstdepth = current($costcenterfields);
 
-    $lastdepth=end($costcenterfields);
+    $lastdepth = end($costcenterfields);
 
-    if($pluginname != 'local_users' && $prefix != 'filter'){
+    if ($pluginname != 'local_users' && $prefix != 'filter') {
 
-        $functionname ='globaltargetaudience_elementlist';
+        $functionname = 'globaltargetaudience_elementlist';
 
-        if(function_exists($functionname)) {
+        if (function_exists($functionname)) {
 
             $mform->modulecostcenterpath = $customdata[$firstdepth];
 
-            $functionname($mform,array('group','designation'));
+            $functionname($mform, array('group', 'designation'));
         }
     }
 
-
-    $prev_element = $lastdepth.'_select';
+    $prev_element = $lastdepth . '_select';
     $firstelement = true;
 
-    $prevfield='costcenter';
+    $prevfield = 'costcenter';
 
     $depth = 0;
 
-    foreach($fields as $field){
-        $tablename = $DB->get_prefix().str_replace("open","local",$field);
-        $fieldname = str_replace("open_","",$field).'_name';
+    foreach ($fields as $field) {
+        $tablename = $DB->get_prefix() . str_replace("open", "local", $field);
+        $fieldname = str_replace("open_", "", $field) . '_name';
         $actfield = $field;
-        $field = $prefix.$field;
-        if($depth == 0 ){
-            if($prefix == 'filter'){
+        $field = $prefix . $field;
+        if ($depth == 0) {
+            if ($prefix == 'filter') {
                 $prev_element = 'filteropen_costcenterid_select';
-            }else{
+            } else {
                 $prev_element = 'locationfieldparentid_select';
 
-                $mform->addElement('hidden','locationfieldparentid', null,array('data-class'=>$prev_element));
+                $mform->addElement('hidden', 'locationfieldparentid', null, array('data-class' => $prev_element));
                 $mform->setConstant('locationfieldparentid', $customdata[$firstdepth]);
             }
         }
         $fieldelementoptions = array(
-            'class' => $field.'_select custom_form_field',
-            'id' => 'id_'.$field.'_select',
+            'class' => $field . '_select custom_form_field',
+            'id' => 'id_' . $field . '_select',
             'data-parentclass' => $prev_element,
-            'data-selectstring' => get_string('select'.$actfield, 'local_users'),
-            'placeholder' => get_string('select'.$actfield, 'local_users'),
+            'data-selectstring' => get_string('select' . $actfield, 'local_users'),
+            'placeholder' => get_string('select' . $actfield, 'local_users'),
             'data-depth' => $depth,
-            'data-class' => $field.'_select',
+            'data-class' => $field . '_select',
             'onchange' => '(function(e){ require("local_users/newuser").changeElement(event) })(event)',
 
         );
-        $prev_element = $field.'_select';
+        $prev_element = $field . '_select';
 
         $fieldvalue = $ajaxformdata[$field] ? $ajaxformdata[$field] : $customdata[$field];
 
@@ -1533,28 +1608,24 @@ function local_users_get_userprofile_fields($mform, $ajaxformdata, $customdata,$
         $fieldelementoptions['data-contextid'] = $context->id;
         $fieldelementoptions['data-action'] = 'userprofile_element_selector';
         $parentid = $ajaxformdata[$prevfield] ? $ajaxformdata[$prevfield] : $customdata[$prevfield];
-        $fieldelementoptions['data-options'] = json_encode(array('depth' => $depth,'columnname' => $field, 'parentid' => $parentid,'parentidcolumn' => $prevfield, 'enableallfield' => $allenable));
+        $fieldelementoptions['data-options'] = json_encode(array('depth' => $depth, 'columnname' => $field, 'parentid' => $parentid, 'parentidcolumn' => $prevfield, 'enableallfield' => $allenable));
 
         $fieldelements = [];
-        if($allenable){
+        if ($allenable) {
             $fieldelements = [0 => get_string('all')];
-        }else{
+        } else {
             $fieldelements = [];
         }
-        if($fieldvalue){
+        if ($fieldvalue) {
             $fieldelementids = is_array($fieldvalue) ? $fieldvalue : explode(',', $fieldvalue);
             $fieldelementids = array_filter($fieldelementids);
 
-            if($fieldelementids){
-
-
-
+            if ($fieldelementids) {
 
                 list($idsql, $idparams) = $DB->get_in_or_equal($fieldelementids, SQL_PARAMS_QM, 'targetaudienceelements');
 
                 $fieldsql = "SELECT id, $fieldname as fullname FROM {$tablename} WHERE id {$idsql} ";
                 $fieldelements = $DB->get_records_sql_menu($fieldsql, $idparams);
-
             }
         }
         $mform->addElement('autocomplete', $field, get_string($field, 'local_users'), $fieldelements, $fieldelementoptions);
@@ -1567,36 +1638,30 @@ function local_users_get_userprofile_fields($mform, $ajaxformdata, $customdata,$
         $depth++;
     }
 }
-function local_users_get_userprofile_datafields(&$data){
+function local_users_get_userprofile_datafields(&$data) {
 
     $fields = (new \local_users\lib\accesslib())::get_userprofile_fields();
 
-    foreach($fields as $field){
+    foreach ($fields as $field) {
 
-        if(isset($data->$field) && !empty($data->$field)){
+        if (isset($data->$field) && !empty($data->$field)) {
 
-            $data->$field = is_array($data->$field) ? implode(',',$data->$field) : $data->$field;
-
+            $data->$field = is_array($data->$field) ? implode(',', $data->$field) : $data->$field;
         }
     }
-
 }
-function local_users_set_userprofile_datafields(&$customdata,$data){
-
+function local_users_set_userprofile_datafields(&$customdata, $data) {
 
     $fields = (new \local_users\lib\accesslib())::get_userprofile_fields();
-    foreach($fields as $field){
+    foreach ($fields as $field) {
 
-        if(isset($data->$field) && !empty($data->$field)){
+        if (isset($data->$field) && !empty($data->$field)) {
 
-            $customdata[$field]= $data->$field ;
-
+            $customdata[$field] = $data->$field;
         }
-
     }
 }
-function local_users_output_fragment_userrole_display($args)
-{
+function local_users_output_fragment_userrole_display($args) {
     global $DB, $CFG, $PAGE, $OUTPUT, $USER;
 
     $args = (object) $args;
@@ -1609,7 +1674,7 @@ function local_users_output_fragment_userrole_display($args)
         JOIN mdl_course_categories AS cc ON cc.id = c.instanceid
         JOIN mdl_role AS r ON r.id = ra.roleid
         WHERE ra.userid =:userid";
-    $roles = $DB->get_records_sql($sql, array('userid'=> $userid));
+    $roles = $DB->get_records_sql($sql, array('userid' => $userid));
 
     $templatedata = array();
     if ($roles) {
@@ -1623,19 +1688,18 @@ function local_users_output_fragment_userrole_display($args)
             $rowdata['role'] = $role->name;
             $rowdata['timeassign'] = date("d M Y", $role->timemodified);
             $rowdata['costcenter'] = $role->costcenter;
-            if($role->depth == 1){
+            if ($role->depth == 1) {
                 $rowdata['depth'] = get_string('open_costcenterid', 'local_costcenter');
-            } elseif($role->depth == 2){
-                $rowdata['depth'] = get_string('open_department','local_costcenter');
-            } elseif($role->depth == 3){
-                $rowdata['depth'] = get_string('open_subdepartment','local_costcenter');
-            } elseif($role->depth == 4){
-                $rowdata['depth'] = get_string('open_level4department','local_costcenter');
-            } elseif($role->depth == 5){
-                $rowdata['depth'] = get_string('subsubsubdepartment','local_costcenter');
+            } elseif ($role->depth == 2) {
+                $rowdata['depth'] = get_string('open_department', 'local_costcenter');
+            } elseif ($role->depth == 3) {
+                $rowdata['depth'] = get_string('open_subdepartment', 'local_costcenter');
+            } elseif ($role->depth == 4) {
+                $rowdata['depth'] = get_string('open_level4department', 'local_costcenter');
+            } elseif ($role->depth == 5) {
+                $rowdata['depth'] = get_string('subsubsubdepartment', 'local_costcenter');
             }
             $templatedata['rowdata'][] = $rowdata;
-
         }
     } else {
         $templatedata['enabletable'] = false;
@@ -1643,10 +1707,6 @@ function local_users_output_fragment_userrole_display($args)
     $output = $OUTPUT->render_from_template('local_users/roledetails', $templatedata);
     return $output;
 }
-
-
-
-
 
 /****************************************User profile fields as target audience for modules ************************************** */
 
@@ -1656,57 +1716,55 @@ function local_users_output_fragment_userrole_display($args)
  * @param MoodleQuickForm $mform instance of the moodleform class
  * @param int $userid id of user whose profile is being edited or 0 for the new user
  */
-function local_users_get_custom_userprofilefields(MoodleQuickForm $mform, $module,$table = 'course'): void {
+function local_users_get_custom_userprofilefields(MoodleQuickForm $mform, $module, $table = 'course'): void {
     global $DB;
 
-    $customcategoryid = get_modulecustomfield_category($module,$table);
-    if($customcategoryid){
-        $fields = get_user_targetaudience_fields($customcategoryid);    
-        foreach($fields as $key=>$field){
+    $customcategoryid = get_modulecustomfield_category($module, $table);
+    if ($customcategoryid) {
+        $fields = get_user_targetaudience_fields($customcategoryid);
+        foreach ($fields as $key => $field) {
             //if($DB->get_field('user_info_field','targetaudience',array('categoryid' => $customcategoryid, 'id'=>$field->id))){
-                $fielddata = array();
-                $sql = "SELECT distinct(data)  FROM {user_info_data} WHERE fieldid = :fieldid AND data <> ''";
-                $fielddata = $DB->get_records_sql($sql, ['fieldid' => $field->id]);  
-                
-                $options = array();
-                foreach($fielddata as $key=>$val){
-                    if ($field->datatype == 'autocomplete') {
-                        $values = explode(',',$val->data);
-                        foreach($values as $v){
-                            $v = trim($v); 
-                            $options[$v] = $v; 
-                        }
-                    } else{
-                        $options[$key] = $val->data;                
+            $fielddata = array();
+            $sql = "SELECT distinct(data)  FROM {user_info_data} WHERE fieldid = :fieldid AND data <> ''";
+            $fielddata = $DB->get_records_sql($sql, ['fieldid' => $field->id]);
+
+            $options = array();
+            foreach ($fielddata as $key => $val) {
+                if ($field->datatype == 'autocomplete') {
+                    $values = explode(',', $val->data);
+                    foreach ($values as $v) {
+                        $v = trim($v);
+                        $options[$v] = $v;
                     }
-                    /* if ($field->datatype == 'checkbox') {
+                } else {
+                    $options[$key] = $val->data;
+                }
+                /* if ($field->datatype == 'checkbox') {
                         $options[$key] = ($val->data) ? get_string('yes') : get_string('no');
                     } */
-                }
-            
-                $select = $mform->addElement('autocomplete',  $field->shortname, $field->name, $options);
-                $mform->setType($field->shortname, PARAM_INT);
-                $select->setMultiple(true);
-                $fieldvalue = $DB->get_field_sql("SELECT fieldvalue FROM {local_module_targetaudience} WHERE moduleid = :moduleid AND fieldid = :fieldid AND module = :module",['moduleid' => $module->id,'fieldid' => $field->id ,'module' => $module->module]);
-        
+            }
+
+            $select = $mform->addElement('autocomplete',  $field->shortname, $field->name, $options);
+            $mform->setType($field->shortname, PARAM_INT);
+            $select->setMultiple(true);
+            $fieldvalue = $DB->get_field_sql("SELECT fieldvalue FROM {local_module_targetaudience} WHERE moduleid = :moduleid AND fieldid = :fieldid AND module = :module", ['moduleid' => $module->id, 'fieldid' => $field->id, 'module' => $module->module]);
+
             /*   if(is_null($fieldvalue)){
                 $fieldvalue = 'All';
                 } */
-                if($fieldvalue){
-                    $mform->setDefault($field->shortname,$fieldvalue);       
-                }    
-                
+            if ($fieldvalue) {
+                $mform->setDefault($field->shortname, $fieldvalue);
+            }
+
             //}
         }
     }
-   
 }
-
 
 function get_user_fields_with_data_by_coursecategory(int $customcategoryid): array {
     global $DB;
-    
-    $sql = 'SELECT uif.*, uic.name AS categoryname ';    
+
+    $sql = 'SELECT uif.*, uic.name AS categoryname ';
     $sql .= 'FROM {user_info_field} uif ';
     $sql .= 'LEFT JOIN {user_info_category} uic ON uif.categoryid = uic.id ';
     $sql .= "WHERE uif.categoryid = :customcategoryid ";
@@ -1718,8 +1776,8 @@ function get_user_fields_with_data_by_coursecategory(int $customcategoryid): arr
 
 function get_user_targetaudience_fields(int $customcategoryid): array {
     global $DB;
-    
-    $sql = 'SELECT uif.*, uic.name AS categoryname ';    
+
+    $sql = 'SELECT uif.*, uic.name AS categoryname ';
     $sql .= 'FROM {user_info_field} uif ';
     $sql .= 'LEFT JOIN {user_info_category} uic ON uif.categoryid = uic.id ';
     $sql .= "WHERE uif.categoryid = :customcategoryid AND uif.targetaudience = :flag";
@@ -1729,26 +1787,26 @@ function get_user_targetaudience_fields(int $customcategoryid): array {
     return $fields;
 }
 
-function get_usercustomfield_category_bycostcenter(int $userid,int $form_status = 0,$costcenterid){
+function get_usercustomfield_category_bycostcenter(int $userid, int $form_status = 0, $costcenterid) {
     global $DB;
     $customsql = "SELECT lc.profileinfocategory FROM {local_costcenter} AS lc WHERE lc.depth = 1  AND lc.id = :id ";
     $customparams = ['id' => $costcenterid];
     $categoryid = $DB->get_field_sql($customsql, $customparams);
 
-    $sql = 'SELECT uif.id,uif.*, uic.name AS categoryname ';  
+    $sql = 'SELECT uif.id,uif.*, uic.name AS categoryname ';
     if ($userid > 0) {
         $sql .= ', uind.id AS hasuserdata, uind.data, uind.dataformat ';
     }
     $sql .= 'FROM {user_info_field} uif ';
-    $sql .= 'LEFT JOIN {user_info_category} uic ON uif.categoryid = uic.id ';  
+    $sql .= 'LEFT JOIN {user_info_category} uic ON uif.categoryid = uic.id ';
     if ($userid > 0) {
         $sql .= ' LEFT JOIN {user_info_data} uind ON uif.id = uind.fieldid AND uind.userid = :userid ';
     }
-    
+
     $sql .= " WHERE uif.categoryid = :infocatid  ";
-   
+
     $sql .= 'ORDER BY uic.sortorder ASC, uif.sortorder ASC ';
-    $fields = $DB->get_records_sql($sql, ['infocatid' => $categoryid,'userid'=>$userid]);
+    $fields = $DB->get_records_sql($sql, ['infocatid' => $categoryid, 'userid' => $userid]);
     $data = [];
     foreach ($fields as $field) {
         $field->hasuserdata = !empty($field->hasuserdata);
@@ -1758,21 +1816,19 @@ function get_usercustomfield_category_bycostcenter(int $userid,int $form_status 
         $data[] = $fieldobject;
     }
 
-   
     return $data;
-
 }
 
-function get_modulecustomfield_category($module,$table = 'course'){
-    global $DB,$CFG;
-    $table = $CFG->prefix.$table;
+function get_modulecustomfield_category($module, $table = 'course') {
+    global $DB, $CFG;
+    $table = $CFG->prefix . $table;
     $customsql = "SELECT lc.profileinfocategory FROM {local_costcenter} AS lc JOIN $table AS c ON concat('/',c.open_path,'/') LIKE concat('%/',lc.id,'/%') AND lc.depth = 1  WHERE c.id = :moduleid ";
     $customparams = ['moduleid' => $module->id];
     $modulecategoryid = $DB->get_field_sql($customsql, $customparams);
     return $modulecategoryid;
 }
 
-function get_usercustomfield_category($user){
+function get_usercustomfield_category($user) {
     global $DB;
     $customsql = "SELECT lc.profileinfocategory FROM {local_costcenter} AS lc JOIN {user} AS u ON concat('/',u.open_path,'/') LIKE concat('%/',lc.id,'/%') AND lc.depth = 1  WHERE u.id = :userid ";
     $customparams = ['userid' => $user->id];
@@ -1780,61 +1836,57 @@ function get_usercustomfield_category($user){
     return $customcategoryid;
 }
 
-
-function update_custom_targetaudience($customcategoryid,$data,$module){
-    global $DB,$USER;
+function update_custom_targetaudience($customcategoryid, $data, $module) {
+    global $DB, $USER;
     $fields = get_user_targetaudience_fields($customcategoryid);
     $data = (array)$data;
-    foreach($fields as $key=>$field){
+    foreach ($fields as $key => $field) {
         $customdata = new stdclass();
         $fieldname = $field->shortname;
-        $fielddata = ($data[$fieldname] === '_qf__force_multiselect_submission' || empty($data[$fieldname])) ? NULL : implode ( ",", $data[$fieldname]);//"'" . implode ( "', '", $data[$fieldname]) . "'";
-        
-       /*  if( $fielddata){
-            $fieldvalue = $DB->get_field_sql("SELECT GROUP_CONCAT(data) FROM {user_info_data} WHERE data IN ($fielddata)");                    
+        $fielddata = ($data[$fieldname] === '_qf__force_multiselect_submission' || empty($data[$fieldname])) ? NULL : implode(",", $data[$fieldname]); //"'" . implode ( "', '", $data[$fieldname]) . "'";
+
+        /*  if( $fielddata){
+            $fieldvalue = $DB->get_field_sql("SELECT GROUP_CONCAT(data) FROM {user_info_data} WHERE data IN ($fielddata)");
         }else{
-            $fieldvalue = NULL;                    
+            $fieldvalue = NULL;
         }  */
 
-        if(isset($data[$fieldname]) && !empty($data[$fieldname])){
+        if (isset($data[$fieldname]) && !empty($data[$fieldname])) {
             $customdata->moduleid = $module->id;
             $customdata->module = $module->module;
             $customdata->fieldid = $field->id;
             $customdata->fieldvalue = $fielddata;
 
-            if ($existid = $DB->get_field_sql('SELECT id from {local_module_targetaudience} WHERE moduleid = ? AND fieldid = ? AND module = ?', array($module->id, $field->id,$module->module))) {
+            if ($existid = $DB->get_field_sql('SELECT id from {local_module_targetaudience} WHERE moduleid = ? AND fieldid = ? AND module = ?', array($module->id, $field->id, $module->module))) {
                 $customdata->id = $existid;
                 $customdata->usermodified = $USER->id;
                 $customdata->timemodified = time();
                 $DB->update_record('local_module_targetaudience', $customdata);
-            }else{
+            } else {
                 $customdata->usercreated = $USER->id;
                 $customdata->timecreated = time();
                 $DB->insert_record('local_module_targetaudience', $customdata);
             }
         }
-        
-    } 
+    }
 }
 
-
-function insert_custom_targetaudience($customcategoryid,$course){
-    global $DB,$USER;
+function insert_custom_targetaudience($customcategoryid, $course) {
+    global $DB, $USER;
     $fields = get_user_fields_with_data_by_coursecategory($customcategoryid);
-                    
-    foreach($fields as $key=>$field){
+
+    foreach ($fields as $key => $field) {
         $customdata = new stdclass();
-        $fieldvalue = NULL;                  
-       
+        $fieldvalue = NULL;
+
         $customdata->moduleid = $course->id;
         $customdata->module = $course->module;
         $customdata->fieldid = $field->id;
-        $customdata->fieldvalue = $fieldvalue;                    
+        $customdata->fieldvalue = $fieldvalue;
         $customdata->usercreated = $USER->id;
         $customdata->timecreated = time();
-        $DB->insert_record('local_module_targetaudience', $customdata);                            
-                            
-    } 
+        $DB->insert_record('local_module_targetaudience', $customdata);
+    }
 }
 // function target_audience_match_field($fields,$prefix,$match_object=NULL){
 //     global $DB,$USER;
@@ -1844,7 +1896,7 @@ function insert_custom_targetaudience($customcategoryid,$course){
 //         if($match_object){
 //         $fieldvalue=$match_object->$field;
 //         }else{
-//         $fieldvalue=$USER->$field;  
+//         $fieldvalue=$USER->$field;
 //         }
 //     if(!empty($fieldvalue) && $fieldvalue != "" && $fieldvalue != NULL){
 //         $params[$field] = "%,$fieldvalue,%";
@@ -1855,12 +1907,12 @@ function insert_custom_targetaudience($customcategoryid,$course){
 //     $sqlarray[]= " 1 = CASE WHEN ".$prefix.".".$field." IS NOT NULL AND ".$prefix.".".$field." != '' AND ".$prefix.".".$field." != 0
 //                 THEN
 //                     CASE
-//                         WHEN CONCAT(',',".$prefix.".".$field.",',') LIKE :".$field." 
+//                         WHEN CONCAT(',',".$prefix.".".$field.",',') LIKE :".$field."
 //                             THEN 1
 //                             ELSE 0
 //                     END
 //                 ELSE 1 END  ";
-                       
+
 // }
 //     }
 // $return=   array(
@@ -1932,4 +1984,52 @@ function target_audience_match_field($fields, $prefix, $match_object = null) {
     );
     return $return;
 }
-    
+/**
+ * Description: User employeeid filter code
+ * @param  [mform object]  $mform          [the form object where the form is initiated]
+ * @param  string  $query          [text inserted in filter]
+ * @param  boolean $searchanywhere [description]
+ * @param  integer $page           [page value]
+ * @param  integer $perpage        [entities per page]
+ */
+function employmenttype_filter($mform, $query = '', $searchanywhere = false, $page = 0, $perpage = 25) {
+    global $DB, $USER;
+    $employeetype = [
+
+        '1' => get_string('esp', 'local_users'),
+        '2' => get_string('insource', 'local_users'),
+    ];
+    $select = $mform->addElement(
+        'autocomplete',
+        'employeetype',
+        '',
+        $employeetype,
+        array('placeholder' => get_string('employeetype', 'local_users'))
+    );
+    $select->setMultiple(true);
+}
+
+function costcenterwise_users_datacount($costcenter, $department = false, $subdepartment = false, $l4department = false, $l5department = false) {
+    global $USER, $DB, $CFG;
+    $params = array();
+
+    $params['costcenterpath'] = '%/' . $costcenter . '/%';
+    $countusersql = "SELECT count(u.id) FROM {user} u WHERE concat('/',u.open_path,'/') LIKE :costcenterpath  AND deleted = 0";
+
+    if ($l5department) {
+        $countusersql .= " AND concat('/',u.open_path,'/') LIKE :l5departmentpath ";
+        $params['l5departmentpath'] = '%/' . $l5department . '/%';
+    } else if ($l4department) {
+        $countusersql .= " AND concat('/',u.open_path,'/') LIKE :l4departmentpath ";
+        $params['l4departmentpath'] = '%/' . $l4department . '/%';
+    } else if ($subdepartment) {
+        $countusersql .= " AND concat('/',u.open_path,'/') LIKE :subdepartmentpath ";
+        $params['subdepartmentpath'] = '%/' . $subdepartment . '/%';
+    } else if ($department) {
+        $countusersql .= " AND concat('/',u.open_path,'/') LIKE :departmentpath ";
+        $params['departmentpath'] = '%/' . $department . '/%';
+    }
+
+    $countusers = $DB->count_records_sql($countusersql, $params);
+    return ['datacount' => $countusers];
+}

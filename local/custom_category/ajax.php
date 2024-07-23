@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of eAbyas
  *
@@ -23,7 +24,7 @@
  */
 define('AJAX_SCRIPT', true);
 global $PAGE, $DB, $USER, $CFG;
-require_once(dirname(__FILE__).'/../../config.php');
+require_once(dirname(__FILE__) . '/../../config.php');
 require_once('lib.php');
 $action = required_param('action', PARAM_TEXT);
 
@@ -32,12 +33,11 @@ $PAGE->set_url('/local/skillrepository/ajax.php');
 $PAGE->set_context((new \local_custom_category\lib\accesslib())::get_module_context());
 $PAGE->set_pagelayout('standard');
 
-
-switch($action) {
+switch ($action) {
     case 'deletecustomcategory':
         $customcategoryid = required_param('skillid', PARAM_INT);
-        $return = $DB->delete_records('local_custom_fields',  array('id' => $customcategoryid));
+        $return = $DB->delete_records('local_custom_category',  array('id' => $customcategoryid));
 
-    break;
+        break;
 }
 echo json_encode($return);

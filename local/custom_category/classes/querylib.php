@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of eAbyas
  *
@@ -21,59 +22,56 @@
  * @package BizLMS
  * @subpackage querylib.php
  */
+
 namespace local_custom_category;
+
 use stdClass;
-class querylib{
-	function __construct()
-	{
-		global $DB, $CFG, $OUTPUT,  $USER, $PAGE;
-		$this->db = $DB;
-		$this->user = $USER;
-	}
-	function category_field($field, $data){
-    	return $this->db->get_field('local_custom_fields',$field, $data);
-	}
 
-	function category_shortname($data){
-	    return $this->db->get_record_sql('SELECT * FROM {local_custom_fields} WHERE shortname = ? AND  id <> ?', $data);
-	}
+class querylib {
+    function __construct() {
+        global $DB, $CFG, $OUTPUT,  $USER, $PAGE;
+        $this->db = $DB;
+        $this->user = $USER;
+    }
+    function category_field($field, $data) {
+        return $this->db->get_field('local_custom_category', $field, $data);
+    }
 
-	function category_record($data){
-	    return $this->db->get_record('local_custom_fields', $data);
-	}
+    function category_shortname($data) {
+        return $this->db->get_record_sql('SELECT * FROM {local_custom_category} WHERE shortname = ? AND  id <> ?', $data);
+    }
 
-	function category_exist($data){
-	    return $this->db->record_exists('local_custom_fields', $data);
-	}
+    function category_record($data) {
+        return $this->db->get_record('local_custom_category', $data);
+    }
 
-	function category_mapped_exist($data){
-	    return $this->db->record_exists('local_category_mapped', $data);
-	}
+    function category_exist($data) {
+        return $this->db->record_exists('local_custom_category', $data);
+    }
 
-
-	function category_records($depth, $data){
-		$sql = "SELECT DISTINCT(pc.id), pc.fullname FROM {local_custom_fields} AS pc ";
-		if($depth == 1){
-        	$sql .= " JOIN {local_custom_fields} AS cc ON cc.parentid = pc.id ";
-		}
-        $sql .= " WHERE pc.depth = 1 AND pc.costcenterid = :costcenter";
-		return $this->db->get_records_sql($sql, $data);
-	}
-
-	function category_fullnamewithid($data){
-		$sql = "SELECT id, fullname FROM {local_custom_fields} WHERE costcenterid = :costcenter AND parentid = :parent";
-		return $this->db->get_records_sql_menu($sql, $data);
-	}
-	
-	function category_count($data){
-	    $catogories = "SELECT count(id) FROM {local_custom_fields}";
-	    if(!is_siteadmin()){
-            $catogories .= " where costcenterid = ".$data['costcenterid'];
+    function category_records($depth, $data) {
+        $sql = "SELECT DISTINCT(pc.id), pc.fullname FROM {local_custom_category} AS pc ";
+        if ($depth == 1) {
+            $sql .= " JOIN {local_custom_category} AS cc ON cc.parentid = pc.id ";
         }
-	    return $this->db->count_records_sql($catogories);
-	}
+        $sql .= " WHERE pc.depth = 1 AND pc.costcenterid = :costcenter";
+        return $this->db->get_records_sql($sql, $data);
+    }
 
-	function category_child_count($data){
-		return $this->db->count_records('local_custom_fields', $data);
-	}
+    function category_fullnamewithid($data) {
+        $sql = "SELECT id, fullname FROM {local_custom_category} WHERE costcenterid = :costcenter AND parentid = :parent";
+        return $this->db->get_records_sql_menu($sql, $data);
+    }
+
+    function category_count($data) {
+        $catogories = "SELECT count(id) FROM {local_custom_category}";
+        if (!is_siteadmin()) {
+            $catogories .= " where costcenterid = " . $data['costcenterid'];
+        }
+        return $this->db->count_records_sql($catogories);
+    }
+
+    function category_child_count($data) {
+        return $this->db->count_records('local_custom_category', $data);
+    }
 }

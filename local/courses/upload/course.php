@@ -524,9 +524,15 @@ class local_uploadcourse_course
         $errors = array();
         $categories = explode('/', $this->rawdata['category_code']);
         $this->rawdata['category_idnumber'] = $this->rawdata['category_code'];
-        $this->rawdata['categoryname'] = $DB->get_field('course_categories', 'name', array('idnumber' => $this->rawdata['category_idnumber']));
+        $this->rawdata['categoryname'] = $DB->get_field('local_custom_category', 'fullname', array('shortname' => $this->rawdata['category_idnumber']));
        
-        $catid = tool_uploadcourse_helper::resolve_category($this->rawdata, $errors);
+        //$catid = tool_uploadcourse_helper::resolve_category($this->rawdata, $errors);
+        $catid = $DB->get_field('local_custom_category', 'id', array('shortname' => $this->rawdata['category_idnumber']));
+        if($catid == "" || $catid == null || $catid == false){
+          $this->error('categorynotexisted', new lang_string('categorynotexisted', 'local_courses', $this->rawdata['category_idnumber']));
+        return false;
+        }
+     
         $this->rawdata['category'] = $catid;
         if (isset($this->rawdata['open_coursecompletiondays'])) {
             $this->rawdata['completiondays'] = $this->rawdata['open_coursecompletiondays'];
@@ -569,44 +575,47 @@ class local_uploadcourse_course
                 return false;
             }
         }
-        $categorylib = new local_courses\catslib();
+       // $categorylib = new local_courses\catslib();
        if (isset($this->defaults['open_costcenterid']) && !empty($this->rawdata['category'])){
-
+      
             $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='lcc.path',$this->defaults['open_costcenterid'],$datatype='lowerandsamepath');
-
+            $getcostcenterid =  $DB->get_field('local_costcenter', 'id', array('id' => $this->defaults['open_costcenterid']));
+            $getcostcenterid = (int) $getcostcenterid;
+         
             $costcentersql = "SELECT lcc.id,lcc.fullname
-                                FROM {local_custom_fields} AS lcc
-                                WHERE 1=1 $costcenterpathconcatsql ";
-
-            $categories = $DB->get_records_sql_menu($costcentersql);
-
+                                FROM {local_custom_category} AS lcc
+                                WHERE 1=1 AND lcc.costcenterid = $getcostcenterid AND lcc.parentid <> 0 ";
+            $categories = $DB->get_fieldset_sql($costcentersql);           
             if (!in_array($this->rawdata['category'], $categories)) {
                 $this->error('canonlycreatecourseincategoryofsameorganisationwithargs', new lang_string('canonlycreatecourseincategoryofsameorganisationwithargs', 'local_courses', $this->rawdata['categoryname']));
                 return false;
             }
-        }       
-        if (empty($this->rawdata['coursetype'])) {
-            $this->error('cannotemptycoursetype', new lang_string('cannotemptycoursetype', 'local_courses', $this->rawdata['coursetype']));
-            return false;
+            if(in_array($this->rawdata['category'], $categories)){
+
+                $performanceparentid = $DB->get_field('local_custom_category', 'parentid', array('id' => $this->rawdata['category']));
+            $coursedata['performancecatid'] = $this->rawdata['category'];
+            $coursedata['open_categoryid'] =$this->rawdata['category'];
+            $coursedata['performanceparentid'] = $performanceparentid;
+            }
         }
 
-        if ($this->rawdata['coursetype']) {
-            $table = 'local_course_types';
-            $coursetype = (is_array($this->rawdata['coursetype'])) ? $coursetype = $this->rawdata['coursetype'][0] : $coursetype = $this->rawdata['coursetype'];
-            $params = array("shortname" => $coursetype);
-            $coursetype = $DB->get_record($table, $params);
-            if (empty($coursetype)) {
-                $this->error('cannotcreateorupdatecourse', new lang_string('cannotcreateorupdatecourse', 'local_courses', $this->rawdata['categoryname']));
-                return false;
-            } else {
-                $categories = $categorylib->get_categories($coursetype->orgid);
-                if (!in_array($this->rawdata['category'], $categories) && $coursetype->orgid !== 0) {
-                    $this->error('cannotcreateorupdatecourse', new lang_string('cannotcreateorupdatecourse', 'local_courses', $this->rawdata['categoryname']));
-                    return false;
-                }
-            }
-            $this->data['coursetype'] = $coursetype->id;
-        }
+        // if ($this->rawdata['coursetype']) {
+        //     $table = 'local_course_types';
+        //     $coursetype = (is_array($this->rawdata['coursetype'])) ? $coursetype = $this->rawdata['coursetype'][0] : $coursetype = $this->rawdata['coursetype'];
+        //     $params = array("shortname" => $coursetype);
+        //     $coursetype = $DB->get_record($table, $params);
+        //     // if (empty($coursetype)) {
+        //     //     $this->error('cannotcreateorupdatecourse', new lang_string('cannotcreateorupdatecourse', 'local_courses', $this->rawdata['categoryname']));
+        //     //     return false;
+        //     // } else {
+        //     //     $categories = $categorylib->get_categories($coursetype->orgid);
+        //     //     if (!in_array($this->rawdata['category'], $categories) && $coursetype->orgid !== 0) {
+        //     //         $this->error('cannotcreateorupdatecourse', new lang_string('cannotcreateorupdatecourse', 'local_courses', $this->rawdata['categoryname']));
+        //     //         return false;
+        //     //     }
+        //     // }
+        //     $this->data['coursetype'] = $coursetype->id;
+        // }
 
 
         if ($this->rawdata['department']) {
@@ -995,8 +1004,8 @@ class local_uploadcourse_course
             throw new coding_exception('The process has already been started.');
         }
         $this->processstarted = true;
-        $params = array("shortname" => $this->data['coursetype']);
-        $coursetype = $DB->get_record('local_course_types', $params);
+        // $params = array("shortname" => $this->data['coursetype']);
+        // $coursetype = $DB->get_record('local_course_types', $params);
         if ($this->do === self::DO_DELETE) {
             if ($this->delete()) {
                 $this->status('coursedeleted', new lang_string('coursedeleted', 'tool_uploadcourse'));

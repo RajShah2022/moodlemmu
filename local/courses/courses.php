@@ -140,6 +140,14 @@ $extended_menu_links .= '</div></div></li>';
                 </a>
             </div>
         </li>";
+
+         $extended_menu_links .= "<li>
+            <div class='courseupload course_extended_menu_itemcontainer'>
+                <a id='extended_menu_courseupload' title='".get_string('uploadcourses','local_courses')."' class='course_extended_menu_itemlink custom_content_upload' href='$CFG->wwwroot/local/courses/upload/index.php'>
+                    <i class='icon fa fa-users fa-fw' aria-hidden='true' aria-label=''></i>
+                </a>
+            </div>
+        </li>";
     }
 }
 if ((has_capability('local/request:approverecord', $categorycontext) || is_siteadmin())) {

@@ -14,7 +14,6 @@
     You should have received a copy of the GNU General Public License
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
     ddd
 
 }}
@@ -23,14 +22,27 @@
         <table class="generaltable dataTable no-footer" id="skill_repository" role="grid" aria-describedby="skill_repository">
             <thead>
                 <tr role="row">
-                    <th class="header text-left" tabindex="0">{{# str}} fieldname, local_custom_category{{/ str}}</th>
-                    <th class="header text-left" tabindex="0">{{# str}} shortname, local_custom_category{{/ str}}</th>
-                    <!-- <th class="header text-center" tabindex="0">{{# str}} parent, local_custom_category{{/ str}}</th> -->
+                    <th class="header text-left" tabindex="0">
+                        {{#parentcatid}}
+                            {{# str}} fieldname, local_custom_category{{/ str}}
+                        {{/parentcatid}}
+                        {{^parentcatid}}
+                            {{# str}} shortname, local_custom_category{{/ str}}
+                        {{/parentcatid}}
+                    </th>
+                    <th class="header text-left" tabindex="0">
+                        {{#parentcatid}}
+                            {{# str}} fieldname, local_custom_category{{/ str}}
+                        {{/parentcatid}}
+                        {{^parentcatid}}
+                            {{# str}} shortname, local_custom_category{{/ str}}
+                        {{/parentcatid}}
+                    </th>
                     <th class="header text-left" tabindex="0">{{# str}} open_costcenterid, local_costcenter{{/ str}}</th>
                     {{^ parentcatid}}
                     <th class="header text-left" tabindex="0">{{# str}} fieldvalue, local_custom_category{{/ str}}</th>
                     {{/ parentcatid}}
-                    
+
                     <th class="header text-center" tabindex="0">{{# str}} action, local_custom_category{{/ str}}</th>
                 </tr>
             </thead>
@@ -44,10 +56,9 @@
                         <td class="text-left" >{{custom_category_name}}</td>
                         {{/ childs}}
                         <td class="text-left">{{shortname}}</td>
-                        <!-- <td class="text-center">{{parent}}</td> -->
                         <td class="text-left">{{organisationname}}</td>
                         {{^ childs}}
-                        <td class="text-left">{{childcount}}</td>
+                        <td class="text-left"><a href="{{wwwroot}}?parentcatid={{custom_category_id}}">{{childcount}}</a></td>
                         {{/ childs}}
                         <td class="text-center">
                             <a href="javascript:void(0)" data-action="createrepositorymodal" class="iconsmall" data-value="{{custom_category_id}}" onclick="(function(e){ require('local_custom_category/newcustomcategory').init({selector:'createrepositorymodal', contextid:1, repositoryid:{{custom_category_id}}, parentcatid:{{childs}}}) })(event)" style="cursor:pointer" title="Edit">
@@ -63,15 +74,6 @@
                                 <i class="fa fa-trash fa-fw" aria-hidden="true" title="{{# str }} delete_title, local_custom_category {{/ str }}" aria-label="Delete"></i>
                             </a>
                             {{/ categoryexist}}
-
-                            <!-- {{^ childs}}
-                            <a href="{{wwwroot}}?parentcatid={{custom_category_id}}">
-                                <i class="fa fa-archive fa-fw" aria-hidden="true" title="{{# str }} gotochild, local_custom_category {{/ str }}" aria-label="Delete"></i>
-                            </a>
-                            {{/ childs}} -->
-                            <!-- {{# childcategory}} -->
-                            
-                            <!-- {{/ childcategory}} -->
                         </td>
                     </tr>
                 {{/records}}

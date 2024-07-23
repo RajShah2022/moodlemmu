@@ -210,28 +210,28 @@ $string['enter_grades'] = 'Enter Grades';
 $string['firstname'] = 'First Name';
 $string['middlename'] = 'Middle Name';
 $string['lastname'] = 'Last Name';
-$string['female']='Female';
-$string['male']='Male';
-$string['userdob']='Date of Birth';
-$string['phone']='Mobile';
-$string['email']='Work Email';
-$string['emailerror']='Enter valid Email ID';
-$string['phoneminimum']='Please enter minimum 10 digits';
-$string['phonemaximum']='Please enter maximum 10 digits';
-$string['O_error']='Please select a Bussiness Unit';
+$string['female'] = 'Female';
+$string['male'] = 'Male';
+$string['userdob'] = 'Date of Birth';
+$string['phone'] = 'Mobile';
+$string['email'] = 'Work Email';
+$string['emailerror'] = 'Enter valid Email ID';
+$string['phoneminimum'] = 'Please enter minimum 10 digits';
+$string['phonemaximum'] = 'Please enter maximum 10 digits';
+$string['O_error'] = 'Please select a Bussiness Unit';
 $string['numeric'] = 'Only numeric values';
-$string['pcountry']='Bussiness Unit';
-$string['genderheading']='Generate Heading';
-$string['primaryyear']='Primary Year';
-$string['score']='Score';
-$string['contactname']='Contact Name';
-$string['hno']='House Number';
-$string['phno']='Phone Number';
-$string['pob']='Place of Birth';
-$string['contactname']='Contact Name';
+$string['pcountry'] = 'Bussiness Unit';
+$string['genderheading'] = 'Generate Heading';
+$string['primaryyear'] = 'Primary Year';
+$string['score'] = 'Score';
+$string['contactname'] = 'Contact Name';
+$string['hno'] = 'House Number';
+$string['phno'] = 'Phone Number';
+$string['pob'] = 'Place of Birth';
+$string['contactname'] = 'Contact Name';
 $string['bulkassign'] = 'Bulk assignment to the costcenter';
 $string['im:costcenter_unknown'] = 'Unknown costcenter';
-$string['im:user_unknown'] = 'Unkown user'; 
+$string['im:user_unknown'] = 'Unkown user';
 $string['im:user_notcostcenter'] = 'Loggedin manager not assigned to this costcenter "{$a->csname}"';
 $string['im:already_in'] = 'User already assigned to the costcenter';
 $string['im:assigned_ok'] = '{$a} User assigned successfully';
@@ -243,7 +243,7 @@ $string['button'] = 'CONTINUE';
 $string['idnumber'] = 'Id number';
 $string['username'] = 'Username';
 $string['firstcolumn'] = 'User column contains';
-$string['enroll_batch'] ='Batch Enroll';
+$string['enroll_batch'] = 'Batch Enroll';
 $string['mass_enroll'] = 'Bulk enrolments';
 $string['mass_enroll_help'] = <<<EOS
 <h1>Bulk enrolments</h1>
@@ -288,7 +288,6 @@ or any custom roles)
 <p>
 You may repeat this operation at will without dammages, for example if you forgot or mispelled the target group.
 </p>
-
 
 <h2> Sample files </h2>
 
@@ -347,9 +346,7 @@ unknown                                  unknown account skipped
 some external directory (LDAP...)
 </p>
 
-
 EOS;
-
 
 $string['reportingto'] = 'Reports To';
 $string['functionalreportingto'] = 'Functional Reporting To';
@@ -419,51 +416,50 @@ $string['user_transcript'] = 'User transcript';
 $string['type'] = 'Type';
 $string['transcript_history'] = 'Transcript History (2015-2016)';
 //added by Ravi
-$string['sub_sub_department']='Sub Sub Depatement';
-$string['zone_region']='Zone Region';
-$string['area']='Area';
-$string['dob']='DOB';
-$string['matrail_status']='Martial Status';
-$string['state']='State';
+$string['sub_sub_department'] = 'Sub Sub Depatement';
+$string['zone_region'] = 'Zone Region';
+$string['area'] = 'Area';
+$string['dob'] = 'DOB';
+$string['matrail_status'] = 'Martial Status';
+$string['state'] = 'State';
 
 //added by Shivani
-$string['course_header']='CURRENT LEARNING';
-$string['courses_header_emp']='CURRENT LEARNING FOR ';
-$string['courses_data']='No Courses to display.';       
-$string['page_header']='Profile Details';
-$string['adnewuser']='<i class="fa fa-user-plus popupstringicon" aria-hidden="true"></i> Create User <div class= "popupstring"></div>';
-$string['empnumber']='Employee Code';
-$string['departments']='Countries';
-$string['sub_departments']='Bussiness Unit';
+$string['course_header'] = 'CURRENT LEARNING';
+$string['courses_header_emp'] = 'CURRENT LEARNING FOR ';
+$string['courses_data'] = 'No Courses to display.';
+$string['page_header'] = 'Profile Details';
+$string['adnewuser'] = '<i class="fa fa-user-plus popupstringicon" aria-hidden="true"></i> Create User <div class= "popupstring"></div>';
+$string['empnumber'] = 'Employee Code';
+$string['departments'] = 'Countries';
+$string['sub_departments'] = 'Bussiness Unit';
 $string['open_costcenteridlocal_users_help'] = 'Company of the User';
 $string['open_departmentlocal_users_help'] = 'Bussiness Unit of the User';
 $string['open_subdepartmentlocal_users_help'] = 'Department of the User';
 $string['open_level4departmentlocal_users_help'] = 'Sub Department of the User';
 
-$string['errordept']='Please select Bussiness Unit';
-$string['errorsubdept']='Please select Bussiness Unit';
-$string['errorsubsubdept']='Please select Sub Bussiness Unit';
-$string['errorfirstname']='Please enter First Name';
-$string['errorlastname']='Please enter Last Name';
-$string['erroremail']='Please enter Email Address';
-$string['filemail']='Email Address';
-$string['idexits']='Employee Code Already exists';
+$string['errordept'] = 'Please select Bussiness Unit';
+$string['errorsubdept'] = 'Please select Bussiness Unit';
+$string['errorsubsubdept'] = 'Please select Sub Bussiness Unit';
+$string['errorfirstname'] = 'Please enter First Name';
+$string['errorlastname'] = 'Please enter Last Name';
+$string['erroremail'] = 'Please enter Email Address';
+$string['filemail'] = 'Email Address';
+$string['idexits'] = 'Employee Code Already exists';
 //-------for sync lang files-------
-$string['options']='Option';
-$string['enrollmethods']='Enroll method';
+$string['options'] = 'Option';
+$string['enrollmethods'] = 'Enroll method';
 $string['authenticationmethods'] = 'Authentication method';
 
-
-$string['assigned_courses'] = 'Assigned Courses';		
-$string['completed_courses'] = 'Completed Courses';		
-$string['not_started_courses'] = 'Not Started';		
-$string['inprogress_courses'] = 'In Progress';		
+$string['assigned_courses'] = 'Assigned Courses';
+$string['completed_courses'] = 'Completed Courses';
+$string['not_started_courses'] = 'Not Started';
+$string['inprogress_courses'] = 'In Progress';
 $string['employee_id'] = 'Employee Code';
 $string['certificates'] = 'Certificates';
-$string['already_assignedlp']='User assigned to Learning plan';
-$string['coursehistory']='History';
-$string['employees']="Learner's";
-$string['learningplans']="Learning Paths";
+$string['already_assignedlp'] = 'User assigned to Learning plan';
+$string['coursehistory'] = 'History';
+$string['employees'] = "Learner's";
+$string['learningplans'] = "Learning Paths";
 $string['lowercaseunamerequired'] = 'Username should be in lowercase only';
 $string['sync_users'] = 'Sync users';
 $string['sync_errors'] = 'Sync errors';
@@ -471,7 +467,7 @@ $string['sync_stats'] = 'Sync statistics';
 $string['view_users'] = 'view users';
 $string['nodepartmenterror'] = 'Bussiness Unit cannot be empty';
 $string['syncstatistics'] = 'Sync Statistics';
-$string['phonenumvalidate']='10 digit positive numbers only';
+$string['phonenumvalidate'] = '10 digit positive numbers only';
 
 $string['cannotcreateuseremployeeidadderror'] = 'Learner with learnerid {$a->employee_id} already exist so cannot create user in adduser mode at line {$a->linenumber}';
 $string['cannotfinduseremployeeidupdateerror'] = 'Learner with learnerid {$a->employee_id} doesn\'t exist';
@@ -490,7 +486,7 @@ $string['suspendconfirmdisable'] = 'Are you sure to make learner <b>\'{$a->fulln
 $string['firstname_surname'] = 'First Name / Surname';
 $string['employeeid'] = 'Employee Code';
 $string['emailaddress'] = 'Email Address';
-$string['organization']='Company';
+$string['organization'] = 'Company';
 $string['supervisorname'] = 'Reporting To';
 $string['lastaccess'] = 'Last Access';
 $string['actions'] = 'Actions';
@@ -522,7 +518,11 @@ $string['groups_help'] = 'Search and select an available or existing custom grou
 $string['open_band'] = 'Band';
 $string['open_hrmsrole'] = 'Role';
 $string['role_help'] = "Search and select a role from the available pool. Roles made available here are the roles that are mapped to users on the system. Selecting a 'role (s)' means that any user in the system who has the selected role mapped to them will be eligible for enrollment.";
-$string['open_branch'] = 'Branch';	
+$string['open_branch'] = 'Branch';
+$string['open_project'] = 'Project';
+$string['project'] = 'Project';
+$string['project_help'] = 'Enter Project';
+
 $string['open_subbranch'] = 'Sub Branch';
 $string['open_designation'] = 'Designation';
 $string['designation_help'] = 'Enter the designation of the user';
@@ -627,7 +627,6 @@ $string['otherorg_msg'] = 'Company "{$a->org_shortname}" entered at line \'{$a->
 $string['invaliddept_msg'] = 'Bussiness Unit "{$a->dept_shortname}" for employee code \'{$a->employee_id}\' in uploaded excelsheet does not exist in system at line {$a->excel_line_number}';
 $string['otherdept_msg'] = 'Bussiness Unit "{$a->dept_shortname}" entered at line {$a->excel_line_number} for employee code \'{$a->employee_id}\' in uploaded excelsheet does not belongs to you.';
 
-
 $string['invalidempid_msg'] = 'Provide valid employee code value \'{$a->employee_id}\' inserted in the excelsheet at line {$a->excel_line_number} .';
 
 $string['empidempty_msg'] = 'Provide employee code for username \'{$a->username}\' of uploaded sheet at line {$a->excel_line_number}. ';
@@ -666,9 +665,9 @@ $string['only_add'] = 'Only Add';
 $string['only_update'] = 'Only Update';
 $string['add_update'] = 'Both Add and Update';
 $string['disable'] = 'Disable';
-$string['enable'] = 'Enable' ;
-$string['employee'] = 'Learner' ;
-$string['error_in_creation'] = 'Error in creation' ;
+$string['enable'] = 'Enable';
+$string['employee'] = 'Learner';
+$string['error_in_creation'] = 'Error in creation';
 $string['error_in_inactivating'] = 'Error in inactivating';
 $string['error_in_deletion'] = 'Error in deletion';
 $string['file_notfound_msg'] = 'file not found/ empty file error';
@@ -722,7 +721,7 @@ $string['statusvalidation'] = 'Please Enter Learner Status as either Active or I
 $string['nodomainfound'] = 'Domain {$a->domainid} does not exist under Company {$a->orgid} at line {$a->line}.';
 $string['nopositionfound'] = 'No position found with {$a->positiond} at line {$a->line}.';
 $string['emailisexists'] = 'Email exists already at line {$a->excel_line_number}.';
-$string['downloadusers'] = 'Download Users'; 
+$string['downloadusers'] = 'Download Users';
 $string['userpictureurl'] = 'UserPictureURL';
 $string['costcentername'] = 'Costcenter';
 $string['institution'] = 'Institution';
@@ -734,8 +733,8 @@ $string['suspend'] = 'Suspend';
 $string['edit'] = 'Edit';
 $string['listtype'] = 'LIST';
 $string['cardtype'] = 'CARD';
-$string['listicon'] ='icon fa fa-bars fa-fw';
-$string['cardicon'] ='icon fa fa-fw fa-th';
+$string['listicon'] = 'icon fa fa-bars fa-fw';
+$string['cardicon'] = 'icon fa fa-fw fa-th';
 $string['exportusers'] = 'Export Users to Excel';
 $string['employeeid_nospecialcharacters'] = 'User with employee code {$a->learner_id} connot contain special characters at line {$a->excel_line_number}.';
 $string['deptcheckwithorg'] = ' User with employee code {$a->learner_id} the department \'{$a->dept}\' not belongs to \'{$a->org}\'   at line \'{$a->excel_line_number}\' ';

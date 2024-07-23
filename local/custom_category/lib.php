@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of eAbyas
  *
@@ -25,8 +26,8 @@ require_once(dirname(__FILE__) . '/../../config.php');
 global $CFG;
 require_once($CFG->dirroot . '/lib/moodlelib.php');
 
-function local_custom_category_output_fragment_new_custom_category_form($args){
-    global $CFG,$DB;
+function local_custom_category_output_fragment_new_custom_category_form($args) {
+    global $CFG, $DB;
     $args = (object) $args;
     $context = $args->context;
     $repositoryid = $args->repositoryid;
@@ -36,20 +37,20 @@ function local_custom_category_output_fragment_new_custom_category_form($args){
     $querylib = new \local_custom_category\querylib();
     if (!empty($args->jsonformdata)) {
         $serialiseddata = json_decode($args->jsonformdata);
-        if(is_object($serialiseddata)){
+        if (is_object($serialiseddata)) {
             $serialiseddata = serialize($serialiseddata);
         }
         parse_str($serialiseddata, $formdata);
     }
     if ($args->repositoryid > 0) {
-        $heading = get_string('updatecuscategory', 'local_custom_category');        
-        $data = $querylib->category_record(array('id'=>$repositoryid));
+        $heading = get_string('updatecuscategory', 'local_custom_category');
+        $data = $querylib->category_record(array('id' => $repositoryid));
     }
 
     $mform = new local_custom_category\form\custom_category_form(null, array('id' => $args->repositoryid, 'editoroptions' => $editoroptions, 'open_costcenterid' => $data->costcenterid, 'parentid' => $data->parentid, 'parentcatid' => $parentcatid), 'post', '', null, true, $formdata);
-    if($data){
+    if ($data) {
         $data->name = $data->fullname;
-        $data->parentid = $data->parentid ? $data->parentid:'Top';
+        $data->parentid = $data->parentid ? $data->parentid : 'Top';
         $data->open_costcenterid = $data->costcenterid;
         $mform->set_data($data);
     }
@@ -66,84 +67,23 @@ function local_custom_category_output_fragment_new_custom_category_form($args){
     return $o;
 }
 
-//////For display on index page//////////
-function custom_category_details($tablelimits, $filtervalues){
-    global $DB, $PAGE,$USER,$CFG,$OUTPUT;
-    $systemcontext =(new \local_custom_category\lib\accesslib())::get_module_context();
-    $querylib = new \local_custom_category\querylib();
-    $countsql = "SELECT count(lcc.id) FROM {local_custom_fields} AS lcc WHERE 1 ";
-    $selectsql = "SELECT lcc.*, lc.fullname as organisationname
-        FROM {local_custom_fields} AS lcc
-        JOIN {local_costcenter} AS lc ON lc.id = lcc.costcenterid
-        WHERE 1 ";
-    if($tablelimits->parentcatid > 0){
-        $concatsql .= " AND lcc.parentid = ".$tablelimits->parentcatid;
-    } else {
-        $concatsql .= " AND lcc.parentid = 0 ";
-    }
-
-    $queryparam = array();
-
-    if(!is_siteadmin()){        
-        $costcenterid = explode("/",$USER->open_path);
-        $concatsql .= " AND lcc.costcenterid= :usercostcenter ";
-        $queryparam['usercostcenter'] = $costcenterid[1];
-
-    }
-    if (isset($filtervalues->search_query) && trim($filtervalues->search_query) != '') {
-        $concatsql .= " AND (lcc.fullname LIKE :search1 )";
-        $queryparam['search1'] = '%'.trim($filtervalues->search_query).'%';
-    }
-    $count = $DB->count_records_sql($countsql.$concatsql, $queryparam);
-    $concatsql.=" order by lcc.id desc";
-    $records = $DB->get_records_sql($selectsql.$concatsql, $queryparam, $tablelimits->start, $tablelimits->length);
-
-    $list=array();
-    $data=array();
-    if ($records) {
-        foreach ($records as $c) {
-            $list=array();
-            $id = $c->id;           
-            $categoryexist = $querylib->category_mapped_exist(array('category'=>$c->id));
-            $categorparent = $querylib->category_exist(array('parentid'=>$c->id));
-            $parent = $querylib->category_field('fullname', array('id' => $c->parentid));
-            $childcount = $querylib->category_child_count(array('parentid' => $c->id));
-            $list['custom_category_name'] = $c->fullname;
-            $list['organisationname'] = $c->organisationname;
-            $list['custom_category_id'] = $c->id;
-            $list['shortname']=$c->shortname;
-            $list['parent']=$parent ? $parent : 'N/A';
-            $list['childcount']=$childcount ? $childcount : 0;
-            $list['wwwroot']= $CFG->dirroot.'/local/custom_category/index.php?';
-            $list['childs']= $tablelimits->parentcatid > 0 ? $tablelimits->parentcatid : 0;
-            if($categorparent){
-                $list['categoryexist'] = $categorparent;
-            } elseif($categoryexist) {
-                $list['categoryexist'] = $categoryexist;
-            }
-            $data[] = $list;
-        }
-    }
-    return array('count' => $count, 'data' => $data);
-}
-
-function local_custom_category_masterinfo(){
+function local_custom_category_masterinfo() {
     global $CFG, $PAGE, $OUTPUT, $DB, $USER;
-    $costcenterid = explode('/',$USER->open_path)[1];
+    $costcenterid = explode('/', $USER->open_path)[1];
     $categorycontext = (new \local_courses\lib\accesslib())::get_module_context();
     $categoryquerylib = new \local_custom_category\querylib();
     $content = '';
-    if(has_capability('local/custom_category:view_custom_category', $categorycontext) || is_siteadmin()) {
+    if (has_capability('local/custom_category:view_custom_category', $categorycontext) || is_siteadmin()) {
         $totalcourse_category = $categoryquerylib->category_count(array('costcenterid' => $costcenterid));
 
-        if($totalcourse_category > 0) {
-            $cat = '('.$totalcourse_category.')';
+        if ($totalcourse_category > 0) {
+            $cat = '(' . $totalcourse_category . ')';
         }
         $templatedata = array();
         $templatedata['show'] = true;
         $templatedata['count'] = $cat;
-        $templatedata['link'] = $CFG->wwwroot.'/local/custom_category/index.php';
-        $templatedata['stringname'] = get_string('category','block_masterinfo');
+        $templatedata['link'] = $CFG->wwwroot . '/local/custom_category/index.php';
+        $templatedata['stringname'] = get_string('category', 'block_masterinfo');
         $templatedata['icon'] = '<i class="fa fa-cubes"></i>';
 
         $content = $OUTPUT->render_from_template('block_masterinfo/masterinfo', $templatedata);
@@ -151,107 +91,78 @@ function local_custom_category_masterinfo(){
     return array('3' => $content);
 }
 
-function get_custom_categories($costcenterid, $mform, $moduletype, $categoryids = false){
+/**
+ * To set the menu.
+ *
+ * @return array
+ */
+function local_custom_category_leftmenunode() {
 
-    global $CFG, $PAGE, $OUTPUT, $DB, $USER;
-    $categoryquerylib = new \local_custom_category\querylib();
-    $parentcategories = $categoryquerylib->category_records(1, array('costcenter'=>$costcenterid));
-    $categorys = array();
-    foreach($parentcategories as $key=>$value){
-        $categoryname = $value->fullname;
-        $categoryid = $value->id;
-        $categorys[] = $value->id;
-        $childcategories = $categoryquerylib->category_fullnamewithid(array('costcenter'=>$costcenterid, 'parent'=>$categoryid));
-        
-        $select = $mform->addElement('autocomplete', 'category_'.$categoryid, $categoryname, $childcategories);
-        $mform->setType('category_'.$categoryid, PARAM_RAW);
-        $select->setMultiple(true);
-
+    $categorycontext = (new \local_costcenter\lib\accesslib())::get_module_context();
+    $categorynodes = '';
+    if (has_capability('local/custom_category:manage_custom_category', $categorycontext) || is_siteadmin()) {
+        $categorynodes .= html_writer::start_tag('li', array('id' => 'id_leftmenu_categories', 'class' => 'pull-left user_nav_div categories usernavdep'));
+        $categories_url = new moodle_url('/local/custom_category/index.php');
+        $categories = html_writer::link($categories_url, '<i class="fa fa-line-chart" style="font-size:12px"></i><span class="user_navigation_link_text">' . get_string('performance_categories', 'local_custom_category') . '</span>', array('class' => 'user_navigation_link'));
+        $categorynodes .= $categories;
+        $categorynodes .= html_writer::end_tag('li');
     }
-    $categoryids = implode(',',$categorys);
-    $mform->addElement('hidden', 'parentid', $categoryids);
-    $mform->setType('parentid', PARAM_INT);
-    $mform->setDefault('parentid',  $categoryids);
 
-    $mform->addElement('hidden', 'moduletype', $moduletype);
-    $mform->setType('moduletype', PARAM_RAW);
-    $mform->setDefault('moduletype', $moduletype);
+    return array('7' => $categorynodes);
 }
-function get_parent_categoryids(){
+
+//////For display on index page//////////
+function custom_category_details($tablelimits, $filtervalues) {
     global $DB, $USER, $CFG;
-    $parentcatids = '';
-    if(is_siteadmin()){
-        $parentcatids = $DB->get_records_sql("SELECT DISTINCT(lcc.id) FROM {local_custom_fields} as lcc JOIN {local_custom_fields} as lc on lc.parentid LIKE lcc.id");
+    $systemcontext = (new \local_custom_category\lib\accesslib())::get_module_context();
+    $querylib = new \local_custom_category\querylib();
+    $countsql = "SELECT count(lcc.id) FROM {local_custom_category} AS lcc WHERE 1 ";
+    $selectsql = "SELECT lcc.*, lc.fullname as organisationname
+        FROM {local_custom_category} AS lcc
+        JOIN {local_costcenter} AS lc ON lc.id = lcc.costcenterid
+        WHERE 1 ";
+    if ($tablelimits->parentcatid > 0) {
+        $concatsql = " AND lcc.parentid = " . $tablelimits->parentcatid;
     } else {
-        $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname="CONCAT('/',lcc.costcenterid,'')");
+        $concatsql = " AND lcc.parentid = 0 ";
+    }
+    $queryparam = array();
+    if (!is_siteadmin()) {
+        $costcenterid = explode("/", $USER->open_path);
+        $concatsql .= " AND lcc.costcenterid= :usercostcenter ";
+        $queryparam['usercostcenter'] = $costcenterid[1];
+    }
+    if (isset($filtervalues->search_query) && trim($filtervalues->search_query) != '') {
+        $concatsql .= " AND (lcc.fullname LIKE :search1 )";
+        $queryparam['search1'] = '%' . trim($filtervalues->search_query) . '%';
+    }
+    $count = $DB->count_records_sql($countsql . $concatsql, $queryparam);
+    $concatsql .= " order by lcc.id desc";
+    $records = $DB->get_records_sql($selectsql . $concatsql, $queryparam, $tablelimits->start, $tablelimits->length);
 
-        $parentcatids = $DB->get_records_sql("SELECT DISTINCT(lcc.id) FROM {local_custom_fields} as lcc JOIN {local_custom_fields} as lc on lc.parentid LIKE lcc.id WHERE 1=1 $costcenterpathconcatsql");
-    }    
-    return $parentcatids;
-}
+    $list = array();
+    $data = array();
 
-function get_moduleid_of_mapped_category($filterdata,$parentcatids,$moduletype,$moduleid){
-    $sql = '';
-    $params = [];
-    $i = 0;
-    foreach($parentcatids AS $parentcatid){
-        if(!empty($filterdata->{'catfilter_'.$parentcatid->id})){
-            $categories = $filterdata->{'catfilter_'.$parentcatid->id};
-
-            $categories = explode(',', $categories);
-            $catgeorylike = [];
-            foreach($categories AS $category){
-                $catgeorylike[] =  " concat(',',lcm.category,',') like :categorylike{$i} ";
-                $params['categorylike'.$i] = '%,'.$category.',%';
-                $i++;
+    if ($records) {
+        foreach ($records as $c) {
+            $list = array();
+            $categoryparent = $querylib->category_exist(array('parentid' => $c->id));
+            $parent = $querylib->category_field('fullname', array('id' => $c->parentid));
+            $childcount = $querylib->category_child_count(array('parentid' => $c->id));
+            $list['custom_category_name'] = $c->fullname;
+            $list['organisationname'] = $c->organisationname;
+            $list['custom_category_id'] = $c->id;
+            $list['shortname'] = $c->shortname;
+            $list['type'] = $c->type;
+            $list['parent'] = $parent ? $parent : 'N/A';
+            $list['childcount'] = $childcount ? $childcount : 0;
+            $list['wwwroot'] = $CFG->dirroot . '/local/custom_category/category.php?';
+            $list['childs'] = $tablelimits->parentcatid > 0 ? $tablelimits->parentcatid : 0;
+            if ($categoryparent) {
+                $list['categoryexist'] = $categoryparent;
             }
-            if(!empty($catgeorylike)){
-                $catdependencysql = implode(' OR ', $catgeorylike);
-                $sql .= " AND $moduleid IN (SELECT lcm.moduleid FROM {local_category_mapped} AS lcm WHERE lcm.moduletype LIKE '$moduletype' AND ($catdependencysql) ) ";
-            }
+            $data[] = $list;
         }
     }
-    return array('sql' => $sql, 'params' => $params);
-}
-
-function insert_category_mapped($data){
-    global $DB, $USER;
-    $categoryrecords = new stdClass();
-    $categoryrecords->moduletype = $data->moduletype;
-    $categoryrecords->costcenterid = $data->costcenterid;
-    $categoryrecords->moduleid = $data->id;
-    if($data->parentid){
-        $parentid = explode(',', $data->parentid);
-        foreach($parentid as $parent){
-            $categoryrecords->id = $data->childcategoryid[$parent];
-            $categoryrecords->parentid = $parent;
-            $category = 'category_'.$parent;
-            $categories = $data->$category != '_qf__force_multiselect_submission' ? implode(',', $data->$category) : 0;
-            $categoryrecords->category = $categories ? $categories : 0;
-            if($categoryrecords->id){
-                $categoryrecords->timemodified = time();
-                $categoryrecords->usermodified = $USER->id;
-                $DB->update_record('local_category_mapped', $categoryrecords);     
-            }else{
-                $categoryrecords->timecreated = time();
-                $categoryrecords->usercreated = $USER->id;
-                $DB->insert_record('local_category_mapped', $categoryrecords);
-            }
-
-        }
-    }
-
-}
-function category_mapping($data){
-    global $DB, $USER;
-    $topcats = $DB->get_records('local_custom_fields', array('depth'=>1, 'costcenterid'=> $data->costcenterid), '', 'id');
-    if($topcats){
-        $parentcatid = [];
-        $data->timecreated = time();
-        $data->usercreated = $USER->id;
-        foreach($topcats as $parentcat){
-            $data->parentid = $parentcat->id;
-            $DB->insert_record('local_category_mapped', $data);
-        }
-    }
+    return array('count' => $count, 'data' => $data);
 }

@@ -1,7 +1,9 @@
 <?php
 
 namespace local_users\functions;
-require_once($CFG->dirroot.'/user/lib.php');
+
+require_once($CFG->dirroot . '/user/lib.php');
+
 use html_writer;
 use moodle_url;
 use context_system;
@@ -14,7 +16,6 @@ class users {
 
     private static $_users;
     private $dbHandle;
-
 
     public static function getInstance() {
         if (!self::$_users) {
@@ -36,11 +37,12 @@ class users {
         }
         if (isset($userdata->open_departmentid)) {
             $userdata->institution = $DB->get_field('local_costcenter', 'fullname', array('id' =>
-             $userdata->open_departmentid));
+            $userdata->open_departmentid));
         }
         if (isset($userdata->open_hrmsrole)) {
-            $userdata->department = $userdata->open_hrmsrole;
+            $userdata->open_hrmsrole = $userdata->open_hrmsrole;
         }
+
         if (isset($userdata->open_employeeid)) {
             $userdata->idnumber = $userdata->open_employeeid;
         }
@@ -55,7 +57,7 @@ class users {
         }
         if ($userdata->open_supervisorid) {
             $userdata->open_supervisorempid = $DB->get_field('user', 'open_employeeid', array('id' =>
-             $userdata->open_supervisorid));
+            $userdata->open_supervisorid));
         }
         $userdata->password = hash_internal_user_password($userdata->password);
         $createpassword = $userdata->createpassword;
@@ -65,12 +67,11 @@ class users {
             setnew_password_and_mail($userdata);
             unset_user_preference('create_password', $userdata);
             set_user_preference('auth_forcepasswordchange', 1, $userdata);
-
         } else if ($form_status == 0) {
             $userdata->id = $data;
             set_user_preference('auth_forcepasswordchange', $userdata->preference_auth_forcepasswordchange, $userdata);
 
-            if(isset($userdata->open_path)){
+            if (isset($userdata->open_path)) {
                 $this->insert_update_userdata($userdata);
             }
         }
@@ -92,16 +93,16 @@ class users {
             $userdata->password = hash_internal_user_password($userdata->password);
         }
         foreach ($userdata as $key => $value) {
-            if(is_string($value)){
-                $userdata->$key = trim($value);        
+            if (is_string($value)) {
+                $userdata->$key = trim($value);
             }
         }
         if (isset($userdata->open_departmentid)) {
             $userdata->institution = $DB->get_field('local_costcenter', 'fullname', array('id' =>
-                 $userdata->open_departmentid));
+            $userdata->open_departmentid));
         }
         if (isset($userdata->open_hrmsrole)) {
-            $userdata->department = $userdata->open_hrmsrole;
+            $userdata->open_hrmsrole = $userdata->open_hrmsrole;
         }
         if (isset($userdata->open_employeeid)) {
             $userdata->idnumber = $userdata->open_employeeid;
@@ -120,7 +121,7 @@ class users {
                 \core\session\manager::kill_user_sessions($userdata->id);
             }
         }
-        if(isset($userdata->open_path)){
+        if (isset($userdata->open_path)) {
             $this->insert_update_userdata($userdata);
         }
         if ($userdata) {
@@ -136,8 +137,15 @@ class users {
                     'forcehttps' => false,
                     'context'    => $usercontext
                 );
-                $userdata = file_postupdate_standard_editor($userdata, 'description', $editoroptions, $usercontext,
-                 'user', 'profile', 0);
+                $userdata = file_postupdate_standard_editor(
+                    $userdata,
+                    'description',
+                    $editoroptions,
+                    $usercontext,
+                    'user',
+                    'profile',
+                    0
+                );
             }
             $userdata->deleted = 0;
             $userdata->descriptionformat = 1;
@@ -145,10 +153,12 @@ class users {
             $result = user_update_user($userdata, false);
             profile_save_data($userdata);
             $filemanagercontext = $usercontext;
-            $filemanageroptions = array('maxbytes'       => $CFG->maxbytes,
-                                        'subdirs'        => 0,
-                                        'maxfiles'       => 1,
-                                        'accepted_types' => 'web_image');
+            $filemanageroptions = array(
+                'maxbytes'       => $CFG->maxbytes,
+                'subdirs'        => 0,
+                'maxfiles'       => 1,
+                'accepted_types' => 'web_image'
+            );
             if ($userdata->imagefile) {
                 core_user::update_picture($userdata, $filemanageroptions);
             }
@@ -179,18 +189,18 @@ class users {
         return $userdata->id;
     } //End of update_existinguser function.
 
-    private function insert_update_userdata($userdata){
+    private function insert_update_userdata($userdata) {
         global $DB, $USER;
         $record_id = $DB->get_field('local_userdata', 'id', array('userid' => $userdata->id));
         $record = new \StdClass();
         $record->costcenterpath = $userdata->open_path;
         // $record->categorypath = ;
-        if($record_id){
+        if ($record_id) {
             $record->id = $record_id;
             $record->usermodified = $USER->id;
             $record->timemodified = time();
             $DB->update_record('local_userdata', $record);
-        }else{
+        } else {
             $record->userid = $userdata->id;
             $record->usercreated = $USER->id;
             $record->timecreated = time();
@@ -212,47 +222,59 @@ class users {
         $context = (new \local_users\lib\accesslib())::get_module_context();
         $role = $this->get_rolename($id);
         if ($id == $USER->id) {
-            return html_writer::link('javascript:void(0)', '<i class="fa fa-pencil fa-fw" title=""></i>',
-             array('data-action' => 'createusermodal', 'class' => 'createusermodal', 'data-value' => $id,
-              'class' => '', 'onclick' => '(function(e){ require("local_users/newuser").init({selector:"createusermodal",
-               context:'.$context->id.', id:'.$id.', form_status:0}) })(event)', 'style' => 'cursor:pointer' , 'title' =>
-                'edit'));
+            return html_writer::link(
+                'javascript:void(0)',
+                '<i class="fa fa-pencil fa-fw" title=""></i>',
+                array(
+                    'data-action' => 'createusermodal', 'class' => 'createusermodal', 'data-value' => $id,
+                    'class' => '', 'onclick' => '(function(e){ require("local_users/newuser").init({selector:"createusermodal",
+               context:' . $context->id . ', id:' . $id . ', form_status:0}) })(event)', 'style' => 'cursor:pointer', 'title' =>
+                    'edit'
+                )
+            );
         } else if (is_siteadmin($id)) {
             return '';
         } else {
-            $userobject = $DB->get_record('user' , array('id' => $id));
+            $userobject = $DB->get_record('user', array('id' => $id));
             $fullname = fullname($userobject);
             $buttons = array();
             if ($visible) {
-                $buttons[] = '<button class="btn btn_active_user">'.get_string('active', 'local_users').'</button>';
+                $buttons[] = '<button class="btn btn_active_user">' . get_string('active', 'local_users') . '</button>';
             } else {
-                $buttons[] = '<button class="btn btn_inactive_user">'.get_string('inactive', 'local_users').'.</button>';
+                $buttons[] = '<button class="btn btn_inactive_user">' . get_string('inactive', 'local_users') . '.</button>';
             }
             if (is_siteadmin() || has_capability('local/users:delete', $context)) {
                 $buttons[] = html_writer::link('javascript:void(0)', '<i class="fa fa-trash fa-fw" aria-hidden="true"
                  title="" aria-label="Delete"></i>', array('title' => get_string('delete'), 'onclick' => '(function(e){
-                  require("local_users/newuser").deleteConfirm({ action: "delete_user" ,id:'.$id.',context:
-                  '.$context->id.', fullname:"'.$fullname.'"}) })(event)'));
+                  require("local_users/newuser").deleteConfirm({ action: "delete_user" ,id:' . $id . ',context:
+                  ' . $context->id . ', fullname:"' . $fullname . '"}) })(event)'));
             }
             if (is_siteadmin() || has_capability('local/users:edit', $context)) {
-                $buttons[] = html_writer::link('javascript:void(0)', '<i class="fa fa-pencil fa-fw" title=""></i>',
-                 array('data-action' => 'createusermodal', 'class' => 'createusermodal', 'data-value' => $id, 'class' => '',
-                  'onclick' => '(function(e){ require("local_users/newuser").init({selector:"createusermodal",
-                   context:'.$context->id.', id:'.$id.', form_status:0}) })(event)', 'style' => 'cursor:pointer' ,
-                    'title' => get_string('edit')));
+                $buttons[] = html_writer::link(
+                    'javascript:void(0)',
+                    '<i class="fa fa-pencil fa-fw" title=""></i>',
+                    array(
+                        'data-action' => 'createusermodal', 'class' => 'createusermodal', 'data-value' => $id, 'class' => '',
+                        'onclick' => '(function(e){ require("local_users/newuser").init({selector:"createusermodal",
+                   context:' . $context->id . ', id:' . $id . ', form_status:0}) })(event)', 'style' => 'cursor:pointer',
+                        'title' => get_string('edit')
+                    )
+                );
             }
             // sending parameters for visible as  1 and not visible as 0 by defalut for  OL11
             if (is_siteadmin() || has_capability('local/users:edit', $context)) {
                 if ($visible) {
                     $buttons[] = html_writer::link('javascript:void(0)', '<i class="fa fa-eye fa-fw " aria-hidden="true"
                      aria-label="Hide"></i>', array('title' => get_string('disable', 'local_users'), 'onclick' =>
-                      '(function(e){ require("local_users/newuser").userSuspend({ id:'.$id.',context:'.$context->id.',
-                       fullname:"'.$fullname.'"}) })(event)'));
+                    '(function(e){ require("local_users/newuser").userSuspend({ id:' . $id . ',context:' . $context->id . ',
+                       fullname:"' . $fullname . '"}) })(event)'));
                 } else {
                     $buttons[] = html_writer::link('javascript:void(0)', '<i class="fa fa-eye-slash fa-fw "
-                     aria-hidden="true" title="" aria-label="Show"></i>', array('title' => get_string('enable',
-                        'local_users'), 'onclick' => '(function(e){ require("local_users/newuser").
-                     userSuspend({ id:'.$id.', context:'.$context->id.', fullname:"'.$fullname.'"}) })(event)'));
+                     aria-hidden="true" title="" aria-label="Show"></i>', array('title' => get_string(
+                        'enable',
+                        'local_users'
+                    ), 'onclick' => '(function(e){ require("local_users/newuser").
+                     userSuspend({ id:' . $id . ', context:' . $context->id . ', fullname:"' . $fullname . '"}) })(event)'));
                 }
             }
             // OL11 ends here .
@@ -270,7 +292,7 @@ class users {
     public function get_costcenternames($user) {
         global $DB;
         $role = $this->get_rolename($user->id);
-        
+
         $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
         if (is_siteadmin($user->id) || has_capability('local/costcenter:manage_multiorganizations', $categorycontext)) {
             return get_string('all');
@@ -278,21 +300,20 @@ class users {
         // $table = 'local_costcenter_permissions';
         // $field = 'userid';
         // if ( $role != 'manager') {
-            $table = 'user';
-            $field = 'id';
+        $table = 'user';
+        $field = 'id';
         // }
         $costcenters = $DB->get_records_sql("SELECT * FROM {{$table}} WHERE {$field} = {$user->id}");
         $scl = array();
         if ($costcenters) {
             foreach ($costcenters as $costcenter) {
-                $costcenterid = explode('/',$costcenter->open_path)[1];
+                $costcenterid = explode('/', $costcenter->open_path)[1];
                 $scl[] = $DB->get_field('local_costcenter', 'fullname', array('id' => $costcenterid));
             }
             return implode(', ', $scl);
         }
         return get_string('not_assigned', 'local_users');
     }
-
 
     /**
      * @method get_usercount
@@ -316,8 +337,15 @@ class users {
      * @param array $extraparams
      * @return array of objects , list of users
      */
-    public function get_users_listing($sort = 'lastaccess', $dir = 'ASC', $page = 0, $recordsperpage = 0,
-     $extraselect = '', array $extraparams = null, $extracontext = null) {
+    public function get_users_listing(
+        $sort = 'lastaccess',
+        $dir = 'ASC',
+        $page = 0,
+        $recordsperpage = 0,
+        $extraselect = '',
+        array $extraparams = null,
+        $extracontext = null
+    ) {
         global $DB, $CFG, $USER;
         $extraselect;
 
@@ -333,9 +361,11 @@ class users {
         // is supposed to see.
         $extrafields = '';
         if ($extracontext) {
-            $extrafields = get_extra_user_fields_sql($extracontext, '', '', array('id', 'username',
-             'email', 'firstname', 'lastname', 'city', 'country',
-                'lastaccess', 'confirmed', 'mnethostid'));
+            $extrafields = get_extra_user_fields_sql($extracontext, '', '', array(
+                'id', 'username',
+                'email', 'firstname', 'lastname', 'city', 'country',
+                'lastaccess', 'confirmed', 'mnethostid'
+            ));
         }
         /*
          * ###Bugreport#183-Filters
@@ -345,5 +375,4 @@ class users {
         return $DB->get_records_sql("SELECT u.*
                    FROM {user} as u $join WHERE $select GROUP BY id ORDER BY $sort $dir LIMIT $page, $recordsperpage", $params);
     }
-
 }//End of users class.

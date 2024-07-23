@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of eAbyas
  *
@@ -23,16 +24,18 @@
  */
 
 namespace local_courses\form;
+
 use moodleform;
 use context_course;
 use context_coursecat;
 use core_component;
+
 defined('MOODLE_INTERNAL') || die;
-require_once($CFG->libdir.'/formslib.php');
-require_once($CFG->libdir.'/completionlib.php');
+require_once($CFG->libdir . '/formslib.php');
+require_once($CFG->libdir . '/completionlib.php');
 require_once($CFG->dirroot . '/local/costcenter/lib.php');
 require_once($CFG->dirroot . '/local/users/lib.php');
-require_once($CFG->dirroot . '/local/custom_category/lib.php');
+require_once($CFG->dirroot . '/local/custom_fields/lib.php');
 //require_once($CFG->libdir. '/coursecatlib.php');
 
 class custom_course_form extends moodleform {
@@ -47,14 +50,13 @@ class custom_course_form extends moodleform {
             'manage_course' => get_string('manage_course', 'local_courses'),
             'other_details' => get_string('courseother_details', 'local_courses'),
         );
-        $costcenterdepth=local_costcenter_get_fields();
+        $costcenterdepth = local_costcenter_get_fields();
 
-        $depth=count($costcenterdepth);
+        $depth = count($costcenterdepth);
 
-        if($USER->useraccess['currentroleinfo']['depth'] < $depth){
+        if ($USER->useraccess['currentroleinfo']['depth'] < $depth) {
 
-            $this->formstatus['target_audience']=get_string('target_audience', 'local_users');
-
+            $this->formstatus['target_audience'] = get_string('target_audience', 'local_users');
         }
         parent::__construct($action, $customdata, $method, $target, $attributes, $editable, $formdata);
     }
@@ -62,13 +64,13 @@ class custom_course_form extends moodleform {
      * Form definition.
      */
     function definition() {
-        global $DB,$OUTPUT,$CFG, $PAGE, $USER;
+        global $DB, $OUTPUT, $CFG, $PAGE, $USER;
 
         $mform    = $this->_form;
         $course        = $this->_customdata['course']; // this contains the data of this form
         $course_id        = $this->_customdata['courseid']; // this contains the data of this form
         $category      = $this->_customdata['category'];
-        $childcategoryid = $this->_customdata['childcategoryid'];
+        $childfieldid = $this->_customdata['childfieldid'];
         $formstatus = $this->_customdata['form_status'];
         $get_coursedetails = $this->_customdata['get_coursedetails'];
         $editoroptions = $this->_customdata['editoroptions'];
@@ -78,18 +80,18 @@ class custom_course_form extends moodleform {
         $formheaders = array_keys($this->formstatus);
         $formheader = $formheaders[$formstatus];
         $costcenterid = $this->_ajaxformdata['open_costcenterid'];
-        if(empty($category)){
-          $category = $CFG->defaultrequestcategory;
+        if (empty($category)) {
+            $category = $CFG->defaultrequestcategory;
         }
 
         if (!empty($course->id)) {
-          $coursecontext = context_course::instance($course->id);
-          $context = $coursecontext;
-          $categorycontext = context_coursecat::instance($course->category);
+            $coursecontext = context_course::instance($course->id);
+            $context = $coursecontext;
+            $categorycontext = context_coursecat::instance($course->category);
         } else {
-          $coursecontext = null;
-          $categorycontext = context_coursecat::instance($category);
-          $context = $categorycontext;
+            $coursecontext = null;
+            $categorycontext = context_coursecat::instance($category);
+            $context = $categorycontext;
         }
 
         $courseconfig = get_config('moodlecourse');
@@ -102,8 +104,8 @@ class custom_course_form extends moodleform {
         $mform->setType('returnto', PARAM_ALPHANUM);
         $mform->setConstant('returnto', $returnto);
 
-        $mform->addElement('hidden', 'childcategoryid', $childcategoryid);
-        $mform->setType('childcategoryid', PARAM_RAW);
+        $mform->addElement('hidden', 'childfieldid', $childfieldid);
+        $mform->setType('childfieldid', PARAM_RAW);
 
         $mform->addElement('hidden', 'form_status', $formstatus);
         $mform->setType('form_status', PARAM_ALPHANUM);
@@ -117,208 +119,205 @@ class custom_course_form extends moodleform {
 
         $defaultformat = $courseconfig->format;
 
-        if(empty($course->id)){
-          $courseid = 0;
-        }else{
-          $courseid = $id = $course->id;
+        if (empty($course->id)) {
+            $courseid = 0;
+        } else {
+            $courseid = $id = $course->id;
         }
 
         //For Announcements activity
-        $mform->addElement('hidden', 'newsitems',$courseconfig->newsitems);
+        $mform->addElement('hidden', 'newsitems', $courseconfig->newsitems);
 
         $mform->addElement('hidden', 'id', $courseid, array('id' => 'courseid'));
         $mform->setType('id', PARAM_INT);
-		
+
         $categorycontext = (new \local_courses\lib\accesslib())::get_module_context($courseid);
         $core_component = new core_component();
-        if($formstatus == 0){
+        if ($formstatus == 0) {
 
-            local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata,range(1,1), false, 'local_costcenter', $categorycontext, $multiple = false);
+            local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(1, 1), false, 'local_costcenter', $categorycontext, $multiple = false);
 
-            $mform->addElement('text','fullname', get_string('course_name','local_courses'),'maxlength="254" size="50"');
-            $mform->addHelpButton('fullname', 'course_name','local_courses');
-
+            $mform->addElement('text', 'fullname', get_string('course_name', 'local_courses'), 'maxlength="254" size="50"');
+            $mform->addHelpButton('fullname', 'course_name', 'local_courses');
 
             if (!empty($course->id) and !has_capability('moodle/course:changefullname', $categorycontext)) {
                 $mform->hardFreeze('fullname');
                 $mform->setConstant('fullname', $course->fullname);
+            } elseif (has_capability('moodle/course:changefullname', $categorycontext)) {
 
-            }elseif(has_capability('moodle/course:changefullname', $categorycontext)) {
-
-                $mform->addRule('fullname', get_string('missingfullname','local_courses'), 'required', null, 'client');
+                $mform->addRule('fullname', get_string('missingfullname', 'local_courses'), 'required', null, 'client');
                 $mform->setType('fullname', PARAM_TEXT);
-
             }
 
-            $mform->addElement('text', 'shortname', get_string('coursecode','local_courses'), 'maxlength="100" size="20"');
-            $mform->addHelpButton('shortname', 'coursecode','local_courses');
-
+            $mform->addElement('text', 'shortname', get_string('coursecode', 'local_courses'), 'maxlength="100" size="20"');
+            $mform->addHelpButton('shortname', 'coursecode', 'local_courses');
 
             if (!empty($course->id) and !has_capability('moodle/course:changeshortname', $categorycontext)) {
                 $mform->hardFreeze('shortname');
                 $mform->setConstant('shortname', $course->shortname);
-            }elseif(has_capability('moodle/course:changefullname', $categorycontext)) {
+            } elseif (has_capability('moodle/course:changefullname', $categorycontext)) {
 
-                $mform->addRule('shortname', get_string('missingshortname','local_courses'), 'required', null, 'client');
+                $mform->addRule('shortname', get_string('missingshortname', 'local_courses'), 'required', null, 'client');
                 $mform->setType('shortname', PARAM_TEXT);
-
             }
 
-            //Start - Mapping custom matrix categories to course to claculate performance matrix
-            
-            $plugin_exists = \core_component::get_plugin_directory('local', 'custom_matrix');
-         
-            if($plugin_exists){	
+            $plugin_exists = \core_component::get_plugin_directory('local', 'custom_category');
+
+            if ($plugin_exists) {
 
                 $performance_types = array();
                 $select = array();
                 $select[null] = get_string('select_ptype', 'local_courses');
                 $performance_types[0] = get_string('select_ptype', 'local_courses');
                 $sql = "SELECT * FROM {local_custom_category} WHERE parentid = :parentid AND type = :type ";
-                if(isset($costcenterid) && $costcenterid != 0){
+                if (isset($costcenterid) && $costcenterid != 0) {
                     $sql .= " AND costcenterid = :costcenterid";
                 }
-                $ptype_categories = $DB->get_records_sql($sql, array('parentid'=>0,'type'=>0, 'costcenterid' => $costcenterid));
-                if($ptype_categories){
-                    foreach($ptype_categories as $ptype_category){
-                        // $performance_categories = $DB->get_records_sql_menu("SELECT * FROM {local_custom_category} WHERE parentid = :parentid AND parentid <> 0 ",array('parentid'=>$ptype_category->id));
-                        $performance_types[$ptype_category->id] = $ptype_category->fullname;
-
-                        $child_categories = $DB->get_records_sql("SELECT * FROM {local_custom_category} WHERE parentid = :parentid AND parentid <> 0 ",array('parentid'=>$ptype_category->id));
-
-                        foreach($child_categories AS $child_category)
-                        {
-                            $performance_types[$child_category->id] = $ptype_category->fullname.' / '.$child_category->fullname;
+                $ptype_categories = $DB->get_records_sql($sql, array('parentid' => 0, 'type' => 0, 'costcenterid' => $costcenterid));
+                if ($ptype_categories) {
+                    foreach ($ptype_categories as $ptype_category) {
+                        //$performance_types[$ptype_category->id] = $ptype_category->fullname;
+                        $child_categories = $DB->get_records_sql("SELECT * FROM {local_custom_category} WHERE parentid = :parentid AND parentid <> 0 ", array('parentid' => $ptype_category->id));
+                        foreach ($child_categories as $child_category) {
+                            $performance_types[$child_category->id] = $ptype_category->fullname . ' / ' . $child_category->fullname;
                         }
                     }
-                }            
-               
+                }
+
                 $mform->addElement('select', 'performancecatid', get_string('performance_type', 'local_courses'), $performance_types);
-               
-                $mform->addRule('performancecatid', null, 'required', null, 'client');                  
+                $mform->addRule('performancecatid', null, 'required', null, 'client');
             }
-            //end
 
             //for course format
             $courseformats = get_sorted_course_formats(true);
             $formcourseformats = array();
             foreach ($courseformats as $courseformat) {
-              $formcourseformats[$courseformat] = get_string('pluginname', "format_$courseformat");
+                $formcourseformats[$courseformat] = get_string('pluginname', "format_$courseformat");
             }
 
             if (isset($course->format)) {
-              $course->format = course_get_format($course)->get_format(); // replace with default if not found
-              if (!in_array($course->format, $courseformats)) {
-                  // this format is disabled. Still display it in the dropdown
-                  $formcourseformats[$course->format] = get_string('withdisablednote', 'moodle',
-                          get_string('pluginname', 'format_'.$course->format));
-              }
+                $course->format = course_get_format($course)->get_format(); // replace with default if not found
+                if (!in_array($course->format, $courseformats)) {
+                    // this format is disabled. Still display it in the dropdown
+                    $formcourseformats[$course->format] = get_string(
+                        'withdisablednote',
+                        'moodle',
+                        get_string('pluginname', 'format_' . $course->format)
+                    );
+                }
             }
             $mform->addElement('select', 'format', get_string('format'), $formcourseformats);
             $mform->addHelpButton('format', 'format');
             $mform->setDefault('format', $defaultformat);
 
-
-            $mform->addElement('text', 'open_coursecompletiondays', get_string('coursecompday','local_courses'));
+            $mform->addElement('text', 'open_coursecompletiondays', get_string('coursecompday', 'local_courses'));
             $mform->setType('open_coursecompletiondays', PARAM_TEXT);
-            $mform->addRule('open_coursecompletiondays', get_string('numeric','local_users'), 'numeric', 'numeric', 'client');
-	    
+            $mform->addRule('open_coursecompletiondays', get_string('numeric', 'local_users'), 'numeric', 'numeric', 'client');
+
             $manageselfenrol = array();
             $manageselfenrol[] = $mform->createElement('radio', 'selfenrol', '', get_string('yes'), 1, $attributes);
             $manageselfenrol[] = $mform->createElement('radio', 'selfenrol', '', get_string('no'), 0, $attributes);
-            $mform->addGroup($manageselfenrol, 'selfenrol',
+            $mform->addGroup(
+                $manageselfenrol,
+                'selfenrol',
                 get_string('need_self_enrol', 'local_courses'),
-                array('&nbsp;&nbsp;'), false);
+                array('&nbsp;&nbsp;'),
+                false
+            );
             $mform->addHelpButton('selfenrol', 'selfenrolcourse', 'local_courses');
 
-  			$manageapproval = array();
-  			$manageapproval[] = $mform->createElement('radio', 'approvalreqd', '', get_string('yes'), 1, $attributes);
-  			$manageapproval[] = $mform->createElement('radio', 'approvalreqd', '', get_string('no'), 0, $attributes);
-  			$mform->addGroup($manageapproval, 'approvalreqd',
-  				get_string('need_manage_approval', 'local_courses'),
-  				array('&nbsp;&nbsp;'), false);
+            $manageapproval = array();
+            $manageapproval[] = $mform->createElement('radio', 'approvalreqd', '', get_string('yes'), 1, $attributes);
+            $manageapproval[] = $mform->createElement('radio', 'approvalreqd', '', get_string('no'), 0, $attributes);
+            $mform->addGroup(
+                $manageapproval,
+                'approvalreqd',
+                get_string('need_manage_approval', 'local_courses'),
+                array('&nbsp;&nbsp;'),
+                false
+            );
             $mform->addHelpButton('approvalreqd', 'approvalreqdcourse', 'local_courses');
             $mform->hideIf('approvalreqd', 'selfenrol', 'neq', '1');
 
             // Completion tracking.
-  			$mform->addElement('hidden', 'enablecompletion');
-  			$mform->setType('enablecompletion', PARAM_INT);
-  			$mform->setDefault('enablecompletion', 1);
+            $mform->addElement('hidden', 'enablecompletion');
+            $mform->setType('enablecompletion', PARAM_INT);
+            $mform->setDefault('enablecompletion', 1);
 
-            $mform->addElement('editor','summary_editor', get_string('coursesummary','local_courses'), null, $editoroptions);
+            $mform->addElement('editor', 'summary_editor', get_string('coursesummary', 'local_courses'), null, $editoroptions);
             $mform->addHelpButton('summary_editor', 'coursesummary');
             $mform->setType('summary_editor', PARAM_RAW);
             $summaryfields = 'summary_editor';
 
             if ($overviewfilesoptions = course_overviewfiles_options($course)) {
-              $mform->addElement('filemanager', 'overviewfiles_filemanager', get_string('courseoverviewfiles','local_courses'), null, $overviewfilesoptions);
-              $mform->addHelpButton('overviewfiles_filemanager', 'courseoverviewfiles');
-              $summaryfields .= ',overviewfiles_filemanager';
+                $mform->addElement('filemanager', 'overviewfiles_filemanager', get_string('courseoverviewfiles', 'local_courses'), null, $overviewfilesoptions);
+                $mform->addHelpButton('overviewfiles_filemanager', 'courseoverviewfiles');
+                $summaryfields .= ',overviewfiles_filemanager';
             }
-
-        } elseif($formstatus == 1){
-            $mform->addElement('text', 'open_points', get_string('points','local_courses'));
+        } elseif ($formstatus == 1) {
+            $mform->addElement('text', 'open_points', get_string('points', 'local_courses'));
             $mform->addHelpButton('open_points', 'open_pointscourse', 'local_courses');
             $mform->setType('open_points', PARAM_INT);
 
             $costcenterid = explode('/', $this->course->open_path)[1];
-            get_custom_categories($costcenterid,$mform,$moduletype = 'course');
+            get_custom_fields($costcenterid, $mform, $moduletype = 'course');
 
-            $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='open_path',$costcenterpath=$this->course->open_path);
+            $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'open_path', $costcenterpath = $this->course->open_path);
 
-                $skillselect = array(0 => get_string('select_skill','local_courses'));
-                $skillcostcentersql = "SELECT id,name FROM {local_skill}
+            $skillselect = array(0 => get_string('select_skill', 'local_courses'));
+            $skillcostcentersql = "SELECT id,name FROM {local_skill}
                                     WHERE 1=1 $costcenterpathconcatsql ";
 
+            $skills = $DB->get_records_sql_menu($skillcostcentersql);
 
-                $skills = $DB->get_records_sql_menu($skillcostcentersql);
+            if (!empty($skills)) {
+                $skillselect = $skillselect + $skills;
+            }
 
-           
-                if(!empty($skills)){
-                    $skillselect = $skillselect+$skills;
-                }
+            $mform->addElement('select',  'open_skill', get_string('open_skillcourse', 'local_courses'), $skillselect);
+            $mform->addHelpButton('open_skill', 'open_skillcourse', 'local_courses');
+            $mform->setType('open_skill', PARAM_INT);
 
-                $mform->addElement('select',  'open_skill', get_string('open_skillcourse','local_courses'), $skillselect);
-                $mform->addHelpButton('open_skill', 'open_skillcourse', 'local_courses');
-                $mform->setType('open_skill', PARAM_INT);
+            $levelselect = array(0 => get_string('select_level', 'local_courses'));
 
-                $levelselect = array(0 => get_string('select_level','local_courses'));
-
-                $levelsql = "SELECT id,name FROM {local_course_levels}
+            $levelsql = "SELECT id,name FROM {local_course_levels}
                                     WHERE 1=1 $costcenterpathconcatsql ";
 
-                $levels = $DB->get_records_sql_menu($levelsql);
+            $levels = $DB->get_records_sql_menu($levelsql);
 
-                if(!empty($levels)){
-                    $levelselect = $levelselect+$levels;
-                }
-                $mform->addElement('select',  'open_level', get_string('open_levelcourse','local_courses'), $levelselect);
-                $mform->addHelpButton('open_level', 'open_levelcourse', 'local_courses');
-                $mform->setType('open_level', PARAM_INT);
+            if (!empty($levels)) {
+                $levelselect = $levelselect + $levels;
+            }
+            $mform->addElement('select',  'open_level', get_string('open_levelcourse', 'local_courses'), $levelselect);
+            $mform->addHelpButton('open_level', 'open_levelcourse', 'local_courses');
+            $mform->setType('open_level', PARAM_INT);
 
-            $mform->addElement('date_time_selector', 'startdate', get_string('startdate','local_courses'),
-             array());
+            $mform->addElement(
+                'date_time_selector',
+                'startdate',
+                get_string('startdate', 'local_courses'),
+                array()
+            );
             $mform->addHelpButton('startdate', 'startdate');
-		
-			$mform->addElement('date_time_selector', 'enddate', get_string('enddate','local_courses'), array('optional' => false));
+
+            $mform->addElement('date_time_selector', 'enddate', get_string('enddate', 'local_courses'), array('optional' => false));
             $mform->addHelpButton('enddate', 'enddate');
 
             $certificate_plugin_exist = $core_component::get_plugin_directory('tool', 'certificate');
-            if($certificate_plugin_exist){
+            if ($certificate_plugin_exist) {
                 $checkboxes = array();
-                $checkboxes[] = $mform->createElement('advcheckbox', 'map_certificate', null, '', array(),array(0,1));
+                $checkboxes[] = $mform->createElement('advcheckbox', 'map_certificate', null, '', array(), array(0, 1));
                 $mform->addGroup($checkboxes, 'map_certificate', get_string('add_certificate', 'local_courses'), array(' '), false);
                 $mform->addHelpButton('map_certificate', 'add_certificate', 'local_courses');
 
-
-                $select = array(0 => get_string('select_certificate','local_courses'));
+                $select = array(0 => get_string('select_certificate', 'local_courses'));
                 $certificatesql = "SELECT id,name FROM {tool_certificate_templates}
                                     WHERE 1=1 AND open_path=:openpath";
 
-                $cert_templates = $DB->get_records_sql_menu($certificatesql, array('openpath'=>"/".$costcenterid));
+                $cert_templates = $DB->get_records_sql_menu($certificatesql, array('openpath' => "/" . $costcenterid));
                 $certificateslist = $select + $cert_templates;
 
-                $mform->addElement('select',  'open_certificateid', get_string('certificate_template','local_courses'), $certificateslist);
+                $mform->addElement('select',  'open_certificateid', get_string('certificate_template', 'local_courses'), $certificateslist);
                 $mform->addHelpButton('open_certificateid', 'certificate_template', 'local_courses');
                 $mform->setType('open_certificateid', PARAM_INT);
                 $mform->hideIf('open_certificateid', 'map_certificate', 'neq', 1);
@@ -326,52 +325,50 @@ class custom_course_form extends moodleform {
 
             $handler = \core_course\customfield\course_handler::create();
             $handler->set_parent_context($categorycontext); // For course handler only.
-            $handler->instance_form_definition($mform, empty($this->course->id) ? 0 : $this->course->id); 
+            $handler->instance_form_definition($mform, empty($this->course->id) ? 0 : $this->course->id);
             $handler->instance_form_before_set_data($course);
-
-    
-        }else if ($formstatus == 2) {
-            list($zero, $org, $ctr, $bu, $cu, $territory) = explode("/",$this->course->open_path);
+        } else if ($formstatus == 2) {
+            list($zero, $org, $ctr, $bu, $cu, $territory) = explode("/", $this->course->open_path);
             $mform->addElement('hidden', 'open_costcenterid');
             $mform->setConstant('open_costcenterid', $org);
 
-            local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata,range(2,HIERARCHY_LEVELS), true, 'local_costcenter', $categorycontext, $multiple = false);
+            local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(2, HIERARCHY_LEVELS), true, 'local_costcenter', $categorycontext, $multiple = false);
 
             $functionname = 'globaltargetaudience_elementlist';
-            if(function_exists($functionname)) {
+            if (function_exists($functionname)) {
                 $costcenterfields = local_costcenter_get_fields();
                 $firstdepth = current($costcenterfields);
                 $mform->modulecostcenterpath = $this->_customdata[$firstdepth];
 
-                $functionname($mform,array('group','designation'), $org);
+                $functionname($mform, array('group', 'designation'), $org);
             }
             $course->module = 'course';
-            local_users_get_custom_userprofilefields($mform,$course,'course'); //target audience
-            
+            local_users_get_custom_userprofilefields($mform, $course, 'course'); //target audience
+
         }
         $mform->closeHeaderBefore('buttonar');
-		$mform->disable_form_change_checker();
+        $mform->disable_form_change_checker();
         // Finally set the current form data
-        if(empty($course)&&$course_id>0){
-             $course = get_course($course_id);
+        if (empty($course) && $course_id > 0) {
+            $course = get_course($course_id);
         }
-        if(!empty($this->_ajaxformdata['open_certificateid'])){
+        if (!empty($this->_ajaxformdata['open_certificateid'])) {
             $course->open_certificateid = $this->_ajaxformdata['open_certificateid'];
         }
-        if(!empty($course->open_certificateid)){
+        if (!empty($course->open_certificateid)) {
             $course->map_certificate = 1;
         }
 
-        if(!empty($this->_ajaxformdata['open_categoryid'])){
+        if (!empty($this->_ajaxformdata['open_categoryid'])) {
             $course->open_categoryid = $this->_ajaxformdata['open_categoryid'];
-        }else{
-            $course->open_categoryid =0;
+        } else {
+            $course->open_categoryid = 0;
         }
 
         $this->set_data($course);
-		$mform->disable_form_change_checker();
+        $mform->disable_form_change_checker();
     }
-     /**
+    /**
      * Validation.
      *
      * @param array $data
@@ -382,68 +379,63 @@ class custom_course_form extends moodleform {
         global $DB;
 
         $errors = parent::validation($data, $files);
-		$form_data = data_submitted();
+        $form_data = data_submitted();
         // Add field validation check for duplicate shortname.
-        if($data['form_status']== 0){
-        if ($course = $DB->get_record('course', array('shortname' => $data['shortname']), '*', IGNORE_MULTIPLE)) {
-            if (empty($data['id']) || $course->id != $data['id']) {
-                $errors['shortname'] = get_string('shortnametaken', '', $course->fullname);
+        if ($data['form_status'] == 0) {
+            if ($course = $DB->get_record('course', array('shortname' => $data['shortname']), '*', IGNORE_MULTIPLE)) {
+                if (empty($data['id']) || $course->id != $data['id']) {
+                    $errors['shortname'] = get_string('shortnametaken', '', $course->fullname);
+                }
             }
-        }
-        if(empty(trim($data['shortname'])))
-        {
-            $errors['shortname'] = get_string('missingshortname', 'local_courses');
-        }else{
-            $spacescount = explode(' ', trim($data['shortname']));
-            if(count($spacescount) > 1)
-            {
+            if (empty(trim($data['shortname']))) {
                 $errors['shortname'] = get_string('missingshortname', 'local_courses');
+            } else {
+                $spacescount = explode(' ', trim($data['shortname']));
+                if (count($spacescount) > 1) {
+                    $errors['shortname'] = get_string('missingshortname', 'local_courses');
+                }
             }
-        }  
-        if ((empty(trim($data['fullname'])) && $data['form_status'] == 0) || strpos($data['fullname'], '"') !== false) {
-            $errors['fullname'] = get_string('missingfullname','local_courses');
-        }
+            if ((empty(trim($data['fullname'])) && $data['form_status'] == 0) || strpos($data['fullname'], '"') !== false) {
+                $errors['fullname'] = get_string('missingfullname', 'local_courses');
+            }
 
-        if (isset($data['open_path']) && $data['form_status'] == 0){
-            if($data['open_path'] == 0){
-                $errors['open_path'] = get_string('pleaseselectorganization', 'local_courses');
+            if (isset($data['open_path']) && $data['form_status'] == 0) {
+                if ($data['open_path'] == 0) {
+                    $errors['open_path'] = get_string('pleaseselectorganization', 'local_courses');
+                }
+            }
+            if (isset($data['identifiedtype']) && $data['form_status'] == 0) {
+                if ($data['identifiedtype'] == 0) {
+                    $errors['identifiedtype'] = get_string('pleaseselectidentifiedtype', 'local_courses');
+                }
+            }
+            if (isset($data['open_coursecompletiondays']) && $data['open_coursecompletiondays']) {
+                $value = $data['open_coursecompletiondays'];
+                $intvalue = (int)$value;
 
+                if (!("$intvalue" === "$value") || $intvalue < 0) {
+                    $errors['open_coursecompletiondays'] = get_string('numeric', 'local_classroom');
+                }
             }
         }
-        if (isset($data['identifiedtype']) && $data['form_status'] == 0){
-            if($data['identifiedtype'] == 0){
-                $errors['identifiedtype'] = get_string('pleaseselectidentifiedtype', 'local_courses');
+        if ($data['form_status'] == 1) {
+            if (isset($data['startdate']) && isset($data['enddate'])) {
+                if ($data['enddate'] <= $data['startdate']) {
+                    $errors['enddate'] = get_string('nosameenddate', 'local_courses');
+                }
             }
-        }
-        if(isset($data['open_coursecompletiondays']) && $data['open_coursecompletiondays']){
-            $value = $data['open_coursecompletiondays'];
-            $intvalue = (int)$value;
-  
-            if(!("$intvalue" === "$value") || $intvalue < 0){
-              $errors['open_coursecompletiondays'] = get_string('numeric', 'local_classroom'); 
+            if (isset($data['map_certificate']) && $data['map_certificate'] == 1  && isset($data['open_certificateid']) && $data['open_certificateid'] == 0) {
+                $errors['open_certificateid'] = get_string('err_certificate', 'local_courses');
             }
-            
-          }
-      }
-      if($data['form_status']== 1){
-		if (isset($data['startdate']) && isset($data['enddate'])) {
-            if ($data['enddate'] <= $data['startdate']) {
-                $errors['enddate'] = get_string('nosameenddate', 'local_courses');
+
+            if (isset($data['open_points']) && $data['open_points']) {
+                $value = $data['open_points'];
+                $intvalue = (int)$value;
+
+                if (!("$intvalue" === "$value") || $intvalue < 0) {
+                    $errors['open_points'] = get_string('numeric', 'local_classroom');
+                }
             }
-        }
-        if (isset($data['map_certificate']) && $data['map_certificate'] == 1  && isset($data['open_certificateid']) && $data['open_certificateid'] == 0){
-            $errors['open_certificateid'] = get_string('err_certificate', 'local_courses');
-        }
-        
-        if(isset($data['open_points']) && $data['open_points']){
-            $value = $data['open_points'];
-            $intvalue = (int)$value;
-  
-            if(!("$intvalue" === "$value") || $intvalue < 0){
-              $errors['open_points'] = get_string('numeric', 'local_classroom');
-            }
-            
-        }
         }
 
         $errors = array_merge($errors, enrol_course_edit_validation($data, $this->context));

@@ -23,13 +23,11 @@
  * @subpackage local_courses
  */
 
-
 defined('MOODLE_INTERNAL') || die;
 
 use moodleform;
 
-class local_courses_renderer extends plugin_renderer_base
-{
+class local_courses_renderer extends plugin_renderer_base {
 
     /**
      * [render_classroom description]
@@ -37,8 +35,7 @@ class local_courses_renderer extends plugin_renderer_base
      * @param  \local_classroom\output\classroom $page [description]
      * @return [type]                                  [description]
      */
-    public function render_courses(\local_courses\output\courses $page)
-    {
+    public function render_courses(\local_courses\output\courses $page) {
         $data = $page->export_for_template($this);
         return parent::render_from_template('local_courses/courses', $data);
     }
@@ -48,8 +45,7 @@ class local_courses_renderer extends plugin_renderer_base
      * @param  \local_classroom\output\form_status $page [description]
      * @return [type]                                    [description]
      */
-    public function render_form_status(\local_courses\output\form_status $page)
-    {
+    public function render_form_status(\local_courses\output\form_status $page) {
         $data = $page->export_for_template($this);
         return parent::render_from_template('local_courses/form_status', $data);
     }
@@ -59,8 +55,7 @@ class local_courses_renderer extends plugin_renderer_base
      *
      * @return string The text to render
      */
-    public function get_catalog_courses($filter = false, $view_type = 'card')
-    {
+    public function get_catalog_courses($filter = false, $view_type = 'card') {
         global $USER;
         $categorycontext = (new \local_courses\lib\accesslib())::get_module_context();
         $status = optional_param('status', '', PARAM_RAW);
@@ -97,8 +92,6 @@ class local_courses_renderer extends plugin_renderer_base
         }
     }
 
-
-
     /**
      * Renders html to print list of courses tagged with particular tag
      *
@@ -112,8 +105,7 @@ class local_courses_renderer extends plugin_renderer_base
      * @param array $displayoptions
      * @return string empty string if no courses are marked with this tag or rendered list of courses
      */
-    public function tagged_courses($tagid, $exclusivemode = true, $ctx = 0, $rec = true, $displayoptions = null, $count = 0, $sort = '')
-    {
+    public function tagged_courses($tagid, $exclusivemode = true, $ctx = 0, $rec = true, $displayoptions = null, $count = 0, $sort = '') {
         global $CFG, $DB, $USER;
         $categorycontext = (new \local_courses\lib\accesslib())::get_module_context();
         $userorg = array();
@@ -189,8 +181,7 @@ class local_courses_renderer extends plugin_renderer_base
         return $this->output->render_from_template('local_tags/tagfeed', $tagfeed->export_for_template($this->output));
     }
 
-    function display_course_enrolledusers($courseid, $module = false)
-    {
+    function display_course_enrolledusers($courseid, $module = false) {
         global $DB;
 
         $certificate_plugin_exist = \core_component::get_plugin_directory('tool', 'certificate');
@@ -227,16 +218,15 @@ class local_courses_renderer extends plugin_renderer_base
         return $this->render_from_template('local_courses/courseusersview', $info);
     }
 
-    function get_course_enrolledusers($dataobj)
-    {
+    function get_course_enrolledusers($dataobj) {
         global $DB, $USER, $OUTPUT, $CFG;
 
         $countsql = "SELECT COUNT(DISTINCT u.id) ";
-        $selectsql = "SELECT DISTINCT(u.id) as userid,ue.id,u.firstname, u.lastname, u.email, u.open_employeeid, 
+        $selectsql = "SELECT DISTINCT(u.id) as userid,ue.id,u.firstname, u.lastname, u.email, u.open_employeeid,
             cc.timecompleted ";
         $sql = " FROM {course} c
         JOIN {course_categories} cat ON cat.id = c.category
-        JOIN {enrol} e ON e.courseid = c.id AND 
+        JOIN {enrol} e ON e.courseid = c.id AND
                     (e.enrol = 'manual' OR e.enrol = 'self' OR e.enrol = 'classroom' OR e.enrol = 'learningplan' OR e.enrol = 'auto')
         JOIN {user_enrolments} ue ON ue.enrolid = e.id
         JOIN {user} u ON u.id = ue.userid AND u.deleted = 0 AND u.suspended=0
@@ -245,7 +235,7 @@ class local_courses_renderer extends plugin_renderer_base
         JOIN {context} AS cxt ON cxt.id=ra.contextid AND cxt.contextlevel = 50 AND cxt.instanceid=c.id
         JOIN {role} as r ON r.id = ra.roleid AND r.shortname = 'employee'
         LEFT JOIN {course_completions} as cc ON cc.course = c.id AND u.id = cc.userid ";
-        
+
         if ($dataobj->moduletype == 'onlineexam') {
             $selectsql .= " , gi.gradepass ";
             $sql .= "LEFT JOIN {grade_items} AS gi ON gi.courseid = c.id AND gi.itemmodule = 'quiz' ";
@@ -256,7 +246,6 @@ class local_courses_renderer extends plugin_renderer_base
         $params['courseid'] = $dataobj->courseid;
 
         $categorycontext = (new \local_courses\lib\accesslib())::get_module_context($dataobj->courseid);
-
 
         $sql .= (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'u.open_path');
 
@@ -294,7 +283,7 @@ class local_courses_renderer extends plugin_renderer_base
                 $quizdata = $DB->get_record('quiz', array('course' => $dataobj->courseid), 'id, attempts');
             }
             foreach ($courseusers as $enroluser) {
-                $query = "SELECT MAX(qa.attempt)as attemps, qg.grade, qg.timemodified FROM {quiz_attempts} AS qa 
+                $query = "SELECT MAX(qa.attempt)as attemps, qg.grade, qg.timemodified FROM {quiz_attempts} AS qa
                 JOIN {quiz_grades} AS qg ON qg.quiz = qa.quiz AND qg.userid = qa.userid
 
                 WHERE qa.userid = :userid AND qa.quiz = :quiz AND qa.state = :state";
@@ -329,8 +318,8 @@ class local_courses_renderer extends plugin_renderer_base
                 }
                 $get_enrolid = "";
                 $get_enrolmentod = "";
-                $sql = "SELECT ue.id,e.enrol FROM {user_enrolments} as ue
-                    JOIN {enrol} as e ON e.id = ue.enrolid 
+                $sql = "SELECT ue.id,e.enrol,ue.userid FROM {user_enrolments} as ue
+                    JOIN {enrol} as e ON e.id = ue.enrolid
                     WHERE e.courseid = $dataobj->courseid AND ue.userid =$enroluser->userid ";
                 $userenrolment = $DB->get_records_sql($sql);
                 $enrolmethod = array();
@@ -351,8 +340,26 @@ class local_courses_renderer extends plugin_renderer_base
                             'alt' => get_string('delete'),
                             'onclick' => "(function(e){ require('local_courses/courses').deleteuser({ action:'delete_user',userid:" . $userenrol->id . ",id:" . $dataobj->courseid . "}) })(event)"
                         );
+                        $regenarateurl = 'javascript:void(0)';
+                        $regenarateicon = '<i class="icon fa fa-refresh fa-fw"></i>';
+                        $certificateparams = [];
+
+                        $issueid = $DB->get_field('tool_certificate_issues', 'id', array('userid' => $userenrol->userid, 'moduleid' => $dataobj->courseid));
+                        $regenaratearray = array(
+                            'title' => get_string('regenarate', 'local_courses'),
+                            'alt' => get_string('regenarate', 'local_courses'),
+                            'onclick' => "(function(e){ require('local_courses/courses').regeneratecertificate({ action:'regenarate_certificate',issueid:" . $issueid . ",id:" . $dataobj->courseid . "}) })(event)"
+                        );
+
                         $delete = html_writer::link($deleteurl, $deleteicon, $array);
-                        $enrolmethod[] = $courseedit . $delete;
+                        $regenarate = html_writer::link($regenarateurl, $regenarateicon, $regenaratearray);
+                        if ($cert_plugin_exists && $certificate_added) {
+                            if (!empty($enroluser->timecompleted)) {
+                                $enrolmethod[] = $courseedit . $delete . $regenarate;
+                            } else {
+                                $enrolmethod[] = $courseedit . $delete;
+                            }
+                        }
                     }
                 }
                 if ($dataobj->moduletype != 'onlineexam') {
@@ -363,7 +370,7 @@ class local_courses_renderer extends plugin_renderer_base
                 if ($cert_plugin_exists && $certificate_added) {
                     if (!empty($enroluser->timecompleted)) {
                         $icon = '<i class="icon fa fa-download" aria-hidden="true"></i>';
-                        //  mallikarjun added to download default certificate 
+                        //  mallikarjun added to download default certificate
                         $certcode = $DB->get_field('tool_certificate_issues', 'code', array('moduleid' => $dataobj->courseid, 'userid' => $enroluser->userid, 'moduletype' => 'course'));
                         $array = array('code' => $certcode);
                         $url = new moodle_url('/admin/tool/certificate/view.php', $array);
@@ -375,7 +382,7 @@ class local_courses_renderer extends plugin_renderer_base
                     }
                 }
                 $userslist[] = $userinfo;
-            }    
+            }
             $return = array(
                 "recordsFiltered" => $enrolleduserscount,
                 "data" => $userslist,
@@ -388,10 +395,8 @@ class local_courses_renderer extends plugin_renderer_base
         }
         return $return;
     }
-    public function get_userdashboard_courses($tab, $filter = false, $view_type = 'card')
-    {
+    public function get_userdashboard_courses($tab, $filter = false, $view_type = 'card') {
         $categorycontext = (new \local_courses\lib\accesslib())::get_module_context();
-
 
         $templateName = 'local_courses/userdashboard_paginated';
         $cardClass = 'col-md-6 col-12';
@@ -421,20 +426,18 @@ class local_courses_renderer extends plugin_renderer_base
             return  $this->render_from_template('local_costcenter/cardPaginate', $context);
         }
     }
-    
+
     /**
      * Render the selfcompletion
      * @param  selfcompletion $widget
      * @return bool|string
      * @throws moodle_exception
      */
-    protected function render_selfcompletion(\local_courses\output\selfcompletion $page)
-    {
+    protected function render_selfcompletion(\local_courses\output\selfcompletion $page) {
         $data = $page->export_for_template($this);
         return parent::render_from_template('local_courses/selfcompletion', $data);
     }
-    function user_for_autoenrol($courseid, $confirmation = 0, $enrollid)
-    {
+    function user_for_autoenrol($courseid, $confirmation = 0, $enrollid) {
         global $DB, $OUTPUT, $USER, $PAGE, $CFG;
         $core_component = new core_component();
         $autoenroll_plugin_exist = $core_component::get_plugin_directory('enrol', 'auto');
@@ -486,17 +489,17 @@ class local_courses_renderer extends plugin_renderer_base
         $array = target_audience_match_field($fields, $prefix, $course);
         $sqlarray = $array['sqlarray'];
         $params = $array['params'];
-        $coursefields = "SELECT fieldvalue FROM {local_module_targetaudience} mt 
+        $coursefields = "SELECT fieldvalue FROM {local_module_targetaudience} mt
     JOIN {user_info_field} uif ON uif.id=mt.fieldid
     WHERE mt.moduleid = $course->id AND mt.module = 'course' AND fieldvalue IS NOT NULL";
         $coursefields1 = $DB->get_fieldset_sql($coursefields);
         $total_fields = count($coursefields1);
-        $user_sql = "SELECT u.* FROM {user} u 
+        $user_sql = "SELECT u.* FROM {user} u
             WHERE u.id NOT IN (SELECT DISTINCT ue.userid
             FROM {user_enrolments} ue
             JOIN {enrol} e ON e.id = ue.enrolid
             JOIN {course} c ON c.id = e.courseid
-            WHERE c.id=$course->id $condition) 
+            WHERE c.id=$course->id $condition)
             AND u.suspended=0 AND u.deleted=0 $condition ";
         if (!empty($sqlarray)) {
             $user_sql .= " AND $sqlarray";
@@ -508,7 +511,7 @@ class local_courses_renderer extends plugin_renderer_base
                 foreach ($customtargetusers as $customtargetuser) {
                     $id = 0;
                     foreach ($coursefields1 as $field) {
-                        $query = "SELECT uid.userid as userid FROM {user_info_data} uid JOIN {local_module_targetaudience} lmt  
+                        $query = "SELECT uid.userid as userid FROM {user_info_data} uid JOIN {local_module_targetaudience} lmt
       ON lmt.fieldid = uid.fieldid WHERE lmt.moduleid = $course->id AND uid.userid= $customtargetuser->id AND FIND_IN_SET(uid.data,'$field')";
                         $coursefields_user = $DB->get_field_sql($query);
                         if ($coursefields_user) {
@@ -543,7 +546,6 @@ class local_courses_renderer extends plugin_renderer_base
                 $tabledata[] = $data;
             }
 
-
             echo '<br>';
             $tabledata1 = array_unique($tabledata, SORT_REGULAR);
             $data1['tabledata'] = $tabledata1;
@@ -572,15 +574,13 @@ class local_courses_renderer extends plugin_renderer_base
         return $this->render_from_template('local_courses/autoenrol_eligible_users', $data1);
     }
 
-    function userlog_for_autoenrol($courseid, $confirmation = 0, $enrollid)
-    {
+    function userlog_for_autoenrol($courseid, $confirmation = 0, $enrollid) {
         global $DB, $OUTPUT, $USER, $PAGE, $CFG;
         $core_component = new core_component();
         $autoenroll_plugin_exist = $core_component::get_plugin_directory('enrol', 'auto');
         if (!empty($autoenroll_plugin_exist)) {
             $autoplugin = enrol_get_plugin('auto');
             $instance = $autoplugin->get_instance_for_course($courseid);
-
 
             $systemcontext = (new \local_users\lib\accesslib())::get_module_context();
             $course = $DB->get_record('course', array('id' => $courseid));
@@ -613,7 +613,6 @@ class local_courses_renderer extends plugin_renderer_base
                     $tabledata[] = $data;
                 }
 
-
                 echo '<br>';
                 $tabledata1 = array_unique($tabledata, SORT_REGULAR);
                 $data1['tabledata'] = $tabledata1;
@@ -628,8 +627,7 @@ class local_courses_renderer extends plugin_renderer_base
         //return $rendertable;
     }
 
-    function get_performance_categories($orgid)
-    {
+    function get_performance_categories($orgid) {
         global $DB;
         $performance_types = array();
         $select = array();
@@ -644,19 +642,16 @@ class local_courses_renderer extends plugin_renderer_base
         if ($ptype_categories) {
             foreach ($ptype_categories as $ptype_category) {
                 // $performance_categories = $DB->get_records_sql_menu("SELECT * FROM {local_custom_category} WHERE parentid = :parentid AND parentid <> 0 ", array('parentid' => $ptype_category->id));
-                $performance_types[$ptype_category->id] = $ptype_category->fullname;
+                //$performance_types[$ptype_category->id] = $ptype_category->fullname;
 
-                $child_categories = $DB->get_records_sql("SELECT * FROM {local_custom_category} WHERE parentid = :parentid AND parentid <> 0 ",array('parentid'=>$ptype_category->id));
+                $child_categories = $DB->get_records_sql("SELECT * FROM {local_custom_category} WHERE parentid = :parentid AND parentid <> 0 ", array('parentid' => $ptype_category->id));
 
-                foreach($child_categories AS $child_category)
-                {
-                    $performance_types[$child_category->id] = $ptype_category->fullname.' / '.$child_category->fullname;
+                foreach ($child_categories as $child_category) {
+                    $performance_types[$child_category->id] = $ptype_category->fullname . ' / ' . $child_category->fullname;
                 }
-
             }
         }
-        
-       
+
         return $performance_types;
     }
 }

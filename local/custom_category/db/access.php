@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of eAbyas
  *
@@ -32,6 +33,14 @@ $capabilities = array(
         )
     ),
     'local/custom_category:create_custom_category' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSECAT,
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
+        )
+    ),
+
+    'local/custom_category:manage_custom_category' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSECAT,
         'archetypes' => array(

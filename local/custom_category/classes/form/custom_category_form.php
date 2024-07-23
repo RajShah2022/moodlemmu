@@ -1,5 +1,5 @@
 <?php
-namespace local_custom_category\form;
+
 /**
  * This file is part of eAbyas
  *
@@ -22,9 +22,12 @@ namespace local_custom_category\form;
  * @package BizLMS
  * @subpackage local_custom_category
  */
+
+namespace local_custom_category\form;
+
 use moodleform;
-use context_system;
-use costcenter;
+use core_component;
+
 require_once(dirname(__FILE__) . '/../../../../config.php');
 global $CFG;
 require_once("$CFG->libdir/formslib.php");
@@ -45,28 +48,28 @@ class custom_category_form extends moodleform {
         $context = (new \local_custom_category\lib\accesslib())::get_module_context();
         $categoryquerylib = new \local_custom_category\querylib();
         $costcenterquerylib = new \local_costcenter\querylib();
-        if($parentcatid>0 && is_siteadmin()){           
-            $costcenterid = $categoryquerylib->category_field('costcenterid', array('id'=> $parentcatid));          
-            $orgname = $costcenterquerylib->costcenter_field('fullname', array('id'=>$costcenterid));
-            $mform->addElement('static','costcentername', get_string('open_costcenterid', 'local_costcenter'), $orgname);
-            $mform->addElement('hidden','open_costcenterid', $costcenterid);
-        }else{
-            if($fid && is_siteadmin()){                
-                $orgname = $costcenterquerylib->costcenter_field('fullname', array('id'=>$costcenterid));
-                $mform->addElement('static','costcentername', get_string('open_costcenterid', 'local_costcenter'), $orgname);
-                $mform->addElement('hidden','open_costcenterid');
-            }else{
-                local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata,range(1, 1), false, 'local_custom_category', $context, $multiple = false);
+        if ($parentcatid > 0 && is_siteadmin()) {
+            $costcenterid = $categoryquerylib->category_field('costcenterid', array('id' => $parentcatid));
+            $orgname = $costcenterquerylib->costcenter_field('fullname', array('id' => $costcenterid));
+            $mform->addElement('static', 'costcentername', get_string('open_costcenterid', 'local_costcenter'), $orgname);
+            $mform->addElement('hidden', 'open_costcenterid', $costcenterid);
+        } else {
+            if ($fid && is_siteadmin()) {
+                $orgname = $costcenterquerylib->costcenter_field('fullname', array('id' => $costcenterid));
+                $mform->addElement('static', 'costcentername', get_string('open_costcenterid', 'local_costcenter'), $orgname);
+                $mform->addElement('hidden', 'open_costcenterid');
+            } else {
+                local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(1, 1), false, 'local_custom_category', $context, $multiple = false);
             }
         }
-      
-        if($parentcatid>0){           
-            $parentname = $categoryquerylib->category_field('fullname', array('id'=>$parentcatid));
-            $mform->addElement('static', 'parentname', get_string('parent','local_costcenter'), $parentname);
+
+        if ($parentcatid > 0) {
+            $parentname = $categoryquerylib->category_field('fullname', array('id' => $parentcatid));
+            $mform->addElement('static', 'parentname', get_string('parent', 'local_costcenter'), $parentname);
             $mform->addElement('hidden', 'parentid', $parentcatid);
-        } else {  
+        } else {
             $parentname = 'Top';
-            $mform->addElement('static','parentname', get_string('parent','local_costcenter'),$parentname);
+            $mform->addElement('static', 'parentname', get_string('parent', 'local_costcenter'), $parentname);
             $mform->addElement('hidden', 'parentid', 0);
         }
         $mform->setType('parentid', PARAM_INT);
@@ -78,7 +81,22 @@ class custom_category_form extends moodleform {
         $mform->addElement('text', 'shortname', get_string('shortname', 'local_custom_category'), array());
         $mform->setType('shortname', PARAM_RAW);
         $mform->addRule('shortname', null, 'required', null, 'client');
-
+        $corecomponent = new core_component();
+        $pluginexists = $corecomponent::get_plugin_directory('local', 'custom_matrix');
+        if ($pluginexists) {
+            $matrixpluginstatus = get_config('local_custom_matrix', 'performance_matrix_status');
+            if ($matrixpluginstatus) {
+                if ($parentcatid  == 0) {
+                    $choices = array(
+                        null => get_string('selecttype', 'local_custom_category'),
+                        0 => get_string('internalcat', 'local_custom_category'),
+                        1 => get_string('externalcat', 'local_custom_category'),
+                    );
+                    $mform->addElement('select', 'type', get_string('type', 'local_custom_category'), $choices);
+                    $mform->addHelpButton('type', 'type', 'local_custom_category');
+                }
+            }
+        }
         $mform->disable_form_change_checker();
     }
 
@@ -86,16 +104,15 @@ class custom_category_form extends moodleform {
         $errors = parent::validation($data, $files);
 
         $shortname = $data['shortname'];
-        $id = $data['id'];        
+        $id = $data['id'];
         $categoryquerylib = new \local_custom_category\querylib();
-        $record = $categoryquerylib->category_shortname(array($shortname, $id)); 
+        $record = $categoryquerylib->category_shortname(array($shortname, $id));
         if (!empty($record)) {
             $errors['shortname'] = get_string('shortnameexists', 'local_custom_category');
         }
-        if(strlen($shortname) > 150){
+        if (strlen($shortname) > 150) {
             $errors['shortname'] = get_string('shortnamelengthexceeds', 'local_custom_category');
         }
         return $errors;
     }
-
 }

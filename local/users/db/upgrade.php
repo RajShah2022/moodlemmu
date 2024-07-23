@@ -14,8 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-function xmldb_local_users_upgrade($oldversion)
-{
+function xmldb_local_users_upgrade($oldversion) {
     global $DB, $CFG;
     $dbman = $DB->get_manager();
     if ($oldversion < 2016080911.05) {
@@ -96,7 +95,6 @@ function xmldb_local_users_upgrade($oldversion)
         if (!$dbman->index_exists($table1, $index4)) {
             $dbman->add_index($table1, $index4);
         }
-
 
         $index5 = new xmldb_index('userid', XMLDB_INDEX_NOTUNIQUE, array('userid'));
 
@@ -211,7 +209,6 @@ function xmldb_local_users_upgrade($oldversion)
             $dbman->add_field($table, $field2);
         }
 
-
         upgrade_plugin_savepoint(true, 2022101800.13, 'local', 'users');
     }
 
@@ -236,7 +233,7 @@ function xmldb_local_users_upgrade($oldversion)
     if ($oldversion < 2022101800.18) {
         $table = new xmldb_table('user');
         $educationlevel = new xmldb_field('open_educationlevel');
-        $educationlevel->set_attributes(XMLDB_TYPE_CHAR, '225', null, XMLDB_NOTNULL,null, 0);
+        $educationlevel->set_attributes(XMLDB_TYPE_CHAR, '225', null, XMLDB_NOTNULL, null, 0);
         if (!$dbman->field_exists($table, $educationlevel)) {
             $dbman->add_field($table, $educationlevel);
         }
@@ -302,10 +299,9 @@ function xmldb_local_users_upgrade($oldversion)
         }
 
         upgrade_plugin_savepoint(true, 2023061000.01, 'local', 'users');
-    }    
+    }
 
-
-    if($oldversion < 2023061000.02){
+    if ($oldversion < 2023061000.02) {
         $table = new xmldb_table('user');
 
         $open_state = new xmldb_field('open_state');
@@ -383,8 +379,24 @@ function xmldb_local_users_upgrade($oldversion)
             $dbman->drop_field($table, $open_orgactive);
         }
 
-
-        upgrade_plugin_savepoint(true, 2023061000.02, 'local', 'users');   
+        upgrade_plugin_savepoint(true, 2023061000.02, 'local', 'users');
     }
+
+    if ($oldversion <  2023061000.07) {
+        $table = new xmldb_table('user');
+
+        $project = new xmldb_field('open_project');
+        $project->set_attributes(XMLDB_TYPE_CHAR, '225', null, null, null, null);
+        if (!$dbman->field_exists($table, $project)) {
+            $dbman->add_field($table, $project);
+        }
+        $index = new xmldb_index('open_project', XMLDB_INDEX_NOTUNIQUE, array('open_project'));
+
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+        upgrade_plugin_savepoint(true, 2023061000.07, 'local', 'users');
+    }
+
     return true;
 }

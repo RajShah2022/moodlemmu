@@ -21,6 +21,7 @@ require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->libdir . '/completionlib.php');
 require_once($CFG->dirroot . '/local/costcenter/lib.php');
 require_once($CFG->dirroot . '/local/users/lib.php');
+
 use moodleform;
 use costcenter;
 use context_user;
@@ -28,14 +29,21 @@ use core_component;
 
 class create_user extends moodleform {
     public $formstatus;
-    public function __construct($action = null, $customdata = null, $method = 'post', $target = '',
-     $attributes = null, $editable = true, $formdata = null) {
+    public function __construct(
+        $action = null,
+        $customdata = null,
+        $method = 'post',
+        $target = '',
+        $attributes = null,
+        $editable = true,
+        $formdata = null
+    ) {
 
         $this->formstatus = array(
             'generaldetails' => get_string('generaldetails', 'local_users'),
             'otherdetails' => get_string('otherdetails', 'local_users'),
             'contactdetails' => get_string('contactdetails', 'local_users'),
-            );
+        );
         parent::__construct($action, $customdata, $method, $target, $attributes, $editable, $formdata);
     }
     public function definition() {
@@ -47,39 +55,38 @@ class create_user extends moodleform {
 
         $mform = $this->_form;
         $form_status = $this->_customdata['form_status'];
-        $id = $this->_customdata['id'] > 0 ? $this->_customdata['id'] : 0;  
-      
+        $id = $this->_customdata['id'] > 0 ? $this->_customdata['id'] : 0;
+
         if ($form_status == 0) {
 
-            local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata,null, true, 'local_costcenter', $categorycontext, $multiple = false);
+            local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, null, true, 'local_costcenter', $categorycontext, $multiple = false);
 
             $count = count((array)$costcenters);
             $mform->addElement('hidden', 'count', $count);
             $mform->setType('count', PARAM_INT);
-            $mform->addElement('text', 'username', get_string('username', 'local_users'),['autocomplete'=>'false']);
+            $mform->addElement('text', 'username', get_string('username', 'local_users'), ['autocomplete' => 'false']);
             $mform->addRule('username', get_string('usernamerequired', 'local_users'), 'required', null, 'client');
             $mform->setType('username', PARAM_RAW);
-            $mform->setDefault('username','');
+            $mform->setDefault('username', '');
 
-            $auths = \core_component::get_plugin_list('auth');       
+            $auths = \core_component::get_plugin_list('auth');
             $authoptions = array();
             $cannotchangepass = array();
             $cannotchangeusername = array();
             foreach ($auths as $auth => $unused) {
-                if ($auth == 'nologin') 
+                if ($auth == 'nologin')
                     continue;
-                    $authinst = get_auth_plugin($auth);
-                
+                $authinst = get_auth_plugin($auth);
 
                 if (!$authinst->is_internal()) {
-                      $cannotchangeusername[] = $auth;
+                    $cannotchangeusername[] = $auth;
                 }
 
                 $passwordurl = $authinst->change_password_url();
                 if (!($authinst->can_change_password() && empty($passwordurl))) {
                     if ($id < 1 && $authinst->is_internal()) {
-                          // This is unlikely but we can not create account without password.
-                          // When plugin uses passwords, we need to set it initially at least.
+                        // This is unlikely but we can not create account without password.
+                        // When plugin uses passwords, we need to set it initially at least.
                     } else {
                         $cannotchangepass[] = $auth;
                     }
@@ -108,7 +115,7 @@ class create_user extends moodleform {
                 '2' => 'Mrs',
                 '3' => 'Ms'
             );
-            $select = $mform->addElement('select', 'open_prefix', get_string('prefix','local_users'), $options);
+            $select = $mform->addElement('select', 'open_prefix', get_string('prefix', 'local_users'), $options);
             $mform->addElement('text', 'firstname', get_string('firstname', 'local_users'));
             $mform->addRule('firstname', get_string('errorfirstname', 'local_users'), 'required', null, 'client');
             $mform->setType('firstname', PARAM_RAW);
@@ -117,9 +124,9 @@ class create_user extends moodleform {
             $mform->addRule('lastname', get_string('errorlastname', 'local_users'), 'required', null, 'client');
             $mform->setType('lastname', PARAM_RAW);
 
-            $genderarray=array();
-            $genderarray[] = $mform->createElement('radio', 'gender', '', get_string('male','local_users'), 0, $attributes);
-            $genderarray[] = $mform->createElement('radio', 'gender', '', get_string('female','local_users'), 1, $attributes);
+            $genderarray = array();
+            $genderarray[] = $mform->createElement('radio', 'gender', '', get_string('male', 'local_users'), 0, $attributes);
+            $genderarray[] = $mform->createElement('radio', 'gender', '', get_string('female', 'local_users'), 1, $attributes);
             $genderarray[] = $mform->createElement('radio', 'gender', '', get_string('transgender', 'local_users'), 3, $attributes);
             $genderarray[] = $mform->createElement('radio', 'gender', '', get_string('other', 'local_users'), 2, $attributes);
             $mform->addGroup($genderarray, 'gendergr', get_string('gender', 'local_users'), array(' '), false);
@@ -128,128 +135,144 @@ class create_user extends moodleform {
             $mform->addRule('email', get_string('emailerror', 'local_users'), 'required', null, 'client');
             $mform->setType('email', PARAM_RAW);
 
-
             $mform->addElement('text', 'open_employeeid', get_string('serviceid', 'local_users'));
             $mform->addRule('open_employeeid',  get_string('employeeidrequired', 'local_users'),  'required',  '',  'client');
-            $mform->addRule('open_employeeid',  get_string('open_employeeiderror', 'local_users'),
-                'alphanumeric', 'extraruledata',  'client');
+            $mform->addRule(
+                'open_employeeid',
+                get_string('open_employeeiderror', 'local_users'),
+                'alphanumeric',
+                'extraruledata',
+                'client'
+            );
 
             $mform->setType('open_employeeid', PARAM_RAW);
             $open_costcenterid = $this->_customdata['open_costcenterid'] > 0 ?
-                             $this->_customdata['open_costcenterid'] : $this->_ajaxformdata['open_costcenterid'];
+                $this->_customdata['open_costcenterid'] : $this->_ajaxformdata['open_costcenterid'];
 
-
-            $reportingmanger[0] =get_string('select_reportingto', 'local_users');
-            if($id){
+            $reportingmanger[0] = get_string('select_reportingto', 'local_users');
+            if ($id) {
                 $reportingmanger += $DB->get_records_sql_menu("SELECT id, concat(firstname,' ',lastname) FROM {user} WHERE id = (SELECT open_supervisorid FROM {user} WHERE id = :id) AND deleted = :deleted AND suspended = :suspended", ['id' => $id, 'deleted' => 0, 'suspended' => 0]);
-            }else{
-                $reportingmanger += $DB->get_records_sql_menu("SELECT id, concat(firstname,' ',lastname) FROM {user} WHERE  deleted = :deleted AND suspended = :suspended",['deleted' => 0, 'suspended' => 0]);
+            } else {
+                $reportingmanger += $DB->get_records_sql_menu("SELECT id, concat(firstname,' ',lastname) FROM {user} WHERE  deleted = :deleted AND suspended = :suspended", ['deleted' => 0, 'suspended' => 0]);
             }
             $supervisoroptions = array(
-            'class' => 'supervisor_select',
-            'id' => 'id_supervisor_select',
-            'data-contextid' => $categorycontext->id,
-            'data-parentclass' => 'open_costcenterid_select',
-            'data-selectstring' => get_string('select_reportingto', 'local_users'),
-            'data-options' => json_encode(array('id' => $id, 'parentid' => $open_costcenterid, 'enableallfield' => false)),
-            'data-class' => 'supervisor_select',
-            'multiple' => false,
-            'ajax' => 'local_costcenter/form-options-selector',
-            'data-action' => 'user_supervisor_selector',
-            'noselectionstring'=>get_string('noselection', 'form')
+                'class' => 'supervisor_select',
+                'id' => 'id_supervisor_select',
+                'data-contextid' => $categorycontext->id,
+                'data-parentclass' => 'open_costcenterid_select',
+                'data-selectstring' => get_string('select_reportingto', 'local_users'),
+                'data-options' => json_encode(array('id' => $id, 'parentid' => $open_costcenterid, 'enableallfield' => false)),
+                'data-class' => 'supervisor_select',
+                'multiple' => false,
+                'ajax' => 'local_costcenter/form-options-selector',
+                'data-action' => 'user_supervisor_selector',
+                'noselectionstring' => get_string('noselection', 'form')
             );
-            $select = $mform->addElement('autocomplete', 'open_supervisorid',
-                    get_string('supervisor', 'local_users'),
-                    $reportingmanger, $supervisoroptions);
-                    
+            $select = $mform->addElement(
+                'autocomplete',
+                'open_supervisorid',
+                get_string('supervisor', 'local_users'),
+                $reportingmanger,
+                $supervisoroptions
+            );
+
             $mform->setType('open_supervisorid', PARAM_RAW);
-            
-            //$costcenterid = ($open_costcenterid) ? $open_costcenterid : 0;    
-            $costcenterid = ($this->_ajaxformdata['open_costcenterid']) ? $this->_ajaxformdata['open_costcenterid'] : (($open_costcenterid) ? $open_costcenterid : 0);       
-            profile_definition($mform, $id, $form_status,$costcenterid);
-            
-                // End of if($form_status = 0) condition.
+
+            //$costcenterid = ($open_costcenterid) ? $open_costcenterid : 0;
+            $costcenterid = ($this->_ajaxformdata['open_costcenterid']) ? $this->_ajaxformdata['open_costcenterid'] : (($open_costcenterid) ? $open_costcenterid : 0);
+            profile_definition($mform, $id, $form_status, $costcenterid);
+
+            // End of if($form_status = 0) condition.
         } else if ($form_status == 1) {
 
             // $mform->addElement('select', 'lang', get_string(
             //     'preferredlanguage', 'local_users'),
             //     get_string_manager()->get_list_of_translations());
             // $mform->setDefault('lang', $CFG->lang);
+            $mform->addElement('text', 'open_hrmsrole', get_string('hrmrole', 'local_users'));
+            $mform->setType('open_hrmsrole', PARAM_RAW);
+
+            $mform->addElement('text', 'open_project', get_string('project', 'local_users'));
+            $mform->setType('open_project', PARAM_RAW);
 
             $mform->addElement('text', 'open_designation', get_string('designation', 'local_users'));
             $mform->setType('open_designation', PARAM_RAW);
             $mform->addHelpButton('open_designation', 'designation', 'local_users');
 
-             // local_users_get_userprofile_fields($mform, $this->_ajaxformdata, $this->_customdata, false, 'local_users', $categorycontext, $multiple = false);
+            // local_users_get_userprofile_fields($mform, $this->_ajaxformdata, $this->_customdata, false, 'local_users', $categorycontext, $multiple = false);
 
             // $mform->addElement('text', 'open_employmenttype', get_string('employmenttype', 'local_users'));
             // $mform->setType('open_employmenttype', PARAM_RAW);
             // $mform->addHelpButton('open_employmenttype', 'employmenttype', 'local_users');
 
-
             // $mform->addElement('text', 'open_region', get_string('region', 'local_users'));
             // $mform->setType('open_region', PARAM_RAW);
             // $mform->addHelpButton('open_region', 'region', 'local_users');
-
 
             // $mform->addElement('text', 'open_grade', get_string('grade', 'local_users'));
             // $mform->setType('open_grade', PARAM_RAW);
             // $mform->addHelpButton('open_grade', 'grade', 'local_users');
 
+            $mform->addElement(
+                'date_selector',
+                'open_dateofbirth',
+                get_string('dateofbirth', 'local_users'),
+                array('optional' => true)
+            );
+            $mform->addElement(
+                'date_selector',
+                'open_joindate',
+                get_string('joiningdate', 'local_users'),
+                array('optional' => true)
+            );
 
-            $mform->addElement('date_selector', 'open_dateofbirth',get_string('dateofbirth','local_users'),
-            array('optional' => true));
-            $mform->addElement('date_selector', 'open_joindate',get_string('joiningdate','local_users'),
-                             array('optional' => true));
-
-            $advance = get_config('local_skillrepository','advance');
-            if($positions_plugin_exists && $advance == 1)
-            {
+            $advance = get_config('local_skillrepository', 'advance');
+            if ($positions_plugin_exists && $advance == 1) {
                 $open_costcenterid = $this->_customdata['open_costcenterid'] > 0 ?
-                             $this->_customdata['open_costcenterid'] : $this->_ajaxformdata['open_costcenterid'];
+                    $this->_customdata['open_costcenterid'] : $this->_ajaxformdata['open_costcenterid'];
 
                 $sql = "SELECT id, name FROM {local_domains}";
-                $domainoptarr[0] = get_string('domainreq','local_users');
+                $domainoptarr[0] = get_string('domainreq', 'local_users');
                 $domainoptarr += $DB->get_records_sql_menu($sql);
                 $domainoptions = array(
-                'class' => 'domain_select',
-                'id' => 'id_open_domainid',
-                'data-contextid' => $categorycontext->id,
-                'data-parentclass' => 'open_costcenterid_select',
-                'data-selectstring' => get_string('domainreq', 'local_users'),
-                'data-options' => json_encode(array('id' => $id, 'parentid' => $open_costcenterid, 'enableallfield' => false)),
-                'data-class' => 'domain_select',
-                'multiple' => false,
-                'ajax' => 'local_costcenter/form-options-selector',
-                'data-action' => 'user_domain_selector',
-                'noselectionstring'=>get_string('noselection', 'form')
+                    'class' => 'domain_select',
+                    'id' => 'id_open_domainid',
+                    'data-contextid' => $categorycontext->id,
+                    'data-parentclass' => 'open_costcenterid_select',
+                    'data-selectstring' => get_string('domainreq', 'local_users'),
+                    'data-options' => json_encode(array('id' => $id, 'parentid' => $open_costcenterid, 'enableallfield' => false)),
+                    'data-class' => 'domain_select',
+                    'multiple' => false,
+                    'ajax' => 'local_costcenter/form-options-selector',
+                    'data-action' => 'user_domain_selector',
+                    'noselectionstring' => get_string('noselection', 'form')
                 );
 
                 $mform->addElement('autocomplete', 'open_domainid', get_string('domain', 'local_users'), $domainoptarr, $domainoptions);
                 $mform->setType('open_domainid', PARAM_INT);
 
-                $positionoptarr[0] = get_string('positionsreq','local_users');
+                $positionoptarr[0] = get_string('positionsreq', 'local_users');
                 $positionoptarr += $DB->get_records_sql_menu("SELECT id, name FROM {local_positions}");
 
                 $positionoptions = array(
-                'class' => 'position_select',
-                'id' => 'id_position_select',
-                'data-contextid' => $categorycontext->id,
-                'data-parentclass' => 'open_costcenterid_select',
-                'data-selectstring' => get_string('domainreq', 'local_users'),
-                'data-options' => json_encode(array('id' => $id, 'parentid' => $open_costcenterid, 'enableallfield' => false)),
-                'data-class' => 'position_select',
-                'multiple' => false,
-                'ajax' => 'local_costcenter/form-options-selector',
-                'data-action' => 'user_position_selector',
-                'noselectionstring'=>get_string('noselection', 'form')
+                    'class' => 'position_select',
+                    'id' => 'id_position_select',
+                    'data-contextid' => $categorycontext->id,
+                    'data-parentclass' => 'open_costcenterid_select',
+                    'data-selectstring' => get_string('domainreq', 'local_users'),
+                    'data-options' => json_encode(array('id' => $id, 'parentid' => $open_costcenterid, 'enableallfield' => false)),
+                    'data-class' => 'position_select',
+                    'multiple' => false,
+                    'ajax' => 'local_costcenter/form-options-selector',
+                    'data-action' => 'user_position_selector',
+                    'noselectionstring' => get_string('noselection', 'form')
                 );
 
                 $mform->addElement('autocomplete', 'open_positionid', get_string('positions', 'local_users'), $positionoptarr, $positionoptions);
                 $mform->setType('open_positionid', PARAM_INT);
             }
 
-         profile_definition($mform, $id, $form_status);
+            profile_definition($mform, $id, $form_status);
         } else if ($form_status == 2) {
 
             $mform->addElement('text', 'phone1', get_string('contactno', 'local_users'));
@@ -257,7 +280,6 @@ class create_user extends moodleform {
             $mform->addRule('phone1', get_string('phoneminimum', 'local_users'), 'minlength', 10, 'client');
             $mform->addRule('phone1', get_string('phonemaximum', 'local_users'), 'maxlength', 10, 'client');
             $mform->setType('phone1', PARAM_RAW);
-
 
             $mform->addElement('hidden', 'timezone');
             $mform->setType('timezone', \core_user::get_property_type('timezone'));
@@ -275,9 +297,15 @@ class create_user extends moodleform {
             $mform->addElement('static', 'currentpicture', get_string('currentpicture'));
             $mform->addElement('checkbox', 'deletepicture', get_string('delete'));
             $mform->setDefault('deletepicture', 0);
-            $mform->addElement('filepicker', 'imagefile',
-                    get_string('newpicture'), null, array(
-                    'accepted_types' => array('.jpg', '.jpeg', '.png')));
+            $mform->addElement(
+                'filepicker',
+                'imagefile',
+                get_string('newpicture'),
+                null,
+                array(
+                    'accepted_types' => array('.jpg', '.jpeg', '.png')
+                )
+            );
 
             $mform->addHelpButton('imagefile', 'newpicture');
         }
@@ -290,11 +318,10 @@ class create_user extends moodleform {
         $mform->setType('form_status', PARAM_INT);
         $mform->setDefault('form_status',  $form_status);
         $mform->disable_form_change_checker();
-
     }
     public function definition_after_data() {
         global $USER, $CFG, $DB, $OUTPUT;
-        $mform = & $this->_form;
+        $mform = &$this->_form;
         $form_status = $this->_customdata['form_status'];
         if ($userid = $mform->getElementValue('id')) {
             $user = $DB->get_record('user', array('id' => $userid));
@@ -306,9 +333,21 @@ class create_user extends moodleform {
             if ($user) {
                 $context = context_user::instance($user->id, MUST_EXIST);
                 $fs = get_file_storage();
-                $hasuploadedpicture = ($fs->file_exists($context->id,
-                    'user', 'icon', 0, '/', 'f2.png') || $fs->file_exists(
-                    $context->id, 'user', 'icon', 0, '/', 'f2.jpg'));
+                $hasuploadedpicture = ($fs->file_exists(
+                    $context->id,
+                    'user',
+                    'icon',
+                    0,
+                    '/',
+                    'f2.png'
+                ) || $fs->file_exists(
+                    $context->id,
+                    'user',
+                    'icon',
+                    0,
+                    '/',
+                    'f2.jpg'
+                ));
                 if (!empty($user->picture) && $hasuploadedpicture) {
                     $imagevalue = $OUTPUT->user_picture($user, array('courseid' => SITEID, 'size' => 64, 'link' => false));
                 } else {
@@ -337,7 +376,7 @@ class create_user extends moodleform {
         $id = $data['id'];
         $uname = $data['username'];
         $form_status = $data['form_status'];
-        if ($form_status == 0) {// As these fields are in only form part 1(form_status=0).
+        if ($form_status == 0) { // As these fields are in only form part 1(form_status=0).
             $username = $data['username'];
             $firstname = $data['firstname'];
             $lastname = $data['lastname'];
@@ -355,17 +394,20 @@ class create_user extends moodleform {
             // if (!$department) {
             //     $errors['open_departmentid'] = get_string('nodepartmenterror', 'local_users');
             // }
-                // OL72 ends here.
+            // OL72 ends here.
             if (get_config('core', 'allowaccountssameemail') == 0) {
                 if (!empty($data['email']) && ($user = $DB->get_record(
-                    'user', array('email' => $data['email']),
-                    '*', IGNORE_MULTIPLE))) {
+                    'user',
+                    array('email' => $data['email']),
+                    '*',
+                    IGNORE_MULTIPLE
+                ))) {
                     if (empty($data['id']) || $user->id != $data['id']) {
                         $errors['email'] = get_string('emailexists', 'local_users');
                     }
                 }
             }
-            if(!empty($data['email'])){
+            if (!empty($data['email'])) {
                 if (!validate_email($data['email'])) {
                     $errors['email'] = get_string('emailerror', 'local_users');
                 }
@@ -383,8 +425,8 @@ class create_user extends moodleform {
                 $passwordurl = $authinst->change_password_url();
                 if (!($authinst->can_change_password() && empty($passwordurl))) {
                     if ($authinst->is_internal()) {
-                            // This is unlikely but we can not create account without password.
-                            // when plugin uses passwords, we need to set it initially at least.
+                        // This is unlikely but we can not create account without password.
+                        // when plugin uses passwords, we need to set it initially at least.
                     } else {
                         $cannotchangepass[] = $auth;
                     }
@@ -397,10 +439,13 @@ class create_user extends moodleform {
                     if (!check_password_policy($data['password'], $errmsg)) {
                         $errors['password'] = $errmsg;
                     }
-                } else if (empty($data['id']) &&
+                } else if (
+                    empty($data['id']) &&
                     $data['createpassword'] != 1 && !in_array(
-                    $data['auth'], $cannotchangepass) && empty(
-                    $data['password'])) {
+                        $data['auth'],
+                        $cannotchangepass
+                    ) && empty($data['password'])
+                ) {
                     $errors['password'] = get_string('passwordrequired', 'local_users');
                 }
             }
@@ -414,12 +459,14 @@ class create_user extends moodleform {
             }
             $userempsql = "SELECT u.id, u.open_path FROM {user} AS u WHERE u.open_employeeid = :open_employeeid ";
             if ($user = $DB->get_record_sql($userempsql, array(
-                'open_employeeid' => $employeeid))) {
-                if (!isset($data['id']) ||
-                    $user->id != $data['id']) {
+                'open_employeeid' => $employeeid
+            ))) {
+                if (
+                    !isset($data['id']) ||
+                    $user->id != $data['id']
+                ) {
                     $errors['open_employeeid'] = get_string('open_employeeidexist', 'local_users');
                 }
-
             }
         }
         if ($form_status == 2) { // As these fields are in only form part 3(form_status=2).
@@ -435,4 +482,3 @@ class create_user extends moodleform {
         return $errors;
     }
 }
-

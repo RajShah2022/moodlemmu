@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of eAbyas
  *
@@ -22,20 +23,18 @@
  * @subpackage local_users
  */
 
-
-
 require_once(dirname(__FILE__) . '/../../config.php');
-global $CFG,$PAGE;
+global $CFG, $PAGE;
 require_once($CFG->dirroot . '/local/users/lib.php');
-$courseid = optional_param('id',0,PARAM_INT);
-$confirmation = optional_param('confirmation',0,PARAM_INT);
-$enrolid = optional_param('autoenrolid',0,PARAM_INT);
+$courseid = optional_param('id', 0, PARAM_INT);
+$confirmation = optional_param('confirmation', 0, PARAM_INT);
+$enrolid = optional_param('autoenrolid', 0, PARAM_INT);
 $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
 $PAGE->set_context($categorycontext);
-$PAGE->set_url($CFG->wwwroot .'/local/courses/courseautoenrol.php');
-$coursename=$DB->get_field('course', 'fullname', array('id' => $courseid));
+$PAGE->set_url($CFG->wwwroot . '/local/courses/courseautoenrol.php');
+$coursename = $DB->get_field('course', 'fullname', array('id' => $courseid));
 $PAGE->set_title(get_string('courseautoenrol', 'local_courses'));
-$PAGE->set_heading(get_string('courseautoenrol', 'local_courses').' - '.$coursename);
+$PAGE->set_heading(get_string('courseautoenrol', 'local_courses') . ' - ' . $coursename);
 $PAGE->requires->jquery();
 $PAGE->requires->js_call_amd('local_courses/courseAjaxform', 'load');
 $PAGE->requires->js_call_amd('local_courses/courses');
@@ -43,13 +42,13 @@ $PAGE->navbar->ignore_active();
 require_login();
 
 $renderer = $PAGE->get_renderer('local_courses');
-$PAGE->navbar->add( get_string('pluginname', 'local_courses'));
+$PAGE->navbar->add(get_string('pluginname', 'local_courses'));
 
 echo $OUTPUT->header();
 
 if ((has_capability('local/courses:manage', $categorycontext) || has_capability('local/courses:view', $categorycontext))) {
-echo $renderer->user_for_autoenrol($courseid,$confirmation,$enrolid);
-}else{
- echo get_string('no_permissions','local_courses');
+    echo $renderer->user_for_autoenrol($courseid, $confirmation, $enrolid);
+} else {
+    echo get_string('no_permissions', 'local_courses');
 }
 echo $OUTPUT->footer();

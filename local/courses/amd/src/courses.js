@@ -73,6 +73,47 @@ define([
                 }.bind(this));
             }.bind(this));
         },
+           regeneratecertificate: function(element) {
+            var enrollmentid = element.issueid;
+            // console.log(element);
+            return Str.get_strings([{
+                key: 'regeneratecertificate',
+                component: 'local_courses'
+            }, {
+                key: 'confirmregenerate',
+                component: 'local_courses'
+            }]).then(function(s) {
+                ModalFactory.create({
+                    title: s[0],
+                    type: ModalFactory.types.DEFAULT,
+                    body: s[1],
+                    footer: '<button type="button" class="btn btn-primary" data-action="save">'+M.util.get_string("yes", "moodle")+'</button>&nbsp;' +
+                    '<button type="button" class="btn btn-secondary" data-action="cancel">'+M.util.get_string("no", "moodle")+'</button>'
+                }).done(function(modal) {
+                    this.modal = modal;
+                    modal.getRoot().find('[data-action="save"]').on('click', function() {
+                         element.confirm = true;
+                         var params ={};
+                         params.id= element.issueid;
+                        var promise = Ajax.call([{
+                            methodname: 'tool_certificate_regenerate_issue_file',
+                            args:params
+                        }]);
+                        promise[0].done(function() {
+                            window.location.href = window.location.href;
+                        }).fail(function(ex) {
+                            // do something with the exception
+                             console.log(ex);
+                        });
+                    }.bind(this));
+                    modal.getFooter().find('[data-action="cancel"]').on('click', function() {
+                        modal.setBody('');
+                        modal.hide();
+                    });
+                    modal.show();
+                }.bind(this));
+            }.bind(this));
+        },
         enrollUsers: function (args) {
             // console.log(args);return;
             return Str.get_strings([{
