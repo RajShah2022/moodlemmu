@@ -219,11 +219,11 @@ class local_costcenter_renderer extends plugin_renderer_base {
         }
 
         $categorycontext = (new \local_costcenter\lib\accesslib())::get_module_context($costcenterpath);
-        if ((is_siteadmin()) && $PAGE->pagetype == 'local-costcenter-index'){
-            $create_organisation = "<a class='course_extended_menu_itemlink' data-action='createcostcentermodal' data-value='0' title = '".get_string('create_organization','local_costcenter')."' onclick ='(function(e){ require(\"local_costcenter/newcostcenter\").init({selector:\"createcostcentermodal\", contextid:$categorycontext->id, id:0, formtype:\"organization\", headstring:\"adnewcostcenter\"}) })(event)'><span class='createicon'><i class='fa fa-sitemap icon' aria-hidden='true'></i><i class='createiconchild fa fa-plus' aria-hidden='true'></i></span></a>";
-        }else{
+        // if ((is_siteadmin()) && $PAGE->pagetype == 'local-costcenter-index'){
+        //     $create_organisation = "<a class='course_extended_menu_itemlink' data-action='createcostcentermodal' data-value='0' title = '".get_string('create_organization','local_costcenter')."' onclick ='(function(e){ require(\"local_costcenter/newcostcenter\").init({selector:\"createcostcentermodal\", contextid:$categorycontext->id, id:0, formtype:\"organization\", headstring:\"adnewcostcenter\"}) })(event)'><span class='createicon'><i class='fa fa-sitemap icon' aria-hidden='true'></i><i class='createiconchild fa fa-plus' aria-hidden='true'></i></span></a>";
+        // }else{
             $create_organisation = false;
-        }
+        // }
 
         if($costcenters_exist && $depth<=1 && has_capability('local/costcenter:create', $categorycontext)){
             $headstring = 'addnewdept';
@@ -234,7 +234,7 @@ class local_costcenter_renderer extends plugin_renderer_base {
         }else{
             $create_department = false;
         }
-        $deptexistsql = "SELECT id FROM {local_costcenter} WHERE depth = 2 ";
+        /*$deptexistsql = "SELECT id FROM {local_costcenter} WHERE depth = 2 ";
         if(!(is_siteadmin())){
 
             $deptexistsql .= $costcenterpathconcatsql ;
@@ -273,7 +273,7 @@ class local_costcenter_renderer extends plugin_renderer_base {
 
             $deptexistfo .= $costcenterpathconcatsql;
         }
-        $deptexisttwo = $DB->record_exists_sql($deptexistfo);
+        $deptexisttwo = $DB->record_exists_sql($deptexistfo);*/
         /*if($deptexisttwo && $depth<=4 && has_capability('local/costcenter:create', $categorycontext)){
             $headstring = 'addnewsubsubsubdept';
                 $title = get_string('createsubsubsubdepartment','local_costcenter');
