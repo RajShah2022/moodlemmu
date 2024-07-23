@@ -96,6 +96,16 @@ function xmldb_local_courses_install(){
         if (!$dbman->field_exists($table, $field2)) {
             $dbman->add_field($table, $field2);
         }
+
+        $field1 = new xmldb_field('open_module');
+        $field1->set_attributes(XMLDB_TYPE_CHAR, '255', null, null, null, null, null);
+        if (!$dbman->field_exists($table, $field1)) {
+            $dbman->add_field($table, $field1);
+        }
+        $field1 = new xmldb_field('open_coursetype', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, 0);
+        if (!$dbman->field_exists($table, $field1)) {
+            $dbman->add_field($table, $field1);
+        }
 	}
     /*notifictaions content*/
     // $dbman = $DB->get_manager(); // loads ddl manager and xmldb classes
