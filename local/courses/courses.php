@@ -97,8 +97,8 @@ $extended_menu_links = '<div class="course_contextmenu_extended">
             <ul class="course_extended_menu_list">';
 if(is_siteadmin() ||(
         has_capability('moodle/course:create', $categorycontext)|| has_capability('moodle/course:update', $categorycontext)||has_capability('local/courses:manage', $categorycontext))){
-     $sql = "SELECT id,name FROM {block_learnerscript} WHERE category = 'course'" ;
-     $coursereports = $DB->get_records_sql($sql);
+     // $sql = "SELECT id,name FROM {block_learnerscript} WHERE category = 'course'" ;
+     $coursereports = array();//$DB->get_records_sql($sql);
      
  $extended_menu_links .= '<li><div class="dropdown"><a href="#" tabindex="0" class=" dropdown-toggle icon-no-margin" id="dropdown-1" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" aria-controls="reportswitch" title="'.get_string('course_reports','local_courses').'">            
             <i class="icon fa fa-signal" aria-hidden="true"></i>
