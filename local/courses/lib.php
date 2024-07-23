@@ -365,7 +365,6 @@ function local_courses_output_fragment_custom_course_form($args) {
     }
     if ($courseid) {
         // Populate course tags.
-        $course->tags = local_tags_tag::get_item_tags_array('local_courses', 'courses', $course->id);
         $editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'maxbytes' => $CFG->maxbytes, 'trusttext' => false, 'noclean' => true, 'autosave' => false);
         $overviewfilesoptions = course_overviewfiles_options($course);
         // Add context for editor.
@@ -578,7 +577,7 @@ function coursetype_filter($mform) {
 function elearning_filter($mform) {
     global $DB, $USER;
     $categorycontext = (new \local_courses\lib\accesslib())::get_module_context();
-    if ((has_capability('local/request:approverecord', $categorycontext) || is_siteadmin())) {
+    if (is_siteadmin()) {
         $courseslist = $DB->get_records_sql_menu("SELECT id, fullname FROM {course} WHERE visible = 1");
     }
     $select = $mform->addElement('autocomplete', 'elearning', '', $courseslist, array('placeholder' => get_string('course_name', 'local_courses')));
@@ -1045,9 +1044,7 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
     $core_component = new core_component();
     require_once($CFG->dirroot . '/course/renderer.php');
     require_once($CFG->dirroot . '/local/costcenter/lib.php');
-    if (file_exists($CFG->dirroot . '/local/custom_matrix/lib.php')) {
-        require_once($CFG->dirroot . '/local/custom_matrix/lib.php');
-    }
+
     require_once($CFG->dirroot . '/local/custom_fields/lib.php');
     require_once($CFG->dirroot . '/enrol/locallib.php');
     $autoenroll_plugin_exist = $core_component::get_plugin_directory('enrol', 'auto');
@@ -1095,9 +1092,6 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
         $wheresql .= $costcentervalues['where'];
         $params = array_merge($params, $costcentervalues['params']);
     }
-
-    $matrix_plugin_exists = \core_component::get_plugin_directory('local', 'custom_matrix');
-    $wheresql .= $matrix_plugin_exists ? coursetypevalues($filterdata) : '';
 
     $custfield_plugin_exists = \core_component::get_plugin_directory('local', 'custom_fields');
     if ($custfield_plugin_exists) {
@@ -1184,14 +1178,8 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
             }
             $courseslist[$count]["coursename"] = \local_costcenter\lib::strip_tags_custom($coursename);
             $courseslist[$count]["shortname"] =  \local_costcenter\lib::strip_tags_custom($course->shortname);
-            // $courseslist[$count]["ratings_value"] = $rating_value;
-            // $courseslist[$count]["ratingenable"] = $ratingenable;
-            $output = $PAGE->get_renderer('tool_courserating');
-            //$crs = new courseratings();
-            $display_ratings = $output->course_rating_block_custom($course->id);
-            // print_r($display_ratings);
-            // exit;
-            $courseslist[$count]["ratings_value"] = $display_ratings;
+
+            $courseslist[$count]["ratings_value"] = '';
             $courseslist[$count]["tagstring"] = \local_costcenter\lib::strip_tags_custom($tagstring);
             $courseslist[$count]["tagstringtotal"] = $tagstringtotal;
             $courseslist[$count]["tagenable"] = $tagenable;

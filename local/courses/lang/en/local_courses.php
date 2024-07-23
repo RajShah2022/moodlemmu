@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of eAbyas
  *
@@ -23,7 +24,7 @@
  */
 $string['pluginname'] = 'Courses';
 $string['course'] = 'Course';
-$string['organization']='Company';
+$string['organization'] = 'Company';
 $string['mooc'] = 'MOOC';
 $string['classroom'] = 'Classroom';
 $string['elearning'] = 'E-Learning';
@@ -33,16 +34,16 @@ $string['category'] = 'Category';
 $string['enrolled'] = 'Enrollments';
 $string['completed'] = 'Completions';
 $string['manual_enrolment'] = 'Manual Enrollment';
-$string['add_users']='<< Add Users';
-$string['remove_users']='Remove Users >>';
-$string['employeesearch']='Filter';
-$string['agentsearch']='Agent Search';
-$string['empnumber']='Learner ID';
-$string['email']='Email';
+$string['add_users'] = '<< Add Users';
+$string['remove_users'] = 'Remove Users >>';
+$string['employeesearch'] = 'Filter';
+$string['agentsearch'] = 'Agent Search';
+$string['empnumber'] = 'Learner ID';
+$string['email'] = 'Email';
 $string['band'] = 'Band';
-$string['departments']='Bussiness Unities';
-$string['sub_departments']='Department';
-$string['sub-sub-departments']='Sub Departments';
+$string['departments'] = 'Bussiness Unities';
+$string['sub_departments'] = 'Department';
+$string['sub-sub-departments'] = 'Sub Departments';
 $string['designation'] = 'Designation';
 $string['im:already_in'] = 'The user "{$a}" was already enroled to this course';
 $string['im:enrolled_ok'] = 'The user "{$a}" has successfully enroled to this course ';
@@ -60,7 +61,7 @@ $string['im:err_opening_file'] = 'error opening file {$a}';
 $string['im:user_notcostcenter'] = '{$a->user} not assigned to {$a->csname} costcenter';
 $string['mass_enroll'] = 'Bulk enrolments';
 $string['mass_enroll_info'] =
-"<p>
+    "<p>
 With this option you are going to enrol a list of known users from a file with one account per line
 </p>
 <p>
@@ -139,7 +140,7 @@ $string['create_newcourse'] = 'Create Course';
 $string['userenrolments'] = 'User enrollments';
 $string['certificate'] = 'Certificate';
 $string['points_positive'] = 'Points must be greater than 0';
-$string['coursecompletiondays_positive'] ='Completion days must be greater than 0';
+$string['coursecompletiondays_positive'] = 'Completion days must be greater than 0';
 $string['enrolusers'] = 'Enrol Users';
 $string['grader'] = 'Grader';
 $string['activity'] = 'Activity';
@@ -153,7 +154,6 @@ $string['help_1'] = '<table border="1">
 <tr><td>fullname</td><td>Fullname of the course.</td></tr>
 <tr><td>course-code</td><td>course-code of the course.</td></tr>
 <tr><td>category_code</td><td>Enter the category code(you can find this code in Manage Categories page).</td></tr>
-<tr><td>coursetype</td><td>Type of the course(Comma seperated)(Ex:classroom,elearning,certification,learningpath,program).</td></tr>
 <tr><td>format</td><td>Enter course format(Ex: singleactivity,social,toggletop,topics,weeks).</td></tr>';
 
 $string['help_2'] = '</td></tr>
@@ -165,8 +165,7 @@ $string['help_2'] = '</td></tr>
 <tr><td>commercial_unit_code</td><td>Enter Department Code. Bussiness Unit must already exist under specified Bussiness Unit in system as part of Company hierarchy.</td></tr>
 <tr><td>commercial_area_code</td><td>Enter Department Code. Department must already exist under specified Department in system as part of Company hierarchy.</td></tr>
 <tr><td>territory_code</td><td>Enter Territory Code. Territory must already exist under specified Department in system as part of Company hierarchy.</td></tr>
-<tr><td>Points</td><td>Points for the course.</td></tr>
-<tr><td>completiondays</td><td>completiondays should be greater than \'0\'. i.e, 1,2,3..etc</td></tr>
+
 </table>';
 $string['back_upload'] = 'Back to upload courses';
 $string['manual'] = 'Help manual';
@@ -200,8 +199,8 @@ $string['add_selected_users'] = '<i class="fa fa-arrow-left" aria-hidden="true">
 $string['add_all_users'] = ' <i class="fa fa-arrow-left" aria-hidden="true"></i><i class="fa fa-arrow-left" aria-hidden="true"></i> <b> Enroll All Users </b>';
 $string['auto_enrol'] = 'Auto Enroll';
 $string['need_manage_approval'] = 'Need Manager Approval';
-$string['costcannotbenonnumericwithargs'] ='Cost should be in numeric but given "{$a}"';
-$string['pointscannotbenonnumericwithargs'] ='Points should be in numeric but given "{$a}"';
+$string['costcannotbenonnumericwithargs'] = 'Cost should be in numeric but given "{$a}"';
+$string['pointscannotbenonnumericwithargs'] = 'Points should be in numeric but given "{$a}"';
 $string['need_self_enrol'] = 'Need Self Enroll';
 $string['enrolluserssuccess'] = '<b>{$a->changecount}</b> Employee(s) successfully enrolled to this <b>"{$a->course}"</b> course .';
 $string['unenrolluserssuccess'] = '<b>{$a->changecount}</b> Employee(s) successfully un enrolled from this <b>"{$a->course}"</b> course .';
@@ -210,7 +209,7 @@ $string['enrollusers'] = 'Course <b>"{$a}"</b> enrollment is in process...';
 
 $string['un_enrollusers'] = 'Course <b>"{$a}"</b> un enrollment is in process...';
 $string['click_continue'] = 'Click on continue';
-$string['bootcamp']= 'XSeeD';
+$string['bootcamp'] = 'XSeeD';
 $string['manage_br_courses'] = 'Manage courses';
 $string['nocourseavailiable'] = 'No Courses Available';
 $string['taskcoursenotification'] = 'Course Notification Task';
@@ -350,10 +349,10 @@ $string['subdeptshouldunderdepcode'] = 'Department should be under the Bussiness
 $string['course_name_help'] = 'Name for the Course';
 $string['coursecode_help'] = 'Code for the Course';
 $string['enrolled_courses'] = 'My Courses';
-$string['listtype']	='LIST';
-$string['cardtype']	='CARD';
-$string['listicon'] ='icon fa fa-bars fa-fw';
-$string['cardicon'] ='icon fa fa-fw fa-th';
+$string['listtype']    = 'LIST';
+$string['cardtype']    = 'CARD';
+$string['listicon'] = 'icon fa fa-bars fa-fw';
+$string['cardicon'] = 'icon fa fa-fw fa-th';
 $string['coursetype'] = 'Course Type';
 $string['requestforenroll'] = 'Request';
 $string['download_courses'] = 'Download Courses';
@@ -378,7 +377,7 @@ $string['coursedescription'] = 'Description';
 $string['exportcourses'] = 'Export Courses to Excel';
 $string['make_inactive'] = 'Make Inactive';
 $string['make_active'] = 'Make Active';
-$string['departmentnotfound'] ='Bussiness Unit not found i.e \'{$a}\'';
+$string['departmentnotfound'] = 'Bussiness Unit not found i.e \'{$a}\'';
 $string['categorycode'] = 'Category Code';
 // course types strings
 $string['open_coursetypecourse'] = 'Course type';
@@ -388,8 +387,8 @@ $string['course_type_shortname'] = 'Code';
 $string['viewcourse_type'] = 'Add/View Course type';
 $string['add_coursetype'] = 'Add Course type';
 $string['edit_coursetype'] = 'Edit Course type';
-$string['listtype']	='LIST';
-$string['listicon'] ='icon fa fa-bars fa-fw';
+$string['listtype']    = 'LIST';
+$string['listicon'] = 'icon fa fa-bars fa-fw';
 $string['name'] = 'Name';
 $string['enablecoursetype'] = 'Are you sure to activate course type <b>{$a}</b>';
 $string['disablecoursetype'] = 'Are you sure to inactivate course type <b>{$a}</b>';
@@ -420,13 +419,13 @@ $string['cannotuploadcoursewithsubdepartment'] = 'With out Department cannot upl
 $string['categorycodeshouldbesubdepcode'] = 'Category Code should be under the Department i.e \'{$a}\'';
 $string['categorycodeshouldbesubsubdepcode'] = 'Category Code should be short name of Sub Department i.e \'{$a}\'';
 $string['subdeptshouldundersubdepcode'] = 'Sub Department should be under the Department i.e \'{$a}\'';
-$string['subdepartmentnotfound'] ='Department not found i.e \'{$a}\'';
+$string['subdepartmentnotfound'] = 'Department not found i.e \'{$a}\'';
 
 $string['cannotuploadcoursewithsubsubdepartment'] = 'With out Sub Department cannot upload a course with Territory';
 $string['categorycodeshouldbesubsubdepcode'] = 'Category Code should be under the Sub Department i.e \'{$a}\'';
 $string['categorycodeshouldbesubsubsubdepcode'] = 'Category Code should be short name of Territory i.e \'{$a}\'';
 $string['subdeptshouldundersubsubdepcode'] = 'Territory should be under the Sub Department i.e \'{$a}\'';
-$string['subsubdepartmentnotfound'] ='Sub Department not found i.e \'{$a}\'';
+$string['subsubdepartmentnotfound'] = 'Sub Department not found i.e \'{$a}\'';
 $string['open_states_help'] = 'Search and select an available or existing state as target audience';
 $string['open_district_help'] = 'Search and select an available or existing district as target audience';
 $string['open_subdistrict_help'] = 'Search and select an available or existing subdistrict as target audience';

@@ -32,13 +32,13 @@ $format = optional_param('format', '', PARAM_ALPHA);
 
 if ($format) {
     $fields = array(
-		'fullname' => 'fullname',
+        'fullname' => 'fullname',
         'course-code' => 'course-code',
         'category_path' => 'category_code',
-        'coursetype' => 'coursetype',
+        //'coursetype' => 'coursetype',
         'summary' => 'summary',
         'points' => 'points',
-        'cost' => 'cost',
+        //'cost' => 'cost',
         'department' => 'country_code',
         'subdepartment' => 'commercial_unit_code',
         'level4department' => 'commercial_area_code',
@@ -48,7 +48,8 @@ if ($format) {
     );
 
     switch ($format) {
-        case 'csv' : user_download_csv($fields);
+        case 'csv':
+            user_download_csv($fields);
     }
     die;
 }

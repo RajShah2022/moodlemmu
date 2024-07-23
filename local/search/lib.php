@@ -96,56 +96,61 @@ function local_search_get_itemlist_grade($start = 0, $limit = 5) {
 
 function local_search_get_itemlist_skill($start = 0, $limit = 6) {
     global $DB, $USER;
-    $selectsql = "SELECT s.id, s.name as value ";
-    $countsql = "SELECT count(s.id) ";
-    $sql .= " FROM {local_skill} AS s WHERE 1=1 ";
-    $params = [];
-    if (!is_siteadmin() && $USER->open_path) {
-        $sql .= " AND :openpathlike = concat(s.open_path,'/%') ";
-        $params['openpathlike'] = $USER->open_path . '/';
-    }
-    $skill = $DB->get_records_sql_menu($selectsql . $sql, $params, $start, $limit);
-    if ($start == 0) {
-        if (count($skill) == $limit) {
-            array_pop($skill);
-            $showviewmore = true;
-        } else {
-            $showviewmore = false;
-        }
-    }
+    $plugin_exists = \core_component::get_plugin_directory('local', 'skillrepository');
     $itemlist = [];
-    foreach ($skill as $skillid => $skillname) {
-        $response = allcourses::get_available_catalogtypes([['type' => 'skill', 'values' => [$skillid]]]);
-        $sumofallrecords = $response['sumofallrecords'];
-        $itemlist[] = ['code' => $skillid, 'name' => $skillname, 'tagitemshortname' => $skillname, 'count' => $sumofallrecords];
+    $showviewmore = false;
+    if ($plugin_exists) {
+        $selectsql = "SELECT s.id, s.name as value ";
+        $countsql = "SELECT count(s.id) ";
+        $sql = " FROM {local_skill} AS s WHERE 1=1 ";
+        $params = [];
+        if (!is_siteadmin() && $USER->open_path) {
+            $sql .= " AND :openpathlike = concat(s.open_path,'/%') ";
+            $params['openpathlike'] = $USER->open_path . '/';
+        }
+        $skill = $DB->get_records_sql_menu($selectsql . $sql, $params, $start, $limit);
+        if ($start == 0) {
+            if (count($skill) == $limit) {
+                array_pop($skill);
+                $showviewmore = true;
+            }
+        }
+        foreach ($skill as $skillid => $skillname) {
+            $response = allcourses::get_available_catalogtypes([['type' => 'skill', 'values' => [$skillid]]]);
+            $sumofallrecords = $response['sumofallrecords'];
+            $itemlist[] = ['code' => $skillid, 'name' => $skillname, 'tagitemshortname' => $skillname, 'count' => $sumofallrecords];
+        }
     }
     return [$itemlist, $showviewmore];
 }
 
 function local_search_get_itemlist_level($start = 0, $limit = 6) {
     global $DB, $USER;
-    $selectsql = "SELECT cl.id, cl.name as value ";
-    $countsql = "SELECT count(cl.id) ";
-    $sql .= " FROM {local_course_levels} AS cl WHERE 1=1 ";
-    $params = [];
-    if (!is_siteadmin() && $USER->open_path) {
-        $sql .= " AND :openpathlike = concat(cl.open_path,'/%') ";
-        $params['openpathlike'] = $USER->open_path . '/';
-    }
-    $courselevel = $DB->get_records_sql_menu($selectsql . $sql, $params, $start, $limit);
-    if ($start == 0) {
-        if (count($courselevel) == $limit) {
-            array_pop($courselevel);
-            $showviewmore = true;
-        } else {
-            $showviewmore = false;
-        }
-    }
+    $plugin_exists = \core_component::get_plugin_directory('local', 'skillrepository');
     $itemlist = [];
-    foreach ($courselevel as $levelid => $levelname) {
-        $response = allcourses::get_available_catalogtypes([['type' => 'level', 'values' => [$levelid]]]);
-        $sumofallrecords = $response['sumofallrecords'];
-        $itemlist[] = ['code' => $levelid, 'name' => $levelname, 'tagitemshortname' => $levelname, 'count' => $sumofallrecords];
+    $showviewmore = false;
+    if ($plugin_exists) {
+        $selectsql = "SELECT cl.id, cl.name as value ";
+        $countsql = "SELECT count(cl.id) ";
+        $sql = " FROM {local_course_levels} AS cl WHERE 1=1 ";
+        $params = [];
+        if (!is_siteadmin() && $USER->open_path) {
+            $sql .= " AND :openpathlike = concat(cl.open_path,'/%') ";
+            $params['openpathlike'] = $USER->open_path . '/';
+        }
+        $courselevel = $DB->get_records_sql_menu($selectsql . $sql, $params, $start, $limit);
+        if ($start == 0) {
+            if (count($courselevel) == $limit) {
+                array_pop($courselevel);
+                $showviewmore = true;
+            }
+        }
+
+        foreach ($courselevel as $levelid => $levelname) {
+            $response = allcourses::get_available_catalogtypes([['type' => 'level', 'values' => [$levelid]]]);
+            $sumofallrecords = $response['sumofallrecords'];
+            $itemlist[] = ['code' => $levelid, 'name' => $levelname, 'tagitemshortname' => $levelname, 'count' => $sumofallrecords];
+        }
     }
     return [$itemlist, $showviewmore];
 }
