@@ -31,7 +31,7 @@ class local_users_renderer extends plugin_renderer_base {
      */
     public function employees_profile_view($id) {
         global $CFG, $OUTPUT, $DB;
-        require_once($CFG->dirroot.'/course/renderer.php');
+        require_once($CFG->dirroot . '/course/renderer.php');
         require_once($CFG->libdir . '/badgeslib.php');
 
         $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
@@ -42,11 +42,11 @@ class local_users_renderer extends plugin_renderer_base {
         /*user roles*/
         $userroles = get_user_roles($categorycontext, $id);
         if (!empty($userroles)) {
-                $rolename  = array();
+            $rolename  = array();
             foreach ($userroles as $roles) {
-                    $rolename[] = ucfirst($roles->name);
+                $rolename[] = ucfirst($roles->name);
             }
-                $roleinfo = implode(", ", $rolename);
+            $roleinfo = implode(", ", $rolename);
         } else {
             $roleinfo = "Employee";
         }
@@ -58,10 +58,10 @@ class local_users_renderer extends plugin_renderer_base {
                     WHERE u.id=:id ";
         $userOrg = $DB->get_record_sql($sql3, array('id' => $id));
         $organisationdata = array_filter(explode('/', $userOrg->open_path ?? ''));
-        $organisationnames = array_map(function($orgid){
+        $organisationnames = array_map(function ($orgid) {
             return \local_costcenter\lib\accesslib::get_costcenter_info($orgid, 'fullname');
         }, $organisationdata);
-        
+
         $usercostcenter = $organisationnames[1] ?? null;
         $userdepartment = $organisationnames[2] ?? null;
         $usersubdepartment = $organisationnames[3] ?? null;
@@ -69,18 +69,18 @@ class local_users_renderer extends plugin_renderer_base {
         $userterritory = $organisationnames[5] ?? null;
 
         if (!empty($userrecord->phone1)) {
-                $contact = $userrecord->phone1;
+            $contact = $userrecord->phone1;
         } else {
-                $contact = 'N/A';
+            $contact = 'N/A';
         }
         if (!empty($userOrg->open_supervisorid)) {
             $get_reporting_username_sql = "SELECT u.id, u.firstname, u.lastname, u.open_employeeid
              FROM {user} as u WHERE  u.id= :open_supervisorid";
-                $get_reporting_username = $DB->get_record_sql($get_reporting_username_sql , array('open_supervisorid' => $userOrg->open_supervisorid));
-                $reporting_to_empid = isset($get_reporting_username->serviceid) != null ? ' ('.$get_reporting_username->open_employeeid.')' : 'N/A';
-                $reporting_username = $get_reporting_username->firstname.' '.$get_reporting_username->lastname/*.$reporting_to_empid*/;
+            $get_reporting_username = $DB->get_record_sql($get_reporting_username_sql, array('open_supervisorid' => $userOrg->open_supervisorid));
+            $reporting_to_empid = isset($get_reporting_username->serviceid) != null ? ' (' . $get_reporting_username->open_employeeid . ')' : 'N/A';
+            $reporting_username = $get_reporting_username->firstname . ' ' . $get_reporting_username->lastname/*.$reporting_to_empid*/;
         } else {
-                $reporting_username = 'N/A';
+            $reporting_username = 'N/A';
         }
         $usercontent = new stdClass();
         $core_component = new core_component();
@@ -89,8 +89,8 @@ class local_users_renderer extends plugin_renderer_base {
         $usercontent = array();
         $navigationdata = '';
         foreach ($local_pluginlist as $pluginname => $pluginurl) {
-            $userclass = '\local_'.$pluginname.'\local\user';
-            
+            $userclass = '\local_' . $pluginname . '\local\user';
+
             if (class_exists($userclass)) {
                 $plugininfo = array();
                 $pluginclass = new $userclass;
@@ -118,13 +118,13 @@ class local_users_renderer extends plugin_renderer_base {
         } else {
             $loginasurl = false;
         }
-        $supervisorname = isset($get_reporting_username->firstname).' '.isset($get_reporting_username->lastname);
+        $supervisorname = isset($get_reporting_username->firstname) . ' ' . isset($get_reporting_username->lastname);
         // added by sarath for tabs dispalying
         $core_component = new core_component();
         $plugins = $core_component::get_plugin_list('local');
         $pluginarray = array();
         foreach ($plugins as $key => $valuedata) {
-            $userclass = '\local_'.$key.'\local\user';
+            $userclass = '\local_' . $key . '\local\user';
             if (class_exists($userclass)) {
                 $pluginclass = new $userclass;
                 if (method_exists($userclass, 'user_profile_content')) {
@@ -137,59 +137,53 @@ class local_users_renderer extends plugin_renderer_base {
 
         $options = array('targetID' => 'display_modulesdata');
         $gender = '';
-        if(isset($userrecord->gender)){
-            if($userrecord->gender == 0){
+        if (isset($userrecord->gender)) {
+            if ($userrecord->gender == 0) {
                 $gender = 'Male';
-            } else if($userrecord->gender == 1){
+            } else if ($userrecord->gender == 1) {
                 $gender = 'Female';
-            } else if($userrecord->gender == 2){
+            } else if ($userrecord->gender == 2) {
                 $gender = 'Other';
             }
         }
 
-        if($userrecord->open_prefix == 1){
+        if ($userrecord->open_prefix == 1) {
             $prefix = 'Mr. ';
-        } else if($userrecord->open_prefix == 2){
+        } else if ($userrecord->open_prefix == 2) {
             $prefix = 'Mrs. ';
-        } else if($userrecord->open_prefix == 3){
+        } else if ($userrecord->open_prefix == 3) {
             $prefix = 'Ms. ';
         }
-        $domainname = $DB->get_field('local_domains', 'name', array('id'=>$userrecord->open_domainid));
-        $positionname = $DB->get_field('local_positions', 'name', array('id'=>$userrecord->open_positionid));
         $core_component = new core_component();
         $positions_plugin_exists = $core_component::get_plugin_directory('local', 'positions');
         $pluginposition = 0;
-        if(!empty($positions_plugin_exists))
-        {
+        if (!empty($positions_plugin_exists)) {
             $pluginposition = 1;
         }
 
         profile_load_data($userrecord);
         $profilefields = profile_get_user_fields_with_data($userrecord->id);
-        foreach($profilefields AS $field){
+        foreach ($profilefields as $field) {
             //if(isset($userrecord->{$field->inputname})  && !empty($userrecord->{$field->inputname})){
 
-                if($field instanceof \profile_field_checkbox){
-                    $value = $userrecord->{$field->inputname} == 1 ? 'Yes' : 'No';
-                }else if($field instanceof \profile_field_datetime){
-                    $value = ($userrecord->{$field->inputname}) ? date('d-m-Y', $userrecord->{$field->inputname}) : 'NA';
-                
-                }else if ($field instanceof \profile_field_textarea) {
-                    $options = new stdClass();
-                    $options->para = false;
-                    $value = ($userrecord->{$field->inputname}) ? \local_costcenter\lib::strip_tags_custom($userrecord->{$field->inputname}['text']) : 'NA';            
+            if ($field instanceof \profile_field_checkbox) {
+                $value = $userrecord->{$field->inputname} == 1 ? 'Yes' : 'No';
+            } else if ($field instanceof \profile_field_datetime) {
+                $value = ($userrecord->{$field->inputname}) ? date('d-m-Y', $userrecord->{$field->inputname}) : 'NA';
+            } else if ($field instanceof \profile_field_textarea) {
+                $options = new stdClass();
+                $options->para = false;
+                $value = ($userrecord->{$field->inputname}) ? \local_costcenter\lib::strip_tags_custom($userrecord->{$field->inputname}['text']) : 'NA';
+            } else if ($field instanceof \profile_field_autocomplete) {
+                $value = ($userrecord->{$field->inputname}) ? implode(',', $userrecord->{$field->inputname}) : 'NA';
+            } else {
+                $value = ($userrecord->{$field->inputname}) ? $userrecord->{$field->inputname} : 'NA';
+            }
+            $profilefieldelements[] = ['fieldtitle' => $field->field->name, 'fieldvalue' => $value];
+            // }
 
-                }else if($field instanceof \profile_field_autocomplete){
-                    $value = ($userrecord->{$field->inputname}) ? implode(',', $userrecord->{$field->inputname}) : 'NA';
-                
-                }else{
-                    $value = ($userrecord->{$field->inputname}) ? $userrecord->{$field->inputname} : 'NA';
-                }
-                $profilefieldelements[] = ['fieldtitle' => $field->field->name, 'fieldvalue' => $value ];
-           // }
-            
         }
-        
+
         $usersviewContext = [
             "userid" => $userrecord->id,
             "username" => fullname($userrecord),
@@ -210,7 +204,7 @@ class local_users_renderer extends plugin_renderer_base {
             "hrmrole" => (!empty($userrecord->open_hrmsrole) && !empty(trim($userrecord->open_hrmsrole))) ? $userrecord->open_hrmsrole : 'N/A',
             "zone" => (!empty($userrecord->open_zone) && !empty(trim($userrecord->open_zone))) ? $userrecord->open_zone : 'N/A',
             "region" => (!empty($userrecord->open_region) && !empty(trim($userrecord->open_region))) ? $userrecord->open_region : 'N/A',
-            "employment_type" => (!empty($userrecord->open_employmenttype) && ! empty(trim($userrecord->open_employmenttype))) ? $userrecord->open_employmenttype : 'N/A',
+            "employment_type" => (!empty($userrecord->open_employmenttype) && !empty(trim($userrecord->open_employmenttype))) ? $userrecord->open_employmenttype : 'N/A',
             "phnumber" => $contact,
             "badgesimg" => $OUTPUT->image_url('badgeicon', 'local_users'),
             "certimg" => $OUTPUT->image_url('certicon', 'local_users'),
@@ -224,8 +218,8 @@ class local_users_renderer extends plugin_renderer_base {
             "capabilityedit" => $capabilityedit,
             "loginasurl" => $loginasurl,
             "options" => $options,
-            "joindate"=> (isset($userrecord->open_joindate) && $userrecord->open_joindate > 0) ? date('d-M-Y', $userrecord->open_joindate) : 'N/A',
-            "dateofbirth"=> (isset($userrecord->open_dateofbirth) &&  $userrecord->open_dateofbirth > 0) ? date('d-M-Y', $userrecord->open_dateofbirth) : 'N/A',
+            "joindate" => (isset($userrecord->open_joindate) && $userrecord->open_joindate > 0) ? date('d-M-Y', $userrecord->open_joindate) : 'N/A',
+            "dateofbirth" => (isset($userrecord->open_dateofbirth) &&  $userrecord->open_dateofbirth > 0) ? date('d-M-Y', $userrecord->open_dateofbirth) : 'N/A',
             "pluginslist" => $pluginarray,
             "userterritory" => $userterritory ? $userterritory : 'All',
             "usercu" => $usercu ? $usercu : 'All',
@@ -233,14 +227,11 @@ class local_users_renderer extends plugin_renderer_base {
             "prefix" => $prefix,
             "profilefieldelements" => $profilefieldelements,
             "pluginposition" => $pluginposition,
-            "domain" => $domainname ? $domainname : 'N/A',
-            "position" => $positionname ? $positionname : 'N/A'
         ];
         $value = $this->render_from_template('local_users/profile', $usersviewContext);
 
         return $value;
     }
-
 
     /**
      * [user_page_top_action_buttons description]
@@ -269,7 +260,7 @@ class local_users_renderer extends plugin_renderer_base {
      * @param  $filter default false
      * @author  sarath
      */
-    public function manageusers_content($filter = false, $view_type='card', $totaluserscount = 0) {
+    public function manageusers_content($filter = false, $view_type = 'card', $totaluserscount = 0) {
         global $USER;
         $status = optional_param('status', '', PARAM_RAW);
         $costcenterid = optional_param('costcenterid', '', PARAM_INT);
@@ -287,8 +278,8 @@ class local_users_renderer extends plugin_renderer_base {
             $cardClass = 'tableformat';
             $perpage = 20;
         }
-        if($totaluserscount/$perpage > 1000){
-            $perpage = round($totaluserscount/1000);
+        if ($totaluserscount / $perpage > 1000) {
+            $perpage = round($totaluserscount / 1000);
         }
         // print_r($)
         $options = array('targetID' => 'manage_users1', 'perPage' => $perpage, 'cardClass' => $cardClass, 'viewType' => $view_type);
@@ -296,17 +287,19 @@ class local_users_renderer extends plugin_renderer_base {
         $options['templateName'] = $templateName;
         $options = json_encode($options);
 
-        $dataoptions = json_encode(array('userid' => $USER->id, 'contextid' => $categorycontext->id,
-         'status' => $status, 'filteropen_costcenterid' => $costcenterid, 'filteropen_department' => $departmentid,
-          'filteropen_subdepartment' => $subdepartmentid, 'filteropen_level4department' => $l4department, 'filteropen_level5department' => $l5department));
+        $dataoptions = json_encode(array(
+            'userid' => $USER->id, 'contextid' => $categorycontext->id,
+            'status' => $status, 'filteropen_costcenterid' => $costcenterid, 'filteropen_department' => $departmentid,
+            'filteropen_subdepartment' => $subdepartmentid, 'filteropen_level4department' => $l4department, 'filteropen_level5department' => $l5department
+        ));
         $filterdata = json_encode(array('status' => $status, 'filteropen_costcenterid' => $costcenterid, 'filteropen_department' =>
-         $departmentid, 'filteropen_subdepartment' => $subdepartmentid, 'filteropen_level4department' => $l4department, 'filteropen_level5department' => $l5department));
+        $departmentid, 'filteropen_subdepartment' => $subdepartmentid, 'filteropen_level4department' => $l4department, 'filteropen_level5department' => $l5department));
 
         $context = [
-                'targetID' => 'manage_users1',
-                'options' => $options,
-                'dataoptions' => $dataoptions,
-                'filterdata' => $filterdata
+            'targetID' => 'manage_users1',
+            'options' => $options,
+            'dataoptions' => $dataoptions,
+            'filterdata' => $filterdata
         ];
         if ($filter) {
             return  $context;
@@ -326,7 +319,6 @@ class local_users_renderer extends plugin_renderer_base {
 
         $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
 
-
         $options = array('targetID' => 'display_sync', 'perPage' => 10, 'cardClass' => 'tableformat', 'viewType' => 'table');
         $options['methodName'] = 'local_users_syncerrors_view';
         $options['templateName'] = 'local_users/syncerrors';
@@ -335,10 +327,10 @@ class local_users_renderer extends plugin_renderer_base {
         $filterdata = json_encode(array());
 
         $context = [
-                'targetID' => 'display_sync',
-                'options' => $options,
-                'dataoptions' => $dataoptions,
-                'filterdata' => $filterdata
+            'targetID' => 'display_sync',
+            'options' => $options,
+            'dataoptions' => $dataoptions,
+            'filterdata' => $filterdata
         ];
 
         if ($filter) {
@@ -367,10 +359,10 @@ class local_users_renderer extends plugin_renderer_base {
         $filterdata = json_encode(array());
 
         $context = [
-                'targetID' => 'display_syncstatics',
-                'options' => $options,
-                'dataoptions' => $dataoptions,
-                'filterdata' => $filterdata
+            'targetID' => 'display_syncstatics',
+            'options' => $options,
+            'dataoptions' => $dataoptions,
+            'filterdata' => $filterdata
         ];
 
         if ($filter) {
@@ -380,7 +372,7 @@ class local_users_renderer extends plugin_renderer_base {
         }
     }
 
-     public function employees_skill_profile_view($id) {
+    public function employees_skill_profile_view($id) {
         global $CFG, $OUTPUT, $DB, $PAGE, $USER;
 
         $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
@@ -388,7 +380,7 @@ class local_users_renderer extends plugin_renderer_base {
         $corecomponent = new \core_component();
         $positionpluginexists = $corecomponent::get_plugin_directory('local', 'positions');
         if ($positionpluginexists) {
-         $loginuser_position = $DB->get_record_sql("SELECT p.* FROM {local_positions} as p JOIN {user} as u
+            $loginuser_position = $DB->get_record_sql("SELECT p.* FROM {local_positions} as p JOIN {user} as u
           on p.id = u.open_positionid WHERE p.domain = u.open_domainid and u.id = $userrecord->id");
         }
         $pluginarray = array();
@@ -396,16 +388,15 @@ class local_users_renderer extends plugin_renderer_base {
         if ($loginuser_position) {
             $path = explode('/', $loginuser_position->path);
             if ($positionpluginexists) {
-             $sql = "SELECT id,name FROM {local_positions} where sortorder <= '{$loginuser_position->sortorder}'
+                $sql = "SELECT id,name FROM {local_positions} where sortorder <= '{$loginuser_position->sortorder}'
               and domain = {$loginuser_position->domain} and path LIKE '%/$path[1]%' order by sortorder desc";
-             $loginuser_next_positions = $DB->get_records_sql($sql, array(),0,3);
+                $loginuser_next_positions = $DB->get_records_sql($sql, array(), 0, 3);
             }
             foreach ($loginuser_next_positions as $loginuser_next_position) {
-                if($userrecord->open_positionid != $loginuser_next_position->id){
+                if ($userrecord->open_positionid != $loginuser_next_position->id) {
                     $current_position = '';
                 } else {
                     $current_position = 'Current Role';
-
                 }
                 $positiontabnames = array();
                 $positiontabnames['positionname'] = $loginuser_next_position->name;
@@ -431,34 +422,30 @@ class local_users_renderer extends plugin_renderer_base {
                 $compnames = array();
                 $compnames['comp_name'] = $compitency->name;
 
-                $advance = get_config('local_skillrepository','advance');
-                if($advance == 1)
-                {
+                $advance = get_config('local_skillrepository', 'advance');
+                if ($advance == 1) {
                     $sql = "SELECT s.name, s.id FROM {local_skill} as s JOIN {local_comp_course_mapping} as sc ON
                      sc.skillid=s.id where sc.competencyid= $compitency->id";
-                 }else
-                 {
+                } else {
                     $sql = "SELECT s.name, s.id FROM {local_skill} as s JOIN {local_skill_categories} as sc ON
                      sc.id=s.category where s.category= $compitency->id";
-                 }
+                }
                 $skills = $DB->get_records_sql_menu($sql, array());
                 if ($skills) {
                     $skillids = implode(',', $skills);
-                if($advance == 1)
-                {
-                    $sql = "SELECT distinct(cc.id) as completionid,c.id,c.fullname,c.shortname as code,
+                    if ($advance == 1) {
+                        $sql = "SELECT distinct(cc.id) as completionid,c.id,c.fullname,c.shortname as code,
                     c.summary,ue.timecreated as enrolldate,cc.timecompleted as completedate
                              FROM {course_completions} AS cc
                              JOIN {course} AS c ON c.id = cc.course
                              JOIN {local_comp_course_mapping} ccm ON ccm.courseid = c.id
-                             JOIN {enrol} AS e ON c.id = e.courseid 
+                             JOIN {enrol} AS e ON c.id = e.courseid
                              JOIN {user_enrolments} AS ue ON e.id = ue.enrolid AND ue.userid = cc.userid
                             WHERE cc.timecompleted is not NULL AND c.visible=1 AND c.id>1 AND cc.userid =
                               {$userrecord->id} AND ccm.competencyid =
                               {$compitency->id} AND ccm.skillid IN ({$skillids})";
-                }else
-                {
-                    $sql = "SELECT distinct(cc.id) as completionid,c.id,c.fullname,c.shortname as code,
+                    } else {
+                        $sql = "SELECT distinct(cc.id) as completionid,c.id,c.fullname,c.shortname as code,
                     c.summary,ue.timecreated as enrolldate,cc.timecompleted as completedate
                              FROM {course_completions} AS cc
                             JOIN {course} AS c ON c.id = cc.course
@@ -466,7 +453,7 @@ class local_users_renderer extends plugin_renderer_base {
                             JOIN {user_enrolments} AS ue ON e.id = ue.enrolid AND ue.userid = cc.userid
                             WHERE cc.timecompleted is not NULL AND c.visible=1 AND c.id>1 AND cc.userid =
                               {$userrecord->id} AND open_skill IN ({$skillids})";
-                }
+                    }
                     $completed_skills = $DB->get_records_sql($sql);
                     $progress = round((count($completed_skills) / count($skills)) * 100, 2);
                 } else {
@@ -475,7 +462,6 @@ class local_users_renderer extends plugin_renderer_base {
                 $compnames['percentage'] = $progress;
                 $comparray[] = $compnames;
             }
-            
         }
 
         $options = array('targetID' => 'display_skilldata');
@@ -492,5 +478,5 @@ class local_users_renderer extends plugin_renderer_base {
         ];
 
         return $usersviewContext;
-     }
+    }
 }

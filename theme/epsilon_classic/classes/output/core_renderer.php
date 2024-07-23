@@ -47,6 +47,7 @@ use core_text;
 use user_picture;
 use costcenter;
 use theme_config;
+
 defined('MOODLE_INTERNAL') || die;
 
 /**
@@ -82,7 +83,7 @@ class core_renderer extends \core_renderer {
         $button = new \single_button($url, $editstring, $method, ['class' => 'btn btn-primary']);
         return $this->render_single_button($button);
     }
-    public function seteditswtich_display($status){
+    public function seteditswtich_display($status) {
         $this->enable_edit_switch = $status;
     }
     /**
@@ -115,18 +116,18 @@ class core_renderer extends \core_renderer {
         return $this->render_from_template('core/navbar', $newnav);
     }
 
-    public function custom_language_menu(){
+    public function custom_language_menu() {
         $langs = get_string_manager()->get_list_of_translations();
-        if(count($langs) > 1){
+        if (count($langs) > 1) {
             $select = (new \core\output\language_menu($this->page))->export_for_single_select($this);
             $select->hasparams = count($_GET);
-            $action_url = $select->action."?";
-            if(!empty($select->params)){
-                foreach($select->params as $key=>$param){
-                   if($param['name']=='lang'){
-                     continue;
-                   }
-                   $action_url.=($key==0?"":"&").$param['name'].'='.$param['value']; 
+            $action_url = $select->action . "?";
+            if (!empty($select->params)) {
+                foreach ($select->params as $key => $param) {
+                    if ($param['name'] == 'lang') {
+                        continue;
+                    }
+                    $action_url .= ($key == 0 ? "" : "&") . $param['name'] . '=' . $param['value'];
                 }
             }
             $select->actionurl = $action_url;
@@ -203,18 +204,21 @@ class core_renderer extends \core_renderer {
                         $contacturlaction = $iscontact ? 'removecontact' : 'addcontact';
                         $contactimage = $iscontact ? 'removecontact' : 'addcontact';
                         $userbuttons['togglecontact'] = array(
-                                'buttontype' => 'togglecontact',
-                                'title' => get_string($contacttitle, 'message'),
-                                'url' => new moodle_url('/message/index.php', array(
-                                        'user1' => $USER->id,
-                                        'user2' => $user->id,
-                                        $contacturlaction => $user->id,
-                                        'sesskey' => sesskey())
-                                ),
-                                'image' => $contactimage,
-                                'linkattributes' => \core_message\helper::togglecontact_link_params($user, $iscontact),
-                                'page' => $this->page
-                            );
+                            'buttontype' => 'togglecontact',
+                            'title' => get_string($contacttitle, 'message'),
+                            'url' => new moodle_url(
+                                '/message/index.php',
+                                array(
+                                    'user1' => $USER->id,
+                                    'user2' => $user->id,
+                                    $contacturlaction => $user->id,
+                                    'sesskey' => sesskey()
+                                )
+                            ),
+                            'image' => $contactimage,
+                            'linkattributes' => \core_message\helper::togglecontact_link_params($user, $iscontact),
+                            'page' => $this->page
+                        );
                     }
 
                     $this->page->requires->string_for_js('changesmadereallygoaway', 'moodle');
@@ -239,30 +243,27 @@ class core_renderer extends \core_renderer {
             }
         }
 
-
         $contextheader = new \context_header($heading, $headinglevel, $imagedata, $userbuttons, $prefix);
         return $this->render_context_header($contextheader);
     }
 
-     /**
-      * Renders the header bar.
-      *
-      * @param context_header $contextheader Header bar object.
-      * @return string HTML for the header bar.
-      */
+    /**
+     * Renders the header bar.
+     *
+     * @param context_header $contextheader Header bar object.
+     * @return string HTML for the header bar.
+     */
     protected function render_context_header(\context_header $contextheader) {
 
         // Generate the heading first and before everything else as we might have to do an early return.
         $heading = "";
         if (!isset($contextheader->heading)) {
             $heading = $this->heading($this->page->heading, $contextheader->headinglevel, 'h2');
-        } else { 
-            if(strlen($contextheader->heading)>0){
-            $heading = $this->heading($contextheader->heading, $contextheader->headinglevel, 'h2');
+        } else {
+            if (strlen($contextheader->heading) > 0) {
+                $heading = $this->heading($contextheader->heading, $contextheader->headinglevel, 'h2');
             }
-            
         }
-
 
         // All the html stuff goes here.
         $html = html_writer::start_div('page-context-header');
@@ -350,7 +351,7 @@ class core_renderer extends \core_renderer {
      *
      * @return HTML
      */
-    public function left_navigation_quick_links(){
+    public function left_navigation_quick_links() {
         global $DB, $CFG, $USER, $PAGE;
         $systemcontext = context_system::instance();
         $core_component = new core_component();
@@ -358,91 +359,91 @@ class core_renderer extends \core_renderer {
         $local_pluginlist = $core_component::get_plugin_list('local');
         $block_pluginlist = $core_component::get_plugin_list('block');
 
-        $block_content .= html_writer::start_tag('ul', array('class'=>'pull-left row-fluid user_navigation_ul'));
-            //======= Dasboard link ========//
-            $block_content .= html_writer::start_tag('li', array('id'=> 'id_leftmenu_dashboard', 'class'=>'pull-left user_nav_div dashboard'));
-                $button1 = html_writer::link($CFG->wwwroot.'/my/dashboard.php', '<i class="fa fa-home" aria-hidden="true"></i><span class="user_navigation_link_text">'.get_string('leftmenu_dashboard', 'theme_epsilon_classic').'</span>', array('class'=>'user_navigation_link'));
-                $block_content .= $button1;
-            $block_content .= html_writer::end_tag('li');
+        $block_content .= html_writer::start_tag('ul', array('class' => 'pull-left row-fluid user_navigation_ul'));
+        //======= Dasboard link ========//
+        $block_content .= html_writer::start_tag('li', array('id' => 'id_leftmenu_dashboard', 'class' => 'pull-left user_nav_div dashboard'));
+        $button1 = html_writer::link($CFG->wwwroot . '/my/dashboard.php', '<i class="fa fa-home" aria-hidden="true"></i><span class="user_navigation_link_text">' . get_string('leftmenu_dashboard', 'theme_epsilon_classic') . '</span>', array('class' => 'user_navigation_link'));
+        $block_content .= $button1;
+        $block_content .= html_writer::end_tag('li');
 
-            //=======Leader Dasboard link ========//
-//             $gamificationb_plugin_exist = $core_component::get_plugin_directory('block', 'gamification');
-//             $gamificationl_plugin_exist = $core_component::get_plugin_directory('local', 'gamification');
-//             if($gamificationl_plugin_exist && $gamificationb_plugin_exist && (has_capability('local/gamification:view
-// ',$systemcontext) || is_siteadmin() )){
-//                 $block_content .= html_writer::start_tag('li', array('id'=> 'id_leftmenu_gamification_leaderboard', 'class'=>'pull-left user_nav_div notifications'));
-//                 $gamification_url = new moodle_url('/blocks/gamification/dashboard.php');
-//                 $gamification = html_writer::link($gamification_url, '<i class="fa fa-trophy"></i><span class="user_navigation_link_text">'.get_string('leftmenu_gmleaderboard','theme_epsilon_classic').'</span>',array('class'=>'user_navigation_link'));
-//                 $block_content .= $gamification;
-//                 $block_content .= html_writer::end_tag('li');
-//             }
+        //=======Leader Dasboard link ========//
+        //             $gamificationb_plugin_exist = $core_component::get_plugin_directory('block', 'gamification');
+        //             $gamificationl_plugin_exist = $core_component::get_plugin_directory('local', 'gamification');
+        //             if($gamificationl_plugin_exist && $gamificationb_plugin_exist && (has_capability('local/gamification:view
+        // ',$systemcontext) || is_siteadmin() )){
+        //                 $block_content .= html_writer::start_tag('li', array('id'=> 'id_leftmenu_gamification_leaderboard', 'class'=>'pull-left user_nav_div notifications'));
+        //                 $gamification_url = new moodle_url('/blocks/gamification/dashboard.php');
+        //                 $gamification = html_writer::link($gamification_url, '<i class="fa fa-trophy"></i><span class="user_navigation_link_text">'.get_string('leftmenu_gmleaderboard','theme_epsilon_classic').'</span>',array('class'=>'user_navigation_link'));
+        //                 $block_content .= $gamification;
+        //                 $block_content .= html_writer::end_tag('li');
+        //             }
 
-            $pluginnavs = array();
-            foreach($local_pluginlist as $key => $local_pluginname){
-                if(file_exists($CFG->dirroot.'/local/'.$key.'/lib.php')){
-                    require_once($CFG->dirroot.'/local/'.$key.'/lib.php');
-                    $functionname = 'local_'.$key.'_leftmenunode';
-                    if(function_exists($functionname)){
-                       // $data = $functionname();
-                        $data = (array)$functionname();
-                         foreach($data as $key => $val){
-                            $pluginnavs[$key][] = $val;
-                        }
+        $pluginnavs = array();
+        foreach ($local_pluginlist as $key => $local_pluginname) {
+            if (file_exists($CFG->dirroot . '/local/' . $key . '/lib.php')) {
+                require_once($CFG->dirroot . '/local/' . $key . '/lib.php');
+                $functionname = 'local_' . $key . '_leftmenunode';
+                if (function_exists($functionname)) {
+                    // $data = $functionname();
+                    $data = (array)$functionname();
+                    foreach ($data as $key => $val) {
+                        $pluginnavs[$key][] = $val;
                     }
                 }
             }
-            // ksort($pluginnavs);
-            // foreach($pluginnavs as $pluginnav){
-            //     foreach($pluginnav  as $key => $value){
-            //             $data = $value;
-            //             $block_content .= $data;
-            //     }
-            // }
+        }
+        // ksort($pluginnavs);
+        // foreach($pluginnavs as $pluginnav){
+        //     foreach($pluginnav  as $key => $value){
+        //             $data = $value;
+        //             $block_content .= $data;
+        //     }
+        // }
 
-            foreach($block_pluginlist as $key => $local_pluginname){
-                 if(file_exists($CFG->dirroot.'/blocks/'.$key.'/lib.php')){
-                    require_once($CFG->dirroot.'/blocks/'.$key.'/lib.php');
-                    $functionname = 'block_'.$key.'_leftmenunode';
-                    if(function_exists($functionname)){
+        foreach ($block_pluginlist as $key => $local_pluginname) {
+            if (file_exists($CFG->dirroot . '/blocks/' . $key . '/lib.php')) {
+                require_once($CFG->dirroot . '/blocks/' . $key . '/lib.php');
+                $functionname = 'block_' . $key . '_leftmenunode';
+                if (function_exists($functionname)) {
                     // $block_content .= html_writer::start_tag('li', array('id'=> 'id_leftmenu_dashboard', 'class'=>'pull-left user_nav_div dashboard row-fluid '));
-                        $data = $functionname();
-                        foreach($data as $key => $val){
-                            $pluginnavs[$key][] = $val;
-                        }
+                    $data = $functionname();
+                    foreach ($data as $key => $val) {
+                        $pluginnavs[$key][] = $val;
+                    }
                     // $block_content .= html_writer::end_tag('li');
+                }
+            }
+        }
+
+        $tool_certificate = $core_component::get_plugin_directory('tool', 'certificate');
+        if ($tool_certificate) {
+            if (file_exists($CFG->dirroot . '/admin/tool/certificate/lib.php')) {
+                require_once($CFG->dirroot . '/admin/tool/certificate/lib.php');
+                $functionname = 'tool_certificate_leftmenunode';
+                if (function_exists($functionname)) {
+                    $data = $functionname();
+                    foreach ($data as  $key => $val) {
+                        $pluginnavs[$key][] = $val;
                     }
                 }
             }
+        }
 
-            $tool_certificate = $core_component::get_plugin_directory('tool', 'certificate');
-            if($tool_certificate){
-                if(file_exists($CFG->dirroot.'/admin/tool/certificate/lib.php')){
-                    require_once($CFG->dirroot.'/admin/tool/certificate/lib.php');
-                    $functionname = 'tool_certificate_leftmenunode';
-                    if(function_exists($functionname)){
-                        $data = $functionname();
-                        foreach($data as  $key => $val){
-                            $pluginnavs[$key][] = $val;
-                        }
-                    }
-                }
+        ksort($pluginnavs);
+        foreach ($pluginnavs as $pluginnav) {
+            foreach ($pluginnav  as $key => $value) {
+                $data = $value;
+                $block_content .= $data;
             }
-
-            ksort($pluginnavs);
-            foreach($pluginnavs as $pluginnav){
-                foreach($pluginnav  as $key => $value){
-                        $data = $value;
-                        $block_content .= $data;
-                }
-            }
-            /*Site Administration Link*/
-            if(is_siteadmin()){
-                $block_content .= html_writer::start_tag('li', array('id'=> 'id_leftmenu_adminstration', 'class'=>'pull-left user_nav_div adminstration'));
-                    $admin_url = new moodle_url('/admin/search.php');
-                    $admin = html_writer::link($admin_url, '<i class="fa fa-cogs"></i><span class="user_navigation_link_text">'.get_string('leftmenu_adminstration','theme_epsilon_classic').'</span>',array('class'=>'user_navigation_link'));
-                    $block_content .= $admin;
-                $block_content .= html_writer::end_tag('li');
-            }
+        }
+        /*Site Administration Link*/
+        if (is_siteadmin()) {
+            $block_content .= html_writer::start_tag('li', array('id' => 'id_leftmenu_adminstration', 'class' => 'pull-left user_nav_div adminstration'));
+            $admin_url = new moodle_url('/admin/search.php');
+            $admin = html_writer::link($admin_url, '<i class="fa fa-cogs"></i><span class="user_navigation_link_text">' . get_string('leftmenu_adminstration', 'theme_epsilon_classic') . '</span>', array('class' => 'user_navigation_link'));
+            $block_content .= $admin;
+            $block_content .= html_writer::end_tag('li');
+        }
         $block_content .= html_writer::end_tag('ul');
 
         return $block_content;
@@ -453,12 +454,12 @@ class core_renderer extends \core_renderer {
      *
      * @return URL
      */
-    function get_costcenter_scheme_css(){
+    function get_costcenter_scheme_css() {
         global $CFG;
-        require_once($CFG->dirroot.'/theme/epsilon_classic/lib.php');
+        require_once($CFG->dirroot . '/theme/epsilon_classic/lib.php');
 
         $return = false;
-        if(file_exists($CFG->dirroot . '/local/costcenter/lib.php')){
+        if (file_exists($CFG->dirroot . '/local/costcenter/lib.php')) {
             require_once($CFG->dirroot . '/local/costcenter/lib.php');
             $costcenter = new costcenter();
             $costcenter_scheme = $costcenter->get_costcenter_theme();
@@ -466,25 +467,25 @@ class core_renderer extends \core_renderer {
         }
         return $return;
     }
-     /**
-         * returns the scheme names for theme and costcenter
-         *
-         * @return string
-         */
-        function get_my_scheme(){
+    /**
+     * returns the scheme names for theme and costcenter
+     *
+     * @return string
+     */
+    function get_my_scheme() {
         global $PAGE, $CFG;
 
         $return = '';
         $theme_schemename = $PAGE->theme->settings->theme_scheme;
-        if(!empty($theme_schemename)){
-            $return .= ' theme_'.$theme_schemename;
+        if (!empty($theme_schemename)) {
+            $return .= ' theme_' . $theme_schemename;
         }
-        if(file_exists($CFG->dirroot . '/local/costcenter/lib.php')){
+        if (file_exists($CFG->dirroot . '/local/costcenter/lib.php')) {
             require_once($CFG->dirroot . '/local/costcenter/lib.php');
             $costcenter = new costcenter();
             $costcenter_schemename = $costcenter->get_costcenter_theme();
-            if(!empty($costcenter_schemename)){
-                $return .= ' organization_'.$costcenter_schemename;
+            if (!empty($costcenter_schemename)) {
+                $return .= ' organization_' . $costcenter_schemename;
             }
         }
 
@@ -499,24 +500,24 @@ class core_renderer extends \core_renderer {
      */
     public function should_display_navbar_logo() {
         global $USER, $DB;
-        $logopath ="";
-        if(!empty($USER->open_path)){
-        list($zero, $org, $ctr, $bu, $cu, $territory) = explode("/",$USER->open_path??"");
-        
-            if(!empty($org)){
-                $costcenterid = $DB->get_field('local_costcenter', 'costcenter_logo', array('id'=>$org));
+        $logopath = "";
+        if (!empty($USER->open_path)) {
+            list($zero, $org, $ctr, $bu, $cu, $territory) = explode("/", $USER->open_path ?? "");
+
+            if (!empty($org)) {
+                $costcenterid = $DB->get_field('local_costcenter', 'costcenter_logo', array('id' => $org));
             }
-            if(!empty($costcenterid)){
+            if (!empty($costcenterid)) {
                 $logopath = costcenter_logo($costcenterid);
             }
         }
         //print_r($logopath); exit;
-        if(empty($logopath)) {
+        if (empty($logopath)) {
             $logopath = $this->get_compact_logo_url();
-           //  if(empty($logopath)){
-           //      $default_logo = $this->image_url('default_logo', 'theme_epsilon_classic');
-           //      $logopath = $default_logo;
-           //  }
+            //  if(empty($logopath)){
+            //      $default_logo = $this->image_url('default_logo', 'theme_epsilon_classic');
+            //      $logopath = $default_logo;
+            //  }
         }
         return !empty($logopath);
     }
@@ -528,66 +529,65 @@ class core_renderer extends \core_renderer {
     */
     public function get_custom_logo() {
         global $USER, $DB;
-        $logopath ="";
-        if(!empty($USER->open_path)){
-            list($zero, $org, $ctr, $bu, $cu, $territory) = explode("/",$USER->open_path??"");
-            if(!empty($org)){
-                $costcenterid = $DB->get_field('local_costcenter', 'costcenter_logo', array('id'=>$org));
+        $logopath = "";
+        if (!empty($USER->open_path)) {
+            list($zero, $org, $ctr, $bu, $cu, $territory) = explode("/", $USER->open_path ?? "");
+            if (!empty($org)) {
+                $costcenterid = $DB->get_field('local_costcenter', 'costcenter_logo', array('id' => $org));
             }
-            if(!empty($costcenterid)){
+            if (!empty($costcenterid)) {
                 $logopath = costcenter_logo($costcenterid);
             }
         }
-         if(empty($logopath)) {
-             $logopath = $this->get_compact_logo_url();
+        if (empty($logopath)) {
+            $logopath = $this->get_compact_logo_url();
             //  if(empty($logopath)){
             //      $default_logo = $this->image_url('default_logo', 'theme_epsilon_classic');
             //      $logopath = $default_logo;
             //  }
-         }
-         return $logopath;
-     }
+        }
+        return $logopath;
+    }
     /**
      * returns the login logo url if uploaded in theme settings else returns false
      *
      * @return URL
      */
-    function carousellogo(){
+    function carousellogo() {
         $carousellogo = $this->page->theme->setting_file_url('carousellogo', 'carousellogo');
-        if(empty($carousellogo)){
+        if (empty($carousellogo)) {
             $carousellogo = $this->image_url('carousel_logo', 'theme_epsilon_classic');
         }
         return $carousellogo;
-
     }
-    function loginlogo(){
+    function loginlogo() {
 
         $loginlogo = $this->page->theme->setting_file_url('loginlogo', 'loginlogo');
-        if(empty($loginlogo)){
+        if (empty($loginlogo)) {
             $loginlogo = $this->image_url('login_logo', 'theme_epsilon_classic');
         }
         return $loginlogo;
     }
-    function logintext(){
+    function logintext() {
 
         $logintext = $this->page->theme->settings->logindesc;
-        if(empty($logintext)){
+        if (empty($logintext)) {
             $logintext = '';
         }
 
         if (strlen($logintext) > 600) {
-                //truncate string
-                $stringCut = substr($logintext, 0, 600);
-                $logintext = $stringCut.'...';
-            }
+            //truncate string
+            $stringCut = substr($logintext, 0, 600);
+            $logintext = $stringCut . '...';
+        }
         return $logintext;
     }
-    function loginordering($value='') {
+    function loginordering($value = '') {
         $loginordering = $order = '';
         $order = get_config('theme_epsilon_classic', 'loginorder');
-        if($order == 0) {
+        if ($order == 0) {
             $loginordering = false;
-        }else {
+        } else {
             $loginordering = true;
         }
         return $loginordering;
@@ -598,13 +598,13 @@ class core_renderer extends \core_renderer {
      *
      * @return URL
     */
-    public function loginslider(){
+    public function loginslider() {
         global $CFG;
-        if(isloggedin()){
+        if (isloggedin()) {
             return false;
         }
         $loginslider = '';
-        $loginslider .='<script> function loginpopup(test) {
+        $loginslider .= '<script> function loginpopup(test) {
                             $("#div_loginpopup_"+test).toggleClass("open");
                             }
                             function closeonclick(test){
@@ -614,23 +614,23 @@ class core_renderer extends \core_renderer {
                         </script>';
 
         $img1_url = $this->page->theme->setting_file_url('slider1', 'slider1');
-        if(empty($img1_url)){
+        if (empty($img1_url)) {
             $img1_url = $this->image_url('slides/slide1', 'theme_epsilon_classic');
         }
         $img2_url = $this->page->theme->setting_file_url('slider2', 'slider2');
-        if(empty($img2_url)){
+        if (empty($img2_url)) {
             $img2_url = $this->image_url('slides/slide2', 'theme_epsilon_classic');
         }
         $img3_url = $this->page->theme->setting_file_url('slider3', 'slider3');
-        if(empty($img3_url)){
+        if (empty($img3_url)) {
             $img3_url = $this->image_url('slides/slide3', 'theme_epsilon_classic');
         }
         $img4_url = $this->page->theme->setting_file_url('slider4', 'slider4');
-        if(empty($img4_url)){
+        if (empty($img4_url)) {
             $img4_url = $this->image_url('slides/slide4', 'theme_epsilon_classic');
         }
         $img5_url = $this->page->theme->setting_file_url('slider5', 'slider5');
-        if(empty($img5_url)){
+        if (empty($img5_url)) {
             $img5_url = $this->image_url('slides/slide5', 'theme_epsilon_classic');
         }
         $slider_context = [
@@ -649,35 +649,34 @@ class core_renderer extends \core_renderer {
      *
      * @return HTML
      */
-    function welcometext(){
+    function welcometext() {
 
         $welcometext = $this->page->theme->settings->welcometext;
-        if(empty($welcometext)){
+        if (empty($welcometext)) {
             $welcometext = ' ';
         }
 
         if (strlen($welcometext) > 15) {
-                //truncate string
-                $stringCut = substr($welcometext, 0, 15);
-                $welcometext = $stringCut.' ';
-            }
+            //truncate string
+            $stringCut = substr($welcometext, 0, 15);
+            $welcometext = $stringCut . ' ';
+        }
 
         return $welcometext;
     }
 
-
-    function captiontext(){
+    function captiontext() {
 
         $captiontext = $this->page->theme->settings->logocaption;
-        if(empty($captiontext)){
+        if (empty($captiontext)) {
             $captiontext = '';
         }
 
         if (strlen($captiontext) > 80) {
-                //truncate string
-                $stringCut = substr($captiontext, 0, 80);
-                $captiontext = $stringCut.'...';
-            }
+            //truncate string
+            $stringCut = substr($captiontext, 0, 80);
+            $captiontext = $stringCut . '...';
+        }
         return $captiontext;
     }
     /**
@@ -687,9 +686,9 @@ class core_renderer extends \core_renderer {
      */
     public function helpbtn() {
         $helptext = $this->page->theme->settings->helpdesc;
-        if(!empty($helptext)){
+        if (!empty($helptext)) {
             $helpbtn = $helptext;
-        }else{
+        } else {
             $helpbtn = '';
         }
         return $helpbtn;
@@ -702,9 +701,9 @@ class core_renderer extends \core_renderer {
      */
     public function aboutbtn() {
         $aboutustext = $this->page->theme->settings->aboutus;
-        if(!empty($aboutustext)){
+        if (!empty($aboutustext)) {
             $aboutusbtn = $aboutustext;
-        }else{
+        } else {
             $aboutusbtn = '';
         }
         return $aboutusbtn;
@@ -717,9 +716,9 @@ class core_renderer extends \core_renderer {
      */
     public function contactbtn() {
         $contactustext = $this->page->theme->settings->contact;
-        if(!empty($contactustext)){
+        if (!empty($contactustext)) {
             $contactusbtn = $contactustext;
-        }else{
+        } else {
             $contactusbtn = '';
         }
         return $contactusbtn;
@@ -731,7 +730,7 @@ class core_renderer extends \core_renderer {
      * @return string.
      */
     public function get_copyright_text() {
-         return format_text($this->page->theme->settings->copyright, FORMAT_HTML);
+        return format_text($this->page->theme->settings->copyright, FORMAT_HTML);
     }
     /**
      * Secure login info.
@@ -759,15 +758,15 @@ class core_renderer extends \core_renderer {
 
             // If any of the above social networks are true, sets this to true.
             'hassocialnetworks' => ($hasfacebook || $hastwitter
-                 || $haslinkedin  || $hasyoutube ||  $hasinstagram
-                 ) ? true : false,
+                || $haslinkedin  || $hasyoutube ||  $hasinstagram
+            ) ? true : false,
 
             'socialicons' => array(
-                    'facebook' => $hasfacebook,
-                    'twitter'  => $hastwitter,
-                    'linkedin' => $haslinkedin,
-                    'youtube'    => $hasyoutube,
-                    'instagram'  => $hasinstagram,
+                'facebook' => $hasfacebook,
+                'twitter'  => $hastwitter,
+                'linkedin' => $haslinkedin,
+                'youtube'    => $hasyoutube,
+                'instagram'  => $hasinstagram,
             )
         ];
         return $this->render_from_template('theme_epsilon_classic/socialicons', $socialcontext);
@@ -789,8 +788,8 @@ class core_renderer extends \core_renderer {
         $quickInfo = [
             'quicklinksEnable' => ($this->page->theme->settings->quickinfo == 'no') ? false : true,
             'hasquicklinks' => ($quickinfo1 || $quickinfo2
-                 || $quickinfo3  || $quickinfo4 ||  $quickinfo4
-                 ) ? true : false,
+                || $quickinfo3  || $quickinfo4 ||  $quickinfo4
+            ) ? true : false,
             'quicklinks' => array(
                 'quickinfo1' => $quickinfo1,
                 'quickinfo2' => $quickinfo2,
@@ -810,12 +809,11 @@ class core_renderer extends \core_renderer {
      */
     public function render_login(\core_auth\output\login $form) {
         global $CFG, $SITE, $OUTPUT;
-    $organization_shortname = get_config('local_users','organization_shortname');
-    $activeregistration = get_config('local_users','activeregistration');
-    $context = $form->export_for_template($this);
-        if(trim($organization_shortname != "") && $activeregistration == 1)
-        {
-            $context->signupurl_custom =new moodle_url('/local/users/signup.php');
+        $organization_shortname = get_config('local_users', 'organization_shortname');
+        $activeregistration = get_config('local_users', 'activeregistration');
+        $context = $form->export_for_template($this);
+        if (trim($organization_shortname != "") && $activeregistration == 1) {
+            $context->signupurl_custom = new moodle_url('/local/users/signup.php');
         }
 
         // Override because rendering is not supported in template yet.
@@ -830,17 +828,20 @@ class core_renderer extends \core_renderer {
             $url = $url->out(false);
         }
         $context->logourl = $url;
-        $context->sitename = format_string($SITE->fullname, true,
-            ['context' => context_course::instance(SITEID), "escape" => false]);
+        $context->sitename = format_string(
+            $SITE->fullname,
+            true,
+            ['context' => context_course::instance(SITEID), "escape" => false]
+        );
         $context->output = $OUTPUT;
         $helptext = $this->page->theme->settings->helpdesc;
         $contactustext = $this->page->theme->settings->contact;
         $aboutustext = $this->page->theme->settings->aboutus;
-        if(!empty($helptext)||(!empty($contactustext))||(!empty($aboutustext))){
+        if (!empty($helptext) || (!empty($contactustext)) || (!empty($aboutustext))) {
             $context->helptext = $helptext;
             $context->contactustext = $contactustext;
             $context->aboutustext = $aboutustext;
-        }else{
+        } else {
             $context->helptext = '';
             $context->contactustext = '';
             $context->aboutustext = '';
@@ -867,8 +868,11 @@ class core_renderer extends \core_renderer {
         }
         $context->errorformatted = $this->error_text($context->error);
 
-        $context->sitename = format_string($SITE->fullname, true,
-            ['context' => \context_course::instance(SITEID), "escape" => false]);
+        $context->sitename = format_string(
+            $SITE->fullname,
+            true,
+            ['context' => \context_course::instance(SITEID), "escape" => false]
+        );
         $url = $this->get_logo_url();
         if ($url) {
             $url = $url->out(false);
@@ -887,8 +891,8 @@ class core_renderer extends \core_renderer {
      */
     public function full_header() {
 
-        global $USER,$COURSE,$DB,$CFG;
-        require_once($CFG->dirroot . '/local/ratings/lib.php');
+        global $USER, $COURSE, $DB, $CFG;
+        //require_once($CFG->dirroot . '/local/ratings/lib.php');
         $data = $this->custom_secured_redirection();
         $pagetype = $this->page->pagetype;
         $homepage = get_home_page();
@@ -901,8 +905,10 @@ class core_renderer extends \core_renderer {
         } else if ($homepage == HOMEPAGE_SITE) {
             $homepagetype = 'site-index';
         }
-        if ($this->page->include_region_main_settings_in_header_actions() &&
-                !$this->page->blocks->is_block_present('settings')) {
+        if (
+            $this->page->include_region_main_settings_in_header_actions() &&
+            !$this->page->blocks->is_block_present('settings')
+        ) {
             // Only include the region main settings if the page has requested it and it doesn't already have
             // the settings block on it. The region main settings are included in the settings block and
             // duplicating the content causes behat failures.
@@ -914,60 +920,58 @@ class core_renderer extends \core_renderer {
         }
         $show_course_header = false;
 
-        $header=new stdClass();
+        $header = new stdClass();
 
-        if (($context->contextlevel == CONTEXT_COURSE) && $courseid > 1 && $this->courseviewmenu_hidden()){
+        if (($context->contextlevel == CONTEXT_COURSE) && $courseid > 1 && $this->courseviewmenu_hidden()) {
 
             $course_extended_menu = $this->course_context_header_settings_menu();
 
             $show_course_header = true;
 
-            $usercourseprogress =  (new \local_courses\lib\accesslib())::get_user_course_progress_percentage($courseid,$USER->id);
-            require_once($CFG->dirroot.'/local/ratings/lib.php');
+            $usercourseprogress =  (new \local_courses\lib\accesslib())::get_user_course_progress_percentage($courseid, $USER->id);
+            /* require_once($CFG->dirroot.'/local/ratings/lib.php');
             $ratings_exist = \core_component::get_plugin_directory('local', 'ratings');
 
             if ($ratings_exist) {
                 $display_ratings = display_rating($courseid, 'local_courses');
             } else {
                 $display_ratings = null;
-            }
-            $header=(object)array_merge((array)$header,$usercourseprogress);
-            $header->display_ratings=$display_ratings;
-            if(!is_siteadmin()){
-                if(isset($COURSE->open_coursecompletiondays) && $COURSE->open_coursecompletiondays != 0)
-                {
+            } */
+            $header = (object)array_merge((array)$header, $usercourseprogress);
+            //$header->display_ratings = $display_ratings;
+            if (!is_siteadmin()) {
+                if (isset($COURSE->open_coursecompletiondays) && $COURSE->open_coursecompletiondays != 0) {
                     $today = date('Y-m-d');
-                    $userenroldate = $DB->get_field_sql("SELECT max(ue.timecreated) as enrolldate 
+                    $userenroldate = $DB->get_field_sql("SELECT max(ue.timecreated) as enrolldate
                             FROM {course} course
-                            JOIN {enrol} e ON e.courseid = course.id 
+                            JOIN {enrol} e ON e.courseid = course.id
                             JOIN {user_enrolments} ue ON ue.enrolid = e.id
                             JOIN {user} u ON u.id = $USER->id AND course.id = $COURSE->id ");
-                      
-                    if(!empty($userenroldate)){
-                        $userenroldate = date('Y-m-d',$userenroldate);
+
+                    if (!empty($userenroldate)) {
+                        $userenroldate = date('Y-m-d', $userenroldate);
                         //$userenroldate = '2023-04-12';
                         $difference = strtotime($userenroldate) - strtotime($today);
-                        $days = abs($difference/(60 * 60)/24);                       
-                       
-                        if($days != 0 && $days < $COURSE->open_coursecompletiondays){
-                            $duedays = 'Due In : <strong>' .($COURSE->open_coursecompletiondays-$days). ' days </strong>';
-                        }else if($days != 0 && $days > $COURSE->open_coursecompletiondays){
-                            $duedays = 'Overdue by : ' .abs($COURSE->open_coursecompletiondays-$days). ' days';
+                        $days = abs($difference / (60 * 60) / 24);
+
+                        if ($days != 0 && $days < $COURSE->open_coursecompletiondays) {
+                            $duedays = 'Due In : <strong>' . ($COURSE->open_coursecompletiondays - $days) . ' days </strong>';
+                        } else if ($days != 0 && $days > $COURSE->open_coursecompletiondays) {
+                            $duedays = 'Overdue by : ' . abs($COURSE->open_coursecompletiondays - $days) . ' days';
                         }
-                        if($duedays !=0 ){
-                            $display_duedays =' <div class="col-md-3 user_enrollment d-flex align-items-center ">
-                                                    <i class="fa fa-calendar"></i>                                                  
+                        if ($duedays != 0) {
+                            $display_duedays = ' <div class="col-md-3 user_enrollment d-flex align-items-center ">
+                                                    <i class="fa fa-calendar"></i>
                                                     <div class="enroll_details d-flex">
                                                         <span class="details_content text-nowrap"> </span>
-                                                        <span class="enroll_number">'.$duedays.'</span>
+                                                        <span class="enroll_number">' . $duedays . '</span>
                                                     </div>
                                                 </div> ';
-                        }                         
-                      
+                        }
                     }
-                 }
+                }
             }
-        }else{
+        } else {
             $course_extended_menu = $this->context_header_settings_menu();
         }
         $header->settingsmenu = $course_extended_menu;
@@ -980,26 +984,26 @@ class core_renderer extends \core_renderer {
         $header->coursebannerimage = $this->course_bannerimage();
         $header->pageheadingbutton = $this->page_heading_button();
         $header->courseheader = $this->course_header();
-        $header->display_duedays = !empty($display_duedays) ? $display_duedays : '';        
+        $header->display_duedays = !empty($display_duedays) ? $display_duedays : '';
         $header->headeractions = $this->page->get_header_actions();
         if (!empty($pagetype) && !empty($homepagetype) && $pagetype == $homepagetype) {
             $header->welcomemessage = \core_user::welcome_message();
         }
         $header->courseid = $COURSE->id;
-        $header->activityurl =$this->activityurl_get_course();
-        return $this->render_from_template($show_course_header? 'theme_epsilon_classic/course_full_header' : 'theme_epsilon_classic/full_header', $header);
+        $header->activityurl = $this->activityurl_get_course();
+        return $this->render_from_template($show_course_header ? 'theme_epsilon_classic/course_full_header' : 'theme_epsilon_classic/full_header', $header);
     }
-        /**
+    /**
      * return custom course page header buttons to show only on course pages
      *
      * @return HTML
      */
-    public function course_context_header_settings_menu(){
+    public function course_context_header_settings_menu() {
         global $PAGE, $COURSE, $DB, $USER;
 
         $courseid = $COURSE->id;
         $sesskey = sesskey();
-        if($courseid < 2){
+        if ($courseid < 2) {
             return '';
         }
 
@@ -1012,40 +1016,42 @@ class core_renderer extends \core_renderer {
         $admin_default_menu = $is_courseedit_icon = $course_reports = $course_complition = $coursebackup = false;
         $allow_editing = false;
         $editing_url = "";
-         if(has_capability('moodle/course:create', $systemcontext) || is_siteadmin()) {
+        if (has_capability('moodle/course:create', $systemcontext) || is_siteadmin()) {
             $admin_default_menu = true;
             $manage = true;
         }
         $useredit = '';
         if ($PAGE->user_is_editing() && $PAGE->user_allowed_editing()) {
             $useredit = 'off';
-        }else{
+        } else {
             $useredit = 'on';
         }
-        if($this->page->pagetype!='local-catalog-courseinfo') {
-            if(!(is_siteadmin() || has_any_capability(['moodle/course:view'], $systemcontext))){
+        if ($this->page->pagetype != 'local-catalog-courseinfo') {
+            if (!(is_siteadmin() || has_any_capability(['moodle/course:view'], $systemcontext))) {
                 $manage = false;
                 $USER->editing = 0;
             }
-            if ($PAGE->user_allowed_editing() && $manage){
+            if ($PAGE->user_allowed_editing() && $manage) {
 
                 $allow_editing = true;
-                $editing_url = new moodle_url('/course/view.php', array('id' => $courseid, 'sesskey'=> $sesskey, 'edit'=>$useredit));
+                $editing_url = new moodle_url('/course/view.php', array('id' => $courseid, 'sesskey' => $sesskey, 'edit' => $useredit));
             }
-            if((has_capability('moodle/course:create',$systemcontext) || is_siteadmin() ||
-                                            has_capability('local/courses:enrol', $systemcontext)) && $manage) {
+            if ((has_capability('moodle/course:create', $systemcontext) || is_siteadmin() ||
+                has_capability('local/courses:enrol', $systemcontext)) && $manage) {
                 $is_courseedit_icon = true;
                 $course_reports =  true;
                 $course_complition = true;
             }
 
-            if((has_capability('moodle/backup:backupcourse',$systemcontext) || is_siteadmin()) && $manage) {
+            if ((has_capability('moodle/backup:backupcourse', $systemcontext) || is_siteadmin()) && $manage) {
                 $coursebackup = true;
             }
             $maincheckcontext = (new \local_courses\lib\accesslib())::get_module_context();
-            if(is_siteadmin() || ((has_capability('local/courses:enrol',
-                                $maincheckcontext)  || is_siteadmin())&&has_capability('local/courses:manage', $maincheckcontext))) {
-                $enrolid = $DB->get_field('enrol', 'id', array('courseid' => $courseid ,'enrol' => 'manual'));
+            if (is_siteadmin() || ((has_capability(
+                'local/courses:enrol',
+                $maincheckcontext
+            )  || is_siteadmin()) && has_capability('local/courses:manage', $maincheckcontext))) {
+                $enrolid = $DB->get_field('enrol', 'id', array('courseid' => $courseid, 'enrol' => 'manual'));
                 $userenrollment = true;
             }
         }
@@ -1057,10 +1063,10 @@ class core_renderer extends \core_renderer {
         $challenge_plugin_exist = \core_component::get_plugin_directory('local', 'challenge');
         $challenge_element = false;
         $enabled =  (int)get_config('', 'local_challenge_enable_challenge');
-        if($enabled){
-            if(!empty($challenge_plugin_exist)){
+        if ($enabled) {
+            if (!empty($challenge_plugin_exist)) {
                 $render_class = $PAGE->get_renderer('local_challenge');
-                if(method_exists($render_class, 'render_challenge_object')){
+                if (method_exists($render_class, 'render_challenge_object')) {
                     $element = $render_class->render_challenge_object('local_courses', $courseid);
                     $challenge_element = $element;
                 }
@@ -1068,10 +1074,9 @@ class core_renderer extends \core_renderer {
         }
         $gamification_plugin_exist = \core_component::get_plugin_directory('block', 'gamification');
         $gamification_element = false;
-        if(!empty($gamification_plugin_exist)){
+        if (!empty($gamification_plugin_exist)) {
             $gamification_element = true;
         }
-
 
         $course_context = [
             "courseid" => $courseid,
@@ -1084,9 +1089,9 @@ class core_renderer extends \core_renderer {
             "course_reports" => $course_reports,
             "course_complition" => $course_complition,
             "coursebackup" => $coursebackup,
-            "enrolid" => $enrolid??0,
-            "userenrollment" => $userenrollment??false,
-            "categorycontextid" =>$categorycontext->id,
+            "enrolid" => $enrolid ?? 0,
+            "userenrollment" => $userenrollment ?? false,
+            "categorycontextid" => $categorycontext->id,
             // "gamificationpage" => $gamificationpage,
             "challenge_element" => $challenge_element,
             "gamification_element" => $gamification_element,
@@ -1094,38 +1099,38 @@ class core_renderer extends \core_renderer {
             'isenrolled' => is_enrolled(context_course::instance($COURSE->id)),
         ];
 
-        if(!is_siteadmin()){
-            $switchedrole = isset($USER->access['rsw']['/1'])?$USER->access['rsw']['/1']:"";
-            if($switchedrole){
+        if (!is_siteadmin()) {
+            $switchedrole = isset($USER->access['rsw']['/1']) ? $USER->access['rsw']['/1'] : "";
+            if ($switchedrole) {
                 $userrole = $DB->get_field('role', 'shortname', array('id' => $switchedrole));
-            }else{
+            } else {
                 $userrole = null;
             }
 
-//            if(is_null($userrole) || $userrole == 'user'){
-             if(is_null($userrole) || $userrole == 'employee'){
+            //            if(is_null($userrole) || $userrole == 'user'){
+            if (is_null($userrole) || $userrole == 'employee') {
                 $core_component = new core_component();
                 $certificate_plugin_exist = $core_component::get_plugin_directory('tool', 'certificate');
-                if($certificate_plugin_exist){
-                    if(!empty($COURSE->open_certificateid)){
+                if ($certificate_plugin_exist) {
+                    if (!empty($COURSE->open_certificateid)) {
                         $course_context['certificate_exists'] = true;
                         $sql = "SELECT id
                                 FROM {course_completions}
                                 WHERE course = :courseid AND userid = :userid
                                 AND timecompleted IS NOT NULL ";
 
-                        $completed = $DB->record_exists_sql($sql, array('courseid'=>$COURSE->id, 'userid'=>$USER->id));
-                        if($completed){
+                        $completed = $DB->record_exists_sql($sql, array('courseid' => $COURSE->id, 'userid' => $USER->id));
+                        if ($completed) {
 
-                $certcode = $DB->get_field('tool_certificate_issues', 'code', array('moduleid'=>$COURSE->id,'userid'=>$USER->id,'moduletype'=>'course'));
-                            if($certcode == 0){
+                            $certcode = $DB->get_field('tool_certificate_issues', 'code', array('moduleid' => $COURSE->id, 'userid' => $USER->id, 'moduletype' => 'course'));
+                            if ($certcode == 0) {
                                 $course_context['certificate_exists'] = false;
                             }
                             $course_context['certificate_download'] = true;
                             $course_context['certificateid'] = $certcode; //$COURSE->open_certificateid;
                             $course_context['moduletype'] = 'course';
                             $course_context['moduleid'] = $COURSE->id;
-                        }else{
+                        } else {
                             $course_context['certificate_download'] = false;
                         }
                     }
@@ -1158,8 +1163,9 @@ class core_renderer extends \core_renderer {
         if (!empty($options['avatarsize'])) {
             $avataroptions['size'] = $options['avatarsize'];
         }
-        $returnobject->metadata['useravatar'] = $OUTPUT->user_picture (
-            $user, $avataroptions
+        $returnobject->metadata['useravatar'] = $OUTPUT->user_picture(
+            $user,
+            $avataroptions
         );
         // Build a list of items for a regular user.
 
@@ -1182,7 +1188,6 @@ class core_renderer extends \core_renderer {
                     $a->attempts = html_writer::tag('span', $count, array('class' => 'value'));
                     $returnobject->metadata['userloginfail'] =
                         get_string('failedloginattempts', '', $a);
-
                 }
             }
         }
@@ -1214,7 +1219,6 @@ class core_renderer extends \core_renderer {
             $returnobject->navitems[] = $item;
         }
 
-
         if ($returnobject->metadata['asotheruser'] = \core\session\manager::is_loggedinas()) {
             $realuser = \core\session\manager::get_realuser();
 
@@ -1238,7 +1242,6 @@ class core_renderer extends \core_renderer {
             $userrevert->title = get_string('logout');
             $userrevert->titleidentifier = 'logout,moodle';
             $returnobject->navitems[] = $userrevert;
-
         } else {
 
             // Build a logout link.
@@ -1305,14 +1308,13 @@ class core_renderer extends \core_renderer {
                 ),
                 $usermenuclasses
             );
-
         }
 
         // If logged in as a guest user, show a string to that effect.
         if (isguestuser()) {
             $returnstr = get_string('loggedinasguest');
             if (!$loginpage && $withlinks) {
-                $returnstr .= " (<a href=\"$loginurl\">".get_string('login').'</a>)';
+                $returnstr .= " (<a href=\"$loginurl\">" . get_string('login') . '</a>)';
             }
 
             return html_writer::div(
@@ -1339,25 +1341,25 @@ class core_renderer extends \core_renderer {
                                     FROM {role}
                                     WHERE shortname = 'employee' AND archetype = 'student' ";
             $learnerroleid = $DB->get_record_sql($learner_record_sql);
-            if(!empty($USER->access['rsw'])){
+            if (!empty($USER->access['rsw'])) {
                 $USER->access['rsw']['/1'] = $learnerroleid->id;
             }
-            $rolename = get_string('employee','theme_epsilon_classic');
-          
+            $rolename = get_string('employee', 'theme_epsilon_classic');
+
             $rolesarray = [];
-            foreach($roles as $r) {          
+            foreach ($roles as $r) {
                 array_push($rolesarray, $r->sortorder);
             }
-            if(!empty($rolesarray) && is_array($rolesarray)){
+            if (!empty($rolesarray) && is_array($rolesarray)) {
                 $highest_rolesortorder = min($rolesarray);
-                foreach($roles as $role){
+                foreach ($roles as $role) {
                     $categoryids = array_values(array_filter((explode('/', $role->path))));
-                    $role->highest_catid = $categoryids[0];                  
+                    $role->highest_catid = $categoryids[0];
                     if ($role->sortorder == $highest_rolesortorder) {
                         $highest_roleinfo = $role;
                     }
                 }
-            }else{
+            } else {
                 $highest_roleinfo = (object)['roleid' => 0, 'contextid' => SYSCONTEXTID];
             }
 
@@ -1366,63 +1368,63 @@ class core_renderer extends \core_renderer {
             $current_orgcatid = isset($USER->useraccess['currentroleinfo']['orgcatid']) ? $USER->useraccess['currentroleinfo']['orgcatid'] : $highest_roleinfo->highest_catid;
 
             $current_depth = isset($USER->useraccess['currentroleinfo']['depth']) ? $USER->useraccess['currentroleinfo']['depth'] : $highest_roleinfo->depth;
-            
+
             // After deleting current role from the admin, it is not switching to the next highest role, for that reason below code is written.
-            $checkcurrentrole = in_array($current_roleid, array_column($roles, 'roleid'));            
-            if (empty($checkcurrentrole)) {                
+            $checkcurrentrole = in_array($current_roleid, array_column($roles, 'roleid'));
+            if (empty($checkcurrentrole)) {
                 $current_roleid = $highest_roleinfo->roleid;
                 $current_orgcatid = $highest_roleinfo->categoryid;
                 $current_depth = $highest_roleinfo->depth;
-            }                    
-          
-            if(!empty($learnerroleid)){
-                if($learnerroleid->id == $current_roleid){
-                    $disabled_role = 'user_role active_role';
-                 }else{
-                    $disabled_role = 'user_role';
-                 }
-                 $switchrole->url = new moodle_url('/local/users/switchrole.php', array('sesskey' => sesskey(),'confirm' => 1,'switchrole' => $learnerroleid->id));
-                 $switchrole->pix = "i/user";
-                 $switchrole->title = get_string('switchroleas','theme_epsilon_classic').$rolename;
-                 $switchrole->titleidentifier = 'switchrole_'.$rolename.',moodle';
-                 $switchrole->class = $disabled_role;
-                 $opts->navitems[] = $switchrole;
             }
 
-            foreach($roles as $role){   /*Get all the roles assigned to the user for display */
-                if(empty($role->rolename)){
-                    $rolename =  $role->categoryname.' - '.$role->rolecode;
-                }else{
-                    $rolename =  $role->categoryname.' - '.$role->rolename;
+            if (!empty($learnerroleid)) {
+                if ($learnerroleid->id == $current_roleid) {
+                    $disabled_role = 'user_role active_role';
+                } else {
+                    $disabled_role = 'user_role';
+                }
+                $switchrole->url = new moodle_url('/local/users/switchrole.php', array('sesskey' => sesskey(), 'confirm' => 1, 'switchrole' => $learnerroleid->id));
+                $switchrole->pix = "i/user";
+                $switchrole->title = get_string('switchroleas', 'theme_epsilon_classic') . $rolename;
+                $switchrole->titleidentifier = 'switchrole_' . $rolename . ',moodle';
+                $switchrole->class = $disabled_role;
+                $opts->navitems[] = $switchrole;
+            }
+
+            foreach ($roles as $role) {   /*Get all the roles assigned to the user for display */
+                if (empty($role->rolename)) {
+                    $rolename =  $role->categoryname . ' - ' . $role->rolecode;
+                } else {
+                    $rolename =  $role->categoryname . ' - ' . $role->rolename;
                 }
 
                 $switchrole = new stdClass();
                 $switchrole->itemtype = 'link';
-                
-                if($role->roleid == $current_roleid && $current_depth == $role->depth &&  $current_orgcatid == $role->highest_catid) { //$current_orgcatid == $role->highest_catid
+
+                if ($role->roleid == $current_roleid && $current_depth == $role->depth &&  $current_orgcatid == $role->highest_catid) { //$current_orgcatid == $role->highest_catid
                     $switchrole->url = new moodle_url('javascript:void(0)');
                     $disabled_role = 'user_role active_role';
-                }else{
-                    $switchrole->url = new moodle_url('/local/users/switchrole.php', array('sesskey' => sesskey(),'confirm' => 1,'switchrole' => $role->roleid, 'contextid' => $role->contextid));
+                } else {
+                    $switchrole->url = new moodle_url('/local/users/switchrole.php', array('sesskey' => sesskey(), 'confirm' => 1, 'switchrole' => $role->roleid, 'contextid' => $role->contextid));
                     $disabled_role = 'user_role';
                 }
                 $switchrole->pix = "i/switchrole";
-                $switchrole->title = get_string('switchroleas','theme_epsilon_classic').$rolename;
-                $switchrole->titleidentifier = 'switchrole_'.$rolename.',moodle';
+                $switchrole->title = get_string('switchroleas', 'theme_epsilon_classic') . $rolename;
+                $switchrole->titleidentifier = 'switchrole_' . $rolename . ',moodle';
                 $switchrole->class = $disabled_role;
                 $opts->navitems[] = $switchrole;
             }
         }
         $highest_roleid = '';
-        if((count($roles) > 0) && (!isset($USER->useraccess['currentroleinfo']) || empty($USER->useraccess['currentroleinfo'])) ){
-            if($highest_roleinfo->roleid){
+        if ((count($roles) > 0) && (!isset($USER->useraccess['currentroleinfo']) || empty($USER->useraccess['currentroleinfo']))) {
+            if ($highest_roleinfo->roleid) {
                 $highest_roleid = $highest_roleinfo->roleid;
                 $contextid = $highest_roleinfo->contextid;
                 $this->role_switch_basedon_userroles($highest_roleid, false, $contextid);
-                 redirect(new moodle_url('/'));
+                redirect(new moodle_url('/'));
             }
-        // }elseif((isset($USER->access['rsw']) && $USER->access['rsw']) ){
-        //     $highest_roleid = current($USER->access['rsw']);
+            // }elseif((isset($USER->access['rsw']) && $USER->access['rsw']) ){
+            //     $highest_roleid = current($USER->access['rsw']);
         }
 
         // Build a logout link.
@@ -1433,7 +1435,6 @@ class core_renderer extends \core_renderer {
         $logout->title = get_string('logout');
         $logout->titleidentifier = 'customlogout,moodle';
         $opts->navitems[] = $logout;
-
 
         $avatarclasses = "avatars";
         $avatarcontents = html_writer::span($opts->metadata['useravatar'], 'avatar current');
@@ -1524,7 +1525,7 @@ class core_renderer extends \core_renderer {
                         if (isset($value->pix) && !empty($value->pix)) {
                             $pix = new pix_icon($value->pix, $value->title, null, array('class' => 'iconsmall'));
                         } else if (isset($value->imgsrc) && !empty($value->imgsrc)) {
-                                $value->title = html_writer::img(
+                            $value->title = html_writer::img(
                                 $value->imgsrc,
                                 $value->title,
                                 array('class' => 'iconsmall')
@@ -1533,9 +1534,9 @@ class core_renderer extends \core_renderer {
                         $stringtitleidentifier = $value->titleidentifier;
                         $component = explode(',', $stringtitleidentifier);
                         $component = $component[0];
-                        if(($component == 'switchroleto') || ($component == 'logout')){
+                        if (($component == 'switchroleto') || ($component == 'logout')) {
                             //do nothing
-                        }elseif((strpos('switchrole_', $component) !== false)){
+                        } elseif ((strpos('switchrole_', $component) !== false)) {
                             $al = new action_menu_link_secondary(
                                 $value->url,
                                 $pix,
@@ -1547,7 +1548,7 @@ class core_renderer extends \core_renderer {
                             }
                             $al->attributes['class'] = $disabled_role;
                             $am->add($al);
-                        }elseif((strpos('customlogout', $component) !== false)){
+                        } elseif ((strpos('customlogout', $component) !== false)) {
                             $al = new action_menu_link_secondary(
                                 $value->url,
                                 $pix,
@@ -1558,10 +1559,10 @@ class core_renderer extends \core_renderer {
                                 $al->attributes['data-title'] = $value->titleidentifier;
                             }
                             $am->add($al);
-                        }else{
-                            if(isset($value->class)){
+                        } else {
+                            if (isset($value->class)) {
                                 $valueclass = $value->class;
-                            }else{
+                            } else {
                                 $valueclass = '';
                             }
                             $al = new action_menu_link_secondary(
@@ -1569,7 +1570,7 @@ class core_renderer extends \core_renderer {
                                 $pix,
                                 $value->title,
                                 //$value->class,
-                                array('class' => 'icon '.$valueclass.'')
+                                array('class' => 'icon ' . $valueclass . '')
                             );
                             if (!empty($value->titleidentifier)) {
                                 $al->attributes['data-title'] = $value->titleidentifier;
@@ -1594,62 +1595,64 @@ class core_renderer extends \core_renderer {
             $usermenuclasses
         );
     }
-    public function custom_secured_redirection(){
+    public function custom_secured_redirection() {
         global $USER, $CFG, $DB, $COURSE;
         $return = new stdClass();
-        if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
+        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
             $pageurl = "https";
         else
             $pageurl = "http";
         $pageurl .= "://";
-        $pageurl .= $_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+        $pageurl .= $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
         $string = strpos($pageurl, '?');
-        if($string)
-            $newpageurl = substr($pageurl,0 , $string);
+        if ($string)
+            $newpageurl = substr($pageurl, 0, $string);
         else
             $newpageurl = $pageurl;
 
-        if($newpageurl == $CFG->wwwroot.'/enrol/index.php' || $newpageurl == $CFG->wwwroot.'/enrol/'){
-            redirect($CFG->wwwroot.'/my');
+        if ($newpageurl == $CFG->wwwroot . '/enrol/index.php' || $newpageurl == $CFG->wwwroot . '/enrol/') {
+            redirect($CFG->wwwroot . '/my');
         }
-        if($newpageurl == $CFG->wwwroot.'/course/management.php'){
-            redirect($CFG->wwwroot.'/local/custom_category/index.php');//Category page redirection
+        if ($newpageurl == $CFG->wwwroot . '/course/management.php') {
+            redirect($CFG->wwwroot . '/local/custom_category/index.php'); //Category page redirection
         }
-        if($newpageurl == $CFG->wwwroot.'/user/view.php' || $newpageurl == $CFG->wwwroot.'/user/profile.php'){
-            if($_GET['id']){
+        if ($newpageurl == $CFG->wwwroot . '/user/view.php' || $newpageurl == $CFG->wwwroot . '/user/profile.php') {
+            if ($_GET['id']) {
                 $id = $_GET['id'];
-            }else{
+            } else {
                 $id = $USER->id;
             }
-            redirect($CFG->wwwroot."/local/users/profile.php?id=$id");
+            redirect($CFG->wwwroot . "/local/users/profile.php?id=$id");
         }
-        if($newpageurl == $CFG->wwwroot.'/course/index.php' || $newpageurl == $CFG->wwwroot.'/course'){
-            redirect($CFG->wwwroot."/local/courses/courses.php");
+        if ($newpageurl == $CFG->wwwroot . '/course/index.php' || $newpageurl == $CFG->wwwroot . '/course') {
+            redirect($CFG->wwwroot . "/local/courses/courses.php");
         }
         $systemcontext = \local_costcenter\lib\accesslib::get_module_context();
-        if(!is_siteadmin() && !has_capability('local/costcenter:manage_multiorganizations', $systemcontext) 
-            && !has_capability('local/costcenter:view', $systemcontext) 
-            && !has_capability('local/costcenter:manage', $systemcontext) 
-            && !has_capability('local/classroom:manageclassroom', $systemcontext) 
-            && has_capability('block/eventtimetable:view_events_trainer', $systemcontext) 
-            && $newpageurl == $CFG->wwwroot.'/my/dashboard.php' ){
-            redirect($CFG->wwwroot.'/blocks/trainerdashboard/dashboard.php');
+        if (
+            !is_siteadmin() && !has_capability('local/costcenter:manage_multiorganizations', $systemcontext)
+            && !has_capability('local/costcenter:view', $systemcontext)
+            && !has_capability('local/costcenter:manage', $systemcontext)
+            && !has_capability('local/classroom:manageclassroom', $systemcontext)
+            && has_capability('block/eventtimetable:view_events_trainer', $systemcontext)
+            && $newpageurl == $CFG->wwwroot . '/my/dashboard.php'
+        ) {
+            redirect($CFG->wwwroot . '/blocks/trainerdashboard/dashboard.php');
         }
         $systemcontext = \context_system::instance();
-        if(!(is_siteadmin() || has_capability('local/costcenter:manage_multiorganizations', $systemcontext))){
+        if (!(is_siteadmin() || has_capability('local/costcenter:manage_multiorganizations', $systemcontext))) {
             $is_oh = has_capability('local/costcenter:manage_ownorganization', $systemcontext);
             $is_dh = has_capability('local/costcenter:manage_owndepartments', $systemcontext);
-            if($newpageurl == $CFG->wwwroot.'/course/completion.php' || $newpageurl == $CFG->wwwroot.'/backup/backup.php'){/*for course completion settings and backup page*/
+            if ($newpageurl == $CFG->wwwroot . '/course/completion.php' || $newpageurl == $CFG->wwwroot . '/backup/backup.php') {/*for course completion settings and backup page*/
                 $courseid = required_param('id',  PARAM_INT);
                 $course = get_course($courseid);
-                if($is_oh && $USER->open_costcenterid != $course->open_costcenterid){
-                    redirect($CFG->wwwroot.'/local/courses/courses.php');
-                }else if($is_dh && $USER->open_departmentid != $course->open_departmentid){
-                    redirect($CFG->wwwroot.'/local/courses/courses.php');
+                if ($is_oh && $USER->open_costcenterid != $course->open_costcenterid) {
+                    redirect($CFG->wwwroot . '/local/courses/courses.php');
+                } else if ($is_dh && $USER->open_departmentid != $course->open_departmentid) {
+                    redirect($CFG->wwwroot . '/local/courses/courses.php');
                 }
-            }else if($newpageurl == $CFG->wwwroot.'/mod/quiz/edit.php' || $newpageurl == $CFG->wwwroot.'/mod/quiz/report.php'){/*for edit quiz page and quiz default report page*/
-                if($COURSE->id == 1){
-                    if($newpageurl == $CFG->wwwroot.'/mod/quiz/edit.php')
+            } else if ($newpageurl == $CFG->wwwroot . '/mod/quiz/edit.php' || $newpageurl == $CFG->wwwroot . '/mod/quiz/report.php') {/*for edit quiz page and quiz default report page*/
+                if ($COURSE->id == 1) {
+                    if ($newpageurl == $CFG->wwwroot . '/mod/quiz/edit.php')
                         $cmid = $_GET['cmid'];
                     else
                         $cmid = $_GET['id'];
@@ -1658,34 +1661,34 @@ class core_renderer extends \core_renderer {
                     $onlinetest_sql = "SELECT lo.* FROM {local_onlinetests} AS lo
                         JOIN {course_modules} AS cm ON cm.instance=lo.quizid AND cm.module = {$quizmoduleid}
                         WHERE cm.id = :cmid";
-                        // JOIN {quiz} AS q ON q.id=lo.quizid
+                    // JOIN {quiz} AS q ON q.id=lo.quizid
                     $onlinetest = $DB->get_record_sql($onlinetest_sql, array('cmid' => $cmid));
-                    if($onlinetest){
+                    if ($onlinetest) {
                         $return->hideheader = TRUE;
-                        if($is_oh && $USER->open_costcenterid != $onlinetest->costcenterid){
-                            redirect($CFG->wwwroot.'/local/onlinetests/index.php');
-                        }else if($is_dh && $USER->open_departmentid != $onlinetest->departmentid){
-                            redirect($CFG->wwwroot.'/local/onlinetests/index.php');
+                        if ($is_oh && $USER->open_costcenterid != $onlinetest->costcenterid) {
+                            redirect($CFG->wwwroot . '/local/onlinetests/index.php');
+                        } else if ($is_dh && $USER->open_departmentid != $onlinetest->departmentid) {
+                            redirect($CFG->wwwroot . '/local/onlinetests/index.php');
                         }
-                    }else{
+                    } else {
                         $return->hideheader = FALSE;
                     }
                 }
-            }else if($newpageurl == $CFG->wwwroot.'/mod/quiz/review.php' /*|| $newpageurl == $CFG->wwwroot.'/mod/quiz/attempt.php'*/){/*for quiz reviewpage and quiz attempt page*/
-                if($COURSE->id == 1){
+            } else if ($newpageurl == $CFG->wwwroot . '/mod/quiz/review.php' /*|| $newpageurl == $CFG->wwwroot.'/mod/quiz/attempt.php'*/) {/*for quiz reviewpage and quiz attempt page*/
+                if ($COURSE->id == 1) {
                     $attempt = $_GET['attempt'];
                     $onlinetest_sql = "SELECT lo.id, lo.costcenterid, lo.departmentid FROM {local_onlinetests} AS lo
                         JOIN {quiz_attempts} AS qa ON qa.quiz = lo.quizid
                         WHERE qa.id=:attemptid ";
                     $onlinetest = $DB->get_record_sql($onlinetest_sql, array('attemptid' => $attempt));
-                    if($onlinetest){
+                    if ($onlinetest) {
                         $return->hideheader = TRUE;
-                        if($is_oh && $USER->open_costcenterid != $onlinetest->costcenterid){
-                            redirect($CFG->wwwroot.'/local/onlinetests/index.php');
-                        }else if($is_dh && $USER->open_departmentid != $onlinetest->departmentid){
-                            redirect($CFG->wwwroot.'/local/onlinetests/index.php');
+                        if ($is_oh && $USER->open_costcenterid != $onlinetest->costcenterid) {
+                            redirect($CFG->wwwroot . '/local/onlinetests/index.php');
+                        } else if ($is_dh && $USER->open_departmentid != $onlinetest->departmentid) {
+                            redirect($CFG->wwwroot . '/local/onlinetests/index.php');
                         }
-                    }else{
+                    } else {
                         $return->hideheader = FALSE;
                     }
                 }
@@ -1700,15 +1703,15 @@ class core_renderer extends \core_renderer {
      * @param stdClass $context usually site context.
      * @return string HTML.
      */
-    function role_switch_basedon_userroles($roleid, $purge, $contextid = 1){
+    function role_switch_basedon_userroles($roleid, $purge, $contextid = 1) {
         global $DB, $CFG, $USER;
 
-        if(is_siteadmin($USER->id) || ($roleid <= 0) || $purge){
+        if (is_siteadmin($USER->id) || ($roleid <= 0) || $purge) {
             return false;
         }
 
         $role = $DB->get_record('role', array('id' => $roleid));
-        if(!$role){
+        if (!$role) {
             print_error('nopermission');
         }
         $context = \context::instance_by_id($contextid);
@@ -1720,9 +1723,9 @@ class core_renderer extends \core_renderer {
         // }
 
         $accessdata = get_empty_accessdata();
-        if($this->roleswitch($roleid, $context, $accessdata)){
+        if ($this->roleswitch($roleid, $context, $accessdata)) {
             return true;
-        }else{
+        } else {
             return false;
         }
     }
@@ -1733,15 +1736,14 @@ class core_renderer extends \core_renderer {
      * @param stdClass $context usually site context.
      * @return string HTML.
      */
-    function roleswitch($roleid, $context, &$accessdata){
+    function roleswitch($roleid, $context, &$accessdata) {
 
         global $DB, $ACCESSLIB_PRIVATE, $USER;
         // if($context->path == '/1'){
         //     $USER->access['rsw'] = [];
         // }else{
-            $USER->access['rsw'][$context->path] = $roleid;
+        $USER->access['rsw'][$context->path] = $roleid;
         // }
-
 
         $costcenterpath = \local_costcenter\lib\accesslib::get_costcenterpath_context($context);
 
@@ -1751,8 +1753,8 @@ class core_renderer extends \core_renderer {
         $USER->useraccess['currentroleinfo']['orgcatid'] = $categoryids[0];
         $USER->useraccess['currentroleinfo']['depth'] = $context->depth;
         $USER->useraccess['currentroleinfo']['contextinfo'] = [];
-        $USER->useraccess['currentroleinfo']['contextinfo'][] = ['context' => $context,'costcenterpath' => $costcenterpath];
-       /* Get the relevant rolecaps into rdef
+        $USER->useraccess['currentroleinfo']['contextinfo'][] = ['context' => $context, 'costcenterpath' => $costcenterpath];
+        /* Get the relevant rolecaps into rdef
         * - relevant role caps
         *   - at ctx and above
         *   - below this ctx
@@ -1762,9 +1764,9 @@ class core_renderer extends \core_renderer {
             return;
         }
         //Fetching the category contexts where the role is assigned ans switching as user to those for achieving system level role switch starts.
-        if($context->id == SYSCONTEXTID){
+        if ($context->id == SYSCONTEXTID) {
             $userroleid = $DB->get_field('role', 'id', array('archetype' => 'student'));
-        }else{
+        } else {
             $userroleid = $DB->get_field('role', 'id', array('archetype' => 'user'));
         }
         // $assignedcontexts = array_map(function($cxtpath){
@@ -1772,32 +1774,31 @@ class core_renderer extends \core_renderer {
         // }, array_unique(array_keys($USER->access['ra'])));
         $assignedroles = \local_costcenter\lib\accesslib::get_user_roles_in_catgeorycontexts($USER->id);
         $contextdepth = $context->__get('depth');
-        foreach($assignedroles AS $assignedrole){
-            if($assignedrole->contextid != $context->id && $assignedrole->contextid != 1){
+        foreach ($assignedroles as $assignedrole) {
+            if ($assignedrole->contextid != $context->id && $assignedrole->contextid != 1) {
                 $othercontext = \context::instance_by_id($assignedrole->contextid);
                 // considering only category level role switches.
-                if($othercontext->__get('contextlevel') == CONTEXT_COURSECAT){
+                if ($othercontext->__get('contextlevel') == CONTEXT_COURSECAT) {
                     $othercategorypath = \local_costcenter\lib\accesslib::get_category_info($othercontext->instanceid, 'path');
                     $othercategoryids = array_values(array_filter((explode('/', $othercategorypath))));
 
-                    if($contextdepth == $othercontext->__get('depth') && $othercategoryids[0] == $USER->useraccess['currentroleinfo']['orgcatid'] && $roleid == $assignedrole->roleid){//in_array($roleid, $USER->access['ra'][$othercontext->path])
-
+                    if ($contextdepth == $othercontext->__get('depth') && $othercategoryids[0] == $USER->useraccess['currentroleinfo']['orgcatid'] && $roleid == $assignedrole->roleid) { //in_array($roleid, $USER->access['ra'][$othercontext->path])
 
                         // strpos(haystack, needle)
-                        if($this->role_capability_assignments($roleid, $othercontext, $accessdata)){
+                        if ($this->role_capability_assignments($roleid, $othercontext, $accessdata)) {
                             $USER->access['rsw'][$othercontext->path] = $roleid;
                             $othercostcenterpath = \local_costcenter\lib\accesslib::get_costcenterpath_context($othercontext);
-                            $USER->useraccess['currentroleinfo']['contextinfo'][] = ['context' => $othercontext,'costcenterpath' => $othercostcenterpath];
+                            $USER->useraccess['currentroleinfo']['contextinfo'][] = ['context' => $othercontext, 'costcenterpath' => $othercostcenterpath];
                         }
-                    }else {//if($context->path != '/1')if user is assigned at system context we unset the rsw variable.
-                // var_dump(strpos($othercontext->path.'/', $context->path.'/'));
-                //         var_dump(strpos($othercontext->path.'/', $context->path.'/'));
-                //     var_dump($othercontext->path);
-                // var_dump($context->path);
-                        if(strpos($othercontext->path.'/', $context->path.'/') === 0 && $context->path != '/1'){
+                    } else { //if($context->path != '/1')if user is assigned at system context we unset the rsw variable.
+                        // var_dump(strpos($othercontext->path.'/', $context->path.'/'));
+                        //         var_dump(strpos($othercontext->path.'/', $context->path.'/'));
+                        //     var_dump($othercontext->path);
+                        // var_dump($context->path);
+                        if (strpos($othercontext->path . '/', $context->path . '/') === 0 && $context->path != '/1') {
                             unset($USER->access['rsw'][$othercontext->path]);
-                        }else{
-                            if($this->role_capability_assignments($userroleid, $othercontext, $accessdata))
+                        } else {
+                            if ($this->role_capability_assignments($userroleid, $othercontext, $accessdata))
                                 $USER->access['rsw'][$othercontext->path] = $userroleid;
                         }
                     }
@@ -1810,11 +1811,11 @@ class core_renderer extends \core_renderer {
         // exit;
         return true;
     }
-    private function role_capability_assignments($roleid, $context, &$accessdata){
+    private function role_capability_assignments($roleid, $context, &$accessdata) {
         global $DB;
         list($parentsaself, $params) = $DB->get_in_or_equal($context->get_parent_context_ids(true), SQL_PARAMS_NAMED, 'pc_');
         $params['roleid'] = $roleid;
-        $params['childpath'] = $context->path.'/%';
+        $params['childpath'] = $context->path . '/%';
 
         $sql = "SELECT ctx.path, rc.capability, rc.permission
                   FROM {role_capabilities} rc
@@ -1825,7 +1826,7 @@ class core_renderer extends \core_renderer {
 
         $newrdefs = array();
         foreach ($rs as $rd) {
-            $k = $rd->path.':'.$roleid;
+            $k = $rd->path . ':' . $roleid;
             if (isset($accessdata['rdef'][$k])) {
                 continue;
             }
@@ -1852,122 +1853,121 @@ class core_renderer extends \core_renderer {
         $local_pluginlist = $core_component::get_plugin_list('local');
         $block_pluginlist = $core_component::get_plugin_list('block');
 
-        $block_content .= html_writer::start_tag('ul', array('class'=>'quickpop_over_ul'));
-            //======= Dasboard link ========//
-            // $block_content .= html_writer::start_tag('li', array('id'=> 'id_leftmenu_dashboard', 'class'=>'pull-left user_nav_div dashboard'));
-            //     $button1 = html_writer::link($CFG->wwwroot, '<i class="fa fa-home" aria-hidden="true"></i><span class="user_navigation_link_text">'.get_string('leftmenu_dashboard', 'theme_epsilon_classic').'</span>', array('class'=>'user_navigation_link'));
-            //     $block_content .= $button1;
-            // $block_content .= html_writer::end_tag('li');
+        $block_content .= html_writer::start_tag('ul', array('class' => 'quickpop_over_ul'));
+        //======= Dasboard link ========//
+        // $block_content .= html_writer::start_tag('li', array('id'=> 'id_leftmenu_dashboard', 'class'=>'pull-left user_nav_div dashboard'));
+        //     $button1 = html_writer::link($CFG->wwwroot, '<i class="fa fa-home" aria-hidden="true"></i><span class="user_navigation_link_text">'.get_string('leftmenu_dashboard', 'theme_epsilon_classic').'</span>', array('class'=>'user_navigation_link'));
+        //     $block_content .= $button1;
+        // $block_content .= html_writer::end_tag('li');
 
-            //=======Leader Dasboard link ========//
-//             $gamificationb_plugin_exist = $core_component::get_plugin_directory('block', 'gamification');
-//             $gamificationl_plugin_exist = $core_component::get_plugin_directory('local', 'gamification');
-//             if($gamificationl_plugin_exist && $gamificationb_plugin_exist && (has_capability('local/gamification:view
-// ',$systemcontext) || is_siteadmin() )){
-//                 $block_content .= html_writer::start_tag('li', array('id'=> 'id_leftmenu_gamification_leaderboard', 'class'=>'pull-left user_nav_div notifications'));
-//                 $gamification_url = new moodle_url('/blocks/gamification/dashboard.php');
-//                 $gamification = html_writer::link($gamification_url, '<i class="fa fa-trophy"></i><span class="user_navigation_link_text">'.get_string('leftmenu_gmleaderboard','theme_epsilon_classic').'</span>',array('class'=>'user_navigation_link'));
-//                 $block_content .= $gamification;
-//                 $block_content .= html_writer::end_tag('li');
-//             }
-            $block_content .= html_writer::start_tag('li', array('id'=> 'id_leftmenu_home', 'class'=>'pull-left user_nav_div adminstration'));
-                    $admin_url = new moodle_url('/my/dashboard.php');
-                    $admin = html_writer::link($admin_url, '<i class="fa fa-home" aria-hidden="true"></i><span class="user_navigation_link_text">'.get_string('home','theme_epsilon_classic').'</span>',array('class'=>'user_navigation_link'));
-                    $block_content .= $admin;
-                $block_content .= html_writer::end_tag('li');
-            $pluginnavs = array();
-            foreach($local_pluginlist as $key => $local_pluginname){
-                if(file_exists($CFG->dirroot.'/local/'.$key.'/lib.php')){
-                    require_once($CFG->dirroot.'/local/'.$key.'/lib.php');
-                    $functionname = 'local_'.$key.'_leftmenunode';
-                    if(function_exists($functionname)){
-                        $data = $functionname();
-                        foreach((array) $data as  $key => $val){
-                            $pluginnavs[$key][] = $val;
-                        }
-                    }
-                }
-            }
-            // ksort($pluginnavs);
-            // foreach($pluginnavs as $pluginnav){
-            //     foreach($pluginnav  as $key => $value){
-            //             $data = $value;
-            //             $block_content .= $data;
-            //     }
-            // }
-
-            foreach($block_pluginlist as $key => $local_pluginname){
-                 if(file_exists($CFG->dirroot.'/blocks/'.$key.'/lib.php')){
-                    require_once($CFG->dirroot.'/blocks/'.$key.'/lib.php');
-                    $functionname = 'block_'.$key.'_leftmenunode';
-                    if(function_exists($functionname)){
-                    // $block_content .= html_writer::start_tag('li', array('id'=> 'id_leftmenu_dashboard', 'class'=>'pull-left user_nav_div dashboard row-fluid '));
-                        $data = $functionname();
-                        foreach($data as  $key => $val){
-                            $pluginnavs[$key][] = $val;
-                        }
-                    // $block_content .= html_writer::end_tag('li');
-                    }
-                }
-            }
-            if(file_exists($CFG->dirroot.'/admin/tool/certificate/lib.php')){
-                require_once($CFG->dirroot.'/admin/tool/certificate/lib.php');
-                $functionname = 'tool_certificate_leftmenunode';
-                if(function_exists($functionname)){
-                // $block_content .= html_writer::start_tag('li', array('id'=> 'id_leftmenu_dashboard', 'class'=>'pull-left user_nav_div dashboard row-fluid '));
+        //=======Leader Dasboard link ========//
+        //             $gamificationb_plugin_exist = $core_component::get_plugin_directory('block', 'gamification');
+        //             $gamificationl_plugin_exist = $core_component::get_plugin_directory('local', 'gamification');
+        //             if($gamificationl_plugin_exist && $gamificationb_plugin_exist && (has_capability('local/gamification:view
+        // ',$systemcontext) || is_siteadmin() )){
+        //                 $block_content .= html_writer::start_tag('li', array('id'=> 'id_leftmenu_gamification_leaderboard', 'class'=>'pull-left user_nav_div notifications'));
+        //                 $gamification_url = new moodle_url('/blocks/gamification/dashboard.php');
+        //                 $gamification = html_writer::link($gamification_url, '<i class="fa fa-trophy"></i><span class="user_navigation_link_text">'.get_string('leftmenu_gmleaderboard','theme_epsilon_classic').'</span>',array('class'=>'user_navigation_link'));
+        //                 $block_content .= $gamification;
+        //                 $block_content .= html_writer::end_tag('li');
+        //             }
+        $block_content .= html_writer::start_tag('li', array('id' => 'id_leftmenu_home', 'class' => 'pull-left user_nav_div adminstration'));
+        $admin_url = new moodle_url('/my/dashboard.php');
+        $admin = html_writer::link($admin_url, '<i class="fa fa-home" aria-hidden="true"></i><span class="user_navigation_link_text">' . get_string('home', 'theme_epsilon_classic') . '</span>', array('class' => 'user_navigation_link'));
+        $block_content .= $admin;
+        $block_content .= html_writer::end_tag('li');
+        $pluginnavs = array();
+        foreach ($local_pluginlist as $key => $local_pluginname) {
+            if (file_exists($CFG->dirroot . '/local/' . $key . '/lib.php')) {
+                require_once($CFG->dirroot . '/local/' . $key . '/lib.php');
+                $functionname = 'local_' . $key . '_leftmenunode';
+                if (function_exists($functionname)) {
                     $data = $functionname();
-                    foreach($data as  $key => $val){
+                    foreach ((array) $data as  $key => $val) {
                         $pluginnavs[$key][] = $val;
                     }
-                // $block_content .= html_writer::end_tag('li');
                 }
             }
+        }
+        // ksort($pluginnavs);
+        // foreach($pluginnavs as $pluginnav){
+        //     foreach($pluginnav  as $key => $value){
+        //             $data = $value;
+        //             $block_content .= $data;
+        //     }
+        // }
 
-            ksort($pluginnavs);
-            foreach($pluginnavs as $pluginnav){
-                foreach($pluginnav  as $key => $value){
-                        $data = $value;
-                        $block_content .= $data;
+        foreach ($block_pluginlist as $key => $local_pluginname) {
+            if (file_exists($CFG->dirroot . '/blocks/' . $key . '/lib.php')) {
+                require_once($CFG->dirroot . '/blocks/' . $key . '/lib.php');
+                $functionname = 'block_' . $key . '_leftmenunode';
+                if (function_exists($functionname)) {
+                    // $block_content .= html_writer::start_tag('li', array('id'=> 'id_leftmenu_dashboard', 'class'=>'pull-left user_nav_div dashboard row-fluid '));
+                    $data = $functionname();
+                    foreach ($data as  $key => $val) {
+                        $pluginnavs[$key][] = $val;
+                    }
+                    // $block_content .= html_writer::end_tag('li');
                 }
             }
-            /*Site Administration Link*/
-            if(is_siteadmin()){
-                // $block_content .= html_writer::start_tag('li', array('id'=> 'id_leftmenu_adminstration', 'class'=>'pull-left user_nav_div adminstration'));
-                //     $admin_url = new moodle_url('/repository/customfiles/file.php');
-                //     $admin = html_writer::link($admin_url, '<span class="image_repository_icon dypatil_cmn_icon icon"></span><span class="user_navigation_link_text">'.get_string('repositoryfiles','theme_epsilon_classic').'</span>',array('class'=>'user_navigation_link'));
-                //     $block_content .= $admin;
+        }
+        if (file_exists($CFG->dirroot . '/admin/tool/certificate/lib.php')) {
+            require_once($CFG->dirroot . '/admin/tool/certificate/lib.php');
+            $functionname = 'tool_certificate_leftmenunode';
+            if (function_exists($functionname)) {
+                // $block_content .= html_writer::start_tag('li', array('id'=> 'id_leftmenu_dashboard', 'class'=>'pull-left user_nav_div dashboard row-fluid '));
+                $data = $functionname();
+                foreach ($data as  $key => $val) {
+                    $pluginnavs[$key][] = $val;
+                }
                 // $block_content .= html_writer::end_tag('li');
-                $block_content .= html_writer::start_tag('li', array('id'=> 'id_leftmenu_adminstration', 'class'=>'pull-left user_nav_div adminstration'));
-                    $admin_url = new moodle_url('/admin/search.php');
-                    $admin = html_writer::link($admin_url, '<i class="fa fa-cogs" aria-hidden="true"></i></span><span class="user_navigation_link_text">'.get_string('leftmenu_adminstration','theme_epsilon_classic').'</span>',array('class'=>'user_navigation_link'));
-                    $block_content .= $admin;
-                $block_content .= html_writer::end_tag('li');
-
             }
+        }
+
+        ksort($pluginnavs);
+        foreach ($pluginnavs as $pluginnav) {
+            foreach ($pluginnav  as $key => $value) {
+                $data = $value;
+                $block_content .= $data;
+            }
+        }
+        /*Site Administration Link*/
+        if (is_siteadmin()) {
+            // $block_content .= html_writer::start_tag('li', array('id'=> 'id_leftmenu_adminstration', 'class'=>'pull-left user_nav_div adminstration'));
+            //     $admin_url = new moodle_url('/repository/customfiles/file.php');
+            //     $admin = html_writer::link($admin_url, '<span class="image_repository_icon dypatil_cmn_icon icon"></span><span class="user_navigation_link_text">'.get_string('repositoryfiles','theme_epsilon_classic').'</span>',array('class'=>'user_navigation_link'));
+            //     $block_content .= $admin;
+            // $block_content .= html_writer::end_tag('li');
+            $block_content .= html_writer::start_tag('li', array('id' => 'id_leftmenu_adminstration', 'class' => 'pull-left user_nav_div adminstration'));
+            $admin_url = new moodle_url('/admin/search.php');
+            $admin = html_writer::link($admin_url, '<i class="fa fa-cogs" aria-hidden="true"></i></span><span class="user_navigation_link_text">' . get_string('leftmenu_adminstration', 'theme_epsilon_classic') . '</span>', array('class' => 'user_navigation_link'));
+            $block_content .= $admin;
+            $block_content .= html_writer::end_tag('li');
+        }
         $block_content .= html_writer::end_tag('ul');
 
         return $block_content;
     }
-// theme related setting
+    // theme related setting
 
     public function get_primarycolor() {
         $primarycolor = '#25467a';
         $theme = theme_config::load('epsilon_classic');
-        $primarycolor= $theme->settings->primarycolor;
+        $primarycolor = $theme->settings->primarycolor;
         $costcentercolor = $this->get_costcenter_scheme_css();
-        if($costcentercolor && !empty($costcentercolor->brand_color)){
+        if ($costcentercolor && !empty($costcentercolor->brand_color)) {
             $primarycolor = $costcentercolor->brand_color;
         }
-        
+
         return $primarycolor;
     }
     public function get_secondarycolor() {
         $secondarycolor = '#006699';
         $theme = theme_config::load('epsilon_classic');
-        $secondarycolor= $theme->settings->secondarycolor;
+        $secondarycolor = $theme->settings->secondarycolor;
         $costcentercolor = $this->get_costcenter_scheme_css();
         // var_dump($costcentercolors); exit;
-        if($costcentercolor && !empty($costcentercolor->button_color)){
+        if ($costcentercolor && !empty($costcentercolor->button_color)) {
             $secondarycolor = $costcentercolor->button_color;
         }
         return $secondarycolor;
@@ -1975,96 +1975,96 @@ class core_renderer extends \core_renderer {
     public function get_hovercolor() {
         $hovercolor = '#006699';
         $theme = theme_config::load('epsilon_classic');
-        $hovercolor= $theme->settings->hovercolor;
+        $hovercolor = $theme->settings->hovercolor;
         $costcentercolor = $this->get_costcenter_scheme_css();
         //var_dump($costcentercolors); exit;
-        if($costcentercolor && !empty($costcentercolor->hover_color)){
+        if ($costcentercolor && !empty($costcentercolor->hover_color)) {
             $hovercolor = $costcentercolor->hover_color;
         }
         return $hovercolor;
     }
-    public function getsitecolors_link(){
+    public function getsitecolors_link() {
         global $CFG;
-        return $CFG->wwwroot."/theme/epsilon_classic/style/site_color.css?v=".date('Ymdhis');
+        return $CFG->wwwroot . "/theme/epsilon_classic/style/site_color.css?v=" . date('Ymdhis');
     }
-    public function courseformat_drawer_content(){
+    public function courseformat_drawer_content() {
 
-        global $DB,$COURSE,$CFG,$USER;
-
+        global $DB, $COURSE, $CFG, $USER;
 
         if (!$this->courseviewmenu_hidden()) {
 
-        $course = $DB->get_record('course',array('id' => $COURSE->id));
-        $completion = new \completion_info($course);
+            $course = $DB->get_record('course', array('id' => $COURSE->id));
+            $completion = new \completion_info($course);
 
             // First, let's make sure completion is enabled.
             if ($completion->is_enabled()) {
-                
+
                 $percentage = progress::get_course_progress_percentage($course, $USER->id);
             }
-        $ratings_exist = \core_component::get_plugin_directory('local', 'ratings');
-        if ($ratings_exist) {
-            require_once($CFG->dirroot . '/local/ratings/lib.php');
-            $display_ratings = display_rating($COURSE->id, 'local_courses');
-        } else {
-            $display_ratings =  null;
-        }
-        if(empty($percentage)){
-            $percentage=0;}
-            $coursedata=array();
-            $coursedata['coursename']=$COURSE->fullname;
-            $coursedata['display_ratings']=$display_ratings;
-            $coursedata['percentage']=$percentage;
-            $coursedata['coursebannerimage']=$this->course_bannerimage();
+            /*  $ratings_exist = \core_component::get_plugin_directory('local', 'ratings');
+            if ($ratings_exist) {
+                require_once($CFG->dirroot . '/local/ratings/lib.php');
+                $display_ratings = display_rating($COURSE->id, 'local_courses');
+            } else {
+                $display_ratings =  null;
+            } */
+            if (empty($percentage)) {
+                $percentage = 0;
+            }
+            $coursedata = array();
+            $coursedata['coursename'] = $COURSE->fullname;
+            $coursedata['display_ratings'] = '';
+            $coursedata['percentage'] = $percentage;
+            $coursedata['coursebannerimage'] = $this->course_bannerimage();
             //print
             return $this->render_from_template('theme_epsilon_classic/core_courseformat/local/courseindex/course_drawer_header', $coursedata);
         }
     }
 
-     public function courseviewmenu_hidden(){
+    public function courseviewmenu_hidden() {
 
-       if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
-        $pageurl = "https";
+        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
+            $pageurl = "https";
         else
             $pageurl = "http";
         $pageurl .= "://";
-        $pageurl .= $_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+        $pageurl .= $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
         $string = strpos($pageurl, '?');
-        if($string)
-            $newpageurl = substr($pageurl,0 , $string);
+        if ($string)
+            $newpageurl = substr($pageurl, 0, $string);
         else
             $newpageurl = $pageurl;
 
         $checkingcourseurl = new moodle_url('/course/view.php');
 
-        $courseviewmenu=false;
+        $courseviewmenu = false;
 
         if ($newpageurl == $checkingcourseurl) {
 
-            $courseviewmenu=true;
+            $courseviewmenu = true;
         }
 
         return $courseviewmenu;
     }
-    public function course_bannerimage(){
+    public function course_bannerimage() {
 
-        global $COURSE,$CFG;
-             //course image
-        if(file_exists($CFG->dirroot.'/local/includes.php')){
-            require_once($CFG->dirroot.'/local/includes.php');
+        global $COURSE, $CFG;
+        //course image
+        if (file_exists($CFG->dirroot . '/local/includes.php')) {
+            require_once($CFG->dirroot . '/local/includes.php');
             $includes = new \user_course_details();
             $courseimage = $includes->course_summary_files($COURSE);
-            if(is_object($courseimage)){
+            if (is_object($courseimage)) {
                 $courseimage = $courseimage->out();
-            }else{
+            } else {
                 $courseimage = $courseimage;
             }
         }
         return $courseimage;
     }
-    public function course_summary_data(){
+    public function course_summary_data() {
 
-        global $COURSE,$CFG;
+        global $COURSE, $CFG;
 
         require_once("$CFG->libdir/externallib.php");
 
@@ -2076,13 +2076,13 @@ class core_renderer extends \core_renderer {
             external_format_text($course->summary, $course->summaryformat, $context->id, 'course', 'summary', null);
         return $course->summary;
     }
-    public function hasrmaincontenthidden(){
+    public function hasrmaincontenthidden() {
 
-        $hasrmaincontenthidden=false;
+        $hasrmaincontenthidden = false;
 
         if ($this->courseviewmenu_hidden()) {
 
-            $hasrmaincontenthidden=true;
+            $hasrmaincontenthidden = true;
         }
 
         return $hasrmaincontenthidden;
@@ -2092,18 +2092,14 @@ class core_renderer extends \core_renderer {
         global $COURSE;
         $courseformat = course_get_format($COURSE);
 
-        if($COURSE->format == 'singleactivity'){
+        if ($COURSE->format == 'singleactivity') {
             $cm = $courseformat->reorder_activities();
 
             return $cm->url;
-
         }
-
     }
     public function loggedin_username() {
         global $USER;
         return ucwords($USER->firstname);
-
     }
-
 }

@@ -35,8 +35,7 @@ require_once($CFG->dirroot . '/local/costcenter/lib.php');
  * @copyright  eAbyas <www.eabyas.in>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class local_uploadcourse_course
-{
+class local_uploadcourse_course {
 
     /** Outcome of the process: creating the course */
     const DO_CREATE = 1;
@@ -100,11 +99,11 @@ class local_uploadcourse_course
 
     /** @var array fields allowed as course data. */
     static protected $validfields = array(
-        'fullname','course-code', 'idnumber', 'category', 'visible', 'startdate', 'enddate', 'open_points', 'coursetype', 'open_costcenterid', 'open_cost', 'open_requestcourseid', 'open_coursecreator', 'open_coursecompletiondays', 'open_departmentid', 'open_subdepartment', 'open_level4department', 'open_level5department', 'file', 'summary', 'format', 'theme', 'lang', 'newsitems', 'showgrades', 'showreports', 'legacyfiles', 'maxbytes', 'groupmode', 'groupmodeforce', 'enablecompletion', 'completiondays'
+        'fullname', 'course-code', 'idnumber', 'category', 'visible', 'startdate', 'enddate', 'open_points', 'coursetype', 'open_costcenterid', 'open_cost', 'open_requestcourseid', 'open_coursecreator', 'open_coursecompletiondays', 'open_departmentid', 'open_subdepartment', 'open_level4department', 'open_level5department', 'file', 'summary', 'format', 'theme', 'lang', 'newsitems', 'showgrades', 'showreports', 'legacyfiles', 'maxbytes', 'groupmode', 'groupmodeforce', 'enablecompletion', 'completiondays'
     );
 
     /** @var array fields required on course creation. */
-    static protected $mandatoryfields = array('fullname', 'coursetype');
+    static protected $mandatoryfields = array('fullname'/*, 'coursetype'*/);
 
     /** @var array fields which are considered as options. */
     static protected $optionfields = array(
@@ -127,8 +126,7 @@ class local_uploadcourse_course
      * @param array $defaults default course data.
      * @param array $importoptions import options.
      */
-    public function __construct($mode, $updatemode, $rawdata, $defaults = array(), $importoptions = array())
-    {
+    public function __construct($mode, $updatemode, $rawdata, $defaults = array(), $importoptions = array()) {
 
         if (
             $mode !== tool_uploadcourse_processor::MODE_CREATE_NEW &&
@@ -172,8 +170,7 @@ class local_uploadcourse_course
      *
      * @return bool
      */
-    public function can_create()
-    {
+    public function can_create() {
         return in_array(
             $this->mode,
             array(
@@ -189,8 +186,7 @@ class local_uploadcourse_course
      *
      * @return bool
      */
-    public function can_delete()
-    {
+    public function can_delete() {
         return $this->importoptions['candelete'];
     }
 
@@ -199,8 +195,7 @@ class local_uploadcourse_course
      *
      * @return bool
      */
-    public function can_only_create()
-    {
+    public function can_only_create() {
         return in_array($this->mode, array(
             tool_uploadcourse_processor::MODE_CREATE_ALL,
             tool_uploadcourse_processor::MODE_CREATE_NEW
@@ -212,8 +207,7 @@ class local_uploadcourse_course
      *
      * @return bool
      */
-    public function can_rename()
-    {
+    public function can_rename() {
         return $this->importoptions['canrename'];
     }
 
@@ -222,8 +216,7 @@ class local_uploadcourse_course
      *
      * @return bool
      */
-    public function can_reset()
-    {
+    public function can_reset() {
         return $this->importoptions['canreset'];
     }
 
@@ -232,8 +225,7 @@ class local_uploadcourse_course
      *
      * @return bool
      */
-    public function can_update()
-    {
+    public function can_update() {
         return in_array(
             $this->mode,
             array(
@@ -248,8 +240,7 @@ class local_uploadcourse_course
      *
      * @return bool
      */
-    public function can_use_defaults()
-    {
+    public function can_use_defaults() {
         return in_array($this->updatemode, array(
             tool_uploadcourse_processor::UPDATE_MISSING_WITH_DATA_OR_DEFAUTLS,
             tool_uploadcourse_processor::UPDATE_ALL_WITH_DATA_OR_DEFAUTLS
@@ -261,8 +252,7 @@ class local_uploadcourse_course
      *
      * @return bool
      */
-    protected function delete()
-    {
+    protected function delete() {
         global $DB;
         $this->id = $DB->get_field_select(
             'course',
@@ -281,8 +271,7 @@ class local_uploadcourse_course
      * @param lang_string $message error message.
      * @return void
      */
-    protected function error($code, lang_string $message)
-    {
+    protected function error($code, lang_string $message) {
         if (array_key_exists($code, $this->errors)) {
             throw new coding_exception('Error code already defined');
         }
@@ -295,8 +284,7 @@ class local_uploadcourse_course
      * @param string $shortname the shortname to use to check if the course exists. Falls back on $this->shortname if empty.
      * @return bool
      */
-    protected function exists($shortname = null)
-    {
+    protected function exists($shortname = null) {
         global $DB;
         if (is_null($shortname)) {
             $shortname = $this->shortname;
@@ -312,8 +300,7 @@ class local_uploadcourse_course
      *
      * @return null|array
      */
-    public function get_data()
-    {
+    public function get_data() {
         return $this->data;
     }
 
@@ -322,8 +309,7 @@ class local_uploadcourse_course
      *
      * @return array
      */
-    public function get_errors()
-    {
+    public function get_errors() {
         return $this->errors;
     }
 
@@ -335,8 +321,7 @@ class local_uploadcourse_course
      * @param array $data current data.
      * @return array
      */
-    protected function get_final_create_data($data)
-    {
+    protected function get_final_create_data($data) {
         foreach (self::$validfields as $field) {
             if (!isset($data[$field]) && isset($this->defaults[$field])) {
                 $data[$field] = $this->defaults[$field];
@@ -356,8 +341,7 @@ class local_uploadcourse_course
      * @param bool $missingonly ignore fields which are already set.
      * @return array
      */
-    protected function get_final_update_data($data, $usedefaults = false, $missingonly = false)
-    {
+    protected function get_final_update_data($data, $usedefaults = false, $missingonly = false) {
         global $DB;
         $newdata = array();
         $existingdata = $DB->get_record('course', array('shortname' => $this->shortname));
@@ -382,8 +366,7 @@ class local_uploadcourse_course
      *
      * @return int|null
      */
-    public function get_id()
-    {
+    public function get_id() {
         if (!$this->processstarted) {
             throw new coding_exception('The course has not been processed yet!');
         }
@@ -396,8 +379,7 @@ class local_uploadcourse_course
      * @return string|false|null subdirectory in $CFG->tempdir/backup/..., false when an error occured
      *                           and null when there is simply nothing.
      */
-    protected function get_restore_content_dir()
-    {
+    protected function get_restore_content_dir() {
         $backupfile = null;
         $shortname = null;
 
@@ -431,8 +413,7 @@ class local_uploadcourse_course
      *
      * @return array
      */
-    public function get_statuses()
-    {
+    public function get_statuses() {
         return $this->statuses;
     }
 
@@ -441,8 +422,7 @@ class local_uploadcourse_course
      *
      * @return boolean
      */
-    public function has_errors()
-    {
+    public function has_errors() {
         return !empty($this->errors);
     }
 
@@ -451,8 +431,7 @@ class local_uploadcourse_course
      *
      * @return bool false is any error occured.
      */
-    public function prepare()
-    {
+    public function prepare() {
         global $DB, $SITE, $USER;
         $categorycontext = (new \local_courses\lib\accesslib())::get_module_context();
         $this->prepared = true;
@@ -525,14 +504,14 @@ class local_uploadcourse_course
         $categories = explode('/', $this->rawdata['category_code']);
         $this->rawdata['category_idnumber'] = $this->rawdata['category_code'];
         $this->rawdata['categoryname'] = $DB->get_field('local_custom_category', 'fullname', array('shortname' => $this->rawdata['category_idnumber']));
-       
+
         //$catid = tool_uploadcourse_helper::resolve_category($this->rawdata, $errors);
         $catid = $DB->get_field('local_custom_category', 'id', array('shortname' => $this->rawdata['category_idnumber']));
-        if($catid == "" || $catid == null || $catid == false){
-          $this->error('categorynotexisted', new lang_string('categorynotexisted', 'local_courses', $this->rawdata['category_idnumber']));
-        return false;
+        if ($catid == "" || $catid == null || $catid == false) {
+            $this->error('categorynotexisted', new lang_string('categorynotexisted', 'local_courses', $this->rawdata['category_idnumber']));
+            return false;
         }
-     
+
         $this->rawdata['category'] = $catid;
         if (isset($this->rawdata['open_coursecompletiondays'])) {
             $this->rawdata['completiondays'] = $this->rawdata['open_coursecompletiondays'];
@@ -543,7 +522,7 @@ class local_uploadcourse_course
                 return false;
             }
         }
-       
+
         if (empty($errors)) {
             $coursedata['category'] = $catid;
         } else {
@@ -575,27 +554,27 @@ class local_uploadcourse_course
                 return false;
             }
         }
-       // $categorylib = new local_courses\catslib();
-       if (isset($this->defaults['open_costcenterid']) && !empty($this->rawdata['category'])){
-      
-            $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='lcc.path',$this->defaults['open_costcenterid'],$datatype='lowerandsamepath');
+        // $categorylib = new local_courses\catslib();
+        if (isset($this->defaults['open_costcenterid']) && !empty($this->rawdata['category'])) {
+
+            $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'lcc.path', $this->defaults['open_costcenterid'], $datatype = 'lowerandsamepath');
             $getcostcenterid =  $DB->get_field('local_costcenter', 'id', array('id' => $this->defaults['open_costcenterid']));
             $getcostcenterid = (int) $getcostcenterid;
-         
+
             $costcentersql = "SELECT lcc.id,lcc.fullname
                                 FROM {local_custom_category} AS lcc
                                 WHERE 1=1 AND lcc.costcenterid = $getcostcenterid AND lcc.parentid <> 0 ";
-            $categories = $DB->get_fieldset_sql($costcentersql);           
+            $categories = $DB->get_fieldset_sql($costcentersql);
             if (!in_array($this->rawdata['category'], $categories)) {
                 $this->error('canonlycreatecourseincategoryofsameorganisationwithargs', new lang_string('canonlycreatecourseincategoryofsameorganisationwithargs', 'local_courses', $this->rawdata['categoryname']));
                 return false;
             }
-            if(in_array($this->rawdata['category'], $categories)){
+            if (in_array($this->rawdata['category'], $categories)) {
 
                 $performanceparentid = $DB->get_field('local_custom_category', 'parentid', array('id' => $this->rawdata['category']));
-            $coursedata['performancecatid'] = $this->rawdata['category'];
-            $coursedata['open_categoryid'] =$this->rawdata['category'];
-            $coursedata['performanceparentid'] = $performanceparentid;
+                $coursedata['performancecatid'] = $this->rawdata['category'];
+                $coursedata['open_categoryid'] = $this->rawdata['category'];
+                $coursedata['performanceparentid'] = $performanceparentid;
             }
         }
 
@@ -617,12 +596,11 @@ class local_uploadcourse_course
         //     $this->data['coursetype'] = $coursetype->id;
         // }
 
-
         if ($this->rawdata['department']) {
             $departmentid = $DB->get_field('local_costcenter', 'id', array('shortname' => $this->rawdata['department']));
             $this->data['department'] = $departmentid;
         }
-      
+
         if (empty($this->rawdata['department']) && !empty($this->rawdata['subdepartment'])) {
             $this->error('cannotuploadcoursewithlob', new lang_string('cannotuploadcoursewithlob', 'local_courses', $this->rawdata['coursetype']));
             return false;
@@ -992,8 +970,7 @@ class local_uploadcourse_course
      *
      * @return void
      */
-    public function proceed()
-    {
+    public function proceed() {
         global $CFG, $USER, $DB;
         $insertlib = new local_courses\action\insert();
         if (!$this->prepared) {
@@ -1015,17 +992,17 @@ class local_uploadcourse_course
             return true;
         } else if ($this->do === self::DO_CREATE) {
 
-            $this->data=(object)$this->data;
+            $this->data = (object)$this->data;
 
             local_costcenter_get_costcenter_path($this->data);
 
-            if($this->data->open_path){
+            if ($this->data->open_path) {
                 $this->data->category = $DB->get_field('local_costcenter', 'category', array('path' => $this->data->open_path));
             }
 
-            $this->data=(array)$this->data;
+            $this->data = (array)$this->data;
 
-            if($this->defaults['open_costcenterid']){
+            if ($this->defaults['open_costcenterid']) {
                 $this->data['category'] = $DB->get_field('local_costcenter', 'category', array('id' => $this->defaults['open_costcenterid']));
             }
             $course = create_course((object) $this->data);
@@ -1035,15 +1012,15 @@ class local_uploadcourse_course
             $this->status('coursecreated', new lang_string('coursecreated', 'tool_uploadcourse'));
         } else if ($this->do === self::DO_UPDATE) {
 
-            $this->data=(object)$this->data;
+            $this->data = (object)$this->data;
 
             local_costcenter_get_costcenter_path($this->data);
 
-            if($this->data->open_path){
+            if ($this->data->open_path) {
                 $this->data->category = $DB->get_field('local_costcenter', 'category', array('path' => $this->data->open_path));
             }
 
-            $this->data=(array)$this->data;           
+            $this->data = (array)$this->data;
             $course = (object) $this->data;
             update_course($course);
             $coursedata = $DB->get_record('course', array('id' => $course->id));
@@ -1101,8 +1078,7 @@ class local_uploadcourse_course
      * @param object $course course record.
      * @return void
      */
-    protected function process_enrolment_data($course)
-    {
+    protected function process_enrolment_data($course) {
         global $DB;
 
         $enrolmentdata = $this->enrolmentdata;
@@ -1210,8 +1186,7 @@ class local_uploadcourse_course
      * @param stdClass $course the course object of the course to reset.
      * @return array status array of array component, item, error.
      */
-    protected function reset($course)
-    {
+    protected function reset($course) {
         global $DB;
 
         $resetdata = new stdClass();
@@ -1256,8 +1231,7 @@ class local_uploadcourse_course
      * @param lang_string $message status message.
      * @return void
      */
-    protected function status($code, lang_string $message)
-    {
+    protected function status($code, lang_string $message) {
         if (array_key_exists($code, $this->statuses)) {
             throw new coding_exception('Status code already defined');
         }

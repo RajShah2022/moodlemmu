@@ -722,29 +722,32 @@ function globaltargetaudience_elementlist($mform, $elementlist, $costcenter = nu
             $selectgroup->setMultiple(true);
         }
     } else {
-        if (in_array('group', $elementlist)) {
-            $groupslist[null] = get_string('all');
+        $plugin_exists = \core_component::get_plugin_directory('local', 'groups');
+        if ($plugin_exists) {
+            if (in_array('group', $elementlist)) {
+                $groupslist[null] = get_string('all');
 
-            $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'g.open_path', $costcenterpath);
-            if (is_siteadmin()) {
-                $costcenterpathconcatsql = "AND ( (  g.open_path LIKE '/" . $costcenter . "/%'  OR  g.open_path LIKE '/" . $costcenter . "'  ) )";
-            }
+                $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'g.open_path', $costcenterpath);
+                if (is_siteadmin()) {
+                    $costcenterpathconcatsql = "AND ( (  g.open_path LIKE '/" . $costcenter . "/%'  OR  g.open_path LIKE '/" . $costcenter . "'  ) )";
+                }
 
-            $groupslist += $DB->get_records_sql_menu(
-                "SELECT c.id, c.name FROM {local_groups} g, {cohort} c
+                $groupslist += $DB->get_records_sql_menu(
+                    "SELECT c.id, c.name FROM {local_groups} g, {cohort} c
               WHERE c.visible = :visible AND c.id = g.cohortid $costcenterpathconcatsql ",
-                array('visible' => 1)
-            );
+                    array('visible' => 1)
+                );
 
-            $selectgroup = $mform->addElement(
-                'autocomplete',
-                'open_group',
-                get_string('open_group', 'local_users'),
-                $groupslist
-            );
-            $mform->setType('open_group', PARAM_RAW);
-            $mform->addHelpButton('open_group', 'groups', 'local_users');
-            $selectgroup->setMultiple(true);
+                $selectgroup = $mform->addElement(
+                    'autocomplete',
+                    'open_group',
+                    get_string('open_group', 'local_users'),
+                    $groupslist
+                );
+                $mform->setType('open_group', PARAM_RAW);
+                $mform->addHelpButton('open_group', 'groups', 'local_users');
+                $selectgroup->setMultiple(true);
+            }
         }
     }
     if (in_array('hrmsrole', $elementlist)) {

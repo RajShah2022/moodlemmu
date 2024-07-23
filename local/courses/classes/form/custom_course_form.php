@@ -264,33 +264,36 @@ class custom_course_form extends moodleform {
 
             $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'open_path', $costcenterpath = $this->course->open_path);
 
-            $skillselect = array(0 => get_string('select_skill', 'local_courses'));
-            $skillcostcentersql = "SELECT id,name FROM {local_skill}
+            $plugin_exists = \core_component::get_plugin_directory('local', 'skillrepository');
+            if ($plugin_exists) {
+                $skillselect = array(0 => get_string('select_skill', 'local_courses'));
+                $skillcostcentersql = "SELECT id,name FROM {local_skill}
                                     WHERE 1=1 $costcenterpathconcatsql ";
 
-            $skills = $DB->get_records_sql_menu($skillcostcentersql);
+                $skills = $DB->get_records_sql_menu($skillcostcentersql);
 
-            if (!empty($skills)) {
-                $skillselect = $skillselect + $skills;
-            }
+                if (!empty($skills)) {
+                    $skillselect = $skillselect + $skills;
+                }
 
-            $mform->addElement('select',  'open_skill', get_string('open_skillcourse', 'local_courses'), $skillselect);
-            $mform->addHelpButton('open_skill', 'open_skillcourse', 'local_courses');
-            $mform->setType('open_skill', PARAM_INT);
+                $mform->addElement('select',  'open_skill', get_string('open_skillcourse', 'local_courses'), $skillselect);
+                $mform->addHelpButton('open_skill', 'open_skillcourse', 'local_courses');
+                $mform->setType('open_skill', PARAM_INT);
 
-            $levelselect = array(0 => get_string('select_level', 'local_courses'));
+                $levelselect = array(0 => get_string('select_level', 'local_courses'));
 
-            $levelsql = "SELECT id,name FROM {local_course_levels}
+                $levelsql = "SELECT id,name FROM {local_course_levels}
                                     WHERE 1=1 $costcenterpathconcatsql ";
 
-            $levels = $DB->get_records_sql_menu($levelsql);
+                $levels = $DB->get_records_sql_menu($levelsql);
 
-            if (!empty($levels)) {
-                $levelselect = $levelselect + $levels;
+                if (!empty($levels)) {
+                    $levelselect = $levelselect + $levels;
+                }
+                $mform->addElement('select',  'open_level', get_string('open_levelcourse', 'local_courses'), $levelselect);
+                $mform->addHelpButton('open_level', 'open_levelcourse', 'local_courses');
+                $mform->setType('open_level', PARAM_INT);
             }
-            $mform->addElement('select',  'open_level', get_string('open_levelcourse', 'local_courses'), $levelselect);
-            $mform->addHelpButton('open_level', 'open_levelcourse', 'local_courses');
-            $mform->setType('open_level', PARAM_INT);
 
             $mform->addElement(
                 'date_time_selector',

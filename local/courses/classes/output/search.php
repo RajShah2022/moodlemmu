@@ -368,9 +368,11 @@ class search implements renderable {
             }
 
             $course->modulescount = $course->modulescount ? $course->modulescount : 'N/A';
+            $plugin_exists = \core_component::get_plugin_directory('local', 'skillrepository');
 
-            $course->open_skillcategory = ($DB->get_field('local_skill_categories', 'name', array('id' => $course->open_skillcategory))) ? ($DB->get_field('local_skill_categories', 'name', array('id' => $course->open_skillcategory))) : 'N/A';
-
+            if ($plugin_exists) {
+                $course->open_skillcategory = ($DB->get_field('local_skill_categories', 'name', array('id' => $course->open_skillcategory))) ? ($DB->get_field('local_skill_categories', 'name', array('id' => $course->open_skillcategory))) : 'N/A';
+            }
             $enrolldata = $DB->get_record_sql("SELECT ue.* FROM {user_enrolments} ue JOIN {enrol} e ON ue.enrolid = e.id JOIN {course} c ON c.id = e.courseid WHERE e.courseid = $course->id AND ue.userid = $USER->id AND e.status = 0 AND ue.status = 0");
             if ($enrolldata) {
                 $course->enrol_date = date("d M Y", $enrolldata->timecreated);
