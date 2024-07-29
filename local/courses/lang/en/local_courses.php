@@ -161,10 +161,10 @@ $string['help_2'] = '</td></tr>
 <th>Field</th><th>Restriction</th>
 <tr><td>Summary</td><td>Summary of the course.</td></tr>
 <tr><td>Cost</td><td>Cost of the course.</td></tr>
-<tr><td>Bussiness Unit_code</td><td>Provide Bussiness Unit code. Bussiness Unit must already exist in system as part of Company hierarchy.</td></tr>
-<tr><td>commercial_unit_code</td><td>Enter Department Code. Bussiness Unit must already exist under specified Bussiness Unit in system as part of Company hierarchy.</td></tr>
-<tr><td>commercial_area_code</td><td>Enter Department Code. Department must already exist under specified Department in system as part of Company hierarchy.</td></tr>
-<tr><td>territory_code</td><td>Enter Territory Code. Territory must already exist under specified Department in system as part of Company hierarchy.</td></tr>
+<tr><td>bussiness_unit_code</td><td>Provide Bussiness Unit code. Bussiness unit must already exist in system as part of School hierarchy.</td></tr>
+<tr><td>department_code</td><td>Enter School code. Department must already exist under specified bussiness unit in system as part of School hierarchy.</td></tr>
+<!-- <tr><td>commercial_area_code</td><td>Enter Department Code. Department must already exist under specified Department in system as part of Company hierarchy.</td></tr>
+<tr><td>territory_code</td><td>Enter Territory Code. Territory must already exist under specified Department in system as part of Company hierarchy.</td></tr> -->
 
 </table>';
 $string['back_upload'] = 'Back to upload courses';

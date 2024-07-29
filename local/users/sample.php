@@ -32,34 +32,35 @@ if (!(has_capability('local/users:manage', $categorycontext) && has_capability('
 }
 if ($format) {
     $fields = array(
-    'company_code' => 'company_code',
-    'username' => 'username',
-    'password' => 'password',
-    'employee_code' => 'employee_code',
-    'prefix' => 'prefix',
-    'first_name' => 'first_name',
-    'last_name' => 'last_name',
-    'gender' => 'gender',
-    'email' => 'email',
-    'bussiness_unit_code' => 'bussiness_unit_code',
-    'department_code' => 'department_code',
-    'subdepartment_code' => 'subdepartment_code',
-    'reportingmanager_empid' => 'reportingmanager_empid',
-    // 'language' => 'language',
-    'designation' => 'designation',
-    // 'employment_type' => 'employment_type',
-    // 'region' => 'region',
-    // 'grade' => 'grade',
-    'date_of_birth' => 'date_of_birth',
-    'date_of_joining' => 'date_of_joining',
-    'mobileno' => 'mobileno',
-    'employee_status' => 'employee_status',
-    // 'timezone' => 'timezone',
-    'force_password_change' => 'force_password_change'
+        'company_code' => 'company_code',
+        'username' => 'username',
+        'password' => 'password',
+        'employee_code' => 'employee_code',
+        'prefix' => 'prefix',
+        'first_name' => 'first_name',
+        'last_name' => 'last_name',
+        'gender' => 'gender',
+        'email' => 'email',
+        'bussiness_unit_code' => 'bussiness_unit_code',
+        'department_code' => 'department_code',
+        //'subdepartment_code' => 'subdepartment_code',
+        'reportingmanager_empid' => 'reportingmanager_empid',
+        // 'language' => 'language',
+        'designation' => 'designation',
+        // 'employment_type' => 'employment_type',
+        // 'region' => 'region',
+        // 'grade' => 'grade',
+        'date_of_birth' => 'date_of_birth',
+        'date_of_joining' => 'date_of_joining',
+        'mobileno' => 'mobileno',
+        'employee_status' => 'employee_status',
+        // 'timezone' => 'timezone',
+        'force_password_change' => 'force_password_change'
     );
 
     switch ($format) {
-        case 'csv' : user_download_csv($fields);
+        case 'csv':
+            user_download_csv($fields);
     }
     die;
 }

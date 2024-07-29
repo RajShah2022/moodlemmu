@@ -21,17 +21,17 @@
  * @package    local_courses
  * @copyright  2019 eAbyas <eAbyas.in>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-*/
+ */
 
 namespace local_courses\local;
 
-class user{
+class user {
 
-    public function user_profile_content($userid,$return = false,$start =0,$limit =5){
+    public function user_profile_content($userid, $return = false, $start = 0, $limit = 5) {
         global $OUTPUT, $CFG;
         $returnobj = new \stdClass();
         $returnobj->coursesexist = 1;
-        $records = $this->enrol_get_users_courses($userid,false,true,$start,$limit);
+        $records = $this->enrol_get_users_courses($userid, false, true, $start, $limit);
         $courses = $records['data'];
 
         $data = array();
@@ -44,18 +44,18 @@ class user{
             $coursesarray["url"] = $urllink;
             $coursesummary = $course->summary;
             $coursesummary = \local_costcenter\lib::strip_tags_custom($coursesummary);
-            $summarystring = strlen($coursesummary) > 120 ? clean_text(substr($coursesummary, 0, 120))."..." : $coursesummary;
+            $summarystring = strlen($coursesummary) > 120 ? clean_text(substr($coursesummary, 0, 120)) . "..." : $coursesummary;
             $coursesarray["description"] = $summarystring;
-            $number=$this->user_course_completion_progress($course->id,$userid);
-            $coursesarray["percentage"] = (is_number($number)) ?round($number) : 0;
+            $number = $this->user_course_completion_progress($course->id, $userid);
+            $coursesarray["percentage"] = (is_number($number)) ? round($number) : 0;
 
-            require_once($CFG->dirroot.'/local/includes.php');
+            require_once($CFG->dirroot . '/local/includes.php');
             $includes = new \user_course_details();
             $course_record = get_course($course->id);
-            $background_logourl= ($includes->course_summary_files($course_record));
-            if(is_a($background_logourl, 'moodle_url')){
+            $background_logourl = ($includes->course_summary_files($course_record));
+            if (is_a($background_logourl, 'moodle_url')) {
                 $coursesarray['module_img_url'] = $background_logourl->out();
-            }else{
+            } else {
                 $coursesarray['module_img_url'] = $background_logourl;
             }
             $data[] = $coursesarray;
@@ -80,21 +80,21 @@ class user{
      */
     public function user_course_completion_progress($courseid, $userid) {
         global $DB, $USER, $CFG;
-        if(empty($courseid) || empty($userid)){
+        if (empty($courseid) || empty($userid)) {
             return false;
         }
 
-        $sql="SELECT id from {course_completions} where course= ? and userid= ? and  timecompleted IS NOT NULL";
-        $completionenabled=$DB->get_record_sql($sql, [$courseid, $userid]);
+        $sql = "SELECT id from {course_completions} where course= ? and userid= ? and  timecompleted IS NOT NULL";
+        $completionenabled = $DB->get_record_sql($sql, [$courseid, $userid]);
         $course_completion_percent = '';
-        if($completionenabled ==''){
-        $total_activity_count = $this->total_course_activities($courseid);
-        $completed_activity_count = $this->user_course_completed_activities($courseid, $userid);
-            if($total_activity_count>0 && $completed_activity_count>0){
-            	$course_completion_percent = $completed_activity_count/$total_activity_count*100;
+        if ($completionenabled == '') {
+            $total_activity_count = $this->total_course_activities($courseid);
+            $completed_activity_count = $this->user_course_completed_activities($courseid, $userid);
+            if ($total_activity_count > 0 && $completed_activity_count > 0) {
+                $course_completion_percent = $completed_activity_count / $total_activity_count * 100;
             }
-        }else{
-            $course_completion_percent=100;
+        } else {
+            $course_completion_percent = 100;
         }
         return $course_completion_percent;
     }
@@ -106,10 +106,10 @@ class user{
      */
     public function total_course_activities($courseid) {
         global $DB, $USER, $CFG;
-        if(empty($courseid)){
+        if (empty($courseid)) {
             return false;
         }
-        $sql="SELECT COUNT(ccc.id) as totalactivities FROM {course_modules} ccc WHERE ccc.course=?";
+        $sql = "SELECT COUNT(ccc.id) as totalactivities FROM {course_modules} ccc WHERE ccc.course=?";
         $totalactivitycount = $DB->get_record_sql($sql, [$courseid]);
         $out = $totalactivitycount->totalactivities;
         return $out;
@@ -122,21 +122,21 @@ class user{
      */
     public function user_course_completed_activities($courseid, $userid) {
         global $DB, $USER, $CFG;
-        if(empty($courseid) || empty($userid)){
+        if (empty($courseid) || empty($userid)) {
             return false;
         }
-        $sql="SELECT count(cc.id) as completedact from {course_completion_criteria} ccc JOIN {course_modules_completion} cc ON cc.coursemoduleid = ccc.moduleinstance where ccc.course = ? and cc.userid= ? and cc.completionstate = 1 ";
+        $sql = "SELECT count(cc.id) as completedact from {course_completion_criteria} ccc JOIN {course_modules_completion} cc ON cc.coursemoduleid = ccc.moduleinstance where ccc.course = ? and cc.userid= ? and cc.completionstate = 1 ";
         $completioncount = $DB->get_record_sql($sql, [$courseid, $userid]);
         $out = $completioncount->completedact;
         return $out;
     }
-    public function user_team_content($user){
+    public function user_team_content($user) {
         global $OUTPUT;
         $courses = $this->get_team_member_course_status($user->id);
         $templatedata = array();
         // $totalelearningcourses = $mandatorycourses->enrolled;
         $teamstatus = new \local_myteam\output\team_status_lib();
-        $templatedata['elementcolor'] = $teamstatus->get_colorcode_tm_dashboard($courses->completed,$courses->enrolled);
+        $templatedata['elementcolor'] = $teamstatus->get_colorcode_tm_dashboard($courses->completed, $courses->enrolled);
         $templatedata['completed'] = $courses->completed;
         $templatedata['enrolled'] = $courses->enrolled;
         $templatedata['username'] = fullname($user);
@@ -145,16 +145,15 @@ class user{
         //return $OUTPUT->render_from_template('local_users/team_status_element', $templatedata);
         return (object) $templatedata;
     }
-    public function get_team_member_course_status($userid ,$optional = false, $mandatory = false,$totalcourses = false){
+    public function get_team_member_course_status($userid, $optional = false, $mandatory = false, $totalcourses = false) {
         global $DB;
         $inprogress = count($this->inprogress_coursenames($userid));
         $completed = count($this->completed_coursenames($userid));
         $return = new \stdClass();
-        $return->enrolled = $inprogress+$completed;
+        $return->enrolled = $inprogress + $completed;
         $return->inprogress = $inprogress;
         $return->completed = $completed;
         return $return;
-
     }
     public function inprogress_coursenames($userid) {
         global $DB;
@@ -169,16 +168,16 @@ class user{
         $params['userid'] = $userid;
 
         $completed_courses = self::completed_coursenames($userid);
-        if(!empty($completed_courses)){
+        if (!empty($completed_courses)) {
             $complted_id = array();
-            foreach($completed_courses as $complted_course){
+            foreach ($completed_courses as $complted_course) {
                 $completed_id[] = $complted_course->id;
             }
             $completed_ids = implode(',', $completed_id);
             list($couressql, $couresparams) = $DB->get_in_or_equal($completed_id, SQL_PARAMS_NAMED, 'param', false, false);
             $sql .= " AND course.id $couressql";
         }
-        $paramsarray = array_merge($params,$couresparams);
+        $paramsarray = array_merge($params, $couresparams);
         $inprogress_courses = $DB->get_records_sql($sql, $paramsarray);
         return $inprogress_courses;
     }
@@ -190,14 +189,14 @@ class user{
             JOIN {course} AS c ON c.id = cc.course
             JOIN {enrol} AS e ON c.id = e.courseid AND e.enrol IN('self','manual','auto')
             JOIN {user_enrolments} AS ue ON e.id = ue.enrolid AND ue.userid = cc.userid
-            WHERE cc.timecompleted is not NULL AND c.visible=1 AND c.id>1 AND cc.userid = ? AND c.open_coursetype = 0 
+            WHERE cc.timecompleted is not NULL AND c.visible=1 AND c.id>1 AND cc.userid = ? AND c.open_coursetype = 0
             ";
 
         $coursenames = $DB->get_records_sql($sql, [$userid]);
         return $coursenames;
     }
 
-    public function enrol_get_users_courses($userid, $count =false, $limityesno = false, $start = 0, $limit = 5, $source = false) {
+    public function enrol_get_users_courses($userid, $count = false, $limityesno = false, $start = 0, $limit = 5, $source = false) {
         global $DB;
         $countsql = "SELECT count(DISTINCT(course.id)) ";
         $coursessql = "SELECT course.id, course.fullname as name,course.shortname as code, course.summary,ue.timecreated as enrolldate , cc.timecompleted AS completiondate ";
@@ -217,7 +216,7 @@ class user{
                     JOIN {local_costcenter} lc ON concat('/',u.open_path,'/') LIKE concat('%/',lc.id,'/%') AND lc.depth = 1
                     JOIN {role_assignments} as ra ON ra.userid = u.id
                     JOIN {context} AS cxt ON cxt.id=ra.contextid AND cxt.contextlevel = 50 AND cxt.instanceid=course.id
-                    JOIN {role} as r ON r.id = ra.roleid AND r.shortname = 'employee'
+                    JOIN {role} as r ON r.id = ra.roleid AND r.shortname IN ('student','employee')
                     LEFT JOIN {course_completions} as cc ON cc.course = course.id AND u.id = cc.userid
                     WHERE course.id > 1 AND ue.userid = ? AND course.open_coursetype = 0 AND course.visible=1 ";
         // if ($source) {
@@ -225,27 +224,26 @@ class user{
         // }
         $ordersql = " ORDER BY ue.id DESC ";
         if ($limityesno)
-            $records = $DB->get_records_sql($coursessql.$fromsql.$ordersql, [$userid], $start, $limit);
+            $records = $DB->get_records_sql($coursessql . $fromsql . $ordersql, [$userid], $start, $limit);
         else
-        $records = $DB->get_records_sql($coursessql.$fromsql.$ordersql, [$userid]);
-        foreach($records as $key=>$value){
-        $statusid = $DB->get_field_sql("SELECT cc.id FROM {course_completions} cc JOIN {user} u ON cc.userid = u.id WHERE cc.course =:courseid AND cc.userid =:userid AND cc.timecompleted > 0 AND cc.timecompleted is not null AND u.suspended = 0 AND u.deleted = 0 ",array('userid' => $userid ,'courseid' => $value->id ));
-        if($statusid){
-          $status = 'Completed';
-        }else{
-          $status = 'Not Completed';
+            $records = $DB->get_records_sql($coursessql . $fromsql . $ordersql, [$userid]);
+        foreach ($records as $key => $value) {
+            $statusid = $DB->get_field_sql("SELECT cc.id FROM {course_completions} cc JOIN {user} u ON cc.userid = u.id WHERE cc.course =:courseid AND cc.userid =:userid AND cc.timecompleted > 0 AND cc.timecompleted is not null AND u.suspended = 0 AND u.deleted = 0 ", array('userid' => $userid, 'courseid' => $value->id));
+            if ($statusid) {
+                $status = 'Completed';
+            } else {
+                $status = 'Not Completed';
+            }
+            $value->status = $status;
+            if (!empty($value->completiondate)) {
+                $value->completiondate = \local_costcenter\lib::get_userdate('d/m/Y H:i', $value->completiondate);
+            } else {
+                $value->completiondate = 'NA';
+            }
+            $value->enrolldate = \local_costcenter\lib::get_userdate('d/m/Y H:i', $value->enrolldate);
         }
-        $value->status = $status;
-        if(!empty($value->completiondate)){
-            $value->completiondate = \local_costcenter\lib::get_userdate('d/m/Y H:i',$value->completiondate);
-        }else{
-            $value->completiondate = 'NA';
-        }
-        $value->enrolldate = \local_costcenter\lib::get_userdate('d/m/Y H:i',$value->enrolldate);
-
-    }
-        $total = $DB->count_records_sql($countsql.$fromsql, [$userid]);
-        return array('data'=>$records, 'count'=>$total);
+        $total = $DB->count_records_sql($countsql . $fromsql, [$userid]);
+        return array('data' => $records, 'count' => $total);
     }
 
     /**
@@ -254,35 +252,35 @@ class user{
      * @param  [INT] $start [start]
      * @return [INT] $limit [limit]
      */
-    public function user_modulewise_content($id,$start =0,$limit=5){
-      global $OUTPUT,$PAGE,$DB;
-      $returnobj = new \stdClass();
-      $usercourses = enrol_get_users_courses($id,false,null,null);
-      $data = array();
-      foreach($usercourses as $course){
-          $coursessarray = array();
-          $coursessarray['name'] = $course->fullname;
-          $coursessarray['code'] = $course->shortname;
-          $coursessarray['enrolldate'] = \local_costcenter\lib::get_userdate('d/m/Y H:i',$course->enrolldate);
-          $statusid = $DB->get_field_sql("SELECT cc.id FROM {course_completions} cc JOIN {user} u ON cc.userid = u.id WHERE cc.course =:courseid AND cc.userid =:userid AND cc.timecompleted > 0 AND cc.timecompleted is not null AND u.suspended = 0 AND u.deleted = 0 ",array('userid' => $id ,'courseid' => $course->id ));
+    public function user_modulewise_content($id, $start = 0, $limit = 5) {
+        global $OUTPUT, $PAGE, $DB;
+        $returnobj = new \stdClass();
+        $usercourses = enrol_get_users_courses($id, false, null, null);
+        $data = array();
+        foreach ($usercourses as $course) {
+            $coursessarray = array();
+            $coursessarray['name'] = $course->fullname;
+            $coursessarray['code'] = $course->shortname;
+            $coursessarray['enrolldate'] = \local_costcenter\lib::get_userdate('d/m/Y H:i', $course->enrolldate);
+            $statusid = $DB->get_field_sql("SELECT cc.id FROM {course_completions} cc JOIN {user} u ON cc.userid = u.id WHERE cc.course =:courseid AND cc.userid =:userid AND cc.timecompleted > 0 AND cc.timecompleted is not null AND u.suspended = 0 AND u.deleted = 0 ", array('userid' => $id, 'courseid' => $course->id));
 
-          if($statusid){
-            $status = 'Completed';
-          }else{
-            $status = 'Not Completed';
-          }
-          $coursessarray['status'] = $status;
-          if(!empty($course->completiondate)){
-            $coursessarray['completiondate'] = \local_costcenter\lib::get_userdate('d/m/Y H:i',$course->completiondate);
-          }else{
-            $coursessarray['completiondate'] = 'NA';
-          }
-          $data[] = $coursessarray;
-      }
-      $returnobj->navdata = $data;
-      return $returnobj;
+            if ($statusid) {
+                $status = 'Completed';
+            } else {
+                $status = 'Not Completed';
+            }
+            $coursessarray['status'] = $status;
+            if (!empty($course->completiondate)) {
+                $coursessarray['completiondate'] = \local_costcenter\lib::get_userdate('d/m/Y H:i', $course->completiondate);
+            } else {
+                $coursessarray['completiondate'] = 'NA';
+            }
+            $data[] = $coursessarray;
+        }
+        $returnobj->navdata = $data;
+        return $returnobj;
     }
-    public function user_team_headers(){
+    public function user_team_headers() {
         return array('courses' => get_string('pluginname', 'local_courses'));
     }
 }

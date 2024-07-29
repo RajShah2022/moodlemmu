@@ -37,8 +37,8 @@ $string['description'] = 'Description';
 $string['missingcostcentername'] = 'Name cannot be empty';
 $string['viewcostcenter_1'] = 'View Department';
 $string['viewcostcenter_2'] = 'View Sub Department';
-$string['viewcostcenter_3']='View Region';
-$string['viewcostcenter_4']='View Territory';
+$string['viewcostcenter_3'] = 'View Region';
+$string['viewcostcenter_4'] = 'View Territory';
 $string['top'] = 'Top';
 $string['parent'] = 'Parent';
 $string['parent_help'] = "To create a New Department at Parent Level, please select 'Parent' ";
@@ -98,14 +98,14 @@ $string['costcenter:manage_ownorganization'] = 'Manage ownSchool';
 $string['costcenter:manage_subdepartments_manage'] = 'Manage_subSchools';
 $string['toomanyoptionstoshow'] = 'Too many options ({$a}) to show';
 $string['not_available'] = 'N/A';
-$string['classrooms'] = 'Classrooms'; 
-$string['courses'] = 'Courses'; 
+$string['classrooms'] = 'Classrooms';
+$string['courses'] = 'Courses';
 $string['learning_plan'] = 'Learning Plan';
-$string['programs'] = 'Programs'; 
+$string['programs'] = 'Programs';
 $string['no_data_available'] = 'No Data Available';
-$string['new'] = 'New'; 
+$string['new'] = 'New';
 $string['completed'] = 'Completed';
-$string['certifications'] = 'Certifications'; 
+$string['certifications'] = 'Certifications';
 $string['confirm'] = 'Confirm';
 $string['create_organization'] = 'Create New School';
 $string['no_skills_data'] = 'No Skills Available';
@@ -132,20 +132,20 @@ $string['inactiveprogramcount'] = 'In-Active Programs';
 $string['allfeedback'] = 'Total Feedbacks';
 $string['activefeedback'] = 'Active Feedback';
 $string['inactivefeedback'] = 'In-Active Feedback';
-$string['costcenterassignedrole']=' <b> {$a->costcentername} </b> : Assigned Role Users';
-$string['addblocks']='Config Dashboard';
-$string['createsubsubdepartment']='Create New Sub Department';
-$string['createsubsubsubdepartment']='Create New Territory';
-$string['subsubsubdepartment']='Territory';
-$string['update_subsubdept']='Update Region';
-$string['update_subsubsubdept']='Update Territory';
-$string['open_costcenterid']='School';
-$string['open_department']='School';
-$string['open_subdepartment']='Department';
-$string['open_level4department']='Sub Department';
+$string['costcenterassignedrole'] = ' <b> {$a->costcentername} </b> : Assigned Role Users';
+$string['addblocks'] = 'Config Dashboard';
+$string['createsubsubdepartment'] = 'Create New Sub Department';
+$string['createsubsubsubdepartment'] = 'Create New Territory';
+$string['subsubsubdepartment'] = 'Territory';
+$string['update_subsubdept'] = 'Update Region';
+$string['update_subsubsubdept'] = 'Update Territory';
+$string['open_costcenterid'] = 'School';
+$string['open_department'] = 'School';
+$string['open_subdepartment'] = 'Department';
+$string['open_level4department'] = 'Sub Department';
 
-$string['nooflevel']='No of Levels';
-$string['confignooflevel']='No of Levels in the hierarchy';
+$string['nooflevel'] = 'No of Levels';
+$string['confignooflevel'] = 'No of Levels in the hierarchy';
 $string['selectopen_costcenterid'] = 'Select School';
 $string['selectopen_department'] = 'Select School';
 $string['selectopen_subdepartment'] = 'Select Department';
@@ -212,7 +212,7 @@ $string['audience_commercial'] = '<p> <b>Region :</b> {$a}</p>';
 $string['help_1'] = '<div class="helpmanual_table"><table class="generaltable" border="1">
 <tr class="field_type_head"><td class="empty_column"></td><td class="field_type font-weight-bold" style="text-align:left;border-left:1px solid white;padding-left:50px;">Mandatory Fields</td><tr>
 <th>Field</th><th>Restriction</th>
-<tr><td>company_code</td><td>Provide the School code</td></tr>
+<tr><td>department_code</td><td>Provide the School code</td></tr>
 <tr><td>username</td><td>Enter the username, avoid additional spaces.</td></tr>
 <tr><td>employee_code</td><td>Enter the employee code, avoid additional spaces.</td></tr>
 <tr><td>firstname</td><td>Enter the first name.</td></tr>
@@ -227,8 +227,7 @@ $string['help_2'] = '</td></tr>
 Password must have at least 1 non-alphanumeric character(s) such as as *, -, or #..</td></tr>
 <tr><td>prefix</td><td>Enter prfix as either \'mr\', \'mrs\' or \'ms\', avoid additional spaces.</td></tr>
 <tr><td>bussiness_unit_code</td><td>Provide bussiness unit code. Bussiness unit must already exist in system as part of School hierarchy.</td></tr>
-<tr><td>department_code</td><td>Enter department code. Department must already exist under specified bussiness unit in system as part of School hierarchy.</td></tr>
-<tr><td>subdepartment_code</td><td>Enter sub department code. Sub Department must already exist under specified department in system as part of School hierarchy.</td></tr>
+<tr><td>department_code</td><td>Enter School code. Department must already exist under specified bussiness unit in system as part of School hierarchy.</td></tr>
 <tr><td>mobileno</td><td>Enter Numerics only.</td></tr>
 <tr><td>reportingmanager_empid</td><td>Enter reporting manger employee code, avoid additional spaces..</td></tr>
 
@@ -241,7 +240,7 @@ Password must have at least 1 non-alphanumeric character(s) such as as *, -, or 
 $string['help_1_orghead'] = '<table class="generaltable" border="1">
 <tr><td></td><td style="text-align:left;border-left:1px solid white;"><b class="pad-md-l-50 hlep1-oh">Mandatory Fields</b></td><tr>
 <th>Field</th><th>Restriction</th>
-<tr><td>Company_code</td><td>Provide the School</td></tr>
+<tr><td>department_code</td><td>Provide the School</td></tr>
 <tr><td>username</td><td>Enter the username, avoid additional spaces.</td></tr>
 <tr><td>learner_id</td><td>Enter the employee code, avoid additional spaces.</td></tr>
 <tr><td>firstname</td><td>Enter the first name.</td></tr>
@@ -253,7 +252,7 @@ $string['help_1_orghead'] = '<table class="generaltable" border="1">
 $string['help_1_dephead'] = '<table class="generaltable" border="1">
 <tr><td></td><td style="text-align:left;border-left:1px solid white;"><b class="pad-md-l-50 hlep1-dh">Mandatory Fields</b></td><tr>
 <th>Field</th><th>Restriction</th>
-<tr><td>Company_code</td><td>Provide the School</td></tr>
+<tr><td>company_code</td><td>Provide the School</td></tr>
 <tr><td>username</td><td>Enter the username, avoid additional spaces.</td></tr>
 <tr><td>learner_id</td><td>Enter the employee code, avoid additional spaces.</td></tr>
 <tr><td>firstname</td><td>Enter the first name.</td></tr>

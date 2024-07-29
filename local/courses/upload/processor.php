@@ -132,8 +132,10 @@ class local_uploadcourse_processor {
      */
     public function __construct(csv_import_reader $cir, array $options, array $defaults = array()) {
 
-        if (!isset($options['mode']) || !in_array($options['mode'], array(self::MODE_CREATE_NEW, self::MODE_CREATE_ALL,
-                self::MODE_CREATE_OR_UPDATE, self::MODE_UPDATE_ONLY))) {
+        if (!isset($options['mode']) || !in_array($options['mode'], array(
+            self::MODE_CREATE_NEW, self::MODE_CREATE_ALL,
+            self::MODE_CREATE_OR_UPDATE, self::MODE_UPDATE_ONLY
+        ))) {
             throw new coding_exception('Unknown process mode');
         }
 
@@ -182,7 +184,7 @@ class local_uploadcourse_processor {
      * @return void
      */
     public function execute($tracker = null) {
-        global $DB,$USER;
+        global $DB, $USER;
         if ($this->processstarted) {
             throw new coding_exception('Process has already been started');
         }
@@ -202,12 +204,12 @@ class local_uploadcourse_processor {
         // We will most certainly need extra time and memory to process big files.
         core_php_time_limit::raise();
         raise_memory_limit(MEMORY_EXTRA);
-        define('mooc',1);
-        define('classroom',2);
-        define('elearning',3);
-        define('learningpath',4);
-        define('program',5);
-        define('certification',6);
+        define('mooc', 1);
+        define('classroom', 2);
+        define('elearning', 3);
+        define('learningpath', 4);
+        define('program', 5);
+        define('certification', 6);
         // Loop over the CSV lines.
         while ($line = $this->cir->next()) {
             $this->linenb++;
@@ -220,20 +222,17 @@ class local_uploadcourse_processor {
             unset($data['completiondays']);
             // for getting department of the course.
 
-
-            $data['open_costcenterid'] =$this->defaults['open_costcenterid'];
-
+            $data['open_costcenterid'] = $this->defaults['open_costcenterid'];
             $data['open_departmentid'] = $DB->get_field('local_costcenter', 'id', array('shortname' => $data['department']));
-            $subdepartmentparams = array('shortname' => $data['subdepartment']);
 
+            /*       $subdepartmentparams = array('shortname' => $data['subdepartment']);
             $data['open_subdepartment'] = $DB->get_field('local_costcenter', 'id', $subdepartmentparams);
 
             $level4departmentparams = array('shortname' => $data['level4department']);
             $data['open_level4department'] = $DB->get_field('local_costcenter', 'id', $level4departmentparams);
 
-
             $level5departmentparams = array('shortname' => $data['level5department']);
-            $data['open_level5department'] = $DB->get_field('local_costcenter', 'id', $level5departmentparams);
+            $data['open_level5department'] = $DB->get_field('local_costcenter', 'id', $level5departmentparams); */
 
             // for getting startdate and enddate of the course.
             $startdate = isset($data['startdate']) ? $data['startdate'] : 0;
@@ -247,8 +246,8 @@ class local_uploadcourse_processor {
                 $data['enddate'] = DateTime::createFromFormat('!d/m/Y', $enddate)->getTimestamp();
             }
             // for getting type of course
-            $identifiedas = explode(',' , $data['coursetype']);
-            
+            $identifiedas = explode(',', $data['coursetype']);
+
             // unset($data['coursetype']);
 
             $data['open_cost'] = $data['cost'];
@@ -276,16 +275,15 @@ class local_uploadcourse_processor {
             }
         }
 
-
         $tracker->finish();
-        foreach($errordata as $key => $info){
-            foreach($info as $key1 => $infos){
-                if($key1 == 'courseexistsanduploadnotallowed'){
-                    $reason = get_string($key1.'withargs', 'local_courses',$shortnames[$key]);
-                } else if($key1 == 'canonlycreatecourseincategoryofsameorganisation'){
-                    $reason = get_string($key1.'withargs', 'local_courses',$categories[$key]);
-                } else if($key1 == 'canonlycreatecourseincategoryofsameorganisation'){
-                    $reason = get_string($key1.'withargs', 'local_courses',$coursetype[$key]);
+        foreach ($errordata as $key => $info) {
+            foreach ($info as $key1 => $infos) {
+                if ($key1 == 'courseexistsanduploadnotallowed') {
+                    $reason = get_string($key1 . 'withargs', 'local_courses', $shortnames[$key]);
+                } else if ($key1 == 'canonlycreatecourseincategoryofsameorganisation') {
+                    $reason = get_string($key1 . 'withargs', 'local_courses', $categories[$key]);
+                } else if ($key1 == 'canonlycreatecourseincategoryofsameorganisation') {
+                    $reason = get_string($key1 . 'withargs', 'local_courses', $coursetype[$key]);
                 } else {
                     $reason = 'Error while processing';
                 }
@@ -293,7 +291,7 @@ class local_uploadcourse_processor {
                 $uploaddata->reason = $reason;
                 $uploaddata->userid = $USER->id;
                 $uploaddata->time = time();
-                $DB->insert_record('local_courseerrors',$uploaddata);
+                $DB->insert_record('local_courseerrors', $uploaddata);
             }
         }
         $tracker->results($total, $created, $updated, $deleted, $errors);
@@ -314,8 +312,8 @@ class local_uploadcourse_processor {
             'restoredir' => $this->get_restore_content_dir(),
             'shortnametemplate' => $this->shortnametemplate
         );
-        
-    return new local_uploadcourse_course($this->mode, $this->updatemode, $data, $this->defaults, $importoptions);
+
+        return new local_uploadcourse_course($this->mode, $this->updatemode, $data, $this->defaults, $importoptions);
     }
 
     /**

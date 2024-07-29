@@ -27,23 +27,23 @@ namespace block_quick_navigation\output;
 use html_writer;
 use core_component;
 
-class quick_links{
-    public function display_quick_navigation_links(){
-        global $CFG,$PAGE;
+class quick_links {
+    public function display_quick_navigation_links() {
+        global $CFG, $PAGE;
         $core_component = new core_component();
         $local_pluginlist = $core_component::get_plugin_list('local');
-        if($PAGE->theme->settings->quicknavigationview){
+        if ($PAGE->theme->settings->quicknavigationview) {
             $out = html_writer::start_tag("div", array("class" => "quick_nav_container"));
             // $out .= html_writer::start_tag("ul", array("class" => "quick_nav list-inline"));
-        $out .= html_writer::start_tag("div", array("class" => "quick_nav list-inline row"));
+            $out .= html_writer::start_tag("div", array("class" => "quick_nav list-inline row"));
             $pluginnavs = array();
-            foreach($local_pluginlist as $key => $local_pluginname){
-                if(file_exists($CFG->dirroot.'/local/'.$key.'/lib.php')){
-                    require_once($CFG->dirroot.'/local/'.$key.'/lib.php');
-                    $functionname = 'local_'.$key.'_quicklink_node';
-                    if(function_exists($functionname)){
+            foreach ($local_pluginlist as $key => $local_pluginname) {
+                if (file_exists($CFG->dirroot . '/local/' . $key . '/lib.php')) {
+                    require_once($CFG->dirroot . '/local/' . $key . '/lib.php');
+                    $functionname = 'local_' . $key . '_quicklink_node';
+                    if (function_exists($functionname)) {
                         $data = $functionname();
-                        foreach($data as  $key => $val){
+                        foreach ($data as  $key => $val) {
                             $pluginnavs[$key][] = $val;
                         }
                     }
@@ -51,14 +51,14 @@ class quick_links{
             }
             ksort($pluginnavs);
             $data = array();
-            foreach($pluginnavs as $pluginnav){
-                foreach($pluginnav  as $key => $value){
+            foreach ($pluginnavs as $pluginnav) {
+                foreach ($pluginnav  as $key => $value) {
                     $data[] = $value;
                 }
             }
             $users = $data[0];
-            $feedbacks = $data[1];
-            $courses = $data[4];
+            $courses = $data[1];
+            $feedbacks = $data[4];
             $classrooms = $data[3];
             $learningplans = $data[5];
             $forums = $data[2];
@@ -66,42 +66,41 @@ class quick_links{
             $programs = $data[6];
             $onlineexams = $data[7];
 
-            $out .= html_writer::start_tag('div', array('class'=>'col-md-4 mb-3'));
+            $out .= html_writer::start_tag('div', array('class' => 'col-md-4 mb-3'));
             $out .= $users;
-            $out .= html_writer::end_tag("div"); 
-            $out .= html_writer::start_tag('div', array('class'=>'col-md-4 mb-3'));
+            $out .= html_writer::end_tag("div");
+            $out .= html_writer::start_tag('div', array('class' => 'col-md-4 mb-3'));
             $out .= $courses;
             $out .= html_writer::end_tag("div");
-            $out .= html_writer::start_tag('div', array('class'=>'col-md-4 mb-3'));
+            $out .= html_writer::start_tag('div', array('class' => 'col-md-4 mb-3'));
             $out .= $classrooms;
             $out .= html_writer::end_tag("div");
-            $out .= html_writer::start_tag('div', array('class'=>'col-md-3 mt-3'));
+            $out .= html_writer::start_tag('div', array('class' => 'col-md-3 mt-3'));
             $out .= $programs;
             $out .= html_writer::end_tag("div");
-            $out .= html_writer::start_tag('div', array('class'=>'col-md-3 mt-3'));
+            $out .= html_writer::start_tag('div', array('class' => 'col-md-3 mt-3'));
             $out .= $onlineexams;
             $out .= html_writer::end_tag("div");
-            $out .= html_writer::start_tag('div', array('class'=>'col-md-3 mt-3'));
+            $out .= html_writer::start_tag('div', array('class' => 'col-md-3 mt-3'));
             $out .= $forums;
             $out .= html_writer::end_tag("div");
-            $out .= html_writer::start_tag('div', array('class'=>'col-md-3 mt-3'));
+            $out .= html_writer::start_tag('div', array('class' => 'col-md-3 mt-3'));
             $out .= $learningplans;
             $out .= html_writer::end_tag("div");
 
-            
             $out .= html_writer::end_tag("div");
-        $out .= html_writer::end_tag("div");
-        }else{
+            $out .= html_writer::end_tag("div");
+        } else {
             $out = html_writer::start_tag("div", array("class" => "quick_nav_container"));
             $out .= html_writer::start_tag("ul", array("class" => "quick_nav list-inline"));
             $pluginnavs = array();
-            foreach($local_pluginlist as $key => $local_pluginname){
-                if(file_exists($CFG->dirroot.'/local/'.$key.'/lib.php')){
-                    require_once($CFG->dirroot.'/local/'.$key.'/lib.php');
-                    $functionname = 'local_'.$key.'_quicklink_node';
-                    if(function_exists($functionname)){
+            foreach ($local_pluginlist as $key => $local_pluginname) {
+                if (file_exists($CFG->dirroot . '/local/' . $key . '/lib.php')) {
+                    require_once($CFG->dirroot . '/local/' . $key . '/lib.php');
+                    $functionname = 'local_' . $key . '_quicklink_node';
+                    if (function_exists($functionname)) {
                         $data = $functionname();
-                        foreach($data as  $key => $val){
+                        foreach ($data as  $key => $val) {
                             $pluginnavs[$key][] = $val;
                         }
                     }
@@ -109,38 +108,39 @@ class quick_links{
             }
             ksort($pluginnavs);
             $data = array();
-            foreach($pluginnavs as $pluginnav){
-                foreach($pluginnav  as $key => $value){
+            foreach ($pluginnavs as $pluginnav) {
+                foreach ($pluginnav  as $key => $value) {
                     $data[] = $value;
                 }
             }
             $users = $data[0];
-            $feedbacks = $data[1];
-            $courses = $data[2];
+            $courses = $data[1];
+            $feedbacks = $data[2];
             $classrooms = $data[3];
             $learningplans = $data[4];
             $forums = $data[5];
             //$certifications = $data[6];
             $programs = $data[6];
             $onlineexams = $data[7];
-            $out .= html_writer::start_tag('li', array('class'=>'quick_nav_list_wrapper first_row'));
-                $out .= $users.$feedbacks;
+            $out .= html_writer::start_tag('li', array('class' => 'quick_nav_list_wrapper first_row'));
+            $out .= $users;
             $out .= html_writer::end_tag('li');
-            $out .= html_writer::start_tag('li', array('class'=>'quick_nav_list_wrapper second_row'));
-                $out .= $courses.$classrooms;
+            $out .= html_writer::start_tag('li', array('class' => 'quick_nav_list_wrapper second_row'));
+            $out .= $courses;
             $out .= html_writer::end_tag('li');
-            $out .= html_writer::start_tag('li', array('class'=>'quick_nav_list_wrapper third_row'));
-               // $out .= $learningplans.$forums.$certifications;
-                $out .= $learningplans.$forums;
+            /*          $out .= html_writer::start_tag('li', array('class' => 'quick_nav_list_wrapper second_row'));
+            $out .= $courses . $classrooms;
             $out .= html_writer::end_tag('li');
-            $out .= html_writer::start_tag('li', array('class'=>'quick_nav_list_wrapper fourth_row'));
-                $out .= $programs.$onlineexams;
+            $out .= html_writer::start_tag('li', array('class' => 'quick_nav_list_wrapper third_row'));
+            $out .= $learningplans . $forums;
             $out .= html_writer::end_tag('li');
+            $out .= html_writer::start_tag('li', array('class' => 'quick_nav_list_wrapper fourth_row'));
+            $out .= $programs . $onlineexams;
+            $out .= html_writer::end_tag('li'); */
             $out .= html_writer::end_tag("ul");
             $out .= html_writer::end_tag("div");
         }
-        
-        
+
         return $out;
     }
 }

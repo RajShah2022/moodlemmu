@@ -233,7 +233,7 @@ class local_courses_renderer extends plugin_renderer_base {
         JOIN {local_costcenter} lc ON lc.path = u.open_path
         JOIN {role_assignments} as ra ON ra.userid = u.id
         JOIN {context} AS cxt ON cxt.id=ra.contextid AND cxt.contextlevel = 50 AND cxt.instanceid=c.id
-        JOIN {role} as r ON r.id = ra.roleid AND r.shortname = 'employee'
+        JOIN {role} as r ON r.id = ra.roleid AND r.shortname IN ('student','employee')
         LEFT JOIN {course_completions} as cc ON cc.course = c.id AND u.id = cc.userid ";
 
         if ($dataobj->moduletype == 'onlineexam') {

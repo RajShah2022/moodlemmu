@@ -48,7 +48,7 @@ class filters_form extends moodleform {
                 $filter = 'courses';
             } else if ($value === 'email' || $value === 'states' || $value === 'district' || $value === 'subdistrict' || $value === 'village' || $value === 'employeeid' || $value === 'username' || $value === 'users' || $value === 'hrmsrole' || $value === 'project') {
                 $filter = 'users';
-            } else if ($value === 'organizations' || $value === 'departments' || $value === 'subdepartment' || $value === 'department4level' || $value === 'department5level') {
+            } else if ($value === 'organizations' || $value === 'departments' /*|| $value === 'subdepartment' || $value === 'department4level' || $value === 'department5level'*/) {
                 $filter = 'costcenter';
             } else if ($value === 'sorting' || $value === 'requeststatus') {
                 $filter = 'request';

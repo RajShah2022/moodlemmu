@@ -22,8 +22,7 @@
  * @subpackage local_users
  */
 
-
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once($CFG->dirroot . '/local/users/lib.php');
 
 global $OUTPUT, $CFG, $PAGE;
@@ -43,14 +42,16 @@ $PAGE->requires->js_call_amd('local_users/newuser', 'load', array());
 $PAGE->requires->js_call_amd('theme_epsilon/quickactions', 'quickactionsCall');
 $PAGE->requires->js_call_amd('local_costcenter/newcostcenter', 'downloadtrigger', array());
 $PAGE->requires->js_call_amd('local_assignroles/popup', 'Datatable', array());
-$PAGE->requires->js_call_amd('local_users/rolepopup', 'init',
-                                            array(
-                                                array(
-                                                    'contextid' => $categorycontext->id,
-                                                    'selector' => '.userpopup'
-                                                )
-                                            )
-                                        );
+$PAGE->requires->js_call_amd(
+    'local_users/rolepopup',
+    'init',
+    array(
+        array(
+            'contextid' => $categorycontext->id,
+            'selector' => '.userpopup'
+        )
+    )
+);
 
 // set url and layout and title
 $pageurl = new moodle_url('/local/users/index.php');
@@ -63,9 +64,9 @@ $PAGE->navbar->add(get_string('manage_users', 'local_users'));
 $status = optional_param('status', '', PARAM_RAW);
 $costcenterid = optional_param('costcenterid', '', PARAM_INT);
 $departmentid = optional_param('departmentid', '', PARAM_INT);
-$subdepartmentid = optional_param('subdepartmentid', '', PARAM_INT);
+/* $subdepartmentid = optional_param('subdepartmentid', '', PARAM_INT);
 $l4department = optional_param('l4department', '', PARAM_INT);
-$l5department = optional_param('l5department', '', PARAM_INT);
+$l5department = optional_param('l5department', '', PARAM_INT); */
 $formattype = optional_param('formattype', 'card', PARAM_TEXT);
 if ($formattype == 'card') {
     $formattype_url = 'table';
@@ -81,12 +82,10 @@ $heading = get_string('manage_users', 'local_users');
 $PAGE->set_heading($heading);
 $PAGE->navbar->add($heading);
 
-
 echo $OUTPUT->header();
 
 // user has capibilaty for manage users
-if (!is_siteadmin() && (!has_capability('local/users:manage', $categorycontext)&&!
-    has_capability('local/users:view', $categorycontext))) {
+if (!is_siteadmin() && (!has_capability('local/users:manage', $categorycontext) && !has_capability('local/users:view', $categorycontext))) {
     echo print_error('nopermissions');
 }
 
@@ -112,15 +111,15 @@ if (!empty($coursespluginexist)) {
     $formdata = new stdClass();
     $formdata->filteropen_costcenterid = $costcenterid;
     $formdata->filteropen_department = $departmentid;
-    $formdata->filteropen_subdepartment = $subdepartmentid;
+    /*     $formdata->filteropen_subdepartment = $subdepartmentid;
     $formdata->filteropen_level4department = $l4department;
-    $formdata->filteropen_level5department = $l5department;
+    $formdata->filteropen_level5department = $l5department; */
 
     $mform = users_filters_form($filterparams, (array)$formdata);
     if ($mform->is_cancelled()) {
         redirect('index.php');
     }
-    if (!empty($costcenterid) || !empty($status) || !empty($departmentid) || !empty($subdepartmentid) || !empty($l4department) || !empty($l5department)) {
+    if (!empty($costcenterid) || !empty($status) || !empty($departmentid) /*|| !empty($subdepartmentid) || !empty($l4department) || !empty($l5department)*/) {
         $formdata->status = $status;
         $mform->set_data($formdata);
     }
@@ -129,37 +128,37 @@ if (!empty($coursespluginexist)) {
     aria-controls="local_users-filter_collapse">
             <i class="m-0 fa fa-sliders fa-2x" aria-hidden="true"></i>
           </a>';
-    echo  '<div class="mt-2 mb-2 collapse '.$show.'" id="local_users-filter_collapse">
+    echo  '<div class="mt-2 mb-2 collapse ' . $show . '" id="local_users-filter_collapse">
                 <div id="filters_form" class="card card-body p-2">';
-                    $mform->display();
+    $mform->display();
     echo        '</div>
             </div>';
 }
 $filterparams['submitid'] = 'form#filteringform';
 $filterparams['filterdata'] = json_encode($formdata);
 echo $OUTPUT->render_from_template('local_costcenter/global_filter', $filterparams);
-   $display_url = new moodle_url('/local/users/index.php');
+$display_url = new moodle_url('/local/users/index.php');
 if ($costcenterid) {
     $display_url->param('costcenterid', $costcenterid);
 }
 if ($departmentid) {
     $display_url->param('departmentid', $departmentid);
 }
-if ($subdepartmentid) {
+/* if ($subdepartmentid) {
     $display_url->param('subdepartmentid', $subdepartmentid);
-}
+} */
 if ($status) {
     $display_url->param('status', $status);
 }
 if ($formattype_url) {
     $display_url->param('formattype', $formattype_url);
 }
-   $displaytype_div = '<div class="col-12 d-inline-block">';
-   $displaytype_div .= '<a class="btn btn-outline-secondary pull-right" href="' . $display_url . '">';
-   $displaytype_div .= '<span class="'.$display_icon.'"></span>' . $display_text;
-   $displaytype_div .= '</a>';
-   $displaytype_div .= '</div>';  
-     echo $displaytype_div;
+$displaytype_div = '<div class="col-12 d-inline-block">';
+$displaytype_div .= '<a class="btn btn-outline-secondary pull-right" href="' . $display_url . '">';
+$displaytype_div .= '<span class="' . $display_icon . '"></span>' . $display_text;
+$displaytype_div .= '</a>';
+$displaytype_div .= '</div>';
+echo $displaytype_div;
 echo $userrenderer->manageusers_content(false, $formattype, $totaluserscount);
 
 echo $OUTPUT->footer();

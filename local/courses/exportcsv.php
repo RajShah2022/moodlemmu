@@ -40,9 +40,9 @@ $table->head[] = get_string('coursename', 'local_courses');
 $table->head[] = get_string('coursecode', 'local_courses');
 //$table->head[] = get_string('coursetype','local_courses');
 $table->head[] = get_string('open_departmentlocal_courses', 'local_courses');
-$table->head[] = get_string('open_subdepartmentlocal_courses', 'local_courses');
-$table->head[] = get_string('open_level4departmentlocal_courses', 'local_courses');
-// $table->head[] = get_string('open_level5departmentlocal_courses','local_courses');
+//$table->head[] = get_string('open_subdepartmentlocal_courses', 'local_courses');
+//$table->head[] = get_string('open_level4departmentlocal_courses', 'local_courses');
+//$table->head[] = get_string('open_level5departmentlocal_courses','local_courses');
 $table->head[] = get_string('category', 'local_courses');
 $table->head[] = get_string('enrollments', 'local_courses');
 //$table->head[] = get_string('points','local_courses');
@@ -63,7 +63,7 @@ $data = [];
 foreach ($coursedata['hascourses'] as $course) {
     //  local_costcenter_set_costcenter_path($course);
     //, $course['points'], $course['skillname'], $course['tagstringtotal']
-    $data[] = [$course['coursename'], $course['shortname']/*, $course['coursetype']*/, $course['open_department'], $course['open_subdepartment'], $course['open_level4department'], $course['catname'], $course['enrolled_count'], $course['completed_count']/*, $course['ratings_value']*/, $course['fullcoursesummary'], $course['format'], $course['selfenrol']];
+    $data[] = [$course['coursename'], $course['shortname']/*, $course['coursetype']*/, $course['open_department'], /*$course['open_subdepartment'], $course['open_level4department'], */ $course['catname'], $course['enrolled_count'], $course['completed_count']/*, $course['ratings_value']*/, $course['fullcoursesummary'], $course['format'], $course['selfenrol']];
 }
 $table->id = "users";
 $table->data = $data;

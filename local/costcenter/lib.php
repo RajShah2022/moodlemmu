@@ -24,17 +24,17 @@
  */
 
 defined('MOODLE_INTERNAL') or die;
-define('ACTIVE',0);
-define('IN_ACTIVE',1);
-define('TOTAL',2);
-define('HIERARCHY_LEVELS', 4);
+define('ACTIVE', 0);
+define('IN_ACTIVE', 1);
+define('TOTAL', 2);
+define('HIERARCHY_LEVELS', 2);
 //use core_component;
 require_once($CFG->dirroot . '/user/selector/lib.php');
 require_once($CFG->dirroot . '/enrol/locallib.php');
 require_once($CFG->dirroot . '/message/lib.php');
 
 class costcenter {
-    
+
     /*
      * @method get_costcenter_parent Get parent of the costcenter
      * @param object $costcenters costcenter data object
@@ -76,7 +76,6 @@ class costcenter {
         return $out;
     }
 
-
     /*
      * @method get_costcenter_items Get costcenter list
      * @param boolean $fromcostcenter used to indicate called from costcenter plugin,using while error handling
@@ -89,14 +88,13 @@ class costcenter {
         // $activecostcenterlist = $DB->get_records('local_costcenter', array('visible' => 1), 'sortorder, fullname');
         $activecostcenterlist = $costcenterquerylib->costcenter_records(array('visible' => 1), 'sortorder, fullname');
 
-
         if (empty($fromcostcenter)) {
             if (empty($activecostcenterlist))
                 throw new \moodle_exception('notassignedcostcenter', 'local_costcenter');
         }
-        
+
         $assigned_costcenters = costcenter_items();
-        
+
         if (empty($fromcostcenter)) {
             if (empty($assigned_costcenters)) {
                 throw new \moodle_exception('notassignedcostcenter', 'local_costcenter');
@@ -108,14 +106,14 @@ class costcenter {
     /*
      * @method get_next_child_sortthread Get costcenter child list
      * @param  int $parentid which is id of a parent costcenter
-     * @param  [string] $table is a table name 
+     * @param  [string] $table is a table name
      * @return list of costcenter children
      * */
     function get_next_child_sortthread($parentid, $table) {
         global $DB, $CFG;
         $costcenterquerylib = new \local_costcenter\querylib();
         $maxthread = $DB->get_record_sql("SELECT MAX(sortorder) AS sortorder FROM {$CFG->prefix}{$table} WHERE parentid = :parentid", array('parentid' => $parentid));
-        
+
         if (!$maxthread || strlen($maxthread->sortorder) == 0) {
             if ($parentid == 0) {
                 // first top level item
@@ -170,65 +168,65 @@ class costcenter {
         // increment the last vancode in the sequence
         return $start . $this->increment_vancode($last, $inc);
     }
-    
+
     /*Get uploaded course summary uploaded file
      * @param $course is an obj Moodle course
      * @return course summary file(img) src url if exists else return default course img url
      * */
-    function get_course_summary_file($course){  
+    function get_course_summary_file($course) {
         global $DB, $CFG, $OUTPUT;
         if ($course instanceof stdClass) {
             //require_once($CFG->libdir . '/coursecatlib.php');
             $course = new core_course_list_element($course);
         }
-        
+
         // set default course image
         $url = $OUTPUT->image_url('/course_images/courseimg', 'local_costcenter');
         foreach ($course->get_course_overviewfiles() as $file) {
             $isimage = $file->is_valid_image();
-            if($isimage)
-            $url = file_encode_url("$CFG->wwwroot/pluginfile.php", '/' . $file->get_contextid() . '/' . $file->get_component() . '/' .
-            $file->get_filearea() . $file->get_filepath() . $file->get_filename(), !$isimage);
+            if ($isimage)
+                $url = file_encode_url("$CFG->wwwroot/pluginfile.php", '/' . $file->get_contextid() . '/' . $file->get_component() . '/' .
+                    $file->get_filearea() . $file->get_filepath() . $file->get_filename(), !$isimage);
         }
         return $url;
     }
-    function get_costcenter_icons(){
+    function get_costcenter_icons() {
         global $USER, $DB;
 
-        $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='lc.path',$costcenterpath=null,$datatype='lowerandsamepath');
+        $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'lc.path', $costcenterpath = null, $datatype = 'lowerandsamepath');
 
         $costcentersql = "SELECT lc.shell
                     FROM {local_costcenter} AS lc WHERE lc.visible = 1 $costcenterpathconcatsql ";
-        if(!empty($costcentershell = $DB->get_field_sql($costcentersql))){
+        if (!empty($costcentershell = $DB->get_field_sql($costcentersql))) {
             return $costcentershell;
-        }else{
+        } else {
             return false;
         }
     }
-    function get_costcenter_theme(){
+    function get_costcenter_theme() {
         global $USER, $DB;
-        if(!is_siteadmin()){
+        if (!is_siteadmin()) {
             $path = (new \local_costcenter\lib\accesslib())::get_user_role_switch_path();
-            $orgid = ($path) ? explode('/',$path[0])[1] : null;
-            if($orgid==NULL) {
-                $orgid=(empty($path)) ? explode('/',$USER->open_path)[1] : null;
+            $orgid = ($path) ? explode('/', $path[0])[1] : null;
+            if ($orgid == NULL) {
+                $orgid = (empty($path)) ? explode('/', $USER->open_path)[1] : null;
             }
-            if($orgid){
+            if ($orgid) {
                 $costcentersql = "SELECT lc.theme,lc.button_color,lc.brand_color,lc.hover_color
                 FROM {local_costcenter} AS lc WHERE lc.visible = 1 AND lc.id = {$orgid}";
-            }else{
+            } else {
                 return false;
             }
-            if(!empty($costcentertheme = $DB->get_record_sql($costcentersql))){
+            if (!empty($costcentertheme = $DB->get_record_sql($costcentersql))) {
                 return $costcentertheme;
             }
-        }else{
+        } else {
             return false;
         }
     }
-    function get_theme(){
+    function get_theme() {
         global $DB;
-        return $DB->get_field('config', 'value', array('name'=>'theme'));
+        return $DB->get_field('config', 'value', array('name' => 'theme'));
     }
 }
 /**
@@ -242,31 +240,31 @@ class costcenter {
  * @param  array  $options       [description]
  * @return [file]                [description]
  */
-function local_costcenter_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
-        // Check the contextlevel is as expected - if your plugin is a block, this becomes CONTEXT_BLOCK, etc.
+function local_costcenter_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = array()) {
+    // Check the contextlevel is as expected - if your plugin is a block, this becomes CONTEXT_BLOCK, etc.
 
-        // Make sure the filearea is one of those used by the plugin.
-        if ($filearea !== 'costcenter_logo') {
-            return false;
-        }
-
-        $itemid = array_shift($args);
-
-        $filename = array_pop($args);
-        if (!$args) {
-            $filepath = '/';
-        } else {
-            $filepath = '/'.implode('/', $args).'/';
-        }
-
-        // Retrieve the file from the Files API.
-        $fs = get_file_storage();
-        $file = $fs->get_file($context->id, 'local_costcenter', $filearea, $itemid, $filepath, $filename);
-        if (!$file) {
-            return false;
-        }
-        send_file($file, $filename, 0, $forcedownload, $options);
+    // Make sure the filearea is one of those used by the plugin.
+    if ($filearea !== 'costcenter_logo') {
+        return false;
     }
+
+    $itemid = array_shift($args);
+
+    $filename = array_pop($args);
+    if (!$args) {
+        $filepath = '/';
+    } else {
+        $filepath = '/' . implode('/', $args) . '/';
+    }
+
+    // Retrieve the file from the Files API.
+    $fs = get_file_storage();
+    $file = $fs->get_file($context->id, 'local_costcenter', $filearea, $itemid, $filepath, $filename);
+    if (!$file) {
+        return false;
+    }
+    send_file($file, $filename, 0, $forcedownload, $options);
+}
 /**
  * Description: get the logo specified to the organization.
  * @param  [INT] $costcenter_logo [item id of the logo]
@@ -277,22 +275,22 @@ function costcenter_logo($costcenter_logo) {
     $costcenter_logourl = false;
 
     $sql = "SELECT * FROM {files} WHERE itemid = :logo  AND filename != '.' ORDER BY id DESC";
-    $costcenterlogorecord = $DB->get_record_sql($sql,array('logo' => $costcenter_logo),1);
+    $costcenterlogorecord = $DB->get_record_sql($sql, array('logo' => $costcenter_logo), 1);
 
-    if (!empty($costcenterlogorecord)){
-        if($costcenterlogorecord->filearea=="costcenter_logo"){
+    if (!empty($costcenterlogorecord)) {
+        if ($costcenterlogorecord->filearea == "costcenter_logo") {
             $costcenter_logourl = moodle_url::make_pluginfile_url($costcenterlogorecord->contextid, $costcenterlogorecord->component, $costcenterlogorecord->filearea, $costcenterlogorecord->itemid, $costcenterlogorecord->filepath, $costcenterlogorecord->filename);
         }
     }
     return $costcenter_logourl;
 }
 /**
-     * @method local_costcenter_output_fragment_new_costcenterform
-     * @param  $args is an array   
-     */
-function local_costcenter_output_fragment_new_costcenterform($args){
- global $CFG,$DB;
- 
+ * @method local_costcenter_output_fragment_new_costcenterform
+ * @param  $args is an array
+ */
+function local_costcenter_output_fragment_new_costcenterform($args) {
+    global $CFG, $DB;
+
     $args = (object) $args;
     $context = $args->context;
     // $costcenterid = $args->costcenterid;
@@ -302,16 +300,16 @@ function local_costcenter_output_fragment_new_costcenterform($args){
     if (!empty($args->jsonformdata)) {
 
         $serialiseddata = json_decode($args->jsonformdata);
-        if(is_object($serialiseddata)){
+        if (is_object($serialiseddata)) {
             $serialiseddata = serialize($serialiseddata);
         }
         parse_str($serialiseddata, $formdata);
     }
 
-    $formparams=array('id' => $args->id, 'formtype' => $args->formtype);
-    if($args->id){
+    $formparams = array('id' => $args->id, 'formtype' => $args->formtype);
+    if ($args->id) {
 
-        $data = $DB->get_record('local_costcenter', array('id'=>$args->id));
+        $data = $DB->get_record('local_costcenter', array('id' => $args->id));
 
         $categorycontext = (new \local_costcenter\lib\accesslib())::get_module_context($data->path);
 
@@ -326,14 +324,14 @@ function local_costcenter_output_fragment_new_costcenterform($args){
     }
     local_costcenter_set_costcenter_path($formparams);
 
-    $mform = new local_costcenter\form\organization_form(null,$formparams, 'post', '', null, true, $formdata);
+    $mform = new local_costcenter\form\organization_form(null, $formparams, 'post', '', null, true, $formdata);
 
     $mform->set_data($data);
-    if (!empty($args->jsonformdata)&& strlen($args->jsonformdata) > 2) {
+    if (!empty($args->jsonformdata) && strlen($args->jsonformdata) > 2) {
         // If we were passed non-empty form data we want the mform to call validation functions and show errors.
         $mform->is_validated();
     }
- 
+
     ob_start();
     $mform->display();
     $o .= ob_get_contents();
@@ -346,123 +344,112 @@ function local_costcenter_output_fragment_new_costcenterform($args){
  * @param  [OBJECT] $costcenter [costcenter object]
  * @return [INT]             [created costcenter id]
  */
-function costcenter_insert_instance($costcenter){
-        global $DB, $CFG, $USER;
-       // require_once("$CFG->libdir/coursecatlib.php");
-        $costcenterquerylib = new \local_costcenter\querylib();
+function costcenter_insert_instance($costcenter) {
+    global $DB, $CFG, $USER;
+    // require_once("$CFG->libdir/coursecatlib.php");
+    $costcenterquerylib = new \local_costcenter\querylib();
 
+    if ($costcenter->formtype == 'department') {
 
-        if($costcenter->formtype == 'department'){
+        $costcenter->parentid = $costcenter->open_costcenterid;
+        $costcenter->depth = 1;
+    } else if ($costcenter->formtype == 'subdepartment') {
 
-            $costcenter->parentid=$costcenter->open_costcenterid;
-            $costcenter->depth = 1;
+        $costcenter->parentid = $costcenter->open_department;
+        $costcenter->depth = 2;
+    } else if ($costcenter->formtype == 'subsubdepartment') {
 
-        }else if($costcenter->formtype == 'subdepartment'){
+        $costcenter->parentid = $costcenter->open_subdepartment;
+        $costcenter->depth = 3;
+    } else if ($costcenter->formtype == 'subsubsubdepartment') {
 
-            $costcenter->parentid=$costcenter->open_department;
-            $costcenter->depth = 2;
+        $costcenter->parentid = $costcenter->open_level4department;
+        $costcenter->depth = 4;
+    } else {
 
-        }else if($costcenter->formtype == 'subsubdepartment'){
-
-            $costcenter->parentid=$costcenter->open_subdepartment;
-            $costcenter->depth = 3;
-
-        }else if($costcenter->formtype == 'subsubsubdepartment'){
-
-            $costcenter->parentid=$costcenter->open_level4department;
-            $costcenter->depth = 4;
-
-        }else{
-
-            $costcenter->depth = 1;
-            $costcenter->path = '';
-
-        }
-
-        if ($costcenter->parentid > 0) {
-            /* ---parent item must exist--- */
-            // $parent = $DB->get_record('local_costcenter', array('id' => $costcenter->parentid));
-            $parent = $costcenterquerylib->costcenter_record(array("id" => $costcenter->parentid));
-
-            $costcenter->depth = $parent->depth + 1;
-            $costcenter->path = $parent->path;
-        }
-        /* ---get next child item that need to provide--- */
-        $custom = new costcenter();
-        if (!$sortorder = $custom->get_next_child_sortthread($costcenter->parentid, 'local_costcenter')) {
-            return false;
-        }
-        
-        $costcenter->sortorder = $sortorder;
-        $parentid = $costcenter->parentid ?  $costcenter->parentid:0;
-        $costcenter->costcenter_logo = $costcenter->costcenter_logo;
-        $costcenter->shell = $costcenter->shell;
-
-        if(isset($costcenter->concatshortname) && !empty($costcenter->concatshortname)){
-
-            $costcenter->shortname = $costcenter->concatshortname.'_'.$costcenter->shortname;
-        }
-
-        if($costcenter->parentid == 0){
-            require_once($CFG->dirroot.'/user/profile/definelib.php');
-            profile_save_category((object)['name' => $costcenter->shortname]);
-            $costcenter->profileinfocategory = $DB->get_field('user_info_category', 'id', ['name' => $costcenter->shortname]);
-            $handler = \core_customfield\handler::get_handler('core_course', 'course', 0);
-            $costcenter->courseinfocategory = $handler->create_category($costcenter->shortname);
-        }
-
-        $costcenter->id = $DB->insert_record('local_costcenter', $costcenter);
-        if($costcenter->id) {
-            $parentpath = $DB->get_field('local_costcenter', 'path', array('id'=>$parentid));
-            $path = $parentpath.'/'.$costcenter->id;
-            $datarecord = new stdClass();
-            $datarecord->id = $costcenter->id;
-            $datarecord->path = $path;
-            $DB->update_record('local_costcenter',  $datarecord);
-            
-            $record = new stdClass();
-            $record->name = $costcenter->fullname;
-            $record->parent = $DB->get_field('local_costcenter', 'category', array('id'=>$parentid));
-            $record->idnumber = $costcenter->shortname;
-           $category = core_course_category::create($record);
-            
-            if($category ){
-                $DB->execute("UPDATE {local_costcenter} SET multipleorg = ? WHERE id = ?", [$costcenter->id, $costcenter->id]);
-                $DB->execute("UPDATE {local_costcenter} SET category= ? WHERE id = ? ", [$category->id, $costcenter->id]);
-            }
-
-            if ($costcenter->costcenter_logo > 0 && $costcenter->id) {
-
-
-                $categorycontext = (new \local_costcenter\lib\accesslib())::get_module_context($datarecord->path);
-
-                file_save_draft_area_files($costcenter->costcenter_logo, $categorycontext->id, 'local_costcenter', 'costcenter_logo', $costcenter->costcenter_logo);
-
-            }
-            $costcenter_depth = $DB->get_field('local_costcenter', 'depth', array('id'=>$costcenter->id));
-            if($costcenter_depth==1){
-            blocks_add_default_org_blocks($costcenter->id);
-            }
-        }
-       return $costcenter->id;
-
-
-     
+        $costcenter->depth = 1;
+        $costcenter->path = '';
     }
+
+    if ($costcenter->parentid > 0) {
+        /* ---parent item must exist--- */
+        // $parent = $DB->get_record('local_costcenter', array('id' => $costcenter->parentid));
+        $parent = $costcenterquerylib->costcenter_record(array("id" => $costcenter->parentid));
+
+        $costcenter->depth = $parent->depth + 1;
+        $costcenter->path = $parent->path;
+    }
+    /* ---get next child item that need to provide--- */
+    $custom = new costcenter();
+    if (!$sortorder = $custom->get_next_child_sortthread($costcenter->parentid, 'local_costcenter')) {
+        return false;
+    }
+
+    $costcenter->sortorder = $sortorder;
+    $parentid = $costcenter->parentid ?  $costcenter->parentid : 0;
+    $costcenter->costcenter_logo = $costcenter->costcenter_logo;
+    $costcenter->shell = $costcenter->shell;
+
+    if (isset($costcenter->concatshortname) && !empty($costcenter->concatshortname)) {
+
+        $costcenter->shortname = $costcenter->concatshortname . '_' . $costcenter->shortname;
+    }
+
+    if ($costcenter->parentid == 0) {
+        require_once($CFG->dirroot . '/user/profile/definelib.php');
+        profile_save_category((object)['name' => $costcenter->shortname]);
+        $costcenter->profileinfocategory = $DB->get_field('user_info_category', 'id', ['name' => $costcenter->shortname]);
+        $handler = \core_customfield\handler::get_handler('core_course', 'course', 0);
+        $costcenter->courseinfocategory = $handler->create_category($costcenter->shortname);
+    }
+
+    $costcenter->id = $DB->insert_record('local_costcenter', $costcenter);
+    if ($costcenter->id) {
+        $parentpath = $DB->get_field('local_costcenter', 'path', array('id' => $parentid));
+        $path = $parentpath . '/' . $costcenter->id;
+        $datarecord = new stdClass();
+        $datarecord->id = $costcenter->id;
+        $datarecord->path = $path;
+        $DB->update_record('local_costcenter',  $datarecord);
+
+        $record = new stdClass();
+        $record->name = $costcenter->fullname;
+        $record->parent = $DB->get_field('local_costcenter', 'category', array('id' => $parentid));
+        $record->idnumber = $costcenter->shortname;
+        $category = core_course_category::create($record);
+
+        if ($category) {
+            $DB->execute("UPDATE {local_costcenter} SET multipleorg = ? WHERE id = ?", [$costcenter->id, $costcenter->id]);
+            $DB->execute("UPDATE {local_costcenter} SET category= ? WHERE id = ? ", [$category->id, $costcenter->id]);
+        }
+
+        if ($costcenter->costcenter_logo > 0 && $costcenter->id) {
+
+            $categorycontext = (new \local_costcenter\lib\accesslib())::get_module_context($datarecord->path);
+
+            file_save_draft_area_files($costcenter->costcenter_logo, $categorycontext->id, 'local_costcenter', 'costcenter_logo', $costcenter->costcenter_logo);
+        }
+        $costcenter_depth = $DB->get_field('local_costcenter', 'depth', array('id' => $costcenter->id));
+        if ($costcenter_depth == 1) {
+            blocks_add_default_org_blocks($costcenter->id);
+        }
+    }
+    return $costcenter->id;
+}
 /**
  * Description: [edit costcenter instance ]
  * @param  [INT] $costcenterid  [id of the costcenter]
  * @param  [object] $newcostcenter [update content]
  * @return [BOOLEAN]                [true if updated ]
  */
-function costcenter_edit_instance($costcenterid, $newcostcenter){
-    global $DB,$CFG;
+function costcenter_edit_instance($costcenterid, $newcostcenter) {
+    global $DB, $CFG;
 
     $oldcostcenter = $DB->get_record('local_costcenter', array('id' => $costcenterid));
 
     $categorycontext = (new \local_costcenter\lib\accesslib())::get_module_context($oldcostcenter->path);
 
-    $category = $DB->get_field('local_costcenter','category',array('id' => $newcostcenter->id));
+    $category = $DB->get_field('local_costcenter', 'category', array('id' => $newcostcenter->id));
     /* ---check if the parentid is the same as that of new parentid--- */
     if ($newcostcenter->parentid != $oldcostcenter->parentid) {
         $newparentid = $newcostcenter->parentid;
@@ -473,13 +460,12 @@ function costcenter_edit_instance($costcenterid, $newcostcenter){
     $today = strtotime(date('d/m/Y', time()));
     $newcostcenter->timemodified = $today;
     $newcostcenter->costcenter_logo = $newcostcenter->costcenter_logo;
- if($newcostcenter->parentid ==0)
-      file_save_draft_area_files($newcostcenter->costcenter_logo, $categorycontext->id, 'local_costcenter', 'costcenter_logo', $newcostcenter->costcenter_logo);
-
+    if ($newcostcenter->parentid == 0)
+        file_save_draft_area_files($newcostcenter->costcenter_logo, $categorycontext->id, 'local_costcenter', 'costcenter_logo', $newcostcenter->costcenter_logo);
 
     $costercenter = $DB->update_record('local_costcenter', $newcostcenter);
-    $course_categories=$DB->record_exists('course_categories',array('id'=>$category));
-    if($costercenter && $course_categories){
+    $course_categories = $DB->record_exists('course_categories', array('id' => $category));
+    if ($costercenter && $course_categories) {
         $record = new stdClass();
         $record->id = $category;
         $record->name = $newcostcenter->fullname;
@@ -487,13 +473,12 @@ function costcenter_edit_instance($costcenterid, $newcostcenter){
         $DB->update_record('course_categories', $record);
     }
     return true;
-
 }
 /**
  * [costcenter_items description]
  * @return [type] [description]
  */
-function costcenter_items(){
+function costcenter_items() {
 
     global $DB, $USER;
 
@@ -503,14 +488,13 @@ function costcenter_items(){
 
     if (is_siteadmin()) {
 
-        $sql="SELECT * from {local_costcenter} where visible=1 AND depth <5 ORDER by sortorder,fullname ";
+        $sql = "SELECT * from {local_costcenter} where visible=1 AND depth <5 ORDER by sortorder,fullname ";
         $assigned_costcenters = $DB->get_records_sql($sql);
-
     } else {
 
-         $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='path',$costcenterpath=null,$datatype='lowerandsamepath');
+        $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'path', $costcenterpath = null, $datatype = 'lowerandsamepath');
 
-         $sql = "SELECT * FROM {local_costcenter} WHERE visible=1 $costcenterpathconcatsql   ORDER by sortorder,fullname";
+        $sql = "SELECT * FROM {local_costcenter} WHERE visible=1 $costcenterpathconcatsql   ORDER by sortorder,fullname";
 
         $assigned_costcenters = $DB->get_records_sql($sql);
     }
@@ -521,28 +505,27 @@ function costcenter_items(){
 * Displays a node in left side menu
 * @return  [type] string  link for the leftmenu
 */
-function local_costcenter_leftmenunode(){
-    global $USER,$DB;
+function local_costcenter_leftmenunode() {
+    global $USER, $DB;
     $categorycontext = (new \local_costcenter\lib\accesslib())::get_module_context();
     $costcenternode = '';
-    if(has_capability('local/costcenter:view', $categorycontext) || is_siteadmin()) {
-    $costcenternode .= html_writer::start_tag('li', array('id'=> 'id_leftmenu_departments', 'class'=>'pull-left user_nav_div departments'));
-    if(is_siteadmin()) {
+    if (has_capability('local/costcenter:view', $categorycontext) || is_siteadmin()) {
+        $costcenternode .= html_writer::start_tag('li', array('id' => 'id_leftmenu_departments', 'class' => 'pull-left user_nav_div departments'));
+        if (is_siteadmin()) {
             $organization_url = new moodle_url('/local/costcenter/index.php');
-            $organization_string = get_string('orgStructure','local_costcenter');
-        }
-    else{
-            $depth=($categorycontext->depth-1);
+            $organization_string = get_string('orgStructure', 'local_costcenter');
+        } else {
+            $depth = ($categorycontext->depth - 1);
 
-            $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='lc.path');
+            $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'lc.path');
 
             $costcentersql = "SELECT lc.id
                                 FROM {local_costcenter} AS lc WHERE lc.depth=$depth $costcenterpathconcatsql ";
             $costcenterid = $DB->get_field_sql($costcentersql);
-            $organization_url = new moodle_url('/local/costcenter/costcenterview.php',array('id' => $costcenterid));
-            $organization_string = get_string('orgStructure','local_costcenter');
+            $organization_url = new moodle_url('/local/costcenter/costcenterview.php', array('id' => $costcenterid));
+            $organization_string = get_string('orgStructure', 'local_costcenter');
         }
-        $department = html_writer::link($organization_url, '<i class="fa fa-sitemap" aria-hidden="true" aria-label=""></i><span class="user_navigation_link_text">'.$organization_string.'</span>',array('class'=>'user_navigation_link'));
+        $department = html_writer::link($organization_url, '<i class="fa fa-sitemap" aria-hidden="true" aria-label=""></i><span class="user_navigation_link_text">' . $organization_string . '</span>', array('class' => 'user_navigation_link'));
         $costcenternode .= $department;
         $costcenternode .= html_writer::end_tag('li');
     }
@@ -612,33 +595,32 @@ function local_plugins_datacount($costcenterid, $departmentid = false, $subdepar
 * Author sarath
 * @return true for reports under category
 */
-function learnerscript_costcenter_list(){
+function learnerscript_costcenter_list() {
     return 'Costcenter';
 }
 
+function local_costcenter_output_fragment_departmentview($args) {
 
-function local_costcenter_output_fragment_departmentview($args){
-   
-    global $CFG,$DB;
+    global $CFG, $DB;
     $args = (object) $args;
     $o = '';
     $formdata = [];
     if (!empty($args->jsonformdata)) {
 
         $serialiseddata = json_decode($args->jsonformdata);
-        if(is_object($serialiseddata)){
+        if (is_object($serialiseddata)) {
             $serialiseddata = serialize($serialiseddata);
         }
         parse_str($serialiseddata, $formdata);
     }
 
     $mform = new local_costcenter\functions\costcenter(null, array(), 'post', '', null, true, $formdata);
- 
+
     if (!empty($args->jsonformdata)) {
         // If we were passed non-empty form data we want the mform to call validation functions and show errors.
         $mform->is_validated();
     }
- 
+
     ob_start();
     $mform->display();
     $o .= ob_get_contents();
@@ -646,31 +628,27 @@ function local_costcenter_output_fragment_departmentview($args){
     return $o;
 }
 
-
-function local_costcenter_output_fragment_roleusers_display($args)
-{
+function local_costcenter_output_fragment_roleusers_display($args) {
 
     global $DB, $CFG, $PAGE, $OUTPUT, $USER;
 
-         $rolestring = $args['roleid'];
+    $rolestring = $args['roleid'];
 
-      $templatedata =  array();
-      $rowdata = array();
-   
-  $query1 = $DB->get_records_sql("SELECT ro.shortname,us.firstname,us.email,cat.name FROM {role_assignments} as ra JOIN {context} as cc ON cc.id=ra.contextid JOIN {user} as us ON us.id=ra.userid join {role} as ro on ro.id=ra.roleid JOIN {course_categories} as cat on cat.id= cc.instanceid WHERE ro.id IN ($rolestring)");
- 
- $templatedata['enabletable'] = true;
-          foreach($query1 as $a)
-          { 
+    $templatedata =  array();
+    $rowdata = array();
 
-             $rowdata['fullname'] = $a->firstname;
-             $rowdata['employeeid'] = $a->shortname;
-             $rowdata['email'] =  $a->email;
-             $rowdata['orgname'] = $a->name;
-             $templatedata['rowdata'][] = $rowdata;
-          }
- 
- 
+    $query1 = $DB->get_records_sql("SELECT ro.shortname,us.firstname,us.email,cat.name FROM {role_assignments} as ra JOIN {context} as cc ON cc.id=ra.contextid JOIN {user} as us ON us.id=ra.userid join {role} as ro on ro.id=ra.roleid JOIN {course_categories} as cat on cat.id= cc.instanceid WHERE ro.id IN ($rolestring)");
+
+    $templatedata['enabletable'] = true;
+    foreach ($query1 as $a) {
+
+        $rowdata['fullname'] = $a->firstname;
+        $rowdata['employeeid'] = $a->shortname;
+        $rowdata['email'] =  $a->email;
+        $rowdata['orgname'] = $a->name;
+        $templatedata['rowdata'][] = $rowdata;
+    }
+
     $output = $OUTPUT->render_from_template('local_costcenter/popupcontent', $templatedata);
 
     return $output;
@@ -683,363 +661,362 @@ function blocks_add_default_org_blocks($costcenterid) {
     global $DB;
     $page = new moodle_page();
     $sql = "SELECT cc.path FROM {local_costcenter} AS cc WHERE cc.id=:organisationid ";
-    $costcenterpath = $DB->get_field_sql($sql,array('organisationid'=>$costcenterid));
+    $costcenterpath = $DB->get_field_sql($sql, array('organisationid' => $costcenterid));
     $page->set_context((new \local_costcenter\lib\accesslib())::get_module_context($costcenterpath));
-        $subpagepattern = null;
-    $page->blocks->add_blocks([
-        'layerone_full' => [
-            'userdashboard',
-            'quick_navigation',
-        ]],
+    $subpagepattern = null;
+    $page->blocks->add_blocks(
+        [
+            'layerone_full' => [
+                'userdashboard',
+                'quick_navigation',
+            ]
+        ],
         'my-dashboard',
         $subpagepattern
     );
 }
-function local_costcenter_get_hierarchy_fields($mform, $ajaxformdata, $customdata, $elements = null,$allenable = false, $pluginname='local_costcenter',$context= CONTEXT_SYSTEM, $multiple = false, $prefix = '', $open_path = ''){
+function local_costcenter_get_hierarchy_fields($mform, $ajaxformdata, $customdata, $elements = null, $allenable = false, $pluginname = 'local_costcenter', $context = CONTEXT_SYSTEM, $multiple = false, $prefix = '', $open_path = '') {
     global $DB, $USER;
 
     $depth = (isset($USER->useraccess)) ? $USER->useraccess['currentroleinfo']['depth'] : 0;
-    $contextinfo = (isset($USER->useraccess)) ? $USER->useraccess['currentroleinfo']['contextinfo'] : array() ;
+    $contextinfo = (isset($USER->useraccess)) ? $USER->useraccess['currentroleinfo']['contextinfo'] : array();
     $count = $contextinfo ? count($contextinfo) : 0;
-    if($count > 1){
+    if ($count > 1) {
         $depth--;
     }
-    if(is_siteadmin()){
+    if (is_siteadmin()) {
         $depth = 0;
     }
-    $total_fields = 4;
+    $total_fields = 2;
     $fields = local_costcenter_get_fields();
     $prev_element = '';
-    if(empty($elements) || !is_array($elements)){
+    if (empty($elements) || !is_array($elements)) {
         $elements = range(1, $total_fields);
     }
     $firstelement = true;
-    foreach($elements as $level){
+    foreach ($elements as $level) {
         $levelelementoptions = array(
-            'class' => $prefix.$fields[$level].'_select custom_form_field',
-            'id' => 'id_'.$prefix.$fields[$level].'_select',
+            'class' => $prefix . $fields[$level] . '_select custom_form_field',
+            'id' => 'id_' . $prefix . $fields[$level] . '_select',
             'data-parentclass' => $prev_element,
-            'data-selectstring' => get_string('select'.$fields[$level], 'local_costcenter'),
-            'placeholder' => get_string('select'.$fields[$level], 'local_costcenter'),
+            'data-selectstring' => get_string('select' . $fields[$level], 'local_costcenter'),
+            'placeholder' => get_string('select' . $fields[$level], 'local_costcenter'),
             'data-depth' => $level,
-            'data-class' => $prefix.$fields[$level].'_select',
+            'data-class' => $prefix . $fields[$level] . '_select',
             'onchange' => '(function(e){ require("local_costcenter/newcostcenter").changeElement(event) })(event)',
         );
-        $prev_element = $prefix.$fields[$level].'_select';
-        if(!empty($open_path))
-        {
+        $prev_element = $prefix . $fields[$level] . '_select';
+        if (!empty($open_path)) {
             $ajaxformdata['open_costcenterid'] = explode('/', $open_path)[1];
         }
-        $fieldvalue = (!empty($ajaxformdata) && $ajaxformdata[$prefix.$fields[$level]]) ? $ajaxformdata[$prefix.$fields[$level]]  ?? null : $customdata[$prefix.$fields[$level]]  ?? null;
-        if($depth > $level){
-            $mform->addElement('hidden', $prefix.$fields[$level], null, $levelelementoptions);
-            $mform->setConstant($prefix.$fields[$level], $fieldvalue);
-        }else{
+        $fieldvalue = (!empty($ajaxformdata) && $ajaxformdata[$prefix . $fields[$level]]) ? $ajaxformdata[$prefix . $fields[$level]]  ?? null : $customdata[$prefix . $fields[$level]]  ?? null;
+        if ($depth > $level) {
+            $mform->addElement('hidden', $prefix . $fields[$level], null, $levelelementoptions);
+            $mform->setConstant($prefix . $fields[$level], $fieldvalue);
+        } else {
             $enableallfield = (is_siteadmin() && $level == 1) || (!is_siteadmin() && ($USER->useraccess['currentroleinfo']['depth'] > $level))  ? false : $allenable;
             $levelelementoptions['multiple'] = ($firstelement && $prefix == '') ? false : $multiple;
             $levelelementoptions['ajax'] = 'local_costcenter/form-options-selector';
             $levelelementoptions['data-contextid'] = $context->id;
             $levelelementoptions['data-action'] = 'costcenter_element_selector';
-            $prevfield = $prefix.$fields[$level-1];
+            $prevfield = $prefix . $fields[$level - 1];
             $parentid = (!empty($ajaxformdata) && $ajaxformdata[$prevfield]) ? $ajaxformdata[$prevfield] ?? null : $customdata[$prevfield]  ?? null;
             $levelelementoptions['data-options'] = json_encode(array('depth' => $level, 'parentid' => $parentid, 'enableallfield' => $enableallfield, 'prefix' => $prefix));
-            if($enableallfield){
+            if ($enableallfield) {
                 $levelelements = [0 => get_string('all')];
-            }else{
+            } else {
                 $levelelements = [];
             }
-            if($fieldvalue){
+            if ($fieldvalue) {
                 $levelelementids = is_array($fieldvalue) ? $fieldvalue : explode(',', $fieldvalue);
                 $levelelementids = array_filter($levelelementids);
                 $levelelements = [];
-                if($levelelementids){
+                if ($levelelementids) {
                     list($idsql, $idparams) = $DB->get_in_or_equal($levelelementids, SQL_PARAMS_NAMED, 'levelelements');
                     $levelsql = "SELECT id, fullname FROM {local_costcenter} WHERE id {$idsql} ";
                     $levelelements += $DB->get_records_sql_menu($levelsql, $idparams);
                 }
             }
-            $mform->addElement('autocomplete', $prefix.$fields[$level], get_string($fields[$level], 'local_costcenter'), $levelelements, $levelelementoptions);
-            $mform->addHelpButton($prefix.$fields[$level], $fields[$level].$pluginname, $pluginname);
-            if($level == 1 && $prefix != 'filter'){
-                $mform->addRule($prefix.$fields[$level], get_string('required'.$fields[$level], 'local_costcenter'),  'required',  '', 'client');
+            $mform->addElement('autocomplete', $prefix . $fields[$level], get_string($fields[$level], 'local_costcenter'), $levelelements, $levelelementoptions);
+            $mform->addHelpButton($prefix . $fields[$level], $fields[$level] . $pluginname, $pluginname);
+            if ($level == 1 && $prefix != 'filter') {
+                $mform->addRule($prefix . $fields[$level], get_string('required' . $fields[$level], 'local_costcenter'),  'required',  '', 'client');
             }
 
             $firstelement = false;
         }
-        $mform->setType($prefix.$fields[$level], PARAM_RAW);
+        $mform->setType($prefix . $fields[$level], PARAM_RAW);
     }
 }
-function local_costcenter_get_costcenter_path(&$data){
+function local_costcenter_get_costcenter_path(&$data) {
     global $DB, $USER;
     $fields = local_costcenter_get_fields();
     $path = '';
-    foreach($fields AS $field){
-        if(isset($data->$field) && $data->$field > 0){
-            $value = $data->$field;            
+    foreach ($fields as $field) {
+        if (isset($data->$field) && $data->$field > 0) {
+            $value = $data->$field;
         }
     }
-    if($value > 0){
+    if ($value > 0) {
         // finding the path mapped for the last element in the form to meet the data requirements for all head roles.
         $path = $DB->get_field('local_costcenter', 'path', array('id' => $value));
         // updating the user path if the user belongs to the chlid path for the selected costcenter path.
-        if($USER->useraccess['currentroleinfo']['contextinfo']){
+        if ($USER->useraccess['currentroleinfo']['contextinfo']) {
             $updatepath = true;
-            foreach($USER->useraccess['currentroleinfo']['contextinfo'] AS $contextinfo){
-                if(strpos($path, $contextinfo['costcenterpath']) === 0){
+            foreach ($USER->useraccess['currentroleinfo']['contextinfo'] as $contextinfo) {
+                if (strpos($path, $contextinfo['costcenterpath']) === 0) {
                     $updatepath = false;
                     break;
                 }
                 $rolepath = $contextinfo['costcenterpath'];
             }
-            if($updatepath){
+            if ($updatepath) {
                 $path = $rolepath;
             }
         }
         $data->open_path = $path;
     }
 }
-function local_costcenter_set_costcenter_path(&$data, $prefix = ''){
+function local_costcenter_set_costcenter_path(&$data, $prefix = '') {
     global $USER;
     $fields = local_costcenter_get_fields();
     $contextinfo = (isset($USER->useraccess)) ? $USER->useraccess['currentroleinfo']['contextinfo'] : array();
     $pathnottracked = true;
-    if($contextinfo){
-        foreach($contextinfo AS $contextdata){
-            if(isset($data['open_path']) && (strpos($data['open_path'], $contextdata['costcenterpath']) === 0)){
+    if ($contextinfo) {
+        foreach ($contextinfo as $contextdata) {
+            if (isset($data['open_path']) && (strpos($data['open_path'], $contextdata['costcenterpath']) === 0)) {
                 $pathnottracked = false;
                 $recordedpathids = explode('/', $data['open_path']);
-                foreach($fields as $levelid => $field){
-                    if(isset($recordedpathids[$levelid]) && $recordedpathids[$levelid] > 0){
-                        $data[$prefix.$field] = $recordedpathids[$levelid];
+                foreach ($fields as $levelid => $field) {
+                    if (isset($recordedpathids[$levelid]) && $recordedpathids[$levelid] > 0) {
+                        $data[$prefix . $field] = $recordedpathids[$levelid];
                     }
                 }
                 break;
             }
         }
-    }else if(isset($data['open_path'])){
+    } else if (isset($data['open_path'])) {
         $pathnottracked = false;
         $recordedpathids = explode('/', $data['open_path']);
-        foreach($fields as $levelid => $field){
-            if(isset($recordedpathids[$levelid]) && $recordedpathids[$levelid] > 0){
-                $data[$prefix.$field] = $recordedpathids[$levelid];
+        foreach ($fields as $levelid => $field) {
+            if (isset($recordedpathids[$levelid]) && $recordedpathids[$levelid] > 0) {
+                $data[$prefix . $field] = $recordedpathids[$levelid];
             }
         }
     }
-    if($pathnottracked && $contextinfo){
+    if ($pathnottracked && $contextinfo) {
         $rolecontext = \local_costcenter\lib\accesslib::get_costcenterpath_context($contextinfo[0]['context']);
-        $rolecontextids = explode('/',$rolecontext);
-        if(count($contextinfo) > 1){
+        $rolecontextids = explode('/', $rolecontext);
+        if (count($contextinfo) > 1) {
             $depth = $USER->useraccess['currentroleinfo']['depth'];
-        }else{
+        } else {
             $depth = $USER->useraccess['currentroleinfo']['depth'] - 1;
         }
-        for($i = 1; $i <= $depth; $i++){
-            $data[$prefix.$fields[$i]] = $rolecontextids[$i];
+        for ($i = 1; $i <= $depth; $i++) {
+            $data[$prefix . $fields[$i]] = $rolecontextids[$i];
         }
     }
 }
-function local_costcenter_get_fields(){
+function local_costcenter_get_fields() {
     $level = HIERARCHY_LEVELS;
-    $fields = [ 1 => 'open_costcenterid', 2 => 'open_department', 3 => 'open_subdepartment', 4 => 'open_level4department', 5 => 'open_level5department'];
-    for($i=1; $i<= $level; $i++){
-        if(isset($fields[$i])){
+    $fields = [1 => 'open_costcenterid', 2 => 'open_department', 3 => 'open_subdepartment', 4 => 'open_level4department', 5 => 'open_level5department'];
+    for ($i = 1; $i <= $level; $i++) {
+        if (isset($fields[$i])) {
             $return[$i] = $fields[$i];
-        }else{
+        } else {
             // Never occuring but for test case verification.
-            $return[$i] = 'open_level'.$i.'department';
+            $return[$i] = 'open_level' . $i . 'department';
         }
     }
     return $return;
 }
 
-function local_costcenter_masterinfo(){
+function local_costcenter_masterinfo() {
     global $CFG, $PAGE, $OUTPUT, $DB;
-    $costcenterid = explode('/',$USER->open_path)[1];
+    $costcenterid = explode('/', $USER->open_path)[1];
     $categorycontext = (new \local_courses\lib\accesslib())::get_module_context();
     $content = '';
-    if (is_siteadmin()){
+    if (is_siteadmin()) {
         $organisation = "SELECT count(id) FROM {local_costcenter} WHERE parentid = 0";
         $totalorgnisation = $DB->count_records_sql($organisation);
 
-        if($totalorgnisation > 0) {
-            $org = '('.$totalorgnisation.')';
+        if ($totalorgnisation > 0) {
+            $org = '(' . $totalorgnisation . ')';
         }
 
         $templatedata = array();
         $templatedata['show'] = true;
         $templatedata['count'] = $org;
-        $templatedata['link'] = $CFG->wwwroot.'/local/costcenter/index.php';
-        $templatedata['stringname'] = get_string('originator','block_masterinfo');
+        $templatedata['link'] = $CFG->wwwroot . '/local/costcenter/index.php';
+        $templatedata['stringname'] = get_string('originator', 'block_masterinfo');
         $templatedata['icon'] = '<i class="fa fa-sitemap" aria-hidden="true" aria-label=""></i>';
 
         $content = $OUTPUT->render_from_template('block_masterinfo/masterinfo', $templatedata);
     }
     return array('1' => $content);
 }
-function local_costcenter_organization_hierarchy_fields($mform, $ajaxformdata, $customdata, $elements = null,$allenable = false, $pluginname='local_costcenter',$context=CONTEXT_SYSTEM, $multiple = false, $prefix = '',$editmode=0){
+function local_costcenter_organization_hierarchy_fields($mform, $ajaxformdata, $customdata, $elements = null, $allenable = false, $pluginname = 'local_costcenter', $context = CONTEXT_SYSTEM, $multiple = false, $prefix = '', $editmode = 0) {
     global $DB, $USER;
     $depth = $USER->useraccess['currentroleinfo']['depth'];
     $contextinfo = $USER->useraccess['currentroleinfo']['contextinfo'];
 
-    if($contextinfo){
+    if ($contextinfo) {
 
-        if(count($contextinfo) > 1){
+        if (count($contextinfo) > 1) {
             $depth--;
         }
     }
 
-    if(is_siteadmin()){
+    if (is_siteadmin()) {
         $depth = 0;
     }
     $total_fields = 4;
     $fields = local_costcenter_get_fields();
     $prev_element = '';
-    if(empty($elements) || !is_array($elements)){
+    if (empty($elements) || !is_array($elements)) {
         $elements = range(1, $total_fields);
     }
     $firstelement = true;
 
     $categorycontext = (new \local_costcenter\lib\accesslib())::get_module_context();
 
-
-    foreach($elements as $level){
+    foreach ($elements as $level) {
         $levelelementoptions = array(
-            'class' => $prefix.$fields[$level].'_select custom_form_field',
-            'id' => 'id_'.$prefix.$fields[$level].'_select',
+            'class' => $prefix . $fields[$level] . '_select custom_form_field',
+            'id' => 'id_' . $prefix . $fields[$level] . '_select',
             'data-parentclass' => $prev_element,
-            'data-selectstring' => get_string('select'.$fields[$level], 'local_costcenter'),
-            'placeholder' => get_string('select'.$fields[$level], 'local_costcenter'),
+            'data-selectstring' => get_string('select' . $fields[$level], 'local_costcenter'),
+            'placeholder' => get_string('select' . $fields[$level], 'local_costcenter'),
             'data-depth' => $level,
-            'data-class' => $prefix.$fields[$level].'_select',
+            'data-class' => $prefix . $fields[$level] . '_select',
             'data-contextid' => $categorycontext->id,
             'onchange' => '(function(e){ require("local_costcenter/newcostcenter").changeElement(event) })(event)',
         );
-        $prev_element = $prefix.$fields[$level].'_select';
-        $fieldvalue = $ajaxformdata[$prefix.$fields[$level]] ? $ajaxformdata[$prefix.$fields[$level]] : $customdata[$prefix.$fields[$level]];
-        if($depth > $level){
-            $mform->addElement('hidden', $prefix.$fields[$level], null, $levelelementoptions);
-            $mform->setConstant($prefix.$fields[$level], $fieldvalue);
-        }else{
+        $prev_element = $prefix . $fields[$level] . '_select';
+        $fieldvalue = $ajaxformdata[$prefix . $fields[$level]] ? $ajaxformdata[$prefix . $fields[$level]] : $customdata[$prefix . $fields[$level]];
+        if ($depth > $level) {
+            $mform->addElement('hidden', $prefix . $fields[$level], null, $levelelementoptions);
+            $mform->setConstant($prefix . $fields[$level], $fieldvalue);
+        } else {
             $enableallfield = ($USER->useraccess['currentroleinfo']['depth'] > $level) || (is_siteadmin()) ? false : $allenable;
             $levelelementoptions['multiple'] = ($firstelement && $prefix == '') ? false : $multiple;
             $levelelementoptions['ajax'] = 'local_costcenter/form-options-selector';
             $levelelementoptions['data-contextid'] = $context->id;
             $levelelementoptions['data-action'] = 'costcenter_element_selector';
-            $prevfield = $prefix.$fields[$level-1];
+            $prevfield = $prefix . $fields[$level - 1];
             $parentid = $ajaxformdata[$prevfield] ? $ajaxformdata[$prevfield] : $customdata[$prevfield];
             $levelelementoptions['data-options'] = json_encode(array('depth' => $level, 'parentid' => $parentid, 'enableallfield' => $enableallfield, 'prefix' => $prefix));
-            if($enableallfield){
+            if ($enableallfield) {
                 $levelelements = [0 => get_string('all')];
-            }else{
+            } else {
                 $levelelements = [];
             }
-            if($fieldvalue){
+            if ($fieldvalue) {
                 $levelelementids = is_array($fieldvalue) ? $fieldvalue : explode(',', $fieldvalue);
                 $levelelementids = array_filter($levelelementids);
                 $levelelements = [];
-                if($levelelementids){
+                if ($levelelementids) {
                     list($idsql, $idparams) = $DB->get_in_or_equal($levelelementids, SQL_PARAMS_NAMED, 'levelelements');
                     $levelsql = "SELECT id, fullname FROM {local_costcenter} WHERE id {$idsql} ";
                     $levelelements += $DB->get_records_sql_menu($levelsql, $idparams);
                 }
             }
 
-            if($editmode > 0){
+            if ($editmode > 0) {
 
-                $mform->addElement('static', 'static'.$prefix.$fields[$level], get_string($fields[$level], 'local_costcenter'));
+                $mform->addElement('static', 'static' . $prefix . $fields[$level], get_string($fields[$level], 'local_costcenter'));
 
-                $mform->setConstant('static'.$prefix.$fields[$level], $levelelements[$fieldvalue]);
+                $mform->setConstant('static' . $prefix . $fields[$level], $levelelements[$fieldvalue]);
 
-                $mform->addElement('hidden', $prefix.$fields[$level], null, $levelelementoptions);
-                $mform->setConstant($prefix.$fields[$level], $fieldvalue);
+                $mform->addElement('hidden', $prefix . $fields[$level], null, $levelelementoptions);
+                $mform->setConstant($prefix . $fields[$level], $fieldvalue);
+            } else {
 
-            }else{
-
-                $mform->addElement('autocomplete', $prefix.$fields[$level], get_string($fields[$level], 'local_costcenter'), $levelelements, $levelelementoptions);
-                $mform->addHelpButton($prefix.$fields[$level], $fields[$level].$pluginname, $pluginname);
-                $mform->addRule($prefix.$fields[$level], get_string('required'.$fields[$level], 'local_costcenter'),  'required',  '', 'client');
+                $mform->addElement('autocomplete', $prefix . $fields[$level], get_string($fields[$level], 'local_costcenter'), $levelelements, $levelelementoptions);
+                $mform->addHelpButton($prefix . $fields[$level], $fields[$level] . $pluginname, $pluginname);
+                $mform->addRule($prefix . $fields[$level], get_string('required' . $fields[$level], 'local_costcenter'),  'required',  '', 'client');
             }
 
             $firstelement = false;
         }
-        $mform->setType($prefix.$fields[$level], PARAM_RAW);
+        $mform->setType($prefix . $fields[$level], PARAM_RAW);
     }
 }
-function costcenterpagenavbar($depth, $parentid){
+function costcenterpagenavbar($depth, $parentid) {
     global $DB, $USER, $PAGE;
     $costcenterquerylib = new \local_costcenter\querylib();
-    
+
     $PAGE->navbar->add(get_string('dashboard', 'local_costcenter'), new moodle_url('/my/dashboard.php'));
-    if(is_siteadmin()){
+    if (is_siteadmin()) {
         $PAGE->navbar->add(get_string('orgmanage', 'local_costcenter'), new moodle_url('/local/costcenter/index.php'));
     }
     $accessdepth = (isset($USER->useraccess)) ? $USER->useraccess['currentroleinfo']['depth'] : 0;
     $nodes[] = [];
     $prevparent = $parentid;
-    for($i=$accessdepth; $i<=$depth; $i++){
-        ${'hierarchy_'.$i} = $costcenterquerylib->costcenter_record(array('id'=>$prevparent),'id, fullname, parentid');
-        $nodes[] = ${'hierarchy_'.$i};
-        $prevparent = ${'hierarchy_'.$i}->parentid;
+    for ($i = $accessdepth; $i <= $depth; $i++) {
+        ${'hierarchy_' . $i} = $costcenterquerylib->costcenter_record(array('id' => $prevparent), 'id, fullname, parentid');
+        $nodes[] = ${'hierarchy_' . $i};
+        $prevparent = ${'hierarchy_' . $i}->parentid;
     }
     $nodes = array_reverse($nodes);
-    foreach(array_filter($nodes) AS $node)
+    foreach (array_filter($nodes) as $node)
         $PAGE->navbar->add($node->fullname, new moodle_url('/local/costcenter/costcenterview.php', array('id' => $node->id)));
-        
-    $PAGE->navbar->add(get_string('viewcostcenter_'.$depth, 'local_costcenter'));
+
+    $PAGE->navbar->add(get_string('viewcostcenter_' . $depth, 'local_costcenter'));
     return $PAGE;
 }
 
-function costcentervalues($filterdata){
+function costcentervalues($filterdata) {
     $where;
     $params = array();
-    $open_path = (new \local_courses\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='c.open_path');
+    $open_path = (new \local_courses\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'c.open_path');
     $where .= $open_path;
     if (!empty($filterdata->filteropen_costcenterid)) {
-            $filteropen_costcenterid = explode(',', $filterdata->filteropen_costcenterid);
-            $orgsql = [];
-            foreach($filteropen_costcenterid AS $organisation){
-                $orgsql[] = " concat('/',c.open_path,'/') LIKE :organisationparam_{$organisation}";
-                $params["organisationparam_{$organisation}"] = '%/'.$organisation.'/%';
-            }
-            if(!empty($orgsql)){
-                $where .= " AND ( ".implode(' OR ', $orgsql)." ) ";
-            }
+        $filteropen_costcenterid = explode(',', $filterdata->filteropen_costcenterid);
+        $orgsql = [];
+        foreach ($filteropen_costcenterid as $organisation) {
+            $orgsql[] = " concat('/',c.open_path,'/') LIKE :organisationparam_{$organisation}";
+            $params["organisationparam_{$organisation}"] = '%/' . $organisation . '/%';
         }
-        if (!empty($filterdata->filteropen_department)) {
-            $filteropen_department = explode(',', $filterdata->filteropen_department);
+        if (!empty($orgsql)) {
+            $where .= " AND ( " . implode(' OR ', $orgsql) . " ) ";
+        }
+    }
+    if (!empty($filterdata->filteropen_department)) {
+        $filteropen_department = explode(',', $filterdata->filteropen_department);
 
-            $deptsql = [];
-            foreach($filteropen_department AS $department){
-                $deptsql[] = " concat('/',c.open_path,'/') LIKE :departmentparam_{$department}";
-                $params["departmentparam_{$department}"] = '%/'.$department.'/%';
-            }
-            if(!empty($deptsql)){
-                $where .= " AND ( ".implode(' OR ', $deptsql)." ) ";
-            }
+        $deptsql = [];
+        foreach ($filteropen_department as $department) {
+            $deptsql[] = " concat('/',c.open_path,'/') LIKE :departmentparam_{$department}";
+            $params["departmentparam_{$department}"] = '%/' . $department . '/%';
         }
-        if (!empty($filterdata->filteropen_subdepartment)) {
-            $subdepartments = explode(',', $filterdata->filteropen_subdepartment);
+        if (!empty($deptsql)) {
+            $where .= " AND ( " . implode(' OR ', $deptsql) . " ) ";
+        }
+    }
+    if (!empty($filterdata->filteropen_subdepartment)) {
+        $subdepartments = explode(',', $filterdata->filteropen_subdepartment);
 
-            $subdeptsql = [];
-            foreach($subdepartments AS $subdepartment){
-                $subdeptsql[] = " concat('/',c.open_path,'/') LIKE :subdepartmentparam_{$subdepartment}";
-                $params["subdepartmentparam_{$subdepartment}"] = '%/'.$subdepartment.'/%';
-            }
-            if(!empty($subdeptsql)){
-                $where .= " AND ( ".implode(' OR ', $subdeptsql)." ) ";
-            }
+        $subdeptsql = [];
+        foreach ($subdepartments as $subdepartment) {
+            $subdeptsql[] = " concat('/',c.open_path,'/') LIKE :subdepartmentparam_{$subdepartment}";
+            $params["subdepartmentparam_{$subdepartment}"] = '%/' . $subdepartment . '/%';
         }
-        if (!empty($filterdata->filteropen_level4department)) {
-            $subsubdepartments = explode(',', $filterdata->filteropen_level4department);
+        if (!empty($subdeptsql)) {
+            $where .= " AND ( " . implode(' OR ', $subdeptsql) . " ) ";
+        }
+    }
+    if (!empty($filterdata->filteropen_level4department)) {
+        $subsubdepartments = explode(',', $filterdata->filteropen_level4department);
 
-            $subsubdeptsql = [];
-            foreach($subsubdepartments AS $department4level){
-                $subsubdeptsql[] = " concat('/',c.open_path,'/') LIKE :department4levelparam_{$department4level}";
-                $params["department4levelparam_{$department4level}"] = '%/'.$department4level.'/%';
-            }
-            if(!empty($subsubdeptsql)){
-                $where .= " AND ( ".implode(' OR ', $subsubdeptsql)." ) ";
-            }
+        $subsubdeptsql = [];
+        foreach ($subsubdepartments as $department4level) {
+            $subsubdeptsql[] = " concat('/',c.open_path,'/') LIKE :department4levelparam_{$department4level}";
+            $params["department4levelparam_{$department4level}"] = '%/' . $department4level . '/%';
         }
-    return array('where'=>$where, 'params'=>$params);
+        if (!empty($subsubdeptsql)) {
+            $where .= " AND ( " . implode(' OR ', $subsubdeptsql) . " ) ";
+        }
+    }
+    return array('where' => $where, 'params' => $params);
 }

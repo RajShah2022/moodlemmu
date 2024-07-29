@@ -401,7 +401,11 @@ class custom_course_form extends moodleform {
             if ((empty(trim($data['fullname'])) && $data['form_status'] == 0) || strpos($data['fullname'], '"') !== false) {
                 $errors['fullname'] = get_string('missingfullname', 'local_courses');
             }
-
+            if (isset($data['performancecatid']) && $data['form_status'] == 0) {
+                if ($data['performancecatid'] == 0) {
+                    $errors['performancecatid'] = get_string('pleaseselectcategory', 'local_courses');
+                }
+            }
             if (isset($data['open_path']) && $data['form_status'] == 0) {
                 if ($data['open_path'] == 0) {
                     $errors['open_path'] = get_string('pleaseselectorganization', 'local_courses');
