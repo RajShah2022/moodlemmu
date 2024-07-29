@@ -714,8 +714,15 @@ function local_costcenter_get_hierarchy_fields($mform, $ajaxformdata, $customdat
             $mform->addElement('hidden', $prefix . $fields[$level], null, $levelelementoptions);
             $mform->setConstant($prefix . $fields[$level], $fieldvalue);
         } else {
+
             $enableallfield = (is_siteadmin() && $level == 1) || (!is_siteadmin() && ($USER->useraccess['currentroleinfo']['depth'] > $level))  ? false : $allenable;
-            $levelelementoptions['multiple'] = ($firstelement && $prefix == '') ? false : $multiple;
+            if ($pluginname == 'local_courses' && $multiple) {
+                $levelelementoptions['multiple'] = ($pluginname == 'local_courses' && $multiple) ? true : true;
+            } else {
+                $levelelementoptions['multiple'] = ($firstelement && $prefix == '') ? false : $multiple;
+            }
+
+            //$levelelementoptions['multiple'] = ($firstelement && $prefix == '') ? false : $multiple;
             $levelelementoptions['ajax'] = 'local_costcenter/form-options-selector';
             $levelelementoptions['data-contextid'] = $context->id;
             $levelelementoptions['data-action'] = 'costcenter_element_selector';
@@ -748,15 +755,17 @@ function local_costcenter_get_hierarchy_fields($mform, $ajaxformdata, $customdat
         $mform->setType($prefix . $fields[$level], PARAM_RAW);
     }
 }
-function local_costcenter_get_costcenter_path(&$data) {
+function local_costcenter_get_costcenter_path_org(&$data) {
     global $DB, $USER;
     $fields = local_costcenter_get_fields();
     $path = '';
+
     foreach ($fields as $field) {
         if (isset($data->$field) && $data->$field > 0) {
             $value = $data->$field;
         }
     }
+
     if ($value > 0) {
         // finding the path mapped for the last element in the form to meet the data requirements for all head roles.
         $path = $DB->get_field('local_costcenter', 'path', array('id' => $value));
@@ -777,7 +786,8 @@ function local_costcenter_get_costcenter_path(&$data) {
         $data->open_path = $path;
     }
 }
-function local_costcenter_set_costcenter_path(&$data, $prefix = '') {
+
+function local_costcenter_set_costcenter_path_org(&$data, $prefix = '') {
     global $USER;
     $fields = local_costcenter_get_fields();
     $contextinfo = (isset($USER->useraccess)) ? $USER->useraccess['currentroleinfo']['contextinfo'] : array();
@@ -817,6 +827,127 @@ function local_costcenter_set_costcenter_path(&$data, $prefix = '') {
         }
     }
 }
+
+function local_costcenter_get_costcenter_path(&$data) {
+
+    $fields = local_costcenter_get_fields();
+    $path = '';
+    $openpaths = [];
+
+    foreach ($fields as $field) {
+
+        if (isset($data->$field) && $data->$field > 0) {
+            if (is_array($data->$field) && count($data->$field) > 0) {
+
+                $deptids = $data->$field;
+                foreach ($deptids as $deptid) {
+                    $value = $deptid;
+                    $path = local_costcenter_get_multi_paths($value);
+
+                    if (!empty($path)) {
+                        $openpaths[] = $path;
+                    }
+                }
+                $data->open_path = (count($openpaths) > 0) ? implode(',', $openpaths) : '';
+            } else {
+                $value = $data->$field;
+            }
+        }
+    }
+
+    if (!isset($data->open_path) && $value > 0) {
+        $path = local_costcenter_get_multi_paths($value);
+        if (!empty($path)) {
+            $data->open_path = $path;
+        }
+    }
+}
+
+function local_costcenter_get_multi_paths(&$data) {
+    global $DB, $USER;
+    $openpath = '';
+
+    if ($data > 0) {
+
+        // finding the path mapped for the last element in the form to meet the data requirements for all head roles.
+        $path = $DB->get_field('local_costcenter', 'path', array('id' => $data));
+        // updating the user path if the user belongs to the chlid path for the selected costcenter path.
+        if ($USER->useraccess['currentroleinfo']['contextinfo']) {
+            $updatepath = true;
+            foreach ($USER->useraccess['currentroleinfo']['contextinfo'] as $contextinfo) {
+                if (strpos($path, $contextinfo['costcenterpath']) === 0) {
+                    $updatepath = false;
+                    break;
+                }
+                $rolepath = $contextinfo['costcenterpath'];
+            }
+            if ($updatepath) {
+                $path = $rolepath;
+            }
+        }
+
+        $openpath = $path;
+    }
+    return $openpath;
+}
+
+function local_costcenter_set_costcenter_path(&$data, $prefix = '') {
+    global $USER;
+
+    $fields = local_costcenter_get_fields();
+    $contextinfo = (isset($USER->useraccess)) ? $USER->useraccess['currentroleinfo']['contextinfo'] : array();
+    $pathnottracked = true;
+    if ($contextinfo) {
+        foreach ($contextinfo as $contextdata) {
+            if (isset($data['open_path']) && (strpos($data['open_path'], $contextdata['costcenterpath']) === 0)) {
+                $pathnottracked = false;
+                $recordedpathids = explode('/', $data['open_path']);
+                foreach ($fields as $levelid => $field) {
+                    if (isset($recordedpathids[$levelid]) && $recordedpathids[$levelid] > 0) {
+                        $data[$prefix . $field] = $recordedpathids[$levelid];
+                    }
+                }
+                break;
+            }
+        }
+    } else if (isset($data['open_path'])) {
+        $deptids = [];
+        $pathnottracked = false;
+
+        foreach ($fields as $levelid => $field) {
+            if ($field === 'open_department') {
+                $paths = explode(',', $data['open_path']);
+                foreach ($paths as $path) {
+                    $recordedpathids = explode('/', $path);
+                    if (isset($recordedpathids[$levelid]) && $recordedpathids[$levelid] > 0) {
+                        $deptids[] = $recordedpathids[$levelid];
+                    }
+                }
+                $data[$prefix . $field] = implode(',', $deptids);
+            } else {
+                $recordedpathids = explode('/', $data['open_path']);
+
+                if (isset($recordedpathids[$levelid]) && $recordedpathids[$levelid] > 0) {
+                    $data[$prefix . $field] = $recordedpathids[$levelid];
+                }
+            }
+        }
+    }
+
+    if ($pathnottracked && $contextinfo) {
+        $rolecontext = \local_costcenter\lib\accesslib::get_costcenterpath_context($contextinfo[0]['context']);
+        $rolecontextids = explode('/', $rolecontext);
+        if (count($contextinfo) > 1) {
+            $depth = $USER->useraccess['currentroleinfo']['depth'];
+        } else {
+            $depth = $USER->useraccess['currentroleinfo']['depth'] - 1;
+        }
+        for ($i = 1; $i <= $depth; $i++) {
+            $data[$prefix . $fields[$i]] = $rolecontextids[$i];
+        }
+    }
+}
+
 function local_costcenter_get_fields() {
     $level = HIERARCHY_LEVELS;
     $fields = [1 => 'open_costcenterid', 2 => 'open_department', 3 => 'open_subdepartment', 4 => 'open_level4department', 5 => 'open_level5department'];
@@ -967,7 +1098,7 @@ function costcenterpagenavbar($depth, $parentid) {
 }
 
 function costcentervalues($filterdata) {
-    $where;
+    $where = '';
     $params = array();
     $open_path = (new \local_courses\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'c.open_path');
     $where .= $open_path;
@@ -985,13 +1116,16 @@ function costcentervalues($filterdata) {
     if (!empty($filterdata->filteropen_department)) {
         $filteropen_department = explode(',', $filterdata->filteropen_department);
 
-        $deptsql = [];
-        foreach ($filteropen_department as $department) {
+        /*$deptsql = [];
+         foreach ($filteropen_department as $department) {
             $deptsql[] = " concat('/',c.open_path,'/') LIKE :departmentparam_{$department}";
             $params["departmentparam_{$department}"] = '%/' . $department . '/%';
         }
         if (!empty($deptsql)) {
             $where .= " AND ( " . implode(' OR ', $deptsql) . " ) ";
+        } */
+        foreach ($filteropen_department as $department) {
+            $where .= " AND c.open_path REGEXP '/" . $department . "(,|$)'";
         }
     }
     if (!empty($filterdata->filteropen_subdepartment)) {

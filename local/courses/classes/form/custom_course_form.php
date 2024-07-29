@@ -140,25 +140,50 @@ class custom_course_form extends moodleform {
             $mform->addElement('text', 'fullname', get_string('course_name', 'local_courses'), 'maxlength="254" size="50"');
             $mform->addHelpButton('fullname', 'course_name', 'local_courses');
 
-            if (!empty($course->id) and !has_capability('moodle/course:changefullname', $categorycontext)) {
+            /*      if (!empty($course->id) and !has_capability('moodle/course:changefullname', $categorycontext)) {
                 $mform->hardFreeze('fullname');
                 $mform->setConstant('fullname', $course->fullname);
             } elseif (has_capability('moodle/course:changefullname', $categorycontext)) {
 
                 $mform->addRule('fullname', get_string('missingfullname', 'local_courses'), 'required', null, 'client');
                 $mform->setType('fullname', PARAM_TEXT);
+            } */
+
+            if (!empty($course->id)) {
+                if (is_siteadmin()) {
+                    $mform->addRule('fullname', get_string('missingfullname', 'local_courses'), 'required', null, 'client');
+                    $mform->setType('fullname', PARAM_TEXT);
+                } else if (has_capability('moodle/course:changefullname', $categorycontext)) {
+                    $mform->addRule('fullname', get_string('missingfullname', 'local_courses'), 'required', null, 'client');
+                    $mform->setType('fullname', PARAM_TEXT);
+                } else {
+                    $mform->hardFreeze('fullname');
+                    $mform->setConstant('fullname', $course->fullname);
+                }
             }
 
             $mform->addElement('text', 'shortname', get_string('coursecode', 'local_courses'), 'maxlength="100" size="20"');
             $mform->addHelpButton('shortname', 'coursecode', 'local_courses');
 
-            if (!empty($course->id) and !has_capability('moodle/course:changeshortname', $categorycontext)) {
+            /*   if (!empty($course->id) and !has_capability('moodle/course:changeshortname', $categorycontext)) {
                 $mform->hardFreeze('shortname');
                 $mform->setConstant('shortname', $course->shortname);
             } elseif (has_capability('moodle/course:changefullname', $categorycontext)) {
 
                 $mform->addRule('shortname', get_string('missingshortname', 'local_courses'), 'required', null, 'client');
                 $mform->setType('shortname', PARAM_TEXT);
+            } */
+            if (!empty($course->id)) {
+                if (is_siteadmin()) {
+                    $mform->addRule('shortname', get_string('missingshortname', 'local_courses'), 'required', null, 'client');
+                    $mform->setType('shortname', PARAM_TEXT);
+                } else if (has_capability('moodle/course:changeshortname', $categorycontext)) {
+                    $mform->addRule('shortname', get_string('missingshortname', 'local_courses'), 'required', null, 'client');
+                    $mform->setType('shortname', PARAM_TEXT);
+                } else {
+                    $mform->hardFreeze('shortname');
+                    $mform->setConstant('shortname', $course->shortname);
+                }
             }
 
             $plugin_exists = \core_component::get_plugin_directory('local', 'custom_category');
@@ -326,16 +351,16 @@ class custom_course_form extends moodleform {
                 $mform->hideIf('open_certificateid', 'map_certificate', 'neq', 1);
             }
 
-            $handler = \core_course\customfield\course_handler::create();
+            /*  $handler = \core_course\customfield\course_handler::create();
             $handler->set_parent_context($categorycontext); // For course handler only.
             $handler->instance_form_definition($mform, empty($this->course->id) ? 0 : $this->course->id);
-            $handler->instance_form_before_set_data($course);
+            $handler->instance_form_before_set_data($course); */
         } else if ($formstatus == 2) {
             list($zero, $org, $ctr, $bu, $cu, $territory) = explode("/", $this->course->open_path);
             $mform->addElement('hidden', 'open_costcenterid');
             $mform->setConstant('open_costcenterid', $org);
 
-            local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(2, HIERARCHY_LEVELS), true, 'local_costcenter', $categorycontext, $multiple = false);
+            local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(2, HIERARCHY_LEVELS), true, 'local_courses', $categorycontext, $multiple = true);
 
             $functionname = 'globaltargetaudience_elementlist';
             if (function_exists($functionname)) {

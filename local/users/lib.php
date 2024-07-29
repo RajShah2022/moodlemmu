@@ -87,8 +87,10 @@ function local_users_output_fragment_new_create_user($args) {
             true,
             $formdata
         );
+
         $data->open_costcenterid = $formdata['open_costcenterid'];
-        profile_load_data($data);
+
+        // profile_load_data($data);
         $mform->set_data($data);
     } else {
         $customdata = array(
