@@ -87,6 +87,7 @@ class syncfunctionality
             'employee_status',
             'gender',
             'email',
+            'role',
         ];
         $this->mandatory_field_count = 0;
         while ($line = $cir->next()) {
@@ -256,6 +257,9 @@ class syncfunctionality
             }
             if (!empty($user->force_password_change)) {
                 $this->force_password_change_validation($user);
+            }
+            if (!empty($user->role)) {
+                $this->roleid_validation($user);
             }
             if (!empty($user->password) && !check_password_policy($user->password, $errmsg)) {
                 $strings = new stdClass;
@@ -1008,6 +1012,12 @@ class syncfunctionality
             }            
         }
 
+        $rolesql = "SELECT r.id
+                      FROM {role} r
+                     WHERE r.shortname = :rolename ";
+        $roleid = $DB->get_field_sql($rolesql, ['rolename' => $excel->role]);
+        $user->roleid = $roleid;
+
         return $user;
     } // end of  preparing_users_object method
 
@@ -1020,6 +1030,12 @@ class syncfunctionality
         $insertnewuserfromcsv = user_create_user($userobject, false);
         $userobject = (object)$userobject;
         $userobject->id = $insertnewuserfromcsv;
+
+        $categorysql = $DB->get_record('local_costcenter', ['id' => $userobject->open_department], $fields = 'category', $strictness = IGNORE_MISSING);
+        $categoryid = $categorysql->category;
+        $categorycontext = \context_coursecat::instance($categoryid);
+        $roles  = new \local_assignroles\local\assignrole();
+        $roles->rolesassign((array) $insertnewuserfromcsv, $userobject->roleid, $categorycontext->id);
 
         // Pre-process custom profile menu fields data from csv file.
         $user = uu_pre_process_custom_profile_data($userobject);
@@ -1099,6 +1115,25 @@ class syncfunctionality
 
             }
             user_update_user($user, false);
+
+            $categorysql = $DB->get_record('local_costcenter', ['id' => $user->open_department], $fields = 'category', $strictness = IGNORE_MISSING);
+            $categoryid = $categorysql->category;
+            $categorycontext = \context_coursecat::instance($categoryid);
+            $var = $DB->get_record('role_assignments',array('userid' => $userdata->id, 'contextid' => $categorycontext->id));
+            if (!$var) {
+                $roles  = new \local_assignroles\local\assignrole();
+                $roles->rolesassign((array) $userid, $user->roleid, $categorycontext->id);
+            } else {
+                $role = (object) [
+                    'id' => $var->id,
+                    'roleid' => $user->roleid,
+                    'userid' => $userid,
+                    'timemodified' => time(),
+                    'contextid' => $categorycontext->id,
+                    'modifierid' => $USER->id,
+                ];
+                $DB->update_record('role_assignments', $role);
+            }
           
             // Pre-process custom profile menu fields data from csv file.
             $existinguser = uu_pre_process_custom_profile_data($excel);
@@ -1181,6 +1216,30 @@ class syncfunctionality
             echo '<div class="local_users_sync_error">' . get_string('invalidemail_msg', 'local_users', $strings) . '</div>';
             $this->errors[] = get_string('invalidemail_msg', 'local_users', $strings);
             $this->mfields[] = 'email';
+            $this->errorcount++;
+        }
+    }
+
+    public function roleid_validation($excel) {
+        global $DB;
+        if (array_key_exists('role', (array) $excel)) {
+            $excel->role = strtolower($excel->role);
+            $roleexists = $DB->get_field('role', 'id', ['shortname' => $excel->role]);
+            if (!$roleexists) {
+                $strings = new stdClass();
+                $strings->roleshortname = $excel->role;
+                $strings->excel_line_number = $this->excel_line_number;
+                echo '<div class="local_users_sync_error">'.get_string('rolenotexists', 'local_users', $strings).'</div>';
+                $this->errors[] = get_string('rolenotexists', 'local_users', $strings);
+                $this->mfields[] = 'Role';
+                $this->errorcount++;
+            }
+        } else {
+            $strings = new stdClass();
+            $strings->excel_line_number = $this->excel_line_number;
+            echo '<div class="local_users_sync_error">'.get_string('roleidempty_msg', 'local_users', $strings).'</div>';
+            $this->errors[] = get_string('roleidempty_msg', 'local_users', $strings);
+            $this->mfields[] = 'Role';
             $this->errorcount++;
         }
     }

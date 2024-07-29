@@ -82,7 +82,6 @@ class local_users_external extends external_api {
                 if ($form_status == 0){
                     local_costcenter_get_costcenter_path($validateddata);
                     set_user_preference('auth_forcepasswordchange', $validateddata->preference_auth_forcepasswordchange, $validateddata->id);
-
                 }elseif ($form_status == 1){
                      local_users_get_userprofile_datafields($validateddata);
                 }
@@ -405,6 +404,7 @@ class local_users_external extends external_api {
                                     'level' => new external_value(PARAM_RAW, 'delcap', VALUE_OPTIONAL),
                                     'rolecount' => new external_value(PARAM_RAW, 'delcap', VALUE_OPTIONAL),
                                     'activeicon' => new external_value(PARAM_INT, 'Active/Iactive icon user', VALUE_OPTIONAL),
+                                    'rolename' => new external_value(PARAM_RAW, 'rolename', VALUE_OPTIONAL),
                                     
                                 )
                             )

@@ -251,6 +251,7 @@ function local_groups_add_groups($groups) {
     $new_group->timemodified = time();
     $new_group->open_path = $groups->open_path;
     $new_group->departmentid = is_array($groups->departmentid) ? implode(',', $groups->departmentid) : $groups->departmentid;
+    $new_group->open_difficultylevel = $groups->open_difficultylevel;
     $DB->insert_record('local_groups', $new_group);
 
     $event = \core\event\cohort_created::create(array(
@@ -642,7 +643,7 @@ function local_groups_get_groups($contextid, $page = 0, $perpage = 10, $search =
  */
 function local_groups_get_all_groups($context,$page = 0, $perpage = 10, $search = '') {
     global $DB,$USER;
-    $fields = "SELECT c.*, ".context_helper::get_preload_record_columns_sql('ctx');
+    $fields = "SELECT c.*, ".context_helper::get_preload_record_columns_sql('ctx').", g.open_difficultylevel";
     $countfields = "SELECT COUNT(*)";
     $sql = " FROM {cohort} c
              JOIN {context} ctx ON ctx.id = c.contextid
@@ -1051,6 +1052,7 @@ function local_groups_output_fragment_new_groupsform($args){
         $data->description_editor['format'] = FORMAT_HTML;
 
         $groups_data = $DB->get_record('local_groups', array('cohortid'=>$data->id));
+        $data->open_difficultylevel = $groups_data->open_difficultylevel;
         $customdata = array('id' => $groups_data->id,
         'open_path' => $groups_data->open_path,
         'editoroptions' => $editoroptions,

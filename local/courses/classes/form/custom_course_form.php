@@ -33,8 +33,9 @@ use core_component;
 defined('MOODLE_INTERNAL') || die;
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->libdir . '/completionlib.php');
-require_once($CFG->dirroot . '/local/costcenter/lib.php');
 require_once($CFG->dirroot . '/local/users/lib.php');
+require_once($CFG->dirroot . '/local/courses/lib.php');
+require_once($CFG->dirroot . '/local/costcenter/lib.php');
 require_once($CFG->dirroot . '/local/custom_fields/lib.php');
 //require_once($CFG->libdir. '/coursecatlib.php');
 
@@ -213,6 +214,10 @@ class custom_course_form extends moodleform {
             $mform->addElement('text', 'open_coursecompletiondays', get_string('coursecompday', 'local_courses'));
             $mform->setType('open_coursecompletiondays', PARAM_TEXT);
             $mform->addRule('open_coursecompletiondays', get_string('numeric', 'local_users'), 'numeric', 'numeric', 'client');
+
+            $mform->addElement('select', 'open_difficultylevel', get_string('difficultylevel', 'local_courses'), difficulty_levels());
+            $mform->addRule('open_difficultylevel', null, 'required', null, 'client');
+            $mform->setType('open_difficultylevel', PARAM_INT);
 
             $manageselfenrol = array();
             $manageselfenrol[] = $mform->createElement('radio', 'selfenrol', '', get_string('yes'), 1, $attributes);

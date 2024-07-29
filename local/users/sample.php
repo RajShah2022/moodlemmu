@@ -41,6 +41,7 @@ if ($format) {
         'last_name' => 'last_name',
         'gender' => 'gender',
         'email' => 'email',
+    'role' => 'role',
         'bussiness_unit_code' => 'bussiness_unit_code',
         'department_code' => 'department_code',
         //'subdepartment_code' => 'subdepartment_code',

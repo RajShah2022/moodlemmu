@@ -34,12 +34,20 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-12 d-flex align-items-center">  
-                    <div class="group_count pull-left">
-                       <p><b>{{#str}}open_costcenterid, local_costcenter{{/str}}:</b></p>
+                <div class="row">
+                    <div class="col-sm-6 d-flex align-items-center">  
+                        <div class="group_count pull-left">
+                           <p><b>{{#str}}open_costcenterid, local_costcenter{{/str}}:</b></p>
+                        </div>
+                        <div class="groupcount ml-2 pull-left">
+                            <p>{{orgname}}</p>
+                        </div>
                     </div>
-                    <div class="groupcount ml-2 pull-left">
-                        <p>{{orgname}}</p>
+                    <div class="col-sm-6 d-flex align-items-baseline">  
+                        {{#difficultylevel}}
+                            <i class="fa-solid fa-layer-group"></i>
+                            <p class="groupcount ml-2 mr-2">{{#str}}difficultylevels, local_courses, <span class="info_value"> {{difficultylevel}}</span> {{/str}} </p>
+                        {{/difficultylevel}}
                     </div>
                 </div>
                 <div class="col-sm-12 pull-left mb-10">

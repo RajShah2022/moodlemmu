@@ -339,4 +339,13 @@ function xmldb_local_courses_install(){
             $dbman->add_field($table, $field1);
         }
     }
+
+    $table = new xmldb_table('course');
+    if ($dbman->table_exists($table)) {
+        $field = new xmldb_field('open_difficultylevel');
+        $field->set_attributes(XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0, null);
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+    }
 }

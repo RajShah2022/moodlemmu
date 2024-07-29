@@ -457,3 +457,5 @@ $string['course_completion_reminder'] = 'Course Completion Reminder';
 $string['regeneratecertificate'] = 'Certificate Regeneration Confirmation';
 $string['confirmregenerate'] = 'Are you sure,do you want to Regenerate Certificate of this user.';
 $string['regenarate'] = 'Regenerate';
+$string['difficultylevel'] = 'Difficulty Level';
+$string['difficultylevels'] = 'Level {$a}';

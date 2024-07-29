@@ -66,6 +66,7 @@ $STD_FIELDS = array(
     'last_name' => 'last_name',
     'gender' => 'gender',
     'email' => 'email',
+    'role' => 'role',
     'bussiness_unit_code' => 'bussiness_unit_code',
     'department_code' => 'department_code',
     'subdepartment_code' => 'subdepartment_code',
@@ -80,8 +81,8 @@ $STD_FIELDS = array(
     'mobileno' => 'mobileno',
     'employee_status' => 'employee_status',
     'timezone' => 'timezone',
-    'force_password_change' => 'force_password_change'
-    );
+    'force_password_change' => 'force_password_change',
+);
 
 
 $PRF_FIELDS = array();

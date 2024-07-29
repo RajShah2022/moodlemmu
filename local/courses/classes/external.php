@@ -677,6 +677,7 @@ class local_courses_external extends external_api {
                                 'update' => new external_value(PARAM_BOOL, 'update', VALUE_OPTIONAL),
                                 'enrol' => new external_value(PARAM_BOOL, 'enrol', VALUE_OPTIONAL),
                                 'actions' => new external_value(PARAM_BOOL, 'actions', VALUE_OPTIONAL),
+                                'difficultylevel' => new external_value(PARAM_INT, 'difficultylevel', VALUE_OPTIONAL),
                             )
                         )
                     ),

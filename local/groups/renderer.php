@@ -380,9 +380,11 @@ class local_groups_renderer extends plugin_renderer_base  {
            $line['groupcount'] = $cohort_users;
            $line['userid']=$cohort->id;
            $line['location_url'] = $CFG->wwwroot . '/local/groups/assign.php?id='.$cohort->id;
+           $line['difficultylevel'] = $cohort->open_difficultylevel;
         if (has_capability('local/groups:manage',  (new \local_groups\lib\accesslib())::get_module_context()) || is_siteadmin())
             $row[] = $line;
         }
+
         return $row;
     }
 }
