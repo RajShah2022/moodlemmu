@@ -59,7 +59,17 @@ class create_user extends moodleform {
 
         if ($form_status == 0) {
 
-            local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, null, true, 'local_costcenter', $categorycontext, $multiple = false);
+            $select = [0 => get_string('selectrole', 'role')];
+            $sql = "SELECT r.id, r.name as fullname
+                      FROM {role} r
+                      JOIN {role_context_levels} rcl ON (rcl.contextlevel = :contextlevel AND r.id = rcl.roleid)
+                     WHERE r.name != '' AND (r.archetype != 'manager' OR r.shortname LIKE 'hod' ) ";
+            $role = $select + $DB->get_records_sql_menu($sql, ['contextlevel' => CONTEXT_COURSECAT]);
+            $mform->addElement('select', 'roleid', get_string('open_role', 'local_users'), $role);
+            $mform->setType('roleid', PARAM_INT);
+            $mform->addRule('roleid', null, 'required', null, 'client');
+
+            local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(1, 2), true, 'local_costcenter', $categorycontext, $multiple = false);
 
             $count = count((array)$costcenters);
             $mform->addElement('hidden', 'count', $count);
@@ -467,6 +477,10 @@ class create_user extends moodleform {
                 ) {
                     $errors['open_employeeid'] = get_string('open_employeeidexist', 'local_users');
                 }
+            }
+
+            if ($data['roleid'] == 0) {
+                $errors['roleid'] = get_string('required');
             }
         }
         if ($form_status == 2) { // As these fields are in only form part 3(form_status=2).

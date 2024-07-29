@@ -70,6 +70,15 @@ function local_users_output_fragment_new_create_user($args) {
             unset($data->open_supervisorid);
         }
 
+        $path = explode('/', $data->open_path)[2];
+        $categorysql = $DB->get_record('local_costcenter', ['id' => $path], $fields = 'category', $strictness = IGNORE_MISSING);
+        $categoryid = $categorysql->category;
+        $categorycontext = \context_coursecat::instance($categoryid);
+        $var = $DB->get_record('role_assignments', array('userid' => $data->id, 'contextid' => $categorycontext->id));
+        if ($var) {
+            $data->roleid = $var->roleid;
+        }
+
         useredit_load_preferences($data);
         $customdata = array(
             'editoroptions' => $editoroptions,
@@ -1289,6 +1298,18 @@ function manage_users_content($stable, $users/*,$filterdata*/) {
             $list['rolecount'] = $rolecount->role;
         } else {
             $list['rolecount'] = false;
+        }
+
+        $rolename = $DB->get_field_sql("SELECT r.name
+            FROM {role} r
+            JOIN {role_assignments} ra ON r.id = ra.roleid
+            JOIN {context} c ON c.id = ra.contextid AND c.contextlevel = 40
+           WHERE userid = " . $user->id
+        );
+        if ($rolename) {
+            $list['rolename'] = $rolename;
+        } else {
+            $list['rolename'] = false;
         }
         $list['designationstring'] = ($designationstring) ? $designationstring : '--';
         if (!empty($user->open_supervisorid)) {

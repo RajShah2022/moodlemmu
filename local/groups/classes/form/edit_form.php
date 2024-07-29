@@ -27,9 +27,10 @@ use context_instance;
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/lib/formslib.php');
-require_once($CFG->dirroot . '/user/selector/lib.php');
-require_once($CFG->dirroot . '/local/costcenter/lib.php');
 require_once($CFG->dirroot . '/local/users/lib.php');
+require_once($CFG->dirroot . '/user/selector/lib.php');
+require_once($CFG->dirroot . '/local/courses/lib.php');
+require_once($CFG->dirroot . '/local/costcenter/lib.php');
 
 use local_users\functions\userlibfunctions as userlib;
 class edit_form extends moodleform {
@@ -43,7 +44,12 @@ class edit_form extends moodleform {
         $editoroptions = $this->_customdata['editoroptions'];
         $cohort = $this->_customdata['data'];
         $context = (new \local_groups\lib\accesslib())::get_module_context();
-        local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata,range(1,1), false, 'local_groups', $context, $multiple = false);
+        local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata,range(1,2), false, 'local_groups', $context, $multiple = false);
+
+        $mform->addElement('select', 'open_difficultylevel', get_string('difficultylevel', 'local_courses'), difficulty_levels());
+        $mform->addRule('open_difficultylevel', null, 'required', null, 'client');
+        $mform->setType('open_difficultylevel', PARAM_INT);
+
         $mform->addElement('text', 'name', get_string('name', 'local_groups'), 'maxlength="254" size="50"');
         $mform->addRule('name', get_string('groupname','local_groups'), 'required', null, 'client');
         $mform->setType('name', PARAM_TEXT);

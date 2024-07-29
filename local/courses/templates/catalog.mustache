@@ -132,6 +132,12 @@
                                         <span class="info_value">{{{ratings_value}}}</span>
                                         <!-- <span class="info_title">{{#str}}pluginname, local_ratings{{/str}}</span> -->
                                     </div>
+                                    {{#difficultylevel}}
+                                        <div class="info_container days_info mb-3">
+                                            <div class="ratingicon mr-2"><i class="fa fa-solid fa-layer-group"></i></div>
+                                            <span class="info_title mr-2">{{#str}}difficultylevels, local_courses, <span class="info_value">{{difficultylevel}}</span> {{/str}} </span>
+                                        </div>
+                                    {{/difficultylevel}}
                                     {{#completiondays}}
                                         <div class="info_container days_info mb-3">
                                             <div class="ratingicon mr-2"><i class="fa fa-calendar"></i></div>

@@ -62,6 +62,15 @@ class users {
         $userdata->password = hash_internal_user_password($userdata->password);
         $createpassword = $userdata->createpassword;
         $data = user_create_user($userdata, false);
+
+        if ($userdata->form_status == 0) {
+            $categorysql = $DB->get_record('local_costcenter', ['id' => $userdata->open_department], $fields = 'category', $strictness = IGNORE_MISSING);
+            $categoryid = $categorysql->category;
+            $categorycontext = \context_coursecat::instance($categoryid);
+            $roles  = new \local_assignroles\local\assignrole();
+            $roles->rolesassign((array) $data, $userdata->roleid, $categorycontext->id);
+        }
+
         if ($createpassword) {
             $userdata->id = $data;
             setnew_password_and_mail($userdata);
@@ -146,6 +155,33 @@ class users {
                     'profile',
                     0
                 );
+            }
+
+            if ($userdata->form_status == 0) {
+                $categorysql = $DB->get_record('local_costcenter', ['id' => $userdata->open_department], $fields = 'category', $strictness = IGNORE_MISSING);
+                $categoryid = $categorysql->category;
+                $categorycontext = \context_coursecat::instance($categoryid);
+                $var = $DB->get_record('role_assignments',array('userid' => $userdata->id, 'contextid' => $categorycontext->id));
+                if (!$var) {
+                    $role = (object) [
+                        'roleid' => $userdata->roleid,
+                        'userid' => $userdata->id,
+                        'timemodified' => time(),
+                        'contextid' => $categorycontext->id,
+                        'modifierid' => $USER->id,
+                    ];
+                    $DB->insert_record('role_assignments', $role);
+                } else {
+                    $role = (object) [
+                        'id' => $var->id,
+                        'roleid' => $userdata->roleid,
+                        'userid' => $userdata->id,
+                        'timemodified' => time(),
+                        'contextid' => $categorycontext->id,
+                        'modifierid' => $USER->id,
+                    ];
+                    $DB->update_record('role_assignments', $role);
+                }
             }
             $userdata->deleted = 0;
             $userdata->descriptionformat = 1;

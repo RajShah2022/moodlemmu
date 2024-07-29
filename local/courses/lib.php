@@ -1056,7 +1056,7 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
     $chelper = new coursecat_helper();
     $countsql  = "SELECT count(c.id) ";
 
-    $selectsql = "SELECT c.id ,c.fullname, c.shortname, c.category, c.summary, c.visible, c.format, c.selfenrol, c.open_path, c.performancecatid, c.open_skill, c.open_coursecompletiondays ";
+    $selectsql = "SELECT c.id ,c.fullname, c.shortname, c.category, c.summary, c.visible, c.format, c.selfenrol, c.open_path, c.performancecatid, c.open_skill, c.open_coursecompletiondays, c.open_difficultylevel ";
     $joinsql;
     $fromsql = " FROM {course} AS c ";
     $wheresql = " WHERE c.id > 1 AND c.open_module IS NULL ";
@@ -1356,6 +1356,7 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
             if ($departmentcount > 1 && !(is_siteadmin())) {
                 unset($courseslist[$count]["requestlink"]);
             }
+            $courseslist[$count]["difficultylevel"] = $course->open_difficultylevel;
 
             $courseslist[$count] = array_merge($courseslist[$count], array(
                 "actions" => (((has_capability('local/courses:enrol', $maincheckcontext) || has_capability('local/courses:update', $context) || has_capability('local/courses:delete', $context) || has_capability('local/courses:grade_view', $context) || has_capability('local/courses:report_view', $context)) || is_siteadmin()) && has_capability('local/courses:manage', $maincheckcontext)) ? true : false,
@@ -1678,4 +1679,27 @@ function costcenterwise_courses_datacount($costcenter, $department = false, $sub
 
     $countcourses = $DB->count_records_sql($countcoursesql, $params);
     return ['datacount' => $countcourses];
+}
+
+/**
+ * Retrieves a list of difficulty levels.
+ *
+ * This function returns an array of integers representing different levels of difficulty.
+ * The levels are typically used to categorize or rank items based on their difficulty.
+ *
+ * @return array An array of integers representing difficulty levels. The levels range from 0 to 5.
+ */
+function difficulty_levels() {
+    // Define an array containing difficulty levels from 0 to 5.
+    $levels = [
+        get_string('difficultylevels', 'local_courses', 0),
+        get_string('difficultylevels', 'local_courses', 1),
+        get_string('difficultylevels', 'local_courses', 2),
+        get_string('difficultylevels', 'local_courses', 3),
+        get_string('difficultylevels', 'local_courses', 4),
+        get_string('difficultylevels', 'local_courses', 5),
+    ];
+
+    // Return the array of difficulty levels.
+    return $levels;
 }

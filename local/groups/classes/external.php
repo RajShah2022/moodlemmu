@@ -371,6 +371,7 @@ class local_groups_external extends external_api {
                                     'location_url' => new external_value(PARAM_RAW, 'location_url', VALUE_OPTIONAL),
                                     'groupcount' => new external_value(PARAM_RAW, 'total count of users', VALUE_OPTIONAL),
                                     'visible' => new external_value(PARAM_RAW, 'visibility of group', VALUE_OPTIONAL),
+                                    'difficultylevel' => new external_value(PARAM_RAW, 'difficultylevel', VALUE_OPTIONAL),
                             )
                     )
                 )

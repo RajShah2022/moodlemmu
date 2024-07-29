@@ -40,13 +40,24 @@ class local_users_renderer extends plugin_renderer_base {
         $user_image = $OUTPUT->user_picture($userrecord, array('size' => 35, 'link' => false));
 
         /*user roles*/
-        $userroles = get_user_roles($categorycontext, $id);
+        /*$userroles = get_user_roles($categorycontext, $id);
         if (!empty($userroles)) {
             $rolename  = array();
             foreach ($userroles as $roles) {
                 $rolename[] = ucfirst($roles->name);
             }
             $roleinfo = implode(", ", $rolename);
+        } else {
+            $roleinfo = "Employee";
+        }*/
+        $rolename = $DB->get_field_sql("SELECT r.name
+            FROM {role} r
+            JOIN {role_assignments} ra ON r.id = ra.roleid
+            JOIN {context} c ON c.id = ra.contextid AND c.contextlevel = 40
+           WHERE userid = " . $id
+        );
+        if ($rolename) {
+            $roleinfo = $rolename;
         } else {
             $roleinfo = "Employee";
         }

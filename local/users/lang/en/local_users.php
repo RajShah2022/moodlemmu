@@ -854,3 +854,5 @@ $string['organization_shortname'] = 'Organization Short Name';
 $string['activeregistration'] = 'Registration';
 $string['policystring'] = 'I have read and accept the ';
 $string['termsconditionstring'] = 'I have read and agree to the ';
+$string['rolenotexists'] = '\'{$a->roleshortname}\' Role does not exist at the line of uploaded excelsheet at line number {$a->excel_line_number}';
+$string['roleidempty_msg'] = 'Role is empty of uploaded sheet at line {$a->excel_line_number}. ';

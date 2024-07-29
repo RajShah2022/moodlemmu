@@ -340,5 +340,15 @@ function xmldb_local_courses_upgrade($oldversion)
         upgrade_plugin_savepoint(true, 2023060600.13, 'local', 'courses');
     }
 
+    if ($oldversion < 2023060600.14) {
+        $table = new xmldb_table('course');
+        $field = new xmldb_field('open_difficultylevel');
+        $field->set_attributes(XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0, null);
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2023060600.14, 'local', 'courses');
+    }
+
     return true;
 }

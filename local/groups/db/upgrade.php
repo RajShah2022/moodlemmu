@@ -41,5 +41,15 @@ function xmldb_local_groups_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2022101300.03, 'local', 'groups');
     }
 
+    if ($oldversion < 2022101300.05) {
+        $table = new xmldb_table('local_groups');
+        $field = new xmldb_field('open_difficultylevel');
+        $field->set_attributes(XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0, null);
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2022101300.05, 'local', 'groups');
+    }
+
 	return true;
 }

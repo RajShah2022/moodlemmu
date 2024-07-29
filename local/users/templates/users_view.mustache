@@ -207,7 +207,7 @@
                                     <span class="pull-left user_info_lable">{{# str}} role, local_users{{/ str}}
                                         <span class="pull-right mr-2">:</span>
                                     </span>
-                                    {{^ rolecount}}
+                                    <!-- {{^ rolecount}}
                                     <span >
                                         <b>{{#str}}na,local_users{{/str}}</b>
                                     </span>
@@ -215,7 +215,17 @@
                                     {{# rolecount}}
                                     <a class="userpopup" href="javascript:void(0)" data-id={{userid}} data-action="popupmodal{{userid}}" data-username="{{fullname}}"><b>{{ rolecount }}</b>
                                     </a>
-                                    {{/ rolecount}}
+                                    {{/ rolecount}} -->
+                                    {{^ rolename}}
+                                        <span>
+                                            <b>{{#str}} na, local_users {{/str}}</b>
+                                        </span>
+                                    {{/ rolename}}
+                                    {{# rolename}}
+                                        <span title="{{rolename}}">
+                                            <b>{{rolename}}</b>
+                                        </span>
+                                    {{/ rolename}}
                                 </p>
                             </div>
                         </div>
