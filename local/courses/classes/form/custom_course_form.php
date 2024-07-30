@@ -236,9 +236,9 @@ class custom_course_form extends moodleform {
             $mform->addHelpButton('format', 'format');
             $mform->setDefault('format', $defaultformat);
 
-            $mform->addElement('text', 'open_coursecompletiondays', get_string('coursecompday', 'local_courses'));
-            $mform->setType('open_coursecompletiondays', PARAM_TEXT);
-            $mform->addRule('open_coursecompletiondays', get_string('numeric', 'local_users'), 'numeric', 'numeric', 'client');
+            // $mform->addElement('text', 'open_coursecompletiondays', get_string('coursecompday', 'local_courses'));
+            // $mform->setType('open_coursecompletiondays', PARAM_TEXT);
+            // $mform->addRule('open_coursecompletiondays', get_string('numeric', 'local_users'), 'numeric', 'numeric', 'client');
 
             $mform->addElement('select', 'open_difficultylevel', get_string('difficultylevel', 'local_courses'), difficulty_levels());
             $mform->addRule('open_difficultylevel', null, 'required', null, 'client');

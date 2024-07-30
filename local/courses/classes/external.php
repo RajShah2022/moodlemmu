@@ -191,6 +191,7 @@ class local_courses_external extends external_api {
                 $validateddata->performancecatid = $data['performancecatid'];
                 $validateddata->open_categoryid = $data['performancecatid'];
                 $validateddata->performanceparentid = $data['performanceparentid'];
+                $validateddata->open_coursecompletiondays = $validateddata->open_coursecompletiondays ? $validateddata->open_coursecompletiondays : 0;
                 $courseid = create_course($validateddata, $editoroptions);
 
                 $coursecat = new stdClass();
