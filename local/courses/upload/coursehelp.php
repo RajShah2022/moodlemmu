@@ -40,8 +40,8 @@ echo $OUTPUT->header();
 //echo $OUTPUT->heading(get_string('manual', 'local_courses'));
 if (isset($CFG->allowframembedding) and ! $CFG->allowframembedding) {
     echo $OUTPUT->box(get_string('coursemanual', 'local_courses'));
-    echo '<div style="float:right;"><a href="index.php"><img src="'. $OUTPUT->image_url('e/undo') . '"  alt = "'.get_string('back_upload', 'local_courses').'"title = "'.get_string('back_upload', 'local_courses').'" class="icon"/></a></div>';
-      /* echo '<div style="float:right;"><a href="index.php"><button>' . get_string('back_upload', 'local_courses') . '</button></a></div>';*/
+    /*echo '<div style="float:right;"><a href="index.php"><img src="'. $OUTPUT->image_url('e/undo') . '"  alt = "'.get_string('back_upload', 'local_courses').'"title = "'.get_string('back_upload', 'local_courses').'" class="icon"/></a></div>';*/
+      echo '<div style="float:right;"><a href="index.php"><button>' . get_string('back_upload', 'local_courses') . '</button></a></div>';
 }
 echo get_string('help_1', 'local_courses');
 echo get_string('help_2', 'local_courses');

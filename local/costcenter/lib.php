@@ -505,8 +505,8 @@ function costcenter_items() {
 * Displays a node in left side menu
 * @return  [type] string  link for the leftmenu
 */
-function local_costcenter_leftmenunode(){
-    global $USER,$DB;
+function local_costcenter_leftmenunode() {
+    global $USER, $DB;
     $categorycontext = (new \local_costcenter\lib\accesslib())::get_module_context();
     $costcenternode = '';
     if (has_capability('local/costcenter:view', $categorycontext) || is_siteadmin()) {

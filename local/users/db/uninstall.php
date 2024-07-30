@@ -154,6 +154,16 @@ function xmldb_local_users_uninstall() {
             $dbman->drop_field($table, $prefix);
         }
 
+        $prefix = new xmldb_field('open_positionid');
+        if ($dbman->field_exists($table, $prefix)) {
+            $dbman->drop_field($table, $prefix);
+        }
+
+        $prefix = new xmldb_field('open_domainid');
+        if ($dbman->field_exists($table, $prefix)) {
+            $dbman->drop_field($table, $prefix);
+        }
+
     }
     return true;
 }

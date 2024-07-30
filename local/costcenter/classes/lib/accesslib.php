@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file is part of eAbyas
  *
@@ -28,99 +27,106 @@ namespace local_costcenter\lib;
 /**
  * get access lib functions
  */
-class accesslib {
+class accesslib
+{
     protected const ALL_MODULE_CONTENT = 'upperandsamepath';
     protected const PATH_MODULE_CONTENT = 'lowerandsamepath';
 
-    public static function get_costcenter_path_field_concatsql($matchcolumnname, $path = null, $datatype = null) {
+    public static function get_costcenter_path_field_concatsql($matchcolumnname,$costcenterpath=null,$datatype=null){
 
         global $DB;
 
-        if ($datatype == null) {
+        if($datatype == null){
 
-            $datatype = self::ALL_MODULE_CONTENT;
+            $datatype=self::ALL_MODULE_CONTENT;
         }
 
-        $concatsql = "";
+        $concatsql="";
 
-        if (is_siteadmin() && $path == null) {
+        if(is_siteadmin() && $costcenterpath == null){
             return $concatsql;
-        } else {
-            if (str_contains($path, ',')) {
-                $newcostcenterpath = explode(',', $path);
-                foreach ($newcostcenterpath  as $costcenterpath) {
-                    if ($costcenterpath === null || $costcenterpath === 0) {
 
-                        $concatsql = self::get_user_roleswitch_costcenterpath_concatsql($matchcolumnname, $datatype);
-                    } else {
+        }else{
 
-                        $first_character = substr($costcenterpath, 0, 1);
+            if($costcenterpath === null || $costcenterpath === 0){
 
-                        if ($first_character !== '/') {
+                $concatsql =self::get_user_roleswitch_costcenterpath_concatsql($matchcolumnname,$datatype);
 
-                            $costcenterpath = "/" . $costcenterpath . "";
-                        }
+            }else{
 
-                        $concatsql = self::costcenterpath_match_sql($costcenterpath, $matchcolumnname, $datatype);
-                        $concatsql .= "AND (" . $concatsql . ")";
-                    }
-                }
+                 $first_character = substr($costcenterpath, 0, 1);
+
+                 if($first_character !== '/'){
+
+                    $costcenterpath = "/".$costcenterpath."";
+
+                 }
+
+                $concatsql=self::costcenterpath_match_sql($costcenterpath,$matchcolumnname,$datatype);
+                $concatsql="AND (".$concatsql.")";
+
             }
 
             return $concatsql;
+
         }
     }
-    public static function get_module_context($costcenterpath = null) {
+    public static function get_module_context($costcenterpath = null){
 
         global $DB;
 
-        if (is_siteadmin() && $costcenterpath == null) {
+        if(is_siteadmin() && $costcenterpath == null){
 
             $context = \context_system::instance();
 
             return $context;
-        } else {
 
-            if ($costcenterpath == null) {
+        }else{
 
-                $context = self::get_user_roleswitch_context();
-            } else {
+            if($costcenterpath == null){
 
-                $context = self::costcenterpath_contextdata($costcenterpath);
+                $context=self::get_user_roleswitch_context();
+
+            }else{
+
+                $context=self::costcenterpath_contextdata($costcenterpath);
             }
 
             return $context;
         }
     }
-    public static function get_user_roleswitch_context() {
+    public static function get_user_roleswitch_context(){
 
-        global $USER, $OUTPUT;
+        global $USER,$OUTPUT;
 
-        if (!empty($USER->useraccess['currentroleinfo']['contextinfo'])) {
+        if(!empty($USER->useraccess['currentroleinfo']['contextinfo'])){
 
-            $firstrole = current($USER->useraccess['currentroleinfo']['contextinfo']);
+            $firstrole =current($USER->useraccess['currentroleinfo']['contextinfo']);
 
-            $context = $firstrole['context'];
-        } else {
+            $context =$firstrole['context'];
+
+        }else{
 
             $context = \context_system::instance();
 
-            if (!empty($USER->access['rsw'])) {
+            if(!empty($USER->access['rsw'])){
 
-                $contextpath = current(array_values(array_flip($USER->access['rsw'])));
+                $contextpath=current(array_values(array_flip($USER->access['rsw'])));
 
-                if (!empty($contextpath)) {
+                if(!empty($contextpath)){
 
-                    $extractcontextpath = array_values(array_filter(explode('/', $contextpath)));
+                    $extractcontextpath=array_values(array_filter(explode('/',$contextpath)));
 
-                    if (!empty($extractcontextpath)) {
+                    if(!empty($extractcontextpath)){
 
-                        $pathvalue = end($extractcontextpath);
+                        $pathvalue=end($extractcontextpath);
 
-                        $context = \context::instance_by_id($pathvalue);
+                        $context =\context::instance_by_id($pathvalue);
                     }
+
+
                 }
-            } else {
+            } else{
 
                 /*Start of the role Switch */
 
@@ -128,41 +134,46 @@ class accesslib {
 
                 if (is_array($roles) && (count($roles) > 0)) {
 
-                    $depths = [];
-                    $depths['depth'] = array();
-                    $user_ra_array = array_values(array_filter(array_map(function ($role) use (&$depths) {
-                        $categoryids = array_values(array_filter((explode('/', $role->path))));
-                        $category = \local_costcenter\lib\accesslib::get_category_info($categoryids[0], 'name');
 
-                        if (!in_array($role->depth . '_' . $categoryids[0], $depths['depth'])) {
-                            $depths['depth'][] = $role->depth . '_' . $categoryids[0];
-                            $role->categoryname = $category;
-                            $role->highest_catid = $categoryids[0];
-                            return $role;
-                        }
-                    }, $roles)));
-                    if (!empty($user_ra_array) && is_array($user_ra_array)) {
+                    $depths = [];
+                    $depths['depth']=array();
+                    $user_ra_array = array_values(array_filter(array_map(function($role)use(&$depths){
+                                    $categoryids = array_values(array_filter((explode('/', $role->path))));
+                                    $category = \local_costcenter\lib\accesslib::get_category_info($categoryids[0], 'name');
+
+                                        if(!in_array($role->depth.'_'.$categoryids[0], $depths['depth'])){
+                                            $depths['depth'][] = $role->depth.'_'.$categoryids[0];
+                                            $role->categoryname = $category;
+                                            $role->highest_catid = $categoryids[0];
+                                            return $role;
+                                        }
+
+                                }, $roles)));
+                    if(!empty($user_ra_array) && is_array($user_ra_array)){
                         $highest_roleinfo = max($user_ra_array);
-                    } else {
+                    }else{
                         $highest_roleinfo = (object)['roleid' => 0, 'contextid' => SYSCONTEXTID];
                     }
 
                     $highest_roleid = '';
 
-                    if ((count($roles) > 0) && (!isset($USER->useraccess['currentroleinfo']) || empty($USER->useraccess['currentroleinfo']))) {
+                    if((count($roles) > 0) && (!isset($USER->useraccess['currentroleinfo']) || empty($USER->useraccess['currentroleinfo'])) ){
 
-                        if ($highest_roleinfo->roleid) {
+                        if($highest_roleinfo->roleid){
 
                             $highest_roleid = $highest_roleinfo->roleid;
                             $contextid = $highest_roleinfo->contextid;
 
                             // $OUTPUT->role_switch_basedon_userroles($highest_roleid, false, $contextid);
 
-                            $context = \context::instance_by_id($contextid);
+                            $context =\context::instance_by_id($contextid);
                         }
+
                     }
+
                 }
             }
+
         }
 
         return $context;
@@ -171,7 +182,7 @@ class accesslib {
 
         global $DB, $USER;
 
-        if (is_null($userid)) {
+        if(is_null($userid)){
             $userid = $USER->id;
         }
         $assignedsql = "SELECT ra.id, cc.id as categoryid, cc.name as categoryname, r.id as roleid, r.name AS rolename,
@@ -182,24 +193,25 @@ class accesslib {
         JOIN {course_categories} AS cc ON cc.id = c.instanceid
         WHERE ra.userid = :userid  ORDER BY ra.id DESC ";
 
-        $assignedroles = $DB->get_records_sql($assignedsql, ['userid' => $userid, 'contextlevel' => CONTEXT_COURSECAT]);
+        $assignedroles = $DB->get_records_sql($assignedsql, ['userid' => $userid,'contextlevel'=>CONTEXT_COURSECAT]);
         return $assignedroles;
     }
-    public static function get_costcenterpath_context($context) {
+    public static function get_costcenterpath_context($context){
 
         global $DB;
         $categoryid = $context->instanceid;
         $sql = "SELECT cc.path FROM {local_costcenter} AS cc WHERE cc.category= :categoryid ";
         $costcenterpath = $DB->get_field_sql($sql, array('categoryid' => $categoryid));
 
-        if (!$costcenterpath) {
+        if(!$costcenterpath){
 
-            $costcenterpath = 0;
+            $costcenterpath=0;
+
         }
 
         return $costcenterpath;
     }
-    public static function get_category_info($categoryid, $value = null) {
+    public static function get_category_info($categoryid, $value = null){
         global $DB;
         $coursecatrecordcache = \cache::make('core', 'coursecatrecords');
         $coursecat = $coursecatrecordcache->get($categoryid);
@@ -207,145 +219,154 @@ class accesslib {
             $coursecat = $DB->get_record('course_categories', array('id' => $categoryid));
         }
 
-        if (is_null($value)) {
+        if(is_null($value)){
             return $coursecat;
-        } else {
+        }else{
             return $coursecat->$value;
         }
+
     }
-    public static function get_costcenter_info($costcenterid, $value = null) {
+    public static function get_costcenter_info($costcenterid, $value = null){
         global $DB;
         $costcenterrecordcache = \cache::make('local_costcenter', 'costcenterrecords');
         $costcenterrecord = $costcenterrecordcache->get($costcenterid);
         if ($costcenterrecord === false) {
             $costcenterrecord = $DB->get_record('local_costcenter', array('id' => $costcenterid));
         }
-        if (is_null($value) || !isset($costcenterrecord->$value)) {
+        if(is_null($value) || !isset($costcenterrecord->$value)){
             return $costcenterrecord;
-        } else {
+        }else{
             return $costcenterrecord->$value;
         }
     }
-    public static function get_user_roleswitch_costcenterpath_concatsql($matchcolumnname, $datatype) {
+    public static function get_user_roleswitch_costcenterpath_concatsql($matchcolumnname,$datatype){
 
         global $USER;
 
-        $concatsql = "";
+        $concatsql="";
 
-        $sqlarray = array();
+        $sqlarray=array();
 
-        if (!empty($USER->useraccess['currentroleinfo']['contextinfo'])) {
+        if(!empty($USER->useraccess['currentroleinfo']['contextinfo'])){
 
-            $contextarray = $USER->useraccess['currentroleinfo']['contextinfo'];
-            foreach ($contextarray as $context) {
+            $contextarray =$USER->useraccess['currentroleinfo']['contextinfo'];
+            foreach($contextarray as $context){
 
-                $costcenterpath = $context['costcenterpath'];
-                if (!empty($costcenterpath)) {
+                $costcenterpath=$context['costcenterpath'];
+                if(!empty($costcenterpath)){
 
-                    if (empty($sqlarray[$costcenterpath])) {
+                    if(empty($sqlarray[$costcenterpath])){
 
-                        $sqlarray[$costcenterpath] = self::costcenterpath_match_sql($costcenterpath, $matchcolumnname, $datatype);
+                        $sqlarray[$costcenterpath]=self::costcenterpath_match_sql($costcenterpath,$matchcolumnname,$datatype);
                     }
-                } else {
+                }else{
 
-                    $sqlarray[$costcenterpath] = self::userpath_match_sql($matchcolumnname, $datatype);
+                    $sqlarray[$costcenterpath]=self::userpath_match_sql($matchcolumnname,$datatype);
+
                 }
             }
-        } else {
+        }else{
 
-            $sqlarray[] = self::userpath_match_sql($matchcolumnname, $datatype);
+            $sqlarray[]=self::userpath_match_sql($matchcolumnname,$datatype);
+
         }
 
-        if (!empty(array_filter($sqlarray))) {
 
-            $concatsql = "AND (" . implode(" OR ", $sqlarray) . ")";
+        if(!empty(array_filter($sqlarray))){
+
+            $concatsql="AND (".implode(" OR ", $sqlarray).")";
         }
+
 
         return $concatsql;
     }
 
-    public static function costcenterpath_match_sql($costcenterpath, $matchcolumnname, $datatype) {
+    public static function costcenterpath_match_sql($costcenterpath,$matchcolumnname,$datatype){
 
-        $match_sql = '';
-        $paths[] = $costcenterpath . '/%';
+        $match_sql='';
+        $paths[] = $costcenterpath.'/%';
         $paths[] = $costcenterpath;
 
-        if ($datatype == self::ALL_MODULE_CONTENT) {
+        if($datatype == self::ALL_MODULE_CONTENT){
 
-            while ($costcenterpath = rtrim($costcenterpath, '0123456789')) {
+            while ($costcenterpath = rtrim($costcenterpath,'0123456789')) {
                 $costcenterpath = rtrim($costcenterpath, '/');
                 if ($costcenterpath === '') {
-                    break;
+                  break;
                 }
                 $paths[] = $costcenterpath;
             }
-        }
-        if (!empty($paths)) {
 
-            foreach ($paths as $path) {
+        }
+        if(!empty($paths)){
+
+            foreach($paths AS $path){
                 $pathsql[] = " $matchcolumnname LIKE '$path' ";
             }
-            $match_sql .= " ( " . implode(' OR ', $pathsql) . ' ) ';
+            $match_sql.= " ( ".implode(' OR ', $pathsql).' ) ';
+
         }
 
         return $match_sql;
     }
-    public static function userpath_match_sql($matchcolumnname, $datatype) {
+    public static function userpath_match_sql($matchcolumnname,$datatype){
 
-        global $OUTPUT, $USER, $DB;
+        global $OUTPUT,$USER,$DB;
 
-        $match_sql = '';
+        $match_sql='';
 
-        if (!is_siteadmin()) {
+        if(!is_siteadmin()){
 
-            $usercostcenterpaths = $DB->get_records_menu('local_userdata', array('userid' => $USER->id), '', 'id, costcenterpath');
+                $usercostcenterpaths = $DB->get_records_menu('local_userdata', array('userid' => $USER->id), '', 'id, costcenterpath');
 
-            $paths = [];
+                $paths = [];
 
-            foreach ($usercostcenterpaths as $userpath) {
+                foreach($usercostcenterpaths AS $userpath){
 
-                $userpathinfo = $userpath;
+                    $userpathinfo = $userpath;
 
-                $paths[] = $userpathinfo . '/%';
+                    $paths[] = $userpathinfo.'/%';
 
-                $paths[] = $userpathinfo;
+                    $paths[] = $userpathinfo;
 
-                if ($datatype == self::ALL_MODULE_CONTENT) {
+                    if($datatype == self::ALL_MODULE_CONTENT){
 
-                    while ($userpathinfo = rtrim($userpathinfo, '0123456789')) {
 
-                        $userpathinfo = rtrim($userpathinfo, '/');
+                        while ($userpathinfo = rtrim($userpathinfo,'0123456789')) {
 
-                        if ($userpathinfo === '') {
-                            break;
+                            $userpathinfo = rtrim($userpathinfo, '/');
+
+                            if ($userpathinfo === '') {
+                              break;
+                            }
+
+                            $paths[] = $userpathinfo;
                         }
-
-                        $paths[] = $userpathinfo;
                     }
                 }
-            }
-            if (!empty($paths)) {
+                if(!empty($paths)){
 
-                foreach ($paths as $path) {
+                    foreach($paths AS $path){
 
-                    $pathsql[] = " $matchcolumnname LIKE '{$path}' ";
+                        $pathsql[] = " $matchcolumnname LIKE '{$path}' ";
+
+                    }
+
+                    $match_sql.= " ( ".implode(' OR ', $pathsql).' ) ';
                 }
-
-                $match_sql .= " ( " . implode(' OR ', $pathsql) . ' ) ';
-            }
         }
 
         return $match_sql;
     }
-    public static function costcenterpath_contextdata($costcenterpath) {
+    public static function costcenterpath_contextdata($costcenterpath){
 
         global $DB;
 
         $context = \context_system::instance();
 
-        try {
+        try{
             // Get a cache instance
-            $cache = \cache::make('local_costcenter', 'costcenterpathcontextdata');
+            $cache = \cache::make('local_costcenter','costcenterpathcontextdata');
             // Get all of the roles used in this context, including special roles such as user, and frontpageuser.
 
             $cachekey = "costcenterpath_context_$costcenterpath";
@@ -358,61 +379,71 @@ class accesslib {
 
                 $costcentercategory = $DB->get_field_sql($sql);
 
-                if ($costcentercategory) {
+                if($costcentercategory){
 
                     $context = \context_coursecat::instance($costcentercategory);
 
                     $cache->set($cachekey, $context);
+
                 }
             }
-        } catch (dml_exception $e) {
+
+        }catch(dml_exception $e){
             print_r($e->debuginfo);
         }
 
         return $context;
+
     }
-    public static function get_user_roleswitch_path($depth = 0) {
+    public static function get_user_roleswitch_path($depth=0){
 
         global $USER;
 
         $costcenterpath = 0;
 
-        if ($depth > 0) {
+        if($depth > 0){
 
             $costcenterpath = array();
+
         }
 
-        if (!empty($USER->useraccess['currentroleinfo']['contextinfo'])) {
+        if(!empty($USER->useraccess['currentroleinfo']['contextinfo'])){
 
-            $firstrole = current($USER->useraccess['currentroleinfo']['contextinfo']);
+            $firstrole =current($USER->useraccess['currentroleinfo']['contextinfo']);
 
-            $costcenterpath = $firstrole['costcenterpath'];
+            $costcenterpath =$firstrole['costcenterpath'];
 
-            if ($depth > 0) {
+            if($depth > 0){
 
-                $costcenterpatharray = array_filter(explode('/', $costcenterpath));
+                $costcenterpatharray =array_filter(explode('/',$costcenterpath));
 
-                if (isset($costcenterpatharray[$depth])) {
+                if(isset($costcenterpatharray[$depth])){
 
-                    $costcenterpath = $costcenterpatharray[$depth];
-                } else {
+                    $costcenterpath=$costcenterpatharray[$depth];
 
-                    return self::get_user_roleswitch_path($depth - 1);
+                }else{
+
+                   return self::get_user_roleswitch_path($depth-1);
+
                 }
+
             }
+
         }
 
         return $costcenterpath;
     }
-    public static function get_user_role_switch_path() {
+    public static function get_user_role_switch_path(){
 
         global $USER;
 
+
         $costcenterpath = array();
 
-        if (!empty($USER->useraccess['currentroleinfo']['contextinfo'])) {
 
-            foreach ($USER->useraccess['currentroleinfo']['contextinfo'] as $contextinfo) {
+        if(!empty($USER->useraccess['currentroleinfo']['contextinfo'])){
+
+            foreach($USER->useraccess['currentroleinfo']['contextinfo'] AS $contextinfo){
 
                 $costcenterpath[] = $contextinfo['costcenterpath'];
             }
@@ -420,17 +451,20 @@ class accesslib {
 
         return $costcenterpath;
     }
-    public static function get_user_role_switch_select_option($url, $paramname = 'id') {
+    public static function get_user_role_switch_select_option($url,$paramname='id'){
 
-        global $OUTPUT, $USER, $DB;
+        global $OUTPUT,$USER,$DB;
+
 
         $options = array();
 
-        if (!empty($USER->useraccess['currentroleinfo']['contextinfo'])) {
 
-            foreach ($USER->useraccess['currentroleinfo']['contextinfo'] as $contextinfo) {
+        if(!empty($USER->useraccess['currentroleinfo']['contextinfo'])){
 
-                $optionkey = end(explode('/', $contextinfo['costcenterpath']));
+            foreach($USER->useraccess['currentroleinfo']['contextinfo'] AS $contextinfo){
+
+
+                $optionkey=end(explode('/',$contextinfo['costcenterpath']));
 
                 $costcenterinfo = $DB->get_field('local_costcenter', 'fullname', array('id' => $optionkey));
 
@@ -440,70 +474,70 @@ class accesslib {
 
         if (count($options) > 1) {
 
+
             $datatype = optional_param($paramname, $optionkey, PARAM_INT);
 
-            if (array_key_exists($datatype, $options)) {
+            if (array_key_exists($datatype,$options)){
 
-                $USER->useraccess['currentroleinfo']['roleswitch_selected_option'] = $datatype;
+                $USER->useraccess['currentroleinfo']['roleswitch_selected_option']=$datatype ;
             }
 
-            $cachedatatype = $USER->useraccess['currentroleinfo']['roleswitch_selected_option'];
+            $cachedatatype =$USER->useraccess['currentroleinfo']['roleswitch_selected_option'];
 
             $depth = $USER->useraccess['currentroleinfo']['depth'];
-            if (count($USER->useraccess['currentroleinfo']['contextinfo']) > 1) {
-                $depth--;
+            if(count($USER->useraccess['currentroleinfo']['contextinfo']) > 1){
+                 $depth--;
             }
-            if ($depth < 2) {
+            if($depth < 2){
                 $rowdatadepth = get_string('open_costcenterid', 'local_costcenter');
-            } elseif ($depth < 3) {
-                $rowdatadepth = get_string('open_department', 'local_costcenter');
-            } elseif ($depth < 4) {
-                $rowdatadepth = get_string('open_subdepartment', 'local_costcenter');
-            } elseif ($depth < 5) {
-                $rowdatadepth = get_string('open_level4department', 'local_costcenter');
-            } elseif ($depth < 6) {
-                $rowdatadepth = get_string('subsubsubdepartment', 'local_costcenter');
+            } elseif($depth < 3){
+                $rowdatadepth = get_string('open_department','local_costcenter');
+            } elseif($depth < 4){
+                $rowdatadepth = get_string('open_subdepartment','local_costcenter');
+            } elseif($depth < 5){
+                $rowdatadepth = get_string('open_level4department','local_costcenter');
+            } elseif($depth < 6){
+                $rowdatadepth = get_string('subsubsubdepartment','local_costcenter');
             }
 
-            $selectdropdown = $OUTPUT->single_select(
-                $url,
-                $paramname,
-                $options,
-                $cachedatatype,
-                null,
-                'roleswitchfieldform',
-                array('label' => $rowdatadepth . ':')
-            );
+            $selectdropdown=$OUTPUT->single_select($url,$paramname, $options,$cachedatatype,null, 'roleswitchfieldform',
+                    array('label' => $rowdatadepth . ':'));
+
 
             return $selectdropdown;
         }
     }
-    public static function get_user_profile_category($userid, $costcenterid = 0) {
+    public static function get_user_profile_category($userid,$costcenterid=0){
         global $DB;
 
         $dbman = $DB->get_manager();
 
         if (!$dbman->table_exists('local_costcenter')) {
 
-            return 0;
-        } else {
+          return 0;
+
+        }else{
 
             $sql = "SELECT lc.profileinfocategory FROM {local_costcenter} AS lc ";
-            if ($costcenterid != 0) {
+            if($costcenterid != 0){
                 $sql .= " WHERE lc.id = {$costcenterid} ";
-            } else {
+            }else{
                 $sql .= " JOIN {user} AS u ON (u.open_path LIKE concat(lc.path,'/%') OR u.open_path LIKE lc.path) AND lc.parentid = 0 WHERE u.id = :userid ";
             }
 
             $params = ['userid' => $userid];
             return $DB->get_field_sql($sql, $params);
         }
+
+
     }
 
-    public static function get_custom_coursefields_category($courseid) {
+    public static function get_custom_coursefields_category($courseid){
         global $DB;
         $sql = "SELECT lc.courseinfocategory FROM {local_costcenter} AS lc JOIN {course} AS c ON (c.open_path LIKE concat(lc.path,'/%') OR c.open_path LIKE lc.path)  WHERE c.id = :courseid ";
         $params = ['courseid' => $courseid];
         return $DB->get_field_sql($sql, $params);
     }
 }
+
+

@@ -189,28 +189,28 @@ class syncfunctionality
             }
 
             // To hold countryid.
-            if (!empty($user->bussiness_unit_code) && ($this->orgcount == 0)) {
-                $bussiness_unit_code = $user->company_code . "_" . $user->bussiness_unit_code;
-                $this->countryid = $this->get_country_hierarchyid($bussiness_unit_code, $parent = $this->costcenterid, $countryid, $user);
+            if (!empty($user->school_code) && ($this->orgcount == 0)) {
+                $school_code = $user->company_code . "_" . $user->school_code;
+                $this->countryid = $this->get_country_hierarchyid($school_code, $parent = $this->costcenterid, $countryid, $user);
             }else{
                  $this->countryid =0;
             }
 
-            if (!empty($user->department_code) && ($this->orgcount == 0)) {
-                $department_code = $user->company_code . "_" . $user->bussiness_unit_code . "_" . $user->department_code;
+            /*if (!empty($user->department_code) && ($this->orgcount == 0)) {
+                $department_code = $user->company_code . "_" . $user->school_code . "_" . $user->department_code;
                 $this->level3_bussinessid = $this->get_commercial_unitid($department_code, $this->countryid, $user, $buid);
             }else{
                  $this->level3_bussinessid =0;
             }
 
             if (!empty($user->subdepartment_code) && ($this->orgcount == 0)) {
-                $subdepartment_code = $user->company_code . "_" . $user->bussiness_unit_code . "_" . $user->department_code . "_" . $user->subdepartment_code;
+                $subdepartment_code = $user->company_code . "_" . $user->school_code . "_" . $user->department_code . "_" . $user->subdepartment_code;
                 $this->level4_commercialid = $this->get_commercial_areaid($subdepartment_code, $this->level3_bussinessid, $user, $cuid);
             }else{
                  $this->level4_commercialid =0;
-            }
+            }*/
             // if ($user->territory_code && ($this->orgcount == 0)) {
-            //     $territory_code = $user->company_code."_".$user->bussiness_unit_code."_".$user->department_code."_".$user->subdepartment_code."_".$user->territory_code;
+            //     $territory_code = $user->company_code."_".$user->school_code."_".$user->department_code."_".$user->subdepartment_code."_".$user->territory_code;
             //     $this->level5_territoryid = $this->get_territoryid($territory_code, $this->level4_commercialid, $user, $territoryid);
             // }
             // if ($this->costcenterid && ($this->orgcount == 0)) {
@@ -352,7 +352,7 @@ class syncfunctionality
         global $DB, $USER;
         $strings = new stdClass;
         $strings->org = $excel->company_code;
-        $strings->dept = $excel->bussiness_unit_code;
+        $strings->dept = $excel->school_code;
         $strings->subdept = $excel->department_code;
         $strings->learner_id = $excel->employee_code;
         $strings->excel_line_number = $this->excel_line_number;
@@ -370,19 +370,19 @@ class syncfunctionality
             }
         }
         if ($orgerror == 0) {
-            if (isset($excel->bussiness_unit_code) && empty($excel->department_code)) {
+            if (isset($excel->school_code) && empty($excel->department_code)) {
                 $orgcostcenterid = $DB->get_field('local_costcenter', 'id', array('shortname' => $excel->company_code));
                 // $categories = $categorylib->get_categories($orgcostcenterid);
                 // $countrycategory = $DB->get_field('local_costcenter', 'category', array('shortname' => $excel->country));
-                $countrycostcenterid = $DB->get_field('local_costcenter', 'id', array('shortname' => $excel->bussiness_unit_code));
+                $countrycostcenterid = $DB->get_field('local_costcenter', 'id', array('shortname' => $excel->school_code));
                 if ($countrycostcenterid !== $countryid && !empty($countryid)) {
                     echo '<div class=local_users_sync_error>' . get_string('countrycheckwithdh', 'local_users', $strings) . '</div>';
                     $this->errors[] = get_string('countrycheckwithdh', 'local_users', $strings);
                     $this->mfields[] = 'usercategory';
                     $this->errorcount++;
                 }
-            } else if (isset($excel->bussiness_unit_code) && !empty($excel->department_code)) {
-                $countrycostcenterid = $DB->get_field('local_costcenter', 'id', array('shortname' => $excel->bussiness_unit_code));
+            } else if (isset($excel->school_code) && !empty($excel->department_code)) {
+                $countrycostcenterid = $DB->get_field('local_costcenter', 'id', array('shortname' => $excel->school_code));
                 if ($countrycostcenterid !== $countryid && !empty($countryid)) {
                     echo '<div class=local_users_sync_error>' . get_string('countrycheckwithdh', 'local_users', $strings) . '</div>';
                     $this->errors[] = get_string('countrycheckwithdh', 'local_users', $strings);
@@ -399,7 +399,7 @@ class syncfunctionality
         $strings->learner_id = $excel->employee_code;
         $strings->excel_line_number = $this->excel_line_number;
         $country = get_string_manager()->get_list_of_countries();
-        if (!array_key_exists($excel->bussiness_unit_code, $country)) {
+        if (!array_key_exists($excel->school_code, $country)) {
             echo '<div class=local_users_sync_error>' . get_string('invalidcountrycode', 'local_users', $strings) . '</div>';
             $this->errors[] = get_string('invalidcountrycode', 'local_users', $strings);
             $this->mfields[] = 'usercategory';
@@ -463,18 +463,18 @@ class syncfunctionality
             $this->orgcount++;
         }
     } //end of get_org_hierarchyid method
-    public function get_country_hierarchyid($bussiness_unit_code, $parent, $orgid, $user)
+    public function get_country_hierarchyid($school_code, $parent, $orgid, $user)
     {
         global $DB;
         $datalist = $this->organizations;
-        $datal = $datalist[$bussiness_unit_code];
+        $datal = $datalist[$school_code];
         $strings = new stdClass;
-        $strings->countryid = $user->bussiness_unit_code;
+        $strings->countryid = $user->school_code;
         $strings->orgid = $user->department_code;
-        $strings->parentid = $user->bussiness_unit_code;
+        $strings->parentid = $user->school_code;
 
-        $strings->identifier = 'bussiness unit';
-        $strings->orgid = $user->bussiness_unit_code;
+        $strings->identifier = 'school code';
+        $strings->orgid = $user->school_code;
         $strings->parentid = $user->company_code;
         $strings->line = $this->excel_line_number;
 
@@ -482,7 +482,7 @@ class syncfunctionality
             if (!empty($orgid) && !in_array($datal->id, $orgid) && !empty(array_filter($orgid))) {
                 echo '<div class=local_users_sync_error>' . get_string('orgcheckwithdhoh', 'local_users', $strings) . '</div>';
                 $this->errors[] = get_string('orgcheckwithdhoh', 'local_users', $strings);
-                $this->mfields[] = $bussiness_unit_code;
+                $this->mfields[] = $school_code;
                 $this->errorcount++;
                 $this->orgcount++;
             }
@@ -493,7 +493,7 @@ class syncfunctionality
                 } else {
                     echo '<div class=local_users_sync_error>' . get_string('noorganizationidfound', 'local_users', $strings) . '</div>';
                     $this->errors[] = get_string('noorganizationidfound', 'local_users', $strings);
-                    $this->mfields[] = $bussiness_unit_code;
+                    $this->mfields[] = $school_code;
                     $this->errorcount++;
                     $this->orgcount++;
                 }
@@ -501,7 +501,7 @@ class syncfunctionality
         } else {
             echo '<div class=local_users_sync_error>' . get_string('noorganizationidfound', 'local_users', $strings) . '</div>';
             $this->errors[] = get_string('noorganizationidfound', 'local_users', $strings);
-            $this->mfields[] = $bussiness_unit_code;
+            $this->mfields[] = $school_code;
             $this->errorcount++;
             $this->orgcount++;
         }
@@ -745,7 +745,7 @@ class syncfunctionality
         $strings = new \stdClass();
         $strings->commercial_unitid = $user->department_code;
         $strings->orgid = $user->department_code;
-        $strings->parentid = $user->bussiness_unit_code;
+        $strings->parentid = $user->school_code;
         $strings->identifier = 'Commercial Unit';
         $strings->line = $this->excel_line_number;
         if ($this->orgcount == 0) {
@@ -941,7 +941,7 @@ class syncfunctionality
         $user->middlename = $excel->middle_name ? $excel->middle_name : ' ';
         $user->phone1 = $excel->mobileno ? $excel->mobileno : '';
         $user->email = strtolower($excel->email);
-        $user->country = $excel->bussiness_unit_code ? $excel->bussiness_unit_code : 'IN';
+        $user->country = $excel->school_code ? $excel->school_code : 'IN';
         $user->lang = $excel->language ? $excel->language : 'en';
         $user->open_group = $excel->discipline ? $excel->discipline : ' ';
         $user->learner_status = $excel->employee_status;
@@ -966,7 +966,7 @@ class syncfunctionality
         $user->open_district = $this->open_district;
         $user->open_subdistrict = $this->open_subdistrict;
         $user->open_village = $this->open_village;
-        $user->country = $excel->bussiness_unit_code;
+        $user->country = $excel->school_code;
         $user->timezone = in_array($excel->timezone, $this->timezones) ? $excel->timezone : $CFG->forcetimezone;
         local_costcenter_get_costcenter_path($user);
         if ($excel->reportingmanager_empid) {
@@ -974,7 +974,7 @@ class syncfunctionality
             $user->open_supervisorid = $super_user;
         }
         $user->open_hrmsrole = $excel->role;
-        $user->institution = $excel->bussiness_unit_code;
+        $user->institution = $excel->school_code;
         $user->usermodified = $USER->id;
         if (!empty(trim($excel->password))) {
             $user->password = hash_internal_user_password(trim($excel->password));
@@ -1031,11 +1031,14 @@ class syncfunctionality
         $userobject = (object)$userobject;
         $userobject->id = $insertnewuserfromcsv;
 
-        $categorysql = $DB->get_record('local_costcenter', ['id' => $userobject->open_department], $fields = 'category', $strictness = IGNORE_MISSING);
-        $categoryid = $categorysql->category;
-        $categorycontext = \context_coursecat::instance($categoryid);
-        $roles  = new \local_assignroles\local\assignrole();
-        $roles->rolesassign((array) $insertnewuserfromcsv, $userobject->roleid, $categorycontext->id);
+        $costid = $userobject->open_department ? : ($userobject->open_costcenterid ? : 0);
+        if ($costid) {
+            $categorysql = $DB->get_record('local_costcenter', ['id' => $costid], $fields = 'category', $strictness = IGNORE_MISSING);
+            $categoryid = $categorysql->category;
+            $categorycontext = \context_coursecat::instance($categoryid);
+            $roles  = new \local_assignroles\local\assignrole();
+            $roles->rolesassign((array) $insertnewuserfromcsv, $userobject->roleid, $categorycontext->id);
+        }
 
         // Pre-process custom profile menu fields data from csv file.
         $user = uu_pre_process_custom_profile_data($userobject);
@@ -1084,9 +1087,9 @@ class syncfunctionality
             $user->open_district = $this->open_district;
             $user->open_subdistrict = $this->open_subdistrict;
             $user->open_village = $this->open_village;
-            $user->country = $excel->bussiness_unit_code;
+            $user->country = $excel->school_code;
             $user->open_hrmsrole = $excel->role;
-            $user->institution = $excel->bussiness_unit_code;
+            $user->institution = $excel->school_code;
             $user->phone1 = $excel->mobileno ? $excel->mobileno : '';
             $user->open_state = $excel->state_name;
             $user->open_designation = $excel->designation;
@@ -1116,25 +1119,28 @@ class syncfunctionality
             }
             user_update_user($user, false);
 
-            $categorysql = $DB->get_record('local_costcenter', ['id' => $user->open_department], $fields = 'category', $strictness = IGNORE_MISSING);
-            $categoryid = $categorysql->category;
-            $categorycontext = \context_coursecat::instance($categoryid);
-            $var = $DB->get_record('role_assignments',array('userid' => $userdata->id, 'contextid' => $categorycontext->id));
-            if (!$var) {
-                $roles  = new \local_assignroles\local\assignrole();
-                $roles->rolesassign((array) $userid, $user->roleid, $categorycontext->id);
-            } else {
-                $role = (object) [
-                    'id' => $var->id,
-                    'roleid' => $user->roleid,
-                    'userid' => $userid,
-                    'timemodified' => time(),
-                    'contextid' => $categorycontext->id,
-                    'modifierid' => $USER->id,
-                ];
-                $DB->update_record('role_assignments', $role);
+            $costid = $user->open_department ? : ($user->open_costcenterid ? : 0);
+            if ($costid) {
+                $categorysql = $DB->get_record('local_costcenter', ['id' => $costid], $fields = 'category', $strictness = IGNORE_MISSING);
+                $categoryid = $categorysql->category;
+                $categorycontext = \context_coursecat::instance($categoryid);
+                $var = $DB->get_record('role_assignments', ['userid' => $userid]);
+                if (!$var) {
+                    $roles  = new \local_assignroles\local\assignrole();
+                    $roles->rolesassign((array) $userid, $user->roleid, $categorycontext->id);
+                } else {
+                    $role = (object) [
+                        'id' => $var->id,
+                        'roleid' => $user->roleid,
+                        'userid' => $userid,
+                        'timemodified' => time(),
+                        'contextid' => $categorycontext->id,
+                        'modifierid' => $USER->id,
+                    ];
+                    $DB->update_record('role_assignments', $role);
+                }
             }
-          
+
             // Pre-process custom profile menu fields data from csv file.
             $existinguser = uu_pre_process_custom_profile_data($excel);
             $existinguser->id = $user->id;

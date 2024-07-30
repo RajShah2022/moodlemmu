@@ -123,7 +123,7 @@ $string['help_2'] = '</td></tr>
 <tr><td>password</td><td>Provide the password,Password must be at least 8 characters long,Password must have at least 1 digit(s),Password must have at least 1 upper case letter(s),
 Password must have at least 1 non-alphanumeric character(s) such as as *, -, or #..</td></tr>
 <tr><td>prefix</td><td>Enter prfix as either \'mr\', \'mrs\' or \'ms\', avoid additional spaces.</td></tr>
-<tr><td>bussiness_unit_code</td><td>Provide bussiness unit code. Bussiness unit must already exist in system as part of Organization hierarchy.</td></tr>
+<tr><td>school_code</td><td>Provide bussiness unit code. Bussiness unit must already exist in system as part of Organization hierarchy.</td></tr>
 <tr><td>department_code</td><td>Enter department code. Department must already exist under specified bussiness unit in system as part of Organization hierarchy.</td></tr>
 <tr><td>subdepartment_code</td><td>Enter sub department code. Sub Department must already exist under specified department in system as part of Organization hierarchy.</td></tr>
 <tr><td>mobileno</td><td>Enter Numerics only.</td></tr>

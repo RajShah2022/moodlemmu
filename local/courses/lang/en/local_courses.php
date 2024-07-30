@@ -41,7 +41,7 @@ $string['agentsearch'] = 'Agent Search';
 $string['empnumber'] = 'Learner ID';
 $string['email'] = 'Email';
 $string['band'] = 'Band';
-$string['departments'] = 'Bussiness Unities';
+$string['departments'] = 'School Code';
 $string['sub_departments'] = 'Department';
 $string['sub-sub-departments'] = 'Sub Departments';
 $string['designation'] = 'Designation';
@@ -127,7 +127,7 @@ $string['leftmenu_browsecategories'] = 'Custom Fields';
 $string['courseother_details'] = 'Other Details';
 $string['view_courses'] = 'view courses';
 $string['deleteconfirm'] = 'Are you sure, you want to delete "<b>{$a->name}</b>" course?</br> Once deleted, it can not be reverted.';
-$string['department'] = 'Bussiness Unit';
+$string['department'] = 'School Code';
 $string['coursecategory'] = 'Category';
 $string['fullnamecourse'] = 'Fullname';
 $string['coursesummary'] = 'Summary';
@@ -148,9 +148,13 @@ $string['courses'] = 'Courses';
 $string['nocategories'] = 'No categories available';
 $string['nosameenddate'] = '"End date" should not be less than "Start date"';
 $string['coursemanual'] = 'Download sample Excel sheet and fill the field values in the format specified below.';
-$string['help_1'] = '<table border="1">
-<tr><td></td><td style="text-align:left;border-left:1px solid white;padding-left:50px;"><b>Mandatory Fields</b></td><tr>
-<th>Field</th><th>Restriction</th>
+$string['help_1'] = '<div class="helpmanual_table"><table class="generaltable" border="1">
+<tr class="field_type_head">
+    <td class="empty_column"></td>
+    <td class="field_type font-weight-bold" style="text-align:left;border-left:1px solid white;padding-left:50px;">Mandatory Fields</td>
+<tr>
+<th>Field</th>
+<th>Restriction</th>
 <tr><td>fullname</td><td>Fullname of the course.</td></tr>
 <tr><td>course-code</td><td>course-code of the course.</td></tr>
 <tr><td>category_code</td><td>Enter the category code(you can find this code in Manage Categories page).</td></tr>
@@ -161,9 +165,9 @@ $string['help_2'] = '</td></tr>
 <th>Field</th><th>Restriction</th>
 <tr><td>Summary</td><td>Summary of the course.</td></tr>
 <tr><td>Cost</td><td>Cost of the course.</td></tr>
-<tr><td>bussiness_unit_code</td><td>Provide Bussiness Unit code. Bussiness unit must already exist in system as part of School hierarchy.</td></tr>
-<tr><td>department_code</td><td>Enter School code. Department must already exist under specified bussiness unit in system as part of School hierarchy.</td></tr>
-<!-- <tr><td>commercial_area_code</td><td>Enter Department Code. Department must already exist under specified Department in system as part of Company hierarchy.</td></tr>
+<tr><td>school_code</td><td>Provide School code. School code must already exist in system as part of company hierarchy.</td></tr>
+<!-- <tr><td>department_code</td><td>Enter School code. Department must already exist under specified School Code in system as part of School hierarchy.</td></tr>
+<tr><td>commercial_area_code</td><td>Enter Department Code. Department must already exist under specified Department in system as part of Company hierarchy.</td></tr>
 <tr><td>territory_code</td><td>Enter Territory Code. Territory must already exist under specified Department in system as part of Company hierarchy.</td></tr> -->
 
 </table>';
@@ -178,7 +182,7 @@ $string['completed_users'] = 'Completed Users';
 $string['course_filters'] = 'Course Filters';
 $string['back'] = 'Back';
 $string['sample'] = 'Sample';
-$string['selectdept'] = '--Select Bussiness Unit--';
+$string['selectdept'] = '--Select School Code--';
 $string['selectsubdept'] = '--Select Department--';
 $string['selectorg'] = '--Select Company--';
 $string['selectcat'] = '--Select Category--';
@@ -220,7 +224,7 @@ $string['enablecourse'] = 'Are you sure, want Active course <b>\'{$a}\'</b>?';
 $string['disablecourse'] = 'Are you sure, want In-active course <b>\'{$a}\'</b>?';
 $string['courseconfirm'] = 'Confirm';
 $string['open_pathcourse_help'] = 'Organisation for the course';
-$string['open_departmentidcourse_help'] = 'Bussiness Unit for the course';
+$string['open_departmentidcourse_help'] = 'School Code for the course';
 $string['open_identifiedascourse_help'] = 'Type of the course (multi select)';
 $string['open_pointscourse_help'] = 'Points for the course default (0)';
 $string['selfenrolcourse_help'] = 'Check yes if required self enrollment to the course';
@@ -229,7 +233,7 @@ $string['open_costcourse_help'] = 'Cost of the course';
 $string['open_skillcourse_help'] = 'Skill achieved on completion of course';
 $string['open_levelcourse_help'] = 'Level achieved on completion of course';
 $string['open_pathcourse'] = 'Organisation';
-$string['open_departmentidcourse'] = 'Bussiness Unit';
+$string['open_departmentidcourse'] = 'School Code';
 $string['open_identifiedascourse'] = 'Type';
 $string['open_pointscourse'] = 'Points';
 $string['selfenrolcourse'] = 'self enrollment';
@@ -238,9 +242,9 @@ $string['open_costcourse'] = 'Cost';
 $string['open_skillcourse'] = 'Skill ';
 $string['open_levelcourse'] = 'Level';
 $string['notyourorg_msg'] = 'You have tried to view this activity is not belongs to your Company';
-$string['notyourdept_msg'] = 'You have tried to view this activity is not belongs to your Bussiness Unit';
+$string['notyourdept_msg'] = 'You have tried to view this activity is not belongs to your School Code';
 $string['notyourorgcourse_msg'] = 'You have tried to view this course is not belongs to your Company';
-$string['notyourdeptcourse_msg'] = 'You have tried to view this course is not belongs to your Bussiness Unit';
+$string['notyourdeptcourse_msg'] = 'You have tried to view this course is not belongs to your School Code';
 $string['notyourorgcoursereport_msg'] = 'You have tried to view this Grader report is not your Company course, so you cann\'t access this page';
 $string['need_manager_approval '] = 'need_manager_approval';
 $string['categorycode'] = 'Category Code';
@@ -261,7 +265,7 @@ $string['courses:view'] = 'View course';
 $string['courses:visibility'] = 'Course visibility';
 $string['courses:enrol'] = 'Course enrol';
 
-$string['reason_linkedtocostcenter'] = 'As this Course category is linked with the Company/Bussiness Unit, you can not delete this category';
+$string['reason_linkedtocostcenter'] = 'As this Course category is linked with the Company/School Code, you can not delete this category';
 $string['reason_subcategoriesexists'] = 'As we have sub-categories in this Course category, you can not delete this category';
 $string['reason_coursesexists'] = 'As we have courses in this Course category, you can not delete this category';
 $string['reason'] = 'Reason';
@@ -342,10 +346,10 @@ $string['missingfullname'] = 'Please Enter Valid Course Name';
 $string['missingshortname'] = 'Please Enter Valid Course Code';
 $string['missingtype'] = 'Please Select Type';
 $string['course_reports'] = 'Course Reports';
-$string['cannotuploadcoursewithlob'] = 'With out Bussiness Unit cannot upload a course with Department';
-$string['categorycodeshouldbedepcode'] = 'Category Code should be under the Bussiness Unit i.e \'{$a}\'';
+$string['cannotuploadcoursewithlob'] = 'With out School Code cannot upload a course with Department';
+$string['categorycodeshouldbedepcode'] = 'Category Code should be under the School Code i.e \'{$a}\'';
 $string['categorycodeshouldbesubdepcode'] = 'Category Code should be short name of Department i.e \'{$a}\'';
-$string['subdeptshouldunderdepcode'] = 'Department should be under the Bussiness Unit i.e \'{$a}\'';
+$string['subdeptshouldunderdepcode'] = 'Department should be under the School Code i.e \'{$a}\'';
 $string['course_name_help'] = 'Name for the Course';
 $string['coursecode_help'] = 'Code for the Course';
 $string['enrolled_courses'] = 'My Courses';
@@ -377,7 +381,7 @@ $string['coursedescription'] = 'Description';
 $string['exportcourses'] = 'Export Courses to Excel';
 $string['make_inactive'] = 'Make Inactive';
 $string['make_active'] = 'Make Active';
-$string['departmentnotfound'] = 'Bussiness Unit not found i.e \'{$a}\'';
+$string['departmentnotfound'] = 'School Code not found i.e \'{$a}\'';
 $string['categorycode'] = 'Category Code';
 // course types strings
 $string['open_coursetypecourse'] = 'Course type';
@@ -403,14 +407,14 @@ $string['coursecodeexists'] = 'Coursetype code already exists ({$a})';
 $string['deletecoursetypenotconfirm'] = 'You cannot delete <b>{$a->name}</b> as it is currently mapped to a course. Please unmap to delete.';
 $string['reason'] = 'Reason';
 $string['open_costcenteridlocal_courses'] = 'Organisation';
-$string['open_departmentlocal_courses'] = 'Bussiness Unit';
+$string['open_departmentlocal_courses'] = 'School Code';
 $string['open_subdepartmentlocal_courses'] = 'Department';
 $string['open_level4departmentlocal_courses'] = 'Sub Department';
 $string['open_level5departmentlocal_courses'] = 'Territory';
 $string['pleaseselectidentifiedtype'] = 'Please Select Type';
 
 $string['open_costcenteridlocal_courses_help'] = 'Company of the course';
-$string['open_departmentlocal_courses_help'] = 'Bussiness Unit of the course';
+$string['open_departmentlocal_courses_help'] = 'School Code of the course';
 $string['open_subdepartmentlocal_courses_help'] = 'Department of the course';
 $string['open_level4departmentlocal_courses_help'] = 'Sub Department of the course';
 $string['open_level5departmentlocal_courses_help'] = 'Territory of the course';
