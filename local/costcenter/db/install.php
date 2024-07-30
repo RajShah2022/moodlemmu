@@ -65,4 +65,11 @@ function xmldb_local_costcenter_install(){
                         $dbman->add_field($table, $field5);
                 }
         }
+        // data insertion.
+        $time = time();
+        $defaultcategory = array('name' => 'MathMeUp', 'idnumber' => 'MathMeUp', 'parent' => '0', 'timemodified' => $time, 'depth' => 1,'path' => '/1');
+        $categoryid = $DB->insert_record('course_categories', $defaultcategory);
+
+        $organization = array('fullname' => 'MathMeUp', 'shortname' => 'MathMeUp', 'parentid' => '0', 'timecreated' => $time, 'usermodified' => 2,'timemodified' => NULL, 'path' => '/1', 'depth' => 1, 'sortorder' => 01, 'category' => $categoryid, 'profileinfocategory' => 1, 'courseinfocategory' => 1, 'multipleorg' => 1 );
+        $organizationid = $DB->insert_record('local_costcenter', $organization);
 }

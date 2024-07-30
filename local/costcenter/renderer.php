@@ -399,7 +399,7 @@ class local_costcenter_renderer extends plugin_renderer_base {
             $rolescount = $DB->count_records_sql("SELECT count(ra.roleid) FROM {context} AS ct JOIN {role_assignments} ra ON ra.contextid = ct.id  AND ct.id = '$contextid'");
 
             $departments_array['subdept'] = $subdept;
-            $departments_array['enablesubdepartment_link'] = true;
+            // $departments_array['enablesubdepartment_link'] = true;
             $departments_array['subdept_count_link'] = $subdept_count_link;
             $departments_array['departmentparentid'] = $dept->parentid;
             $departments_array['departmentfullname'] = $dept->fullname;
@@ -441,8 +441,8 @@ class local_costcenter_renderer extends plugin_renderer_base {
             "departments_content" => $departments_content,
             "headstring" => 'editcostcen',
             "formtype" => 'organization',
-            "assignroles" => (is_siteadmin() || has_capability('local/assignroles:manageassignroles', $categorycontext)),
-            "managepermissions" => (is_siteadmin() || has_capability('local/costcenter:managepermissions', $categorycontext)),
+            // "assignroles" => (is_siteadmin() || has_capability('local/assignroles:manageassignroles', $categorycontext)),
+            // "managepermissions" => (is_siteadmin() || has_capability('local/costcenter:managepermissions', $categorycontext)),
         ];
         $costcenter_view_content = $costcenter_view_content + $pluginnavs;
         return $OUTPUT->render_from_template('local_costcenter/departments_view', $costcenter_view_content);
@@ -505,7 +505,7 @@ class local_costcenter_renderer extends plugin_renderer_base {
         $department = count($departments);
         $department = ($department > 0 ? $department : get_string('not_available', 'local_costcenter'));
 
-        $subdepartment_link = $department;
+        // $subdepartment_link = $department;
 
         $subdepartments = $DB->get_records('local_costcenter', array('parentid' => $id));
         $totalsubdepts = count($subdepartments);
@@ -635,8 +635,8 @@ class local_costcenter_renderer extends plugin_renderer_base {
             "delete_message" => $del_confirmationmsg,
             "departments_content" => $departments_content,
             "headstring" => 'update_dipartment',
-            "assignroles" => (is_siteadmin() || has_capability('local/assignroles:manageassignroles', $categorycontext)),
-            "managepermissions" => (is_siteadmin() || has_capability('local/costcenter:managepermissions', $categorycontext)),
+            // "assignroles" => (is_siteadmin() || has_capability('local/assignroles:manageassignroles', $categorycontext)),
+            // "managepermissions" => (is_siteadmin() || has_capability('local/costcenter:managepermissions', $categorycontext)),
         ];
         if ($depart->depth == 5) {
             $costcenter_view_content['headstring'] = 'update_subsubsubsubdipartment';
@@ -652,7 +652,7 @@ class local_costcenter_renderer extends plugin_renderer_base {
             $costcenter_view_content['formtype'] = 'subdepartment';
         } else if ($depart->depth == 2) {
             $costcenter_view_content['headstring'] = 'update_subdipartment';
-            $costcenter_view_content['showsubdept_content'] = true;
+            // $costcenter_view_content['showsubdept_content'] = true;
             $costcenter_view_content['formtype'] = 'department';
         }
         $costcenter_view_content = $costcenter_view_content + $pluginnavs;

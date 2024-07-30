@@ -505,14 +505,14 @@ function costcenter_items() {
 * Displays a node in left side menu
 * @return  [type] string  link for the leftmenu
 */
-function local_costcenter_leftmenunode() {
-    global $USER, $DB;
+function local_costcenter_leftmenunode(){
+    global $USER,$DB;
     $categorycontext = (new \local_costcenter\lib\accesslib())::get_module_context();
     $costcenternode = '';
     if (has_capability('local/costcenter:view', $categorycontext) || is_siteadmin()) {
         $costcenternode .= html_writer::start_tag('li', array('id' => 'id_leftmenu_departments', 'class' => 'pull-left user_nav_div departments'));
         if (is_siteadmin()) {
-            $organization_url = new moodle_url('/local/costcenter/index.php');
+            $organization_url = new moodle_url('/local/costcenter/costcenterview.php?id=1');
             $organization_string = get_string('orgStructure', 'local_costcenter');
         } else {
             $depth = ($categorycontext->depth - 1);
