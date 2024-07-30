@@ -161,9 +161,9 @@ class local_costcenter_renderer extends plugin_renderer_base {
             "deleteicon" => $OUTPUT->image_url('t/delete'),
             "hideurl" => $hideurl,
             "showurl" => $showurl,
-            "edit" => $edit,
-            "hide" => $hide,
-            "show" => $show,
+            // "edit" => $edit,
+            // "hide" => $hide,
+            // "show" => $show,
             "action_message" => $action_message,
             "delete_message" => $del_confirmationmsg,
             "status" => $record->visible,
@@ -176,8 +176,8 @@ class local_costcenter_renderer extends plugin_renderer_base {
             "parentid" => $record->parentid,
             "headstring" => 'editcostcen',
             "formtype" => 'organization',
-            "assignroles" => (is_siteadmin() || has_capability('local/assignroles:manageassignroles', $categorycontext)),
-            "managepermissions" => (is_siteadmin() || has_capability('local/costcenter:managepermissions', $categorycontext)),
+            // "assignroles" => (is_siteadmin() || has_capability('local/assignroles:manageassignroles', $categorycontext)),
+            // "managepermissions" => (is_siteadmin() || has_capability('local/costcenter:managepermissions', $categorycontext)),
         ];
 
         $viewdeptContext = $viewdeptContext + $pluginnavs;
@@ -278,10 +278,10 @@ class local_costcenter_renderer extends plugin_renderer_base {
         }*/
 
         $buttons = array(
-            'create_organisation' => $create_organisation,
+            // 'create_organisation' => $create_organisation,
             'create_department' => $create_department,
-            'create_sub_department' => $create_sub_department,
-            'create_sub_sub_department' => $create_sub_sub_department,
+            // 'create_sub_department' => $create_sub_department,
+            // 'create_sub_sub_department' => $create_sub_sub_department,
             //'create_sub_sub_sub_department' => $create_sub_sub_sub_department
         );
 
@@ -428,9 +428,9 @@ class local_costcenter_renderer extends plugin_renderer_base {
             "roleid" => 'test role',
             "coursefileurl" => $OUTPUT->image_url('/course_images/courseimg', 'local_costcenter'),
             "orgname" => $depart->fullname,
-            "edit" => $edit,
-            "status" => $depart->visible,
-            "delete" => $delete,
+            // "edit" => $edit,
+            // "status" => $depart->visible,
+            // "delete" => $delete,
             "profileinfocategory" => $depart->profileinfocategory,
             "courseinfocategory" => $depart->courseinfocategory,
             "recordid" => $depart->id,

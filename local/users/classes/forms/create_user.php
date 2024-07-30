@@ -19,8 +19,8 @@ namespace local_users\forms;
 defined('MOODLE_INTERNAL') || die;
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->libdir . '/completionlib.php');
-require_once($CFG->dirroot . '/local/costcenter/lib.php');
 require_once($CFG->dirroot . '/local/users/lib.php');
+require_once($CFG->dirroot . '/local/costcenter/lib.php');
 
 use moodleform;
 use costcenter;
@@ -56,16 +56,11 @@ class create_user extends moodleform {
         $mform = $this->_form;
         $form_status = $this->_customdata['form_status'];
         $id = $this->_customdata['id'] > 0 ? $this->_customdata['id'] : 0;
+        $roleid = $this->_customdata['roleid'] > 0 ? $this->_customdata['roleid'] : 0;
 
         if ($form_status == 0) {
 
-            $select = [0 => get_string('selectrole', 'role')];
-            $sql = "SELECT r.id, r.name as fullname
-                      FROM {role} r
-                      JOIN {role_context_levels} rcl ON (rcl.contextlevel = :contextlevel AND r.id = rcl.roleid)
-                     WHERE r.name != '' AND (r.archetype != 'manager' OR r.shortname LIKE 'hod' ) ";
-            $role = $select + $DB->get_records_sql_menu($sql, ['contextlevel' => CONTEXT_COURSECAT]);
-            $mform->addElement('select', 'roleid', get_string('open_role', 'local_users'), $role);
+            $mform->addElement('select', 'roleid', get_string('open_role', 'local_users'), user_role($roleid));
             $mform->setType('roleid', PARAM_INT);
             $mform->addRule('roleid', null, 'required', null, 'client');
 

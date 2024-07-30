@@ -212,7 +212,7 @@ $string['audience_commercial'] = '<p> <b>Region :</b> {$a}</p>';
 $string['help_1'] = '<div class="helpmanual_table"><table class="generaltable" border="1">
 <tr class="field_type_head"><td class="empty_column"></td><td class="field_type font-weight-bold" style="text-align:left;border-left:1px solid white;padding-left:50px;">Mandatory Fields</td><tr>
 <th>Field</th><th>Restriction</th>
-<tr><td>department_code</td><td>Provide the School code</td></tr>
+<tr><td>company_code</td><td>Provide the company code</td></tr>
 <tr><td>username</td><td>Enter the username, avoid additional spaces.</td></tr>
 <tr><td>employee_code</td><td>Enter the employee code, avoid additional spaces.</td></tr>
 <tr><td>firstname</td><td>Enter the first name.</td></tr>
@@ -220,15 +220,14 @@ $string['help_1'] = '<div class="helpmanual_table"><table class="generaltable" b
 <tr><td>email</td><td>Enter valid email.</td></tr>
 <tr><td>employee_status</td><td>Enter employee status as either \'Active\' or \'Inactive\', avoid additional spaces.</td></tr>
 <tr><td>gender</td><td>Enter gender as either \'male\',\'female\' or \'other\', avoid additional spaces.</td></tr>
-<tr><td>role</td><td>Enter Role (hod, editingteacher, student), avoid additional spaces.</td></tr>';
+<tr><td>role</td><td>Enter Role (administrator, hod, editingteacher, student), avoid additional spaces.</td></tr>';
 $string['help_2'] = '</td></tr>
 <tr class="field_type_head"><td class="empty_column"></td><td class="field_type font-weight-bold" style="text-align:left;border-left:1px solid white;"><b  class="pad-md-l-50 hlep2-oh">Non-Mandatory Fields</b></td><tr>
 <th>Field</th><th>Restriction</th>
+<tr><td>school_code</td><td>Provide the School code</td></tr>
 <tr><td>password</td><td>Provide the password,Password must be at least 8 characters long,Password must have at least 1 digit(s),Password must have at least 1 upper case letter(s),
 Password must have at least 1 non-alphanumeric character(s) such as as *, -, or #..</td></tr>
 <tr><td>prefix</td><td>Enter prfix as either \'mr\', \'mrs\' or \'ms\', avoid additional spaces.</td></tr>
-<tr><td>bussiness_unit_code</td><td>Provide bussiness unit code. Bussiness unit must already exist in system as part of School hierarchy.</td></tr>
-<tr><td>department_code</td><td>Enter School code. Department must already exist under specified bussiness unit in system as part of School hierarchy.</td></tr>
 <tr><td>mobileno</td><td>Enter Numerics only.</td></tr>
 <tr><td>reportingmanager_empid</td><td>Enter reporting manger employee code, avoid additional spaces..</td></tr>
 

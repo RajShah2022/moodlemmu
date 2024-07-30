@@ -224,7 +224,7 @@ class local_uploadcourse_processor {
 
             $data['open_costcenterid'] = $this->defaults['open_costcenterid'];
             $depts = [];
-            $multidepartments = explode(",", $data['department_code']);
+            $multidepartments = explode(",", $data['school_code']);
             foreach ($multidepartments as $department) {
                 $depts[] = $DB->get_field('local_costcenter', 'id', array('shortname' => $department));
             }
@@ -256,6 +256,7 @@ class local_uploadcourse_processor {
             // unset($data['coursetype']);
 
             $data['open_cost'] = $data['cost'];
+            $data['completiondays'] = 0;
             $course = $this->get_course($data);
             if ($course->prepare()) {
                 $course->proceed();
@@ -419,6 +420,7 @@ class local_uploadcourse_processor {
             $data = $this->parse_line($line);
             $data['shortname'] = $data['course-code'];
             // $data['idnumber'] = $data['category_code'];
+            $data['completiondays'] = 0;
             $course = $this->get_course($data);
             $result = $course->prepare();
             if (!$result) {

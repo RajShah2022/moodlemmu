@@ -70,8 +70,9 @@ function local_users_output_fragment_new_create_user($args) {
             unset($data->open_supervisorid);
         }
 
-        $path = explode('/', $data->open_path)[2];
-        $categorysql = $DB->get_record('local_costcenter', ['id' => $path], $fields = 'category', $strictness = IGNORE_MISSING);
+        $path = explode('/', $data->open_path);
+        $costid = $path[2] ? : ($path[1] ? : 0);
+        $categorysql = $DB->get_record('local_costcenter', ['id' => $costid], $fields = 'category', $strictness = IGNORE_MISSING);
         $categoryid = $categorysql->category;
         $categorycontext = \context_coursecat::instance($categoryid);
         $var = $DB->get_record('role_assignments', array('userid' => $data->id, 'contextid' => $categorycontext->id));
@@ -82,8 +83,12 @@ function local_users_output_fragment_new_create_user($args) {
         useredit_load_preferences($data);
         $customdata = array(
             'editoroptions' => $editoroptions,
-            'form_status' => $args->form_status, 'id' => $data->id,
-            'open_positionid' => $data->open_positionid, 'open_domainid' => $data->open_domainid, 'open_path' => $data->open_path
+            'form_status' => $args->form_status,
+            'id' => $data->id,
+            'open_positionid' => $data->open_positionid,
+            'open_domainid' => $data->open_domainid,
+            'open_path' => $data->open_path,
+            'roleid' => $var->roleid,
         );
         local_costcenter_set_costcenter_path($customdata);
         local_users_set_userprofile_datafields($customdata, $data);
@@ -2058,4 +2063,66 @@ function costcenterwise_users_datacount($costcenter, $department = false, $subde
 
     $countusers = $DB->count_records_sql($countusersql, $params);
     return ['datacount' => $countusers];
+}
+
+/**
+ * Retrieves a list of roles available for selection based on the current context level.
+ *
+ * This function queries the Moodle database to fetch roles that are applicable to the current 
+ * context level. It constructs a SQL query to select roles that meet specific criteria 
+ * depending on the depth of the category context. The roles are returned in a format suitable 
+ * for use in a dropdown menu, with an initial "select role" option.
+ *
+ * Role selection criteria:
+ * - Excludes roles with an empty name.
+ * - Excludes roles with the archetype 'manager'.
+ * - Includes roles with 'administrator' shortname if the category context depth is 1.
+ * - Includes roles with 'hod' shortname if the category context depth is 2 or if the user is a site admin.
+ *
+ * @param int $roleid Optional. The ID of a specific role to include in the results. If provided,
+ *                     this role will be added to the list regardless of the other criteria.
+ *
+ * @return array An associative array where the keys are role IDs and the values are role names,
+ *               with an initial option for selecting a role.
+ */
+function user_role($roleid) {
+    global $DB;
+
+    $params = [];
+
+    // Get the category context from the local_users access library.
+    $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
+
+    // Initialize the role selection options with a default "select role" option.
+    $select = [0 => get_string('selectrole', 'role')];
+
+    // Construct the SQL query to fetch role IDs and names based on the category context level.
+    $sql = "SELECT r.id, r.name as fullname
+              FROM {role} r
+              JOIN {role_context_levels} rcl ON (rcl.contextlevel = :contextlevel AND r.id = rcl.roleid)
+             WHERE r.name != '' AND (r.archetype != 'manager' ";
+
+    // Adjust query conditions based on context depth.
+    if ($categorycontext->depth == 1) {
+        $sql .= " OR r.shortname LIKE 'administrator' ";
+    }
+    if ($categorycontext->depth == 2 || is_siteadmin()) {
+        $sql .= " OR r.shortname LIKE 'hod' ";
+    }
+
+    if ($roleid > 0) {
+        $sql .= " OR r.id = :id ";
+        $params['id'] = $roleid;
+    }
+
+    // Close the SQL query.
+    $sql .= ")";
+
+    $params['contextlevel'] = CONTEXT_COURSECAT;
+
+    // Execute the SQL query and merge the results with the initial selection options.
+    $role = $select + $DB->get_records_sql_menu($sql, $params);
+
+    // Return the list of roles with the initial selection option.
+    return $role ? : $select;
 }
