@@ -71,7 +71,7 @@ function local_users_output_fragment_new_create_user($args) {
         }
 
         $path = explode('/', $data->open_path);
-        $costid = $path[2] ? : ($path[1] ? : 0);
+        $costid = $path[2] ?: ($path[1] ?: 0);
         $categorysql = $DB->get_record('local_costcenter', ['id' => $costid], $fields = 'category', $strictness = IGNORE_MISSING);
         $categoryid = $categorysql->category;
         $categorycontext = \context_coursecat::instance($categoryid);
@@ -104,7 +104,7 @@ function local_users_output_fragment_new_create_user($args) {
 
         $data->open_costcenterid = $formdata['open_costcenterid'];
 
-        // profile_load_data($data);
+        profile_load_data($data);
         $mform->set_data($data);
     } else {
         $customdata = array(
@@ -1306,7 +1306,8 @@ function manage_users_content($stable, $users/*,$filterdata*/) {
             $list['rolecount'] = false;
         }
 
-        $rolename = $DB->get_field_sql("SELECT r.name
+        $rolename = $DB->get_field_sql(
+            "SELECT r.name
             FROM {role} r
             JOIN {role_assignments} ra ON r.id = ra.roleid
             JOIN {context} c ON c.id = ra.contextid AND c.contextlevel = 40
@@ -2069,9 +2070,9 @@ function costcenterwise_users_datacount($costcenter, $department = false, $subde
 /**
  * Retrieves a list of roles available for selection based on the current context level.
  *
- * This function queries the Moodle database to fetch roles that are applicable to the current 
- * context level. It constructs a SQL query to select roles that meet specific criteria 
- * depending on the depth of the category context. The roles are returned in a format suitable 
+ * This function queries the Moodle database to fetch roles that are applicable to the current
+ * context level. It constructs a SQL query to select roles that meet specific criteria
+ * depending on the depth of the category context. The roles are returned in a format suitable
  * for use in a dropdown menu, with an initial "select role" option.
  *
  * Role selection criteria:
@@ -2125,5 +2126,5 @@ function getrole($roleid = false) {
     $role = $select + $DB->get_records_sql_menu($sql, $params);
 
     // Return the list of roles with the initial selection option.
-    return $role ? : $select;
+    return $role ?: $select;
 }

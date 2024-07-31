@@ -223,13 +223,8 @@ class local_uploadcourse_processor {
             // for getting department of the course.
 
             $data['open_costcenterid'] = $this->defaults['open_costcenterid'];
-            $depts = [];
-            $multidepartments = explode(",", $data['school_code']);
-            foreach ($multidepartments as $department) {
-                $depts[] = $DB->get_field('local_costcenter', 'id', array('shortname' => $department));
-            }
-            $data['open_department'] = $depts;
 
+            $data['open_departmentid'] = $DB->get_field('local_costcenter', 'id', array('shortname' => $data['department']));
             /*       $subdepartmentparams = array('shortname' => $data['subdepartment']);
             $data['open_subdepartment'] = $DB->get_field('local_costcenter', 'id', $subdepartmentparams);
 

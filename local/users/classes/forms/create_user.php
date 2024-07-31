@@ -191,7 +191,7 @@ class create_user extends moodleform {
 
             //$costcenterid = ($open_costcenterid) ? $open_costcenterid : 0;
             $costcenterid = ($this->_ajaxformdata['open_costcenterid']) ? $this->_ajaxformdata['open_costcenterid'] : (($open_costcenterid) ? $open_costcenterid : 0);
-            //profile_definition($mform, $id, $form_status, $costcenterid);
+            profile_definition($mform, $id, $form_status, $costcenterid);
 
             // End of if($form_status = 0) condition.
         } else if ($form_status == 1) {

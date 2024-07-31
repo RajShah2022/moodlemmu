@@ -99,7 +99,7 @@ class local_uploadcourse_course {
 
     /** @var array fields allowed as course data. */
     static protected $validfields = array(
-        'fullname', 'course-code', 'idnumber', 'category', 'visible', 'startdate', 'enddate', 'open_points', 'coursetype', 'open_costcenterid', 'open_cost', 'open_requestcourseid', 'open_coursecreator', 'open_coursecompletiondays', 'open_department', 'open_subdepartment', 'open_level4department', 'open_level5department', 'file', 'summary', 'format', 'theme', 'lang', 'newsitems', 'showgrades', 'showreports', 'legacyfiles', 'maxbytes', 'groupmode', 'groupmodeforce', 'enablecompletion', 'completiondays'
+        'fullname', 'course-code', 'idnumber', 'category', 'visible', 'startdate', 'enddate', 'open_points', 'coursetype', 'open_costcenterid', 'open_cost', 'open_requestcourseid', 'open_coursecreator', 'open_coursecompletiondays', 'open_departmentid', 'open_subdepartment', 'open_level4department', 'open_level5department', 'file', 'summary', 'format', 'theme', 'lang', 'newsitems', 'showgrades', 'showreports', 'legacyfiles', 'maxbytes', 'groupmode', 'groupmodeforce', 'enablecompletion', 'completiondays'
     );
 
     /** @var array fields required on course creation. */
