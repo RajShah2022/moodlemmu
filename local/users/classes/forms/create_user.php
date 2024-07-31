@@ -47,7 +47,7 @@ class create_user extends moodleform {
         parent::__construct($action, $customdata, $method, $target, $attributes, $editable, $formdata);
     }
     public function definition() {
-        global $DB;
+        global $DB, $USER;
         $core_component = new core_component();
         $positions_plugin_exists = $core_component::get_plugin_directory('local', 'positions');
 
@@ -60,9 +60,15 @@ class create_user extends moodleform {
 
         if ($form_status == 0) {
 
-            $mform->addElement('select', 'roleid', get_string('open_role', 'local_users'), user_role($roleid));
-            $mform->setType('roleid', PARAM_INT);
-            $mform->addRule('roleid', null, 'required', null, 'client');
+            if ($id == $USER->id) {
+                $mform->addElement('static', 'rolename', get_string('open_role', 'local_users'), getrole($roleid)[$roleid]);
+                $mform->addElement('hidden', 'roleid', $roleid);
+                $mform->setType('roleid', PARAM_INT);
+            } else {
+                $mform->addElement('select', 'roleid', get_string('open_role', 'local_users'), getrole($roleid));
+                $mform->setType('roleid', PARAM_INT);
+                $mform->addRule('roleid', null, 'required', null, 'client');
+            }
 
             local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(1, 2), true, 'local_costcenter', $categorycontext, $multiple = false);
 
