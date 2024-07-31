@@ -1061,7 +1061,8 @@ function manage_users_count($stable, $filterdata) {
     if (is_siteadmin()) {
         $formsql .= "";
     } else {
-        $formsql .= $costcenterpathconcatsql;
+        $formsql .= " AND u.id != :userid " . $costcenterpathconcatsql;
+        $params['userid'] = $USER->id;
     }
     if (isset($filterdata->search_query) && trim($filterdata->search_query) != '') {
         $formsql .= " AND (u.username LIKE :search1 OR concat(u.firstname,' ',u.lastname)
@@ -2085,7 +2086,7 @@ function costcenterwise_users_datacount($costcenter, $department = false, $subde
  * @return array An associative array where the keys are role IDs and the values are role names,
  *               with an initial option for selecting a role.
  */
-function user_role($roleid) {
+function getrole($roleid = false) {
     global $DB;
 
     $params = [];
