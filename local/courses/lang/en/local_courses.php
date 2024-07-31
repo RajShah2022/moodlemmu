@@ -264,6 +264,7 @@ $string['courses:update'] = 'Update course';
 $string['courses:view'] = 'View course';
 $string['courses:visibility'] = 'Course visibility';
 $string['courses:enrol'] = 'Course enrol';
+$string['courses:canconfigure'] = 'Can Configure Course';
 
 $string['reason_linkedtocostcenter'] = 'As this Course category is linked with the Company/School Code, you can not delete this category';
 $string['reason_subcategoriesexists'] = 'As we have sub-categories in this Course category, you can not delete this category';
@@ -463,3 +464,6 @@ $string['confirmregenerate'] = 'Are you sure,do you want to Regenerate Certifica
 $string['regenarate'] = 'Regenerate';
 $string['difficultylevel'] = 'Select Level';
 $string['difficultylevels'] = 'Level {$a}';
+$string['topics_cofiguration'] = 'Select Topics';
+$string['coursetopicsconfiguration'] = 'Select Topics for : <b>{$a}</b>';
+
