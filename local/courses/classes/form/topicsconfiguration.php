@@ -42,13 +42,16 @@ class topicsconfiguration extends dynamic_form {
     $format = course_get_format($course);
 
     $allsections = $format->get_modinfo()->get_section_info_all();
+    if(count($allsections) > 1) {
+        // Build the checkbox options.
+        $checkboxes = $this->build_section_paths($allsections);
 
-    // Build the checkbox options.
-    $checkboxes = $this->build_section_paths($allsections);
-
-    // Add checkboxes to the form.
-    foreach ($checkboxes as $value => $label) {
-        $mform->addElement('advcheckbox', $value, '', $label, ['group' => 'checkboxgroup']);
+        // Add checkboxes to the form.
+        foreach ($checkboxes as $value => $label) {
+            $mform->addElement('advcheckbox', $value, '', $label, ['group' => 'checkboxgroup custom_switch']);
+        }    
+    } else {
+        $mform->addElement('static', 'notopics', '', get_string('notopics', 'local_courses'), array('class' => 'notopicselement'));
     }
 }
 

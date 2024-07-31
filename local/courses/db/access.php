@@ -139,7 +139,15 @@ $capabilities = array(
             'manager' => CAP_ALLOW
         )
     ),
-    'local/courses:canconfigure' => array(
+    'local/courses:canconfiguretopics' => array(
+        'riskbitmask' => RISK_SPAM,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSECAT,
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
+        )
+    ),
+    'local/courses:canconfigurecohorts' => array(
         'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSECAT,
