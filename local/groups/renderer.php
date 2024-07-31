@@ -259,8 +259,7 @@ class local_groups_renderer extends plugin_renderer_base  {
         }
         $baseurl = new moodle_url('/local/groups/index.php', $params);
         $cohorts = $groups['groups'];
-               
-           $row = [];
+        $row = [];
         foreach($cohorts as $cohort) {
                 $line = array();
                 $groupname = $cohort->name;
@@ -275,7 +274,7 @@ class local_groups_renderer extends plugin_renderer_base  {
                 }
                 $orgname = $DB->get_field_sql("SELECT cc.fullname FROM {local_costcenter} AS cc 
                 JOIN {local_groups} AS lg ON  concat('/',lg.open_path,'/') LIKE concat('%/',cc.id,'/%') AND cc.depth = 1 WHERE lg.cohortid=".$cohort->id);
-        $cohortcontext =  (new \local_groups\lib\accesslib())::get_module_context();
+                $cohortcontext =  (new \local_groups\lib\accesslib())::get_module_context();
                 
              //   $cohortcontext = context::instance_by_id($cohort->contextid);
                 $urlparams = array('id' => $cohort->id, 'returnurl' => $baseurl->out_as_local_url());
