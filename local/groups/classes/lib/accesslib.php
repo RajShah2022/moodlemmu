@@ -50,9 +50,9 @@ class accesslib extends \local_costcenter\lib\accesslib{
         return parent::get_module_context(self::groups_costcenterpath($groupid));
 
     }
-    public static function get_costcenter_path_field_concatsql($columnname,$groupid = null, $datatype = NULL){
+    public static function get_costcenter_path_field_concatsql($columnname,$groupid = null, $datatype = self::PATH_MODULE_CONTENT){
 
-        return parent::get_costcenter_path_field_concatsql($columnname, self::groups_costcenterpath($groupid));
+        return parent::get_costcenter_path_field_concatsql($columnname, self::groups_costcenterpath($groupid), $datatype);
 
     }
 }

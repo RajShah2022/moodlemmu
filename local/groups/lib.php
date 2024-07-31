@@ -608,25 +608,24 @@ function local_groups_get_search_query($search, $tablealias = '') {
  */
 function local_groups_get_groups($contextid, $page = 0, $perpage = 10, $search = '') {
     global $DB, $USER;
-    $fields = "SELECT c.*, g.open_difficultylevel";
-    $countfields = "SELECT COUNT(1)";
-    $sql = " FROM {cohort} c, {local_groups} g
-              WHERE g.cohortid = c.id";
+    $params = [];
+    $fields = "SELECT c.*, g.open_difficultylevel ";
+    $countfields = "SELECT COUNT(c.id)";
+    $sql = " FROM {cohort} c
+             JOIN {local_groups} g ON c.id = g.cohortid
+             WHERE 1=1 ";
     $context = (new \local_groups\lib\accesslib())::get_module_context();
-    $costcenterpathconcatsql = (new \local_groups\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='open_path');
-    $sql .= " $costcenterpathconcatsql";
+    $costcenterpathconcatsql = (new \local_groups\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='g.open_path');
+    $sql .= $costcenterpathconcatsql;
     $params['contextid'] = $contextid;
     $order = " ORDER BY  g.id DESC";
     if(isset($search) && isset($search->search_query)){
        $sql .= " AND c.name LIKE '%".trim($search->search_query)."%'";
-    } 
+    }
     $allgroups = '';
-    //$totalgroups = $allgroups = $DB->count_records('cohort', array('contextid' => $contextid));
-   // if (!empty($search)) {
-        $totalgroups = $DB->count_records_sql($countfields . $sql, $params);
-    //}
+    $totalgroups = $DB->count_records_sql($countfields . $sql, $params);
     $groups = $DB->get_records_sql($fields . $sql . $order, $params, $page, $perpage);
-    return array('totalgroups' => $totalgroups, 'groups' => $groups, 'allgroups' => $allgroups);
+    return array('totalgroups' => $totalgroups, 'groups' => $groups/*, 'allgroups' => $allgroups*/);
 }
 
 /**
