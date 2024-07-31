@@ -339,7 +339,6 @@ function xmldb_local_courses_upgrade($oldversion)
 
         upgrade_plugin_savepoint(true, 2023060600.13, 'local', 'courses');
     }
-
     if ($oldversion < 2023060600.14) {
         $table = new xmldb_table('course');
         $field = new xmldb_field('open_difficultylevel');
@@ -350,5 +349,25 @@ function xmldb_local_courses_upgrade($oldversion)
         upgrade_plugin_savepoint(true, 2023060600.14, 'local', 'courses');
     }
 
+    if ($oldversion < 2023060600.16) {
+        $table = new xmldb_table('local_coursetopics');
+        if (!$dbman->table_exists($table)) {
+            // Adding fields.
+            $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+            $table->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+            $table->add_field('topic', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+            $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, null, null, 0);
+            $table->add_field('usercreated', XMLDB_TYPE_INTEGER, '10', null, null, null, 0);
+            $table->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, null, null, 0);
+            $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, null, null, 0);
+
+            // Adding key.
+            $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+            // Create table.
+            $dbman->create_table($table);
+        }
+        upgrade_plugin_savepoint(true, 2023060600.16, 'local', 'courses');
+    }
     return true;
 }
