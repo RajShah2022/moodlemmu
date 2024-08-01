@@ -38,7 +38,7 @@ class api {
      *
      * @param stdClass $data
      */
-    public static function insert_instance($data) {
+    public static function insert_topicsconfig_instance($data) {
         global $DB, $USER;
 
         try {
