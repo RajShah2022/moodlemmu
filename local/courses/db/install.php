@@ -348,8 +348,4 @@ function xmldb_local_courses_install(){
             $dbman->add_field($table, $field);
         }
     }
-    $flexsectionspluginexist = $corecomponent::get_plugin_directory('course_format', 'flexsections');
-    if($flexsectionspluginexist) {
-        $courseconfig = set_config('format', 'flexsections', 'moodlecourse');
-    }
 }

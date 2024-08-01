@@ -369,26 +369,5 @@ function xmldb_local_courses_upgrade($oldversion)
         }
         upgrade_plugin_savepoint(true, 2023060600.16, 'local', 'courses');
     }
-
-    if ($oldversion < 2023060600.18) {
-        $table = new xmldb_table('local_coursegroups');
-        if (!$dbman->table_exists($table)) {
-            // Adding fields.
-            $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-            $table->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-            $table->add_field('groupid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-            $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, null, null, 0);
-            $table->add_field('usercreated', XMLDB_TYPE_INTEGER, '10', null, null, null, 0);
-            $table->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, null, null, 0);
-            $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, null, null, 0);
-
-            // Adding key.
-            $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-
-            // Create table.
-            $dbman->create_table($table);
-        }
-        upgrade_plugin_savepoint(true, 2023060600.18, 'local', 'courses');
-    }
     return true;
 }
