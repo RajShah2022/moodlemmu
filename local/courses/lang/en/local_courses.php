@@ -467,6 +467,3 @@ $string['difficultylevels'] = 'Level {$a}';
 $string['topics_cofiguration'] = 'Select Topics';
 $string['coursetopicsconfiguration'] = 'Select Topics for : <b>{$a}</b>';
 $string['notopics'] = '<div class="alert alert-info text-center">No topics are added for this course</div>';
-$string['nogroups'] = '<div class="alert alert-info text-center">No Groups Available</div>';
-$string['groups_cofiguration'] = 'Select Classes';
-$string['coursegroupsconfiguration'] = 'Select Classes for : <b>{$a->coursename}</b> (Level {$a->difficultylevel})';
