@@ -135,7 +135,7 @@ protected function build_section_paths($sections) {
         //     api::update_instance($data);
         // }
         $data = $this->get_data();
-        api::insert_instance($data);
+        api::insert_topicsconfig_instance($data);
     }
 
     /**
