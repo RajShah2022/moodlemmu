@@ -58,9 +58,9 @@
                                                         </a>
                                                     {{/enrol}}
                                                     {{#update}}
-                                                    {{#canconfigure}}
+                                                    {{#canconfiguretopics}}
                                                     <a data-action="topicsconfiguration" class="dropdown-item" data-name="{{ coursename }}" data-id = 0 data-courseid={{courseid}} href="javascript:void(0)" class="mr-2" title ="{{# str}} topics_cofiguration, local_courses {{/str}}" ><i class="fa fa-list" aria-hidden="true"></i>{{# str}} topics_cofiguration, local_courses {{/str}}</a>
-                                                    {{/canconfigure}}
+                                                    {{/canconfiguretopics}}
                                                         {{#auto_enrol}}
                                                             <a href="{{ auto_enrol }}" class="dropdown-item" title= "{{#str}}auto_enrol, local_courses{{/str}}" >
                                                                 <i class="fa fa-user-circle-o" aria-hidden="true"></i>Auto Enroll

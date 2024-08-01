@@ -69,7 +69,7 @@ $PAGE->requires->js_call_amd('local_costcenter/fragment', 'init', array());
 $PAGE->requires->js_call_amd('local_courses/courses', 'load', array());
 $PAGE->requires->js_call_amd('local_costcenter/newcostcenter', 'downloadtrigger', array());
 $PAGE->requires->js_call_amd('local_costcenter/newcostcenter', 'load', array());
-$PAGE->requires->js_call_amd('local_courses/topicsconfiguration', 'init', array());
+$PAGE->requires->js_call_amd('local_courses/contentconfiguration', 'init', array());
 $PAGE->navbar->ignore_active();
 $PAGE->navbar->add(get_string('dashboard', 'local_costcenter'), new moodle_url('/my/dashboard.php'));
 $PAGE->navbar->add(get_string('manage_courses', 'local_courses'));

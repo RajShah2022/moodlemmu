@@ -918,7 +918,7 @@ body#page-local-courses-userdashboard .card_list_view {
 #page-local-courses-courses .course_container:hover .course_progress_container .progress_status{
     display: flex;
 }
-#page-local-courses-courses .alert-info{
+#page-local-courses-courses .coursedesc .alert-info{
     border: none!important;
     padding: 0;
     text-align: left !important;
@@ -1104,4 +1104,70 @@ body#page-local-courses-userdashboard .card_list_view {
         display: block;
         overflow-x: auto;
     }
+}
+/*.custom_switch {
+    width: 50%;
+    float: left;
+    padding-left: 1rem;
+    display: flex;
+    align-items: center;
+}*/
+.custom_switch .form-check-inline.fitem {
+    justify-content: flex-start;
+    display: inline-flex;
+}
+
+.custom_switch input[type="checkbox"].form-check-input{
+/*    font-size: 30px;*/
+    -webkit-appearance: none;
+       -moz-appearance: none;
+            appearance: none;
+    width: 2.7em;
+    height: 1.1em;
+    background: #ddd;
+    border-radius: 3em;
+    position: relative;
+    cursor: pointer;
+    outline: none;
+    -webkit-transition: all .2s ease-in-out;
+    transition: all .2s ease-in-out;
+    margin-right: 0.8rem;
+  }
+  
+  /*.tenantsettings_form .form-group .col-md-9 .custom_switch input[type="checkbox"].form-check-input:checked{
+    background: #0ebeff;
+  }*/
+
+.custom_switch input[type="checkbox"].form-check-input[disabled="disabled"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+  
+.custom_switch input[type="checkbox"].form-check-input:after{
+    position: absolute;
+    content: "";
+    width: 1.1em;
+    height: 1.1em;
+    border-radius: 50%;
+    background: #fff;
+    -webkit-box-shadow: 0 0 .25em rgba(0,0,0,.3);
+            box-shadow: 0 0 .25em rgba(0,0,0,.3);
+    -webkit-transform: scale(.7);
+            transform: scale(.7);
+    left: 0;
+    -webkit-transition: all .2s ease-in-out;
+    transition: all .2s ease-in-out;
+  }
+.custom_switch  input[type="checkbox"].form-check-input:checked:after{
+    left: calc(100% - 1.1em);
+}
+.local_coursetopics .topicsconfiguration_form .femptylabel .col-md-3 {
+    display: none;
+}
+.local_coursetopics .topicsconfiguration_form .femptylabel .col-md-9 {
+    flex: 0 0 100%;
+    max-width: inherit;
+}
+.local_coursetopics .topicsconfiguration_form .femptylabel .col-md-9 .form-control-static {
+    width: 100%;
 }

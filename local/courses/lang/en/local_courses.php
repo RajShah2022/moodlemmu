@@ -466,4 +466,4 @@ $string['difficultylevel'] = 'Select Level';
 $string['difficultylevels'] = 'Level {$a}';
 $string['topics_cofiguration'] = 'Select Topics';
 $string['coursetopicsconfiguration'] = 'Select Topics for : <b>{$a}</b>';
-
+$string['notopics'] = '<div class="alert alert-info text-center">No topics are added for this course</div>';
