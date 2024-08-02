@@ -97,8 +97,80 @@ export const init = () => {
                 });
 
                
-                form.addEventListener(form.events.FORM_SUBMITTED, () => window.location.reload());
+                // form.addEventListener(form.events.FORM_SUBMITTED, () => {
+                //      var params = {};
+                //         params.courseid = groupsconfiguration.getAttribute('data-courseid');
+                //     var promises = Ajax.call([
+                //         {
+                //             methodname: 'local_courses_groupenrollmentrequest',
+                //             args: params
+                //         }
+                //     ]);
+                //     promises[0].done(function() {
+                //         window.location.reload();
+                //     }).fail(Notification.exception);
+                // });
 
+                // form.addEventListener(form.events.FORM_SUBMITTED, () => {
+                //     // Access the form element directly from the DOM
+                //     const modalRoot = form.modal.getRoot();
+                //     const formElement = modalRoot.find('form')[0];
+
+                //     if (formElement) {
+                //         const formData = new FormData(formElement);
+                //         const selectedGroups = [];
+
+                //         for (const [key, value] of formData.entries()) {
+                //             if (value == 1 && !isNaN(key)) {
+                //                 // Ensure the key is numeric before adding it to selectedGroups
+                //                 selectedGroups.push(parseInt(key));
+                //             }
+                //         }
+
+                //         var params = {
+                //             courseid: parseInt(groupsconfiguration.getAttribute('data-courseid')),
+                //             selectedGroups: selectedGroups
+                //         };
+
+                //         var promises = Ajax.call([
+                //             {
+                //                 methodname: 'local_courses_groupenrollmentrequest',
+                //                 args: params
+                //             }
+                //         ]);
+                //         promises[0].done(function() {
+                //             window.location.reload();
+                //         }).fail(Notification.exception);
+                //     }
+                // });
+
+                form.addEventListener(form.events.FORM_SUBMITTED, () => {
+                    const formData = new FormData(document.querySelector('.groupsconfiguration_form'));
+                    const selectedGroups = [];
+
+                    for (const [key, value] of formData.entries()) {
+                        if (value == '1' && !isNaN(key)) {
+                            selectedGroups.push(parseInt(key));
+                        }
+                    }
+
+                    const params = {
+                        courseid: parseInt(groupsconfiguration.getAttribute('data-courseid')),
+                        selectedGroups: selectedGroups
+                    };
+
+                    var promises = Ajax.call([
+                        {
+                            methodname: 'local_courses_groupenrollmentrequest',
+                            args: params
+                        }
+                    ]);
+
+                    promises[0].done(function() {
+                        window.location.reload();
+                    }).fail(Notification.exception);
+                });
+                
                 form.show();
 
                 // Add classes and animate when the form is loaded

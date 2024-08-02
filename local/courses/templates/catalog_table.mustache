@@ -59,6 +59,14 @@
                 </a>
                   
                 {{/enrol}}
+                {{#canconfiguretopics}}
+                    <a data-action="topicsconfiguration" data-name="{{ coursename }}" data-id = 0 data-courseid={{courseid}} href="javascript:void(0)" title ="{{# str}} topics_cofiguration, local_courses {{/str}}" ><i class="fa fa-list" aria-hidden="true"></i>
+                    </a>
+                {{/canconfiguretopics}}
+
+                {{#canconfiguregroups}}
+                    <a data-action="groupsconfiguration" class="dropdown-item" data-name="{{ coursename }}" data-id = 0 data-courseid={{courseid}} data-level={{difficultylevel}} href="javascript:void(0)" title ="{{# str}} groups_cofiguration, local_courses {{/str}}" ><i class="fa fa-users" aria-hidden="true"></i></a>
+                {{/canconfiguregroups}}
                 {{#update}}
                 {{#auto_enrol}}                        
                     <a href="{{ auto_enrol }}" title= "{{#str}}auto_enrol, local_courses{{/str}}">

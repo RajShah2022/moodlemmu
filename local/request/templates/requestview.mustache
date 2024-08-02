@@ -66,9 +66,9 @@
                     <span class="req_component_name">{{{componentname}}}</span>
                 </div>   
             </div>
-            <div class='w-100 component_name text-center'>
+            <div class='w-100 component_name text-center py-2'>
                 <div class="text-center font-weight-bold value_align days_count">
-                    {{daysdone}} Days
+                    {{#daysdone}}{{daysdone}} Days{{/daysdone}}
                 </div>
                 <div class="col-md-6 reqdt pull-left">
                     <span class=' w-full text-center'>
@@ -101,7 +101,7 @@
                             
                         <div class='w-full mt-2 '>
                             <span class='pull-left'> 
-                                <span class="value_align mt-2 "><b>{{{requesteduser}}}</b> {{# str}} has_requested_for_enrolling_to,local_request {{/ str}}<b> {{{compname}}}.</b></span>
+                                <span class="value_align mt-2 "><b>{{{requesteduser}}}</b> {{# str}} has_requested_for_enrolling_to,local_request {{/ str}}<b> {{^groupname}}{{{compname}}}{{/groupname}}{{#groupname}}{{groupname}}{{/groupname}}</b>{{#coursename}}<!--<span class='mx-2'>--> {{#str}}for, local_request{{/str}}<!--</span>--> <b> {{coursename}}</b>{{/coursename}}.</span>
                             </span>
                         </div>
                     </div>

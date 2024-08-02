@@ -57,7 +57,6 @@
                                                             <i class="fa fa-user" aria-hidden="true"></i>User Enrollments
                                                         </a>
                                                     {{/enrol}}
-                                                    {{#update}}
                                                     {{#canconfiguretopics}}
                                                     <a data-action="topicsconfiguration" class="dropdown-item" data-name="{{ coursename }}" data-id = 0 data-courseid={{courseid}} href="javascript:void(0)" class="mr-2" title ="{{# str}} topics_cofiguration, local_courses {{/str}}" ><i class="fa fa-list" aria-hidden="true"></i>{{# str}} topics_cofiguration, local_courses {{/str}}</a>
                                                     {{/canconfiguretopics}}
@@ -65,6 +64,8 @@
                                                     {{#canconfiguregroups}}
                                                     <a data-action="groupsconfiguration" class="dropdown-item" data-name="{{ coursename }}" data-id = 0 data-courseid={{courseid}} data-level={{difficultylevel}} href="javascript:void(0)" class="mr-2" title ="{{# str}} groups_cofiguration, local_courses {{/str}}" ><i class="fa fa-users" aria-hidden="true"></i>{{# str}} groups_cofiguration, local_courses {{/str}}</a>
                                                     {{/canconfiguregroups}}
+                                                    {{#update}}
+                                                    
                                                         {{#auto_enrol}}
                                                             <a href="{{ auto_enrol }}" class="dropdown-item" title= "{{#str}}auto_enrol, local_courses{{/str}}" >
                                                                 <i class="fa fa-user-circle-o" aria-hidden="true"></i>Auto Enroll

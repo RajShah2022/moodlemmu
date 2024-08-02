@@ -131,6 +131,8 @@ class requestview {
 
       case 'program' :    $componentname = $DB->get_field('local_program', 'name', array('id'                  =>$componentid));
                          break;
+      case 'groups' :    $componentname = $DB->get_field('cohort', 'name', array('id'                  =>$componentid));
+                         break;
 
       case 'learningplan' : $componentname = $DB->get_field('local_learningplan', 'name', array('id'=>$componentid));
                          break;
