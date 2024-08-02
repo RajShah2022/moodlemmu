@@ -1081,5 +1081,9 @@ function local_groups_output_fragment_new_groupsform($args){
     ob_end_clean();
     return $o;
 }
+function local_groups_request_dependent_query($aliasname) {
+    $returnquery = " WHEN ({$aliasname}.compname LIKE 'groups') THEN (SELECT name from {cohort} WHERE id = {$aliasname}.componentid) ";
+    return $returnquery;
+}
 
    

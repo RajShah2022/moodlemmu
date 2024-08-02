@@ -63,7 +63,7 @@ echo $output->header();
     $list_params = array();
     $systemcontext =(new \local_request\lib\accesslib())::get_module_context();
     if(has_capability('local/request:viewrecord',$systemcontext) || is_siteadmin()){
-        $componentarray = array('elearning', 'classroom', 'learningplan', 'program');
+        $componentarray = array('elearning', 'classroom', 'learningplan', 'program', 'groups');
      if((!$component && !$courseid) || in_array($component, $componentarray)){
             $filterparams = $output->render_requestview(true, $courseid, $component);
             if($component=='elearning'){
@@ -74,6 +74,8 @@ echo $output->header();
                  $filters = array('learningplan');
             }elseif($component=='program'){
                  $filters = array('program');
+            }elseif($component=='groups'){
+                 $filters = array('groups');
             }else{
                  $filters = array('request');
             }

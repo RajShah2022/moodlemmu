@@ -32,6 +32,8 @@ use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
 use \local_courses\local\general_lib as general_lib;
+use local_request\api\requestapi;
+use local_courses\api;
 
 require_once("$CFG->libdir/externallib.php");
 require_once($CFG->dirroot . '/course/lib.php');
@@ -1213,4 +1215,77 @@ class local_courses_external extends external_api {
             'status' => new external_value(PARAM_INT, 'The id of the module'),
         ));
     }
+
+    public static function groupenrollmentrequest_parameters() {
+        return new external_function_parameters(
+            array(
+                'courseid' => new external_value(PARAM_INT, 'course ID', VALUE_REQUIRED),
+                'selectedGroups' => new external_multiple_structure(
+                    new external_value(PARAM_INT, 'group ID'),
+                    'List of selected group IDs',
+                    VALUE_REQUIRED
+                ),
+            )
+        );
+    }
+    public static function groupenrollmentrequest($courseid, $selectedGroups) {
+        global $DB;
+        // Get the course's open_difficultylevel
+        $course = $DB->get_record('course', ['id' => $courseid], 'id, open_difficultylevel', MUST_EXIST);
+        $courseDifficultylevel = $course->open_difficultylevel;
+
+        // Get the groups' open_difficultylevel
+        $groupDifficultyLevels = $DB->get_records_list('local_groups', 'cohortid', $selectedGroups, '', 'cohortid, open_difficultylevel');
+
+        $requestsToSend = [];
+
+        foreach ($groupDifficultyLevels as $groupId => $group) {
+            if ($group->open_difficultylevel != $courseDifficultylevel) {
+                // Add group ID to the list of requests to send if there's a mismatch.
+                $requestsToSend[] = $groupId;
+            }
+        }
+
+        // Send requests to admin and administrator for each mismatch.
+        if (!empty($requestsToSend)) {
+            foreach ($requestsToSend as $groupId) {
+                $previousrecord = $DB->record_exists('local_request_records', array('compname' => 'groups', 'module_id' => $groupId, 'componentid' => $groupId));
+                if(!is_siteadmin() && api::is_hod() && !$previousrecord) {
+                    \local_request\api\requestapi::create('groups', $groupId, $courseid);
+                }
+            }
+        }
+        return true;
+            
+    }
+
+    public static function groupenrollmentrequest_returns() {
+        return new external_value(PARAM_BOOL, 'return');
+    }
+
+    // private static function send_request_to_admin($groupId, $courseid) {
+    //     // Your logic to send a request to admin and administrator.
+    //     // This could involve sending an email or creating a notification in Moodle.
+
+    //     $adminRoleId = 1; // Adjust according to your role IDs.
+    //     $adminUserIds = get_role_users($adminRoleId, \context_system::instance());
+
+    //     foreach ($adminUserIds as $admin) {
+    //         // Example logic to send a message to the admin.
+    //         $message = new \core\message\message();
+    //         $message->component = 'local_courses';
+    //         $message->name = 'group_mismatch_notification';
+    //         $message->userfrom = \core_user::get_noreply_user();
+    //         $message->userto = $admin->id;
+    //         $message->subject = "Mismatch in Difficulty Level for Course ID {$courseid}";
+    //         $message->fullmessage = "The group ID {$groupId} has a different difficulty level than the course.";
+    //         $message->fullmessageformat = FORMAT_PLAIN;
+    //         $message->fullmessagehtml = '';
+    //         $message->smallmessage = '';
+    //         $message->notification = 1;
+
+    //         // Send the message.
+    //         message_send($message);
+    //     }
+    // }
 }

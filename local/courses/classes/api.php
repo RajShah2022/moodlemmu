@@ -162,4 +162,19 @@ class api {
     //         throw new \moodle_exception("Error in groups configuring");
     //     }
     // }
+
+    public static function get_hod_roleid() {
+        global $DB;
+        return $DB->get_field('role', 'id', array('shortname' => 'hod'));
+    }
+    public static function is_hod() {
+        global $USER;
+        $current_roleid = $USER->useraccess['currentroleinfo']['roleid'];
+        
+        if(!empty($current_roleid) && $current_roleid == self::get_hod_roleid()) {
+             return true;           
+        } else {
+            return false;
+        }
+    }
 }
