@@ -533,6 +533,9 @@ body#page-local-costcenter-costcenterview .costcenter_container:after,
 .dept_container .dept_content:before{
     background-color: var(--sitehighlight);
 }
+.custom_switch input[type="checkbox"].form-check-input:checked{
+    background: var(--primarycolor);
+}
 /*
  * @plugin sub-type courses <==== ends here
  * 
