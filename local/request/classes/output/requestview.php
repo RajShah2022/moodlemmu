@@ -131,7 +131,7 @@ class requestview implements renderable, templatable {
             $dependencyquery = " ";
             $wheredependency_sql = " ";
         }
-        $requestsql = " SELECT req.id, req.createdbyid, req.compname, req.compcode, req.compkey, req.componentid, req.status, req.responder, req.respondeddate, req.usermodified, req.timecreated, req.timemodified, {$dependencyquery} AS actualcomponentname ";
+        $requestsql = " SELECT req.id, req.createdbyid, req.compname, req.compcode, req.compkey, req.componentid, req.courseid, req.status, req.responder, req.respondeddate, req.usermodified, req.timecreated, req.timemodified, {$dependencyquery} AS actualcomponentname ";
         $countsql = " SELECT count(req.id) ";
 
         if (is_siteadmin()) {
@@ -192,6 +192,11 @@ class requestview implements renderable, templatable {
                 $programids = $filtervalues->program;
 
                 $sql .= " and req.componentid IN ($programids) and req.compname LIKE 'program' ";
+            }
+             if (isset($filtervalues->groups) && !empty($filtervalues->groups)) {
+                $groupsids = $filtervalues->groups;
+
+                $sql .= " and req.componentid IN ($groupsids) and req.compname LIKE 'groups' ";
             }
             if ($filtervalues->status) {
                 $componentlist = explode(',', $filtervalues->status);
@@ -269,9 +274,16 @@ class requestview implements renderable, templatable {
 
                 $checkdate = $responddate ? $responddate : time();
                 $diff = $checkdate - $reqesteddate;
-                $days = (int)($diff / (60 * 60 * 24));
-                $onerow['daysdone'] = $days;
-
+                if($request->compname != 'groups') {
+                    $days = (int)($diff / (60 * 60 * 24));
+                    $onerow['daysdone'] = $days;
+                }
+                if($request->compname == 'groups') {
+                    $onerow['groupname'] = $DB->get_field('cohort', 'name', array('id' => $request->componentid));
+                }
+                if($request->courseid > 0) {
+                    $onerow['coursename'] = $DB->get_field('course', 'fullname', array('id' => $request->courseid));
+                }
                 $favcolor = "red";
 
                 $deleted = False;
@@ -295,6 +307,10 @@ class requestview implements renderable, templatable {
                     'program' => array(
                         'componenticonclass' => 'program_icon',
                         'customimage_required' => True
+                    ),
+                    'groups' => array(
+                        'componenticonclass' => 'fa fa-users',
+                        'customimage_required' => False
                     )
                 );
                 $onerow['componenticonclass'] = $pluginshelper[$request->compname]['componenticonclass'];

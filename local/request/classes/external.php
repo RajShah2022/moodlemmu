@@ -119,6 +119,8 @@ class local_request_external extends external_api {
                                   'componenticonclass' => new external_value(PARAM_RAW, 'componenticonclass', VALUE_OPTIONAL),
                                   'customimage_required' => new external_value(PARAM_RAW, 'customimage required', VALUE_OPTIONAL),
                                   'daysdone' =>  new external_value(PARAM_RAW, 'daysdone', VALUE_OPTIONAL),
+                                  'groupname' =>  new external_value(PARAM_RAW, 'groupname', VALUE_OPTIONAL),
+                                  'coursename' =>  new external_value(PARAM_RAW, 'coursename', VALUE_OPTIONAL),
                                   'responded'  => new external_value(PARAM_INT, 'responded', VALUE_OPTIONAL),
                               )
                           )
