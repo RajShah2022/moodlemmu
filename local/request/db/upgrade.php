@@ -23,85 +23,76 @@
  */
 
 function xmldb_local_request_upgrade($oldversion) {
-	global $CFG, $DB;
+global $CFG, $DB;
 
-	$dbman = $DB->get_manager();
+$dbman = $DB->get_manager();
 
-	$result = true;
+$result = true;
 
-	if($oldversion < 2013112539) {
-
-
-		//$DB->get_record_sql("ALTER TABLE  mdl_block_request_comments MODIFY  message LONGTEXT ");
-
-		/*$newrec = new stdClass();
-		$newrec->varname = 'denytext1';
-		$newrec->value = 'You may enter a denial reason here.';
-		$DB->insert_record('local_request_config', $newrec, false);
-
-		$newrec = new stdClass();
-		$newrec->varname = 'denytext2';
-		$newrec->value = 'You may enter a denial reason here.';
-		$DB->insert_record('local_request_config', $newrec, false);
-
-		$newrec = new stdClass();
-		$newrec->varname = 'denytext3';
-		$newrec->value = 'You may enter a denial reason here.';
-		$DB->insert_record('local_request_config', $newrec, false);
-
-		$newrec = new stdClass();
-		$newrec->varname = 'denytext4';
-		$newrec->value = 'You may enter a denial reason here.';
-		$DB->insert_record('local_request_config', $newrec, false);
-
-		$newrec = new stdClass();
-		$newrec->varname = 'denytext5';
-		$newrec->value = 'You may enter a denial reason here.';
-		$DB->insert_record('local_request_config', $newrec, false); */
+if($oldversion < 2013112539){
 
 
-	}
-  
-	//local_request_comments
-	if ($oldversion < 2022101800) {
+	//$DB->get_record_sql("ALTER TABLE  mdl_block_request_comments MODIFY  message LONGTEXT ");
 
-		$table = new xmldb_table('local_request_comments');
-	    $table1 = new xmldb_table('local_request_records');
-	      
-	    $index = new xmldb_index('instanceid', XMLDB_INDEX_NOTUNIQUE, array('instanceid'));
-	    if (!$dbman->index_exists($table,$index)) {
-	        $dbman->add_index($table,$index);
-	    }
+	/*$newrec = new stdClass();
+	$newrec->varname = 'denytext1';
+	$newrec->value = 'You may enter a denial reason here.';
+	$DB->insert_record('local_request_config', $newrec, false);
 
-      	$index1 = new xmldb_index('createdbyid', XMLDB_INDEX_NOTUNIQUE, array('createdbyid'));
-        if (!$dbman->index_exists($table,$index1)) {
-            $dbman->add_index($table,$index1);
-        }
-	        
-	      $index2 = new xmldb_index('createdbyid', XMLDB_INDEX_NOTUNIQUE, array('createdbyid'));
+	$newrec = new stdClass();
+	$newrec->varname = 'denytext2';
+	$newrec->value = 'You may enter a denial reason here.';
+	$DB->insert_record('local_request_config', $newrec, false);
 
-	         if (!$dbman->index_exists($table1,$index2)) {
-	            $dbman->add_index($table1,$index2);
-	           }
+	$newrec = new stdClass();
+	$newrec->varname = 'denytext3';
+	$newrec->value = 'You may enter a denial reason here.';
+	$DB->insert_record('local_request_config', $newrec, false);
 
-	      $index3 = new xmldb_index('componentid', XMLDB_INDEX_NOTUNIQUE, array('componentid'));
-	          if (!$dbman->index_exists($table1,$index3)) {
-	            $dbman->add_index($table1,$index3);
-	           }
+	$newrec = new stdClass();
+	$newrec->varname = 'denytext4';
+	$newrec->value = 'You may enter a denial reason here.';
+	$DB->insert_record('local_request_config', $newrec, false);
 
-	        upgrade_plugin_savepoint(true, 2022101800, 'local', 'request_records');
-	    }
-	    if ($oldversion < 2022101800.03) {
-	    	$table = new xmldb_table('local_request_records');
-	    	$field = new xmldb_field('courseid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
-	    	if (!$dbman->field_exists($table, $field)) {
-	            $dbman->add_field($table, $field);
-	        }
-	    	upgrade_plugin_savepoint(true, 2022101800.03, 'local', 'request');
-	    }
+	$newrec = new stdClass();
+	$newrec->varname = 'denytext5';
+	$newrec->value = 'You may enter a denial reason here.';
+	$DB->insert_record('local_request_config', $newrec, false); */
 
-	return $result;
 
 }
+  
+  //local_request_comments
+  if ($oldversion < 2022101800) {
 
+	    $table = new xmldb_table('local_request_comments');
+      $table1 = new xmldb_table('local_request_records');
+      
+      $index = new xmldb_index('instanceid', XMLDB_INDEX_NOTUNIQUE, array('instanceid'));
+        if (!$dbman->index_exists($table,$index)) {
+            $dbman->add_index($table,$index);
+        }
+
+      $index1 = new xmldb_index('createdbyid', XMLDB_INDEX_NOTUNIQUE, array('createdbyid'));
+         if (!$dbman->index_exists($table,$index1)) {
+            $dbman->add_index($table,$index1);
+        }
+        
+      $index2 = new xmldb_index('createdbyid', XMLDB_INDEX_NOTUNIQUE, array('createdbyid'));
+
+         if (!$dbman->index_exists($table1,$index2)) {
+            $dbman->add_index($table1,$index2);
+           }
+
+      $index3 = new xmldb_index('componentid', XMLDB_INDEX_NOTUNIQUE, array('componentid'));
+          if (!$dbman->index_exists($table1,$index3)) {
+            $dbman->add_index($table1,$index3);
+           }
+
+        upgrade_plugin_savepoint(true, 2022101800, 'local', 'request_records');
+    }
+
+return $result;
+
+}
 ?>

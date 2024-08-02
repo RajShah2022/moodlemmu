@@ -118,14 +118,5 @@ $functions = array(
         'type'        => 'write',
         'ajax' => true,
     ),
-
-    'local_courses_groupenrollmentrequest' => array(
-        'classname'   => 'local_courses_external',
-        'methodname'  => 'groupenrollmentrequest',
-        'classpath'   => 'local/courses/classes/external.php',
-        'description' => 'Group Enrollment request',
-        'type'        => 'write',
-        'ajax' => true,
-    ),
 );
 

@@ -61,7 +61,7 @@ use core_user;
 
     }
 
-    public static function create($component, $componentid, $courseid = 0){
+    public static function create($component, $componentid){
       global $DB, $USER, $CFG;  
       if(file_exists($CFG->dirroot . '/local/lib.php')){
           require_once($CFG->dirroot . '/local/lib.php');
@@ -71,8 +71,6 @@ use core_user;
         $context =(new \local_classroom\lib\accesslib())::get_module_context($componentid);
       }else if($component=='learningplan'){
         $context =(new \local_learningplan\lib\accesslib())::get_module_context($componentid);
-      }else if($component=='groups'){
-        $context =(new \local_groups\lib\accesslib())::get_module_context($componentid);
       }else if($component=='elearning'){
         $context = context_course::instance($componentid);
       }else{
@@ -82,7 +80,6 @@ use core_user;
       $record->compname = $component;
       $record->componentid  = $componentid;
       $record->module_id  = $componentid;
-      $record->courseid  = $courseid;
 
       $record->createdbyid = $USER->id;
       $record->timecreated = time();
