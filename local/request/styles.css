@@ -9,6 +9,9 @@
  .requests_container .req_component_name{
 	font-size:14px !important;
 }
+.requests_container .lable_align {
+	min-width: 100px;
+}
 @media (max-width: 1024px){
 	  .requests_container .databox{
 		font-size:10px !important;

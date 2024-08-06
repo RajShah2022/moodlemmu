@@ -302,8 +302,6 @@ class local_courses_external extends external_api {
                     $courseid->id = $data->id;
                     $courseid->module = 'course';
                     if ($form_status == 2) {
-
-
                         $data->open_group = ($data->open_group == '_qf__force_multiselect_submission') ? NULL : implode(',', (array)$data->open_group);
                         $data->open_designation = ($data->open_designation == '_qf__force_multiselect_submission') ? NULL : implode(',', (array)$data->open_designation);
                     } else {
@@ -1242,16 +1240,15 @@ class local_courses_external extends external_api {
         $requestsToSend = [];
 
         foreach ($groupDifficultyLevels as $groupId => $group) {
-            if ($group->open_difficultylevel != $courseDifficultylevel) {
+            if (($courseDifficultylevel - $group->open_difficultylevel) > 2) {
                 // Add group ID to the list of requests to send if there's a mismatch.
                 $requestsToSend[] = $groupId;
             }
         }
-
         // Send requests to admin and administrator for each mismatch.
         if (!empty($requestsToSend)) {
             foreach ($requestsToSend as $groupId) {
-                $previousrecord = $DB->record_exists('local_request_records', array('compname' => 'groups', 'module_id' => $groupId, 'componentid' => $groupId));
+                $previousrecord = $DB->record_exists('local_request_records', array('compname' => 'groups', 'module_id' => $groupId, 'componentid' => $groupId, 'courseid' => $courseid, 'status' => 'PENDING'));
                 if(!is_siteadmin() && api::is_hod() && !$previousrecord) {
                     \local_request\api\requestapi::create('groups', $groupId, $courseid);
                 }

@@ -100,6 +100,15 @@ function xmldb_local_request_upgrade($oldversion) {
 	    	upgrade_plugin_savepoint(true, 2022101800.03, 'local', 'request');
 	    }
 
+	    if ($oldversion < 2022101800.04) {
+	    	$table = new xmldb_table('local_request_records');
+	    	$field = new xmldb_field('rejectreason', XMLDB_TYPE_CHAR, '100', null, null, null, null);
+	    	if (!$dbman->field_exists($table, $field)) {
+	            $dbman->add_field($table, $field);
+	        }
+	    	upgrade_plugin_savepoint(true, 2022101800.04, 'local', 'request');
+	    }
+
 	return $result;
 
 }

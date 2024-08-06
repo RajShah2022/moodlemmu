@@ -122,12 +122,25 @@ define(['jquery',
             }
             modal.getRoot().on(ModalEvents.save, function(e) {
             e.preventDefault();
-                args.confirm = true;
+            args.confirm = true;
+            if(args.action == 'deny' ){
+                args.comment = document.getElementById('id_reason').value;
+                if(args.comment == '' || args.comment === null || args.comment.match(/^ *$/) !== null){
+                    $('#id_error_reason').html('-You must supply a value here.');
+                    $('#id_error_reason').attr('style','display: block;');
+                    return false;
+                }
+                if(args.comment.length > 50) {
+                    $('#id_error_reason').html('-Reason must lessthan 50 characters.');
+                    $('#id_error_reason').attr('style','display: block;');
+                    return false;
+                }
+            }
             $.ajax({
                 method: "POST",
                 dataType: "json",
                 url: M.cfg.wwwroot + "/local/request/ajax.php",
-                data: { component: args.component, componentid: args.componentid, action :args.action, id:args.id}
+                data: { component: args.component, componentid: args.componentid, action :args.action, comment : args.comment, id:args.id}
               
             }).done(function(response){
               requestconfirm.prototype.handleModalSubmissionResponse(response, modal, args);
@@ -149,27 +162,51 @@ define(['jquery',
 
      return string;
     }; 
+
+    requestconfirm.prototype.getBody = function(formdata) {
+        if (typeof formdata === "undefined") {
+            formdata = {};
+        }
+        console.log(formdata);
+       // this.args.jsonformdata = JSON.stringify(formdata);
+        return Fragment.loadFragment('local_request','rejectreasonform', 1, formdata);
+    };
     
     requestconfirm.prototype.init = function(args) { 
         var deferred = $.Deferred();
-        this.action = args.action;
+        var action = args.action;
         var componentid = args.componentid;
         var userid = args.userid;
         var component = args.component;
-         
-        ModalFactory.create({
+        if(args.action == 'deny'){
+            ModalFactory.create({
             title: 'Confirm',
             type: ModalFactory.types.SAVE_CANCEL,
-            body: requestconfirm.prototype.getbodystring(args)       
+            body:  requestconfirm.prototype.getBody(args),
+        }).done(function(modal) {
+            modal.getFooter().find('[data-action="cancel"]').on('click', function() {
+                modal.hide();
+                location.reload();
+            });
+            modal.getRoot().find('[data-action="hide"]').on('click', function() {
+                modal.hide();
+                location.reload();
+            });  
+            requestconfirm.prototype.submitajax(args, modal); 
+              
+            modal.show();
+        });
+        }else{
+            ModalFactory.create({
+            title: 'Confirm',
+            type: ModalFactory.types.SAVE_CANCEL,
+            body:  requestconfirm.prototype.getbodystring(args),
         }).done(function(modal) {
             requestconfirm.prototype.submitajax(args, modal);
             modal.show();
-        });
-
-
-     
-              
-    }; /* end of iit function */
+            });
+        }
+    }; /* end of init function */
 
 
 

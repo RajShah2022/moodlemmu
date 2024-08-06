@@ -90,7 +90,7 @@
                        
                 <div class='col-md-12 col-sm-12 col-xs-12 p-0 mt-2 requests_content'>
                     <div class='col-md-12 col-sm-12 col-xs-12 pull-left databox'>
-                        <div class='w-full pull-left mt-2 mb-2'>
+                        <div class='w-full pull-left mt-2'>
                             <span class='pull-left'>
                                 <span class='lable_align'>
                                     {{#str}}responder,local_request{{/str}}
@@ -98,12 +98,22 @@
                             </span>
                             <span class="value_align"><b>{{{responder}}}</b></span>
                         </div>
-                            
+                        {{# rejectreason}}
+                        <div class='w-full pull-left mt-2 mb-2'>
+                            <span class='pull-left'>
+                                <span class='lable_align'>
+                                    {{#str}}rejectreason,local_request{{/str}}
+                                <b><span class='colon_align'> :</span></b></span>
+                            </span>
+                            <span class="value_align"><b>{{{rejectreason}}}</b></span>
+                        </div>
+                        {{/ rejectreason}}
                         <div class='w-full mt-2 '>
                             <span class='pull-left'> 
                                 <span class="value_align mt-2 "><b>{{{requesteduser}}}</b> {{# str}} has_requested_for_enrolling_to,local_request {{/ str}}<b> {{^groupname}}{{{compname}}}{{/groupname}}{{#groupname}}{{groupname}}{{/groupname}}</b>{{#coursename}}<!--<span class='mx-2'>--> {{#str}}for, local_request{{/str}}<!--</span>--> <b> {{coursename}}</b>{{/coursename}}.</span>
                             </span>
                         </div>
+
                     </div>
                 </div>
                 <div class='col-md-12 col-sm-12 col-xs-12 pull-left'>

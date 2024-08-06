@@ -45,7 +45,8 @@ class groupsconfiguration extends dynamic_form {
         if(!empty($grouplist)) {
             // Add checkboxes to the form.
             foreach ($grouplist as $id => $name) {
-                $mform->addElement('advcheckbox', $id, '', $name->fullname . ' (' . get_string('difficultylevels', 'local_courses', $name->open_difficultylevel) . ')', ['class' => 'custom_switch']);
+                $requeststatus = $DB->get_field('local_request_records', 'status', array('componentid' => $id, 'courseid' => $courseid));
+                $mform->addElement('advcheckbox', $id, '', $name->fullname . ' (' . get_string('difficultylevels', 'local_courses', $name->open_difficultylevel) . ')' . get_string('classenrollmentrequeststatus', 'local_courses', $requeststatus), ['class' => 'custom_switch']);
             }  
         } else {
             $mform->addElement('static', 'nogroups', '', get_string('nogroups', 'local_courses'));

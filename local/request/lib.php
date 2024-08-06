@@ -83,6 +83,30 @@ function requeststatus_filter($mform){
 }
 /*
 * Author Rizwana
+* Displays reject reason form
+* @return  [type] object
+*/
+function local_request_output_fragment_rejectreasonform($args) {
+    $args = (object) $args;
+    $id = $args->id;
+    $ob = '';
+    $formdata = (array) $args;
+    $params = null;
+
+    $data = [];
+    $mform = new local_request\form\rejectreasonform(null, $formdata, 'post', '', null, true, $formdata);
+
+    if (!empty($args->jsonformdata) && strlen($args->jsonformdata) > 2) {
+        $mform->is_validated();
+    }
+    ob_start();
+    $mform->display();
+    $ob .= ob_get_contents();
+    ob_end_clean();
+    return $ob;
+}
+/*
+* Author Rizwana
 * Displays a node in left side menu
 * @return  [type] string  link for the leftmenu
 */

@@ -249,7 +249,7 @@ use core_user;
   }  // end of approve_requestinstance 
 
 
-  public static function deny($id){     
+  public static function deny($id, $comment){     
     global $DB, $USER, $CFG;
     require_once($CFG->dirroot . '/local/lib.php');
     $notification = new \local_request\notification(); 
@@ -271,6 +271,7 @@ use core_user;
       $updaterecord->usermodified = $USER->id;
       $updaterecord->timemodified = time();
       $updaterecord->status = 'REJECTED';
+      $updaterecord->rejectreason = $comment;
       //--- checking earlier approved or not
       if($updaterecord->compname && $updaterecord->componentid){
         $component= $updaterecord->compname;
