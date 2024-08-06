@@ -675,7 +675,7 @@ function blocks_add_default_org_blocks($costcenterid) {
         $subpagepattern
     );
 }
-function local_costcenter_get_hierarchy_fields($mform, $ajaxformdata, $customdata, $elements = null, $allenable = false, $pluginname = 'local_costcenter', $context = CONTEXT_SYSTEM, $multiple = false, $prefix = '', $open_path = '') {
+function local_costcenter_get_hierarchy_fields($mform, $ajaxformdata, $customdata, $elements = null, $allenable = false, $pluginname = 'local_costcenter', $context = CONTEXT_SYSTEM, $multiple = false, $prefix = '', $open_path = '', $ismandatory = false) {
     global $DB, $USER;
 
     $depth = (isset($USER->useraccess)) ? $USER->useraccess['currentroleinfo']['depth'] : 0;
@@ -741,7 +741,7 @@ function local_costcenter_get_hierarchy_fields($mform, $ajaxformdata, $customdat
             }
             $mform->addElement('autocomplete', $prefix . $fields[$level], get_string($fields[$level], 'local_costcenter'), $levelelements, $levelelementoptions);
             $mform->addHelpButton($prefix . $fields[$level], $fields[$level] . $pluginname, $pluginname);
-            if ($level == 1 && $prefix != 'filter') {
+            if (($level == 1 && $prefix != 'filter' ) || $ismandatory) {
                 $mform->addRule($prefix . $fields[$level], get_string('required' . $fields[$level], 'local_costcenter'),  'required',  '', 'client');
             }
 

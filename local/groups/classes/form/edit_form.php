@@ -44,7 +44,7 @@ class edit_form extends moodleform {
         $editoroptions = $this->_customdata['editoroptions'];
         $cohort = $this->_customdata['data'];
         $context = (new \local_groups\lib\accesslib())::get_module_context();
-        local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata,range(1,2), false, 'local_groups', $context, $multiple = false);
+        local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata,range(1,2), false, 'local_groups', $context, $multiple = false, $prefix = '', $open_path = '', $ismandatory = true);
 
         $mform->addElement('select', 'open_difficultylevel', get_string('difficultylevel', 'local_courses'), difficulty_levels());
         $mform->addRule('open_difficultylevel', null, 'required', null, 'client');
@@ -58,9 +58,12 @@ class edit_form extends moodleform {
         $mform->setType('contextid', PARAM_INT);
         $mform->setConstant('contextid', $context->id);
 
-        $mform->addElement('text', 'idnumber', get_string('idnumber', 'local_groups'), 'maxlength="254" size="50"');
+        // $mform->addElement('text', 'idnumber', get_string('idnumber', 'local_groups'), 'maxlength="254" size="50"');
+        // $mform->setType('idnumber', PARAM_RAW); // Idnumbers are plain text, must not be changed.
+        // $mform->addRule('idnumber', get_string('idnumber','local_groups'), 'required', null, 'client');
+        $mform->addElement('hidden', 'idnumber');
         $mform->setType('idnumber', PARAM_RAW); // Idnumbers are plain text, must not be changed.
-        $mform->addRule('idnumber', get_string('idnumber','local_groups'), 'required', null, 'client');
+        // $mform->addRule('idnumber', get_string('idnumber','local_groups'), 'required', null, 'client');
 
         $mform->addElement('advcheckbox', 'visible', get_string('visible', 'local_groups'));
         $mform->setDefault('visible', 1);
@@ -104,11 +107,11 @@ class edit_form extends moodleform {
                 $errors['costcenterid'] = get_string('requiredopen_costcenterid', 'local_costcenter');
             }
         }
-        if (isset($data['idnumber'])){
-            if($data['idnumber'] == ''){
-                $errors['idnumber'] = get_string('pleaseselectidnumber', 'local_groups');
-            }
-        }
+        // if (isset($data['idnumber'])){
+        //     if($data['idnumber'] == ''){
+        //         $errors['idnumber'] = get_string('pleaseselectidnumber', 'local_groups');
+        //     }
+        // }
         return $errors;
     }
 

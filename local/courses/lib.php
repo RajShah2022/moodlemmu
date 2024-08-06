@@ -1359,7 +1359,7 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
             $courseslist[$count]["difficultylevel"] = $course->open_difficultylevel;
 
             $courseslist[$count] = array_merge($courseslist[$count], array(
-                "actions" => (((has_capability('local/courses:enrol', $maincheckcontext) || has_capability('local/courses:update', $context) || has_capability('local/courses:delete', $context) || has_capability('local/courses:grade_view', $context) || has_capability('local/courses:report_view', $context)) || is_siteadmin()) && has_capability('local/courses:manage', $maincheckcontext)) ? true : false,
+                "actions" => (((has_capability('local/courses:enrol', $maincheckcontext) || has_capability('local/courses:update', $context) || has_capability('local/courses:delete', $context) || has_capability('local/courses:grade_view', $context) || has_capability('local/courses:report_view', $context) || has_capability('local/courses:canconfiguretopics', $maincheckcontext) || has_capability('local/courses:canconfiguregroups', $maincheckcontext)) || is_siteadmin()) && has_capability('local/courses:manage', $maincheckcontext)) ? true : false,
                 "enrol" => ((has_capability('local/courses:enrol', $maincheckcontext)  || is_siteadmin()) && has_capability('local/courses:manage', $maincheckcontext)) ? true : false,
                 "canconfiguretopics" => (has_capability('local/courses:canconfiguretopics', $maincheckcontext)  || is_siteadmin()) ? true : false,
                 "canconfiguregroups" => (has_capability('local/courses:canconfiguregroups', $maincheckcontext)  || is_siteadmin()) ? true : false,
