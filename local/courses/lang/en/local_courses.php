@@ -470,3 +470,4 @@ $string['notopics'] = '<div class="alert alert-info text-center">No topics are a
 $string['nogroups'] = '<div class="alert alert-info text-center">No Groups Available</div>';
 $string['groups_cofiguration'] = 'Select Classes';
 $string['coursegroupsconfiguration'] = 'Select Classes for : <b>{$a->coursename}</b> (Level {$a->difficultylevel})';
+$string['classenrollmentrequeststatus'] = '<span class="{$a} ml-4"><b>{$a}</b></span>';

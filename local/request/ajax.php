@@ -11,6 +11,7 @@ $systemcontext =(new \local_request\lib\accesslib())::get_module_context();
 $PAGE->set_context($systemcontext);
 $componentid = required_param('componentid',PARAM_INT);
 $component = required_param('component',PARAM_TEXT);
+$comment = optional_param('comment', ' ', PARAM_RAW);
 $id = optional_param('id', 0, PARAM_INT);
 $action = required_param('action', PARAM_TEXT);
 
@@ -32,7 +33,7 @@ if($component && $componentid && $action){
      }
       break;
     case 'deny':  
-      echo $updatedid =requestapi::deny($id); 
+      echo $updatedid = requestapi::deny($id, $comment); 
       break;
     case 'delete':  
       echo $updatedid =requestapi::delete($id); 

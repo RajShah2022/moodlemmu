@@ -34,6 +34,7 @@ defined('MOODLE_INTERNAL') || die();
 class api {
     public const COURSETOPICS_TABLE = 'local_coursetopics';
     public const COURSEGROUPS_TABLE = 'local_coursegroups';
+    public const ENROLLMENT_REQUESTS_TABLE = 'local_request_records';
      /**
      * Insert or update course configured topics instance
      *
@@ -111,11 +112,21 @@ class api {
                 }
             }
             // Delete unchecked groups that were previously checked.
-            foreach ($existinggroupids as $groupid) {
-                $DB->delete_records(self::COURSEGROUPS_TABLE, ['id' => $groupid]);
+            foreach ($existinggroupids as $groupid => $recordid) {
+                $sql = "componentid = :componentid AND courseid = :courseid AND status = :pending";
+                $params = [
+                    'componentid' => $groupid,
+                    'courseid' => $courseid,
+                    'pending' => 'PENDING',
+                ];
+                // Delete the records with matching componentid, courseid, and status.
+                $DB->delete_records_select(self::ENROLLMENT_REQUESTS_TABLE, $sql, $params);
+
+                // Also delete the unchecked group from COURSEGROUPS_TABLE
+                $DB->delete_records(self::COURSEGROUPS_TABLE, ['id' => $recordid]);
             }
         } catch (\Exception $e) {
-            throw new \moodle_exception("Error in topics configuring");
+            throw new \moodle_exception("Error in classes enrollment");
         }
     }
 

@@ -67,7 +67,7 @@ protected function build_section_paths($sections) {
     // Helper function to recursively build paths.
     $build_path = function($section, $sections, $current_path = '') use (&$build_path, &$paths) {
         $section_name = $section->name ?: "Topic " . $section->section;
-        $full_path = $current_path ? $current_path . '/' . $section_name : $section_name;
+        $full_path = $current_path ? $current_path . ' / ' . $section_name : $section_name;
 
         // Check if the section has any children.
         $has_children = false;

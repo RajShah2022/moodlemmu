@@ -303,7 +303,7 @@ $string['compname'] = 'Component';
 $string['sorting'] = 'Sorting';
 $string['requesteddate']='Requested Date';
 $string['confirmmsgfor_approve']='<div class="pl-15 pr-15">Are you sure want to enroll {$a->requesteduser} to {$a->component}</div> ';
-$string['confirmmsgfor_deny']='<div class="pl-15 pr-15">Are you sure want to reject {$a->requesteduser} request</div>';
+$string['confirmmsgfor_deny']='<div class="pl-15 pr-15">Are you sure want to reject {$a} request</div>';
 
 $string['success_add'] ='<div class="pl-15 pr-15">Request has been sent, please wait for approval you will get notify shortly</div>';
 $string['success_approve']='Successfully enrolled';
@@ -323,6 +323,8 @@ $string['firstrequestedfirst'] = 'First Requested First';
 $string['APPROVED'] = 'APPROVED';
 $string['REJECTED'] = 'REJECTED';
 $string['PENDING'] = 'PENDING';
+$string['reason'] = 'Reason';
+$string['rejectreason'] = 'Reject Reason';
 
 
 

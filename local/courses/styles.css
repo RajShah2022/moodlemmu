@@ -1171,3 +1171,12 @@ body#page-local-courses-userdashboard .card_list_view {
 .local_coursetopics .topicsconfiguration_form .femptylabel .col-md-9 .form-control-static {
     width: 100%;
 }
+.custom_switch .form-check .PENDING {
+    color: #f26723;
+}
+.custom_switch .form-check .REJECTED {
+    color: #e91720;
+}
+.custom_switch .form-check .APPROVED {
+    color: #009240;
+}

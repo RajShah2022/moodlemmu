@@ -131,7 +131,7 @@ class requestview implements renderable, templatable {
             $dependencyquery = " ";
             $wheredependency_sql = " ";
         }
-        $requestsql = " SELECT req.id, req.createdbyid, req.compname, req.compcode, req.compkey, req.componentid, req.courseid, req.status, req.responder, req.respondeddate, req.usermodified, req.timecreated, req.timemodified, {$dependencyquery} AS actualcomponentname ";
+        $requestsql = " SELECT req.id, req.createdbyid, req.compname, req.compcode, req.compkey, req.componentid, req.courseid, req.status, req.responder, req.respondeddate, req.usermodified, req.timecreated, req.timemodified, req.rejectreason, {$dependencyquery} AS actualcomponentname ";
         $countsql = " SELECT count(req.id) ";
 
         if (is_siteadmin()) {
@@ -262,6 +262,7 @@ class requestview implements renderable, templatable {
                     $name = '-------';
                 }
 
+                $onerow['rejectreason'] = $request->rejectreason;
                 $onerow['responder'] = $name;
                 $responddate = $request->respondeddate;
                 if ($responddate)
@@ -322,6 +323,7 @@ class requestview implements renderable, templatable {
 
                 $record[] = $onerow;
             }
+            // print_r($record);
             $approve_capability = 0;
             if (has_capability('local/request:approverecord', $systemcontext)) {
                 $approve_capability = 1;

@@ -1248,7 +1248,7 @@ class local_courses_external extends external_api {
         // Send requests to admin and administrator for each mismatch.
         if (!empty($requestsToSend)) {
             foreach ($requestsToSend as $groupId) {
-                $previousrecord = $DB->record_exists('local_request_records', array('compname' => 'groups', 'module_id' => $groupId, 'componentid' => $groupId, 'courseid' => $courseid));
+                $previousrecord = $DB->record_exists('local_request_records', array('compname' => 'groups', 'module_id' => $groupId, 'componentid' => $groupId, 'courseid' => $courseid, 'status' => 'PENDING'));
                 if(!is_siteadmin() && api::is_hod() && !$previousrecord) {
                     \local_request\api\requestapi::create('groups', $groupId, $courseid);
                 }
