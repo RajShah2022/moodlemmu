@@ -214,10 +214,12 @@ function local_groups_add_groups($groups) {
     if (!isset($groups->name)) {
         throw new coding_exception('Missing groups name in groups_add_groups().');
     }
-    if (!isset($groups->idnumber)) {
-        $groups->idnumber = NULL;
-    }
-
+    $costcenterquerylib = new \local_costcenter\querylib();
+    $departmentname = $costcenterquerylib->costcenter_field('fullname', array('path' => $groups->open_path));
+    // if (!isset($groups->idnumber)) {
+    //     $groups->idnumber = NULL;
+    // }
+    $groups->idnumber = $departmentname .' - '. $groups->name;
     if(!empty($groups->description_editor['text'])){
         $groups->description = $groups->description_editor['text'];
     }else{

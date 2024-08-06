@@ -178,7 +178,7 @@ if (((has_capability('local/costcenter:create', $categorycontext) && has_capabil
     //                         </div></li>';
 }
 if (is_siteadmin() || (
-    has_capability('moodle/course:create', $categorycontext) && has_capability('moodle/course:update', $categorycontext) && has_capability('local/courses:manage', $categorycontext))) {
+    has_capability('moodle/course:create', $categorycontext) && has_capability('moodle/course:update', $categorycontext) && has_capability('local/courses:managecourses', $categorycontext))) {
     $extended_menu_links .= '<li><div class="courseedit course_extended_menu_itemcontainer">
                                     <a id="extended_menu_createcourses" class="pull-right course_extended_menu_itemlink" title = "' . get_string('create_newcourse', 'local_courses') . '" data-action="createcoursemodal" onclick="(function(e){ require(\'local_courses/courseAjaxform\').init({contextid:' . $categorycontext->id . ', component:\'local_courses\', callback:\'custom_course_form\', form_status:0, plugintype: \'local\', pluginname: \'courses\'}) })(event)">
                                         <span class="createicon">

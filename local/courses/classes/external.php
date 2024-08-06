@@ -303,15 +303,7 @@ class local_courses_external extends external_api {
                     $courseid->module = 'course';
                     if ($form_status == 2) {
 
-                        local_costcenter_get_costcenter_path($data);
-                        $customcategoryid = get_modulecustomfield_category($courseid);
-                        if (!empty($customcategoryid)) {
-                            update_custom_targetaudience($customcategoryid, $data, $courseid);
-                        }
 
-                        if ($data->open_path) {
-                            $data->category = $DB->get_field('local_costcenter', 'category', array('path' => $data->open_path));
-                        }
                         $data->open_group = ($data->open_group == '_qf__force_multiselect_submission') ? NULL : implode(',', (array)$data->open_group);
                         $data->open_designation = ($data->open_designation == '_qf__force_multiselect_submission') ? NULL : implode(',', (array)$data->open_designation);
                     } else {
@@ -324,6 +316,16 @@ class local_courses_external extends external_api {
                         }
                     }
                     if ($form_status == 1) {
+                         local_costcenter_get_costcenter_path($data);
+                        $customcategoryid = get_modulecustomfield_category($courseid);
+                        if (!empty($customcategoryid)) {
+                            update_custom_targetaudience($customcategoryid, $data, $courseid);
+                        }
+
+                        if ($data->open_path) {
+                            $data->category = $DB->get_field('local_costcenter', 'category', array('path' => $data->open_path));
+                        }
+                        
                         $data->open_points = (!empty($validateddata->open_points)) ? $validateddata->open_points : 0;
 
                         $data->childfieldid = $validateddata->childfieldid;

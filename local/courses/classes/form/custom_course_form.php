@@ -55,10 +55,10 @@ class custom_course_form extends moodleform {
 
         $depth = count($costcenterdepth);
 
-        if ($USER->useraccess['currentroleinfo']['depth'] < $depth) {
+        // if ($USER->useraccess['currentroleinfo']['depth'] < $depth) {
 
-            $this->formstatus['target_audience'] = get_string('target_audience', 'local_users');
-        }
+        //     $this->formstatus['target_audience'] = get_string('target_audience', 'local_users');
+        // }
         parent::__construct($action, $customdata, $method, $target, $attributes, $editable, $formdata);
     }
     /**
@@ -260,6 +260,13 @@ class custom_course_form extends moodleform {
                 $summaryfields .= ',overviewfiles_filemanager';
             }
         } elseif ($formstatus == 1) {
+
+            list($zero, $org, $ctr, $bu, $cu, $territory) = explode("/", $this->course->open_path);
+            $mform->addElement('hidden', 'open_costcenterid');
+            $mform->setConstant('open_costcenterid', $org);
+
+            local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(2, HIERARCHY_LEVELS), true, 'local_costcenter', $categorycontext, $multiple = false);
+
             $mform->addElement('text', 'open_points', get_string('points', 'local_courses'));
             $mform->addHelpButton('open_points', 'open_pointscourse', 'local_courses');
             $mform->setType('open_points', PARAM_INT);
@@ -300,16 +307,16 @@ class custom_course_form extends moodleform {
                 $mform->setType('open_level', PARAM_INT);
             }
 
-            $mform->addElement(
-                'date_time_selector',
-                'startdate',
-                get_string('startdate', 'local_courses'),
-                array()
-            );
-            $mform->addHelpButton('startdate', 'startdate');
+            // $mform->addElement(
+            //     'date_time_selector',
+            //     'startdate',
+            //     get_string('startdate', 'local_courses'),
+            //     array()
+            // );
+            // $mform->addHelpButton('startdate', 'startdate');
 
-            $mform->addElement('date_time_selector', 'enddate', get_string('enddate', 'local_courses'), array('optional' => false));
-            $mform->addHelpButton('enddate', 'enddate');
+            // $mform->addElement('date_time_selector', 'enddate', get_string('enddate', 'local_courses'), array('optional' => false));
+            // $mform->addHelpButton('enddate', 'enddate');
 
             $certificate_plugin_exist = $core_component::get_plugin_directory('tool', 'certificate');
             if ($certificate_plugin_exist) {
@@ -335,24 +342,21 @@ class custom_course_form extends moodleform {
             $handler->set_parent_context($categorycontext); // For course handler only.
             $handler->instance_form_definition($mform, empty($this->course->id) ? 0 : $this->course->id);
             $handler->instance_form_before_set_data($course);
-        } else if ($formstatus == 2) {
-            list($zero, $org, $ctr, $bu, $cu, $territory) = explode("/", $this->course->open_path);
-            $mform->addElement('hidden', 'open_costcenterid');
-            $mform->setConstant('open_costcenterid', $org);
+        } 
+        // else if ($formstatus == 2) {
+           
+        //     $functionname = 'globaltargetaudience_elementlist';
+        //     if (function_exists($functionname)) {
+        //         $costcenterfields = local_costcenter_get_fields();
+        //         $firstdepth = current($costcenterfields);
+        //         $mform->modulecostcenterpath = $this->_customdata[$firstdepth];
 
-            local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(2, HIERARCHY_LEVELS), true, 'local_costcenter', $categorycontext, $multiple = false);
-            $functionname = 'globaltargetaudience_elementlist';
-            if (function_exists($functionname)) {
-                $costcenterfields = local_costcenter_get_fields();
-                $firstdepth = current($costcenterfields);
-                $mform->modulecostcenterpath = $this->_customdata[$firstdepth];
+        //         $functionname($mform, array('group', 'designation'), $org);
+        //     }
+        //     $course->module = 'course';
+        //     local_users_get_custom_userprofilefields($mform, $course, 'course'); //target audience
 
-                $functionname($mform, array('group', 'designation'), $org);
-            }
-            $course->module = 'course';
-            local_users_get_custom_userprofilefields($mform, $course, 'course'); //target audience
-
-        }
+        // }
         $mform->closeHeaderBefore('buttonar');
         $mform->disable_form_change_checker();
         // Finally set the current form data
