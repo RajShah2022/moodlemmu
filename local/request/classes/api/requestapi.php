@@ -32,6 +32,7 @@ use moodle_url;
 use context_system;
 use context_course;
 use local_classroom\classroom;
+use local_courses\api;
 use local_program\program;
 use local_certification\certification;
 use local_learningplan\lib\lib as learningplanlib;
@@ -165,7 +166,7 @@ use core_user;
       return $deleterecord; 
   } // end of  addinstance();
 
-  public static function approve($id){     
+  public static function approve($id){  
     global $DB, $USER, $CFG;
     require_once($CFG->dirroot . '/local/lib.php'); 
     $notification = new \local_request\notification();
@@ -189,7 +190,10 @@ use core_user;
         $component= $updaterecord->compname;
         $componentid = $updaterecord->componentid;
         $userid= $updaterecord->createdbyid;
-        $enroll_to_component=self::enroll_to_component($component, $componentid, $userid);
+        if($updaterecord->courseid > 0 ) {
+          $courseid = $updaterecord->courseid;
+        }
+        $enroll_to_component = self::enroll_to_component($component, $componentid, $userid, $courseid);
         if($enroll_to_component !=-1){
           $updated_recordid = $DB->update_record('local_request_records', $updaterecord);
         }
@@ -319,9 +323,9 @@ use core_user;
 
    } // end of  get_requestbutton function
 
-  public static function enroll_to_component($component, $componentid, $userid){
+  public static function enroll_to_component($component, $componentid, $userid, $courseid = 0){
     global $DB;
-    switch($component){     
+    switch($component){   
       case 'classroom' : 
         $newrecordid=(new classroom)->classroom_self_enrolment($componentid, $userid, $request=1,'request');         
         return $newrecordid;
@@ -360,6 +364,29 @@ use core_user;
           }
         }   
         return $enrolledid;
+        break;
+        case 'groups' :
+        $enrolledid = 0;
+        // $course_context = context_course::instance($courseid);
+        $exists = $DB->record_exists('enrol', [
+                    'courseid' => $courseid,
+                    'enrol' => 'cohort',
+                    'customint1' => $componentid
+                ]);
+        if(!$exists) {
+          $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
+
+          $fields = [
+                'status' => 0, // Assuming you want it enabled by default
+                'customint1' => $componentid, // Cohort IDs
+                'roleid' => 5, // Static role ID
+                'customint2' => -1, // Default value for "Add to group" option (Create new group)
+                'courseid' => $courseid,
+                'type' => 'cohort'
+            ];
+          $enrollid = api::enrollgroups($course, $fields);
+        }   
+        return $enrollid;
         break;
     } // end of switch statement
   } // end of enroll_to_component

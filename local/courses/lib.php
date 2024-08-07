@@ -34,6 +34,7 @@ require_once($CFG->dirroot . '/completion/completion_completion.php');
 
 use \local_courses\form\custom_course_form as custom_course_form;
 use \local_courses\form\custom_courseevidence_form as custom_courseevidence_form;
+use \local_courses\api;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -1251,7 +1252,13 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
                     $courseslist[$count]["courseimage"] = $courseimage;
                 }
             }
-
+            if(api::is_hod()) {
+                $enrol_manual = enrol_get_plugin('manual');
+                $instance = $DB->get_record('enrol', array('courseid' => $course->id, 'enrol' => 'manual'), '*', MUST_EXIST);
+                $enrol_manual->enrol_user($instance, $USER->id, api::get_hodcourse_roleid());
+                $ishodcourse = true;
+            }
+            
             $enrolid = $DB->get_field('enrol', 'id', array('enrol' => 'manual', 'courseid' => $course->id));
 
             if (has_capability('local/courses:enrol', $maincheckcontext) && has_capability('local/courses:manage', $maincheckcontext)) {
@@ -1260,7 +1267,7 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
             if (has_capability('local/courses:enrol', $maincheckcontext) && has_capability('local/courses:manage', $maincheckcontext)) {
                 $courseslist[$count]["autoenrollusers"] = $CFG->wwwroot . "/local/courses/courseautoenrol.php?id=" . $course->id;
             }
-            if (has_capability('moodle/course:view', $context) || is_enrolled($context)) {
+            if (has_capability('moodle/course:view', $context) || is_enrolled($context) || $ishodcourse) {
                 $courseslist[$count]["courseurl"] = $CFG->wwwroot . "/course/view.php?id=" . $course->id;
             } else {
                 $courseslist[$count]["courseurl"] = $CFG->wwwroot . "/local/search/coursedetails.php?id=" . $course->id;
@@ -1357,7 +1364,6 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
                 unset($courseslist[$count]["requestlink"]);
             }
             $courseslist[$count]["difficultylevel"] = $course->open_difficultylevel;
-
             $courseslist[$count] = array_merge($courseslist[$count], array(
                 "actions" => (((has_capability('local/courses:enrol', $maincheckcontext) || has_capability('local/courses:update', $context) || has_capability('local/courses:delete', $context) || has_capability('local/courses:grade_view', $context) || has_capability('local/courses:report_view', $context) || has_capability('local/courses:canconfiguretopics', $maincheckcontext) || has_capability('local/courses:canconfiguregroups', $maincheckcontext)) || is_siteadmin()) && has_capability('local/courses:manage', $maincheckcontext)) ? true : false,
                 "enrol" => ((has_capability('local/courses:enrol', $maincheckcontext)  || is_siteadmin()) && has_capability('local/courses:manage', $maincheckcontext)) ? true : false,

@@ -178,6 +178,12 @@ class api {
         global $DB;
         return $DB->get_field('role', 'id', array('shortname' => 'hod'));
     }
+
+    public static function get_hodcourse_roleid() {
+        global $DB;
+        return $DB->get_field('role', 'id', array('shortname' => 'hod_course'));
+    }
+
     public static function is_hod() {
         global $USER;
         $current_roleid = $USER->useraccess['currentroleinfo']['roleid'];
@@ -187,5 +193,11 @@ class api {
         } else {
             return false;
         }
+    }
+
+    public static function enrollgroups($course, $fields = null) {
+        $chohortplugin = enrol_get_plugin('cohort');
+        $enrolid = $chohortplugin->add_instance($course, $fields);
+        return $enrolid;
     }
 }
