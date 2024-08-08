@@ -45,7 +45,21 @@ class groupsconfiguration extends dynamic_form {
         if(!empty($grouplist)) {
             // Add checkboxes to the form.
             foreach ($grouplist as $id => $name) {
-                $requeststatus = $DB->get_field('local_request_records', 'status', array('componentid' => $id, 'courseid' => $courseid));
+                $sql = "SELECT status 
+                        FROM {local_request_records} 
+                        WHERE componentid = :componentid 
+                          AND courseid = :courseid 
+                        ORDER BY timecreated DESC 
+                        LIMIT 1";
+
+                $params = [
+                    'componentid' => $id,
+                    'courseid' => $courseid
+                ];
+
+                // Fetch the latest status.
+                $requeststatus = $DB->get_field_sql($sql, $params);
+                // $requeststatus = $DB->get_field('local_request_records', 'status', array('componentid' => $id, 'courseid' => $courseid));
                 $mform->addElement('advcheckbox', $id, '', $name->fullname . ' (' . get_string('difficultylevels', 'local_courses', $name->open_difficultylevel) . ')' . get_string('classenrollmentrequeststatus', 'local_courses', $requeststatus), ['class' => 'custom_switch']);
             }  
         } else {
