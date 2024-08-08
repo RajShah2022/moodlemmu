@@ -122,6 +122,7 @@ class api {
                 // Delete the records with matching componentid, courseid, and status.
                 $DB->delete_records_select(self::ENROLLMENT_REQUESTS_TABLE, $sql, $params);
 
+                self::unenrollgroups($groupid, $courseid);
                 // Also delete the unchecked group from COURSEGROUPS_TABLE
                 $DB->delete_records(self::COURSEGROUPS_TABLE, ['id' => $recordid]);
             }
@@ -178,6 +179,12 @@ class api {
         global $DB;
         return $DB->get_field('role', 'id', array('shortname' => 'hod'));
     }
+
+    public static function get_hodcourse_roleid() {
+        global $DB;
+        return $DB->get_field('role', 'id', array('shortname' => 'hod_course'));
+    }
+
     public static function is_hod() {
         global $USER;
         $current_roleid = $USER->useraccess['currentroleinfo']['roleid'];
@@ -187,5 +194,31 @@ class api {
         } else {
             return false;
         }
+    }
+
+    public static function enrollgroups($course, $fields = null) {
+        $chohortplugin = enrol_get_plugin('cohort');
+        $enrolid = $chohortplugin->add_instance($course, $fields);
+        return $enrolid;
+    }
+
+    public static function unenrollgroups($groupid, $courseid, $fields = null) {
+        global $DB;
+        $instances = enrol_get_instances($courseid, false);
+        $chohortplugin = enrol_get_plugin('cohort');
+
+        $params = [
+            'customint1' => $groupid,
+            'courseid' => $courseid,
+            'enrol' => 'cohort',
+        ];
+        $coursecohortslist = $DB->get_records('enrol', $params);
+        if(!empty($coursecohortslist)) {
+            foreach($coursecohortslist as $coursecohort) {
+                $chohortplugin->update_communication($coursecohort->id, 'remove', $courseid);
+                $instance = $instances[$coursecohort->id];
+                $chohortplugin->delete_instance($instance);
+            }  
+        }        
     }
 }

@@ -186,11 +186,13 @@ define(['jquery',
         }).done(function(modal) {
             modal.getFooter().find('[data-action="cancel"]').on('click', function() {
                 modal.hide();
-                location.reload();
+                // location.reload();
+                modal.destroy();
             });
             modal.getRoot().find('[data-action="hide"]').on('click', function() {
                 modal.hide();
-                location.reload();
+                // location.reload();
+                modal.destroy();
             });  
             requestconfirm.prototype.submitajax(args, modal); 
               
