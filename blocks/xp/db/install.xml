@@ -9,6 +9,7 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="schoolid" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="Business Unit id, that user belongs to"/>
         <FIELD NAME="xp" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="lvl" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="1" SEQUENCE="false" COMMENT="Deprecated since XP 3.15, use PHP to read a user's level."/>
       </FIELDS>
@@ -24,6 +25,7 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="schoolid" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="Business Unit id, that user belongs to"/>
         <FIELD NAME="eventname" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="xp" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="time" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>

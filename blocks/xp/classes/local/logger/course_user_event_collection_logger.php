@@ -90,6 +90,7 @@ class course_user_event_collection_logger implements
      * @return void
      */
     public function log($id, $points, $signature, DateTime $time = null) {
+        global $USER;
         $time = $time ? $time : new DateTime();
         $record = new stdClass();
         $record->courseid = $this->courseid;
@@ -97,6 +98,7 @@ class course_user_event_collection_logger implements
         $record->eventname = $signature;
         $record->xp = $points;
         $record->time = $time->getTimestamp();
+        $record->schoolid = $USER->open_path;
         try {
             $this->db->insert_record(static::TABLE, $record);
         } catch (dml_exception $e) {

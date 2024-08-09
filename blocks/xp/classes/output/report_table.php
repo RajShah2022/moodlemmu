@@ -145,8 +145,12 @@ class report_table extends table_sql {
         // Get the users which might not be enrolled or are revoked the permission, but still should
         // be displayed in the report for the teachers' benefit. We need to filter out the users which
         // are not a member of the group though.
+        global $USER;
+        $userpath = array_filter(explode('/', $USER->open_path));
+        $pathlike = '/'.implode('/', array_slice($userpath, 0, 2)).'%';
         if (empty($groupid)) {
             $sql = 'SELECT userid FROM {block_xp} WHERE courseid = :courseid';
+            // $sql .=" AND schoolid LIKE '{$pathlike}'";
             $params = ['courseid' => $courseid];
         } else {
             $sql = 'SELECT b.userid
@@ -155,6 +159,7 @@ class report_table extends table_sql {
                         ON b.userid = gm.userid
                        AND gm.groupid = :groupid
                      WHERE courseid = :courseid';
+            // $sql .=" AND b.schoolid LIKE '{$pathlike}'";
             $params = ['courseid' => $courseid, 'groupid' => $groupid];
         }
         $entries = $this->db->get_recordset_sql($sql, $params);
@@ -175,6 +180,7 @@ class report_table extends table_sql {
                   LEFT JOIN {block_xp} x
                          ON (x.userid = u.id AND x.courseid = :courseid)";
         $this->sql->where = "u.id $insql";
+        $this->sql->where .=" AND u.open_path LIKE '{$pathlike}'";
         $this->sql->params = array_merge($inparams, [
             'courseid' => $courseid,
             'contextlevel' => CONTEXT_USER,
