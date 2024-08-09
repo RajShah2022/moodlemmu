@@ -385,6 +385,8 @@ use core_user;
                 'type' => 'cohort'
             ];
           $enrollid = api::enrollgroups($course, $fields);
+
+          api::course_content_accessrestrictions($courseid);
         }   
         return $enrollid;
         break;

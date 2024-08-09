@@ -32,6 +32,7 @@ use stdClass;
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/course/lib.php');
+require_once($CFG->dirroot . '/local/groups/lib.php');
 
 class api {
     public const COURSETOPICS_TABLE = 'local_coursetopics';
@@ -127,6 +128,8 @@ class api {
                 // Delete the records with matching componentid, courseid, and status.
                 $DB->delete_records_select(self::ENROLLMENT_REQUESTS_TABLE, $sql, $params);
                 self::unenrollgroups($groupid, $courseid);
+                self::remove_hod_from_group($groupid);
+                
                 // Also delete the unchecked group from COURSEGROUPS_TABLE
                 $DB->delete_records(self::COURSEGROUPS_TABLE, ['id' => $recordid]);
             }
@@ -169,7 +172,7 @@ class api {
 
             // Iterate over all sections
             foreach ($allSections as $section) {
-                $params = ['id' => $section->id, 'sr' => 0];
+                
                 if ($section->section > 0) {
                     $sectiondata = new stdClass();
                     $sectiondata->id = $section->id;
@@ -410,5 +413,54 @@ class api {
                 $chohortplugin->delete_instance($instance);
             }  
         }        
+    }
+    
+    public static function get_department_hodlist($costcenterpath = null, $hodcourserole = false) {
+        global $DB, $USER;
+        $costcenterpath = $costcenterpath ? $costcenterpath : $USER->open_path;
+        $context = (new \local_costcenter\lib\accesslib())::get_module_context($costcenterpath);
+        $hodroleid = self::get_hod_roleid();
+        // $condition = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='u.open_path');
+        if($hodcourserole) {
+            $hodroleid = self::get_hodcourse_roleid();
+        } else {
+            $hodroleid = self::get_hod_roleid();
+        }
+        $sql = "SELECT ra.id, ra.roleid, u.id as userid, u.firstname, u.lastname, u.email, u.open_employeeid, ra.contextid
+        FROM {role_assignments} AS ra
+        JOIN {user} AS u ON u.id = ra.userid
+        WHERE ra.contextid = :contextid AND ra.roleid = :hodroleid";
+
+        $params = array('contextid' => $context->id, 'hodroleid' => $hodroleid);
+
+        $hodlist = $DB->get_records_sql($sql, $params);
+        $data = [
+            'hodlist' => $hodlist,
+            'hodcount' => count($hodlist),
+            'contextid' => $context->id
+        ];
+        return $data; 
+    }
+
+    public static function add_hod_to_group($groupId) {
+        global $CFG, $DB;
+        $departmenth = $DB->get_field('local_groups', 'open_path', array('id' => $groupId));
+        $hodlist = self::get_department_hodlist($departmenth);
+        if(!empty($hodlist)) {
+            foreach($hodlist['hodlist'] as $hodlist) {
+                local_groups_add_member($groupId, $hodlist->userid);
+            }
+        } 
+    }
+
+    public static function remove_hod_from_group($groupId) {
+        global $CFG, $DB;
+        $departmenth = $DB->get_field('local_groups', 'open_path', array('id' => $groupId));
+        $hodlist = self::get_department_hodlist($departmenth);
+        if(!empty($hodlist)) {
+            foreach($hodlist['hodlist'] as $hodlist) {
+                local_groups_remove_member($groupId, $hodlist->userid);
+            }
+        } 
     }
 }

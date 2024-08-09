@@ -1242,6 +1242,8 @@ class local_courses_external extends external_api {
         $cohortsToAdd = [];
 
         foreach ($groupDifficultyLevels as $groupId => $group) {
+            $addhods = api::add_hod_to_group($groupId);
+
             if (($courseDifficultylevel - $group->open_difficultylevel) > 2) {
                 // Add group ID to the list of requests to send if there's a mismatch.
                 $requestsToSend[] = $groupId;
@@ -1285,7 +1287,12 @@ class local_courses_external extends external_api {
         if (!empty($requestsToSend)) {
             foreach ($requestsToSend as $groupId) {
                 $previousrecord = $DB->record_exists('local_request_records', array('compname' => 'groups', 'module_id' => $groupId, 'componentid' => $groupId, 'courseid' => $courseid, 'status' => 'PENDING'));
-                if(!is_siteadmin() && api::is_hod() && !$previousrecord) {
+                 $enrolmentexists = $DB->record_exists('enrol', [
+                    'courseid' => $courseid,
+                    'enrol' => 'cohort',
+                    'customint1' => $groupId
+                ]);
+                if(!is_siteadmin() && api::is_hod() && !$previousrecord && !$enrolmentexists) {
                     \local_request\api\requestapi::create('groups', $groupId, $courseid);
                 }
             }
