@@ -122,7 +122,12 @@ class course_user_leaderboard implements leaderboard {
                   JOIN {context} ctx
                     ON ctx.instanceid = u.id
                    AND ctx.contextlevel = :contextlevel";
+        global $USER;
+        $userpath = array_filter(explode('/', $USER->open_path));
+        $pathlike = '/'.implode('/', array_slice($userpath, 0, 2)).'%';
+
         $this->where = "x.courseid = :courseid";
+        $this->where .=" AND x.schoolid LIKE '{$pathlike}'";
         $this->order = "x.xp DESC, x.userid ASC";
         $this->params = $params + [
             'contextlevel' => CONTEXT_USER,
