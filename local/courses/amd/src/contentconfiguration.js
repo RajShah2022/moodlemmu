@@ -61,6 +61,10 @@ export const init = () => {
 
                 // Add classes and animate when the form is loaded
                 form.addEventListener(form.events.LOADED, function() {
+                    
+                    // bindToggleTopicCheckboxEvents(); // Ensure checkbox binding on form load
+                    // Call toggleTopicCheckboxes immediately to set initial states
+                    // toggleTopicCheckboxes();
                     if (form.modal) {
                         const modalRoot = form.modal.getRoot();
                         modalRoot.addClass('openLMStransition local_coursetopics');
@@ -73,8 +77,12 @@ export const init = () => {
                             }, 1000);
                             form.modal.setBody('');
                         });
+
                     }
                 });
+
+
+
             });
         }
     });
@@ -193,3 +201,72 @@ export const init = () => {
         }
     });
 };
+
+
+// Function to handle checkbox behavior based on parent topics
+function toggleTopicCheckboxes() {
+    console.log("toggleTopicCheckboxes called");
+    $('.topicsconfiguration_form input[type="checkbox"]').each(function () {
+        const childCheckbox = $(this);
+        const parentId = childCheckbox.data('parent');
+        
+        if (parentId) {
+            const parentCheckbox = $(`input[name="${parentId}"]`);
+            // console.log(`Checking child checkbox: ${childCheckbox.attr('name')}, Parent: ${parentId}`);
+            console.log(`Parent Checkbox (ID: ${parentId}) is checked: ${parentCheckbox.is(':checked')}`);
+            // Check if the child checkbox should be disabled
+            const shouldDisable = !parentCheckbox.is(':checked');
+
+            if (shouldDisable) {
+                console.log(`Disabling child checkbox: ${childCheckbox.attr('name')}`);
+                childCheckbox.prop('disabled', true).prop('checked', false);
+            } else {
+                console.log(`Enabling child checkbox: ${childCheckbox.attr('name')}`);
+                childCheckbox.prop('disabled', false);
+            }
+        }
+    });
+}
+
+// Bind the checkbox change events
+function bindToggleTopicCheckboxEvents() {
+    // Initial call to set the state on load
+    toggleTopicCheckboxes();
+
+    // Use delegated event handling for dynamic content
+    $(document).on('change', '.topicsconfiguration_form input[type="checkbox"]', function () {
+        const changedCheckbox = $(this);
+        console.log(`Checkbox ${changedCheckbox.attr('name')} changed, checked: ${changedCheckbox.is(':checked')}`);
+        const isParent = !changedCheckbox.data('parent');
+        const parentId = isParent ? changedCheckbox.attr('name') : changedCheckbox.data('parent');
+        const childCheckboxes = $(`input[data-parent="${parentId}"]`);
+
+        console.log(`Checkbox changed: ${changedCheckbox.attr('name')}, Is parent: ${isParent}`);
+
+        // If a parent checkbox changed, update its child checkboxes
+        if (isParent) {
+            const isChecked = changedCheckbox.is(':checked');
+            childCheckboxes.each(function () {
+                const childCheckbox = $(this);
+                if (isChecked) {
+                    console.log(`Enabling child checkbox: ${childCheckbox.attr('name')}`);
+                    childCheckbox.prop('disabled', false);
+                } else {
+                    console.log(`Disabling child checkbox: ${childCheckbox.attr('name')}`);
+                    childCheckbox.prop('disabled', true).prop('checked', false);
+                }
+            });
+        } else {
+            // If a child checkbox changed, ensure it's only enabled if its parent is checked
+            console.log("Calling toggleTopicCheckboxes from else block");
+            toggleTopicCheckboxes();
+        }
+    });
+}
+
+// Ensure the checkbox binding is set up when the form is loaded
+$(document).ready(function () {
+    // bindToggleTopicCheckboxEvents(); // Call it here to ensure it sets up correctly
+});
+
+
