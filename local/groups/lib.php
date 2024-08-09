@@ -1089,3 +1089,24 @@ function local_groups_request_dependent_query($aliasname) {
 }
 
    
+function local_groups_quicklink_node() {
+    global $CFG, $PAGE, $OUTPUT;
+    $systemcontext = (new \local_groups\lib\accesslib())::get_module_context();
+    $content = '';
+    if (is_siteadmin() || has_capability('moodle/cohort:manage',$systemcontext)) {
+        $PAGE->requires->js_call_amd('local_groups/newgroup', 'load', array());
+        $gropusdata = array();
+        $gropusdata['node_header_string'] = get_string('leftmenu_groups', 'local_groups');
+        $gropusdata['pluginname'] = 'groups';
+        $gropusdata['plugin_icon_class'] = 'fa fa-users';
+        $gropusdata['create'] = TRUE;
+        $gropusdata['create_element'] = html_writer::link('javascript:void(0)', get_string('create'), array('onclick' => '(function(e){ require("local_groups/newgroup").init({contextid:' . $systemcontext->id . ', groupsid:0 }) })(event)'));
+        $gropusdata['viewlink_url'] = $CFG->wwwroot.'/local/groups/index.php';
+        $gropusdata['view'] = TRUE;
+        $gropusdata['viewlink_title'] = get_string("view");
+        $gropusdata['space_count'] = 'one';
+        $gropusdata['view_type'] = $PAGE->theme->settings->quicknavigationview;
+        $content = $OUTPUT->render_from_template('block_quick_navigation/quicklink_node', $gropusdata);
+    }
+    return array('2' => $content);
+}
