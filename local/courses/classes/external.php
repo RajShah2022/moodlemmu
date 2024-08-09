@@ -194,6 +194,8 @@ class local_courses_external extends external_api {
                 $validateddata->open_categoryid = $data['performancecatid'];
                 $validateddata->performanceparentid = $data['performanceparentid'];
                 $validateddata->open_coursecompletiondays = $validateddata->open_coursecompletiondays ? $validateddata->open_coursecompletiondays : 0;
+                $validateddata->groupmode = 1;
+
                 $courseid = create_course($validateddata, $editoroptions);
 
                 $coursecat = new stdClass();
@@ -329,7 +331,7 @@ class local_courses_external extends external_api {
                         $data->childfieldid = $validateddata->childfieldid;
                         $courseopenpath = $DB->get_field('course', 'open_path', array('id' => $validateddata->id));
                         $data->costcenterid = explode('/', $courseopenpath)[1];
-
+                        $data->groupmode = 1;
                         insert_fields_mapped($data);
                     }
                     update_course($data);
