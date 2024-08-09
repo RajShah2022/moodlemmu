@@ -57,17 +57,21 @@ class quick_links {
                 }
             }
             $users = $data[0];
-            $courses = $data[1];
-            $feedbacks = $data[4];
-            $classrooms = $data[3];
-            $learningplans = $data[5];
-            $forums = $data[2];
+            $courses = $data[2];
+            $feedbacks = $data[5];
+            $classrooms = $data[4];
+            $learningplans = $data[6];
+            $forums = $data[3];
             //$certifications = $data[6];
-            $programs = $data[6];
-            $onlineexams = $data[7];
+            $programs = $data[7];
+            $onlineexams = $data[8];
+            $groups = $data[1];
 
             $out .= html_writer::start_tag('div', array('class' => 'col-md-4 mb-3'));
             $out .= $users;
+            $out .= html_writer::end_tag("div"); 
+            $out .= html_writer::start_tag('div', array('class'=>'col-md-4 mb-3'));
+            $out .= $groups;
             $out .= html_writer::end_tag("div");
             $out .= html_writer::start_tag('div', array('class' => 'col-md-4 mb-3'));
             $out .= $courses;
@@ -114,17 +118,22 @@ class quick_links {
                 }
             }
             $users = $data[0];
-            $courses = $data[1];
-            $feedbacks = $data[2];
-            $classrooms = $data[3];
-            $learningplans = $data[4];
-            $forums = $data[5];
+            $courses = $data[2];
+            $feedbacks = $data[5];
+            $classrooms = $data[4];
+            $learningplans = $data[6];
+            $forums = $data[3];
             //$certifications = $data[6];
-            $programs = $data[6];
-            $onlineexams = $data[7];
+           $programs = $data[7];
+            $onlineexams = $data[8];
+            $groups = $data[1];
             $out .= html_writer::start_tag('li', array('class' => 'quick_nav_list_wrapper first_row'));
             $out .= $users;
             $out .= html_writer::end_tag('li');
+ 	    $out .= html_writer::start_tag('li', array('class' => 'quick_nav_list_wrapper second_row'));
+            $out .= $groups;
+            $out .= html_writer::end_tag('li');
+
             $out .= html_writer::start_tag('li', array('class' => 'quick_nav_list_wrapper second_row'));
             $out .= $courses;
             $out .= html_writer::end_tag('li');
