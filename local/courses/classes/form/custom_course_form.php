@@ -265,7 +265,7 @@ class custom_course_form extends moodleform {
             $mform->addElement('hidden', 'open_costcenterid');
             $mform->setConstant('open_costcenterid', $org);
 
-            local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(2, HIERARCHY_LEVELS), true, 'local_costcenter', $categorycontext, $multiple = false);
+            local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(2, HIERARCHY_LEVELS), true, 'local_costcenter', $categorycontext, $multiple = true, '', '', true);
 
             $mform->addElement('text', 'open_points', get_string('points', 'local_courses'));
             $mform->addHelpButton('open_points', 'open_pointscourse', 'local_courses');
