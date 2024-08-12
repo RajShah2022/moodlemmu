@@ -54,7 +54,6 @@ class custom_course_form extends moodleform {
         $costcenterdepth = local_costcenter_get_fields();
 
         $depth = count($costcenterdepth);
-
         // if ($USER->useraccess['currentroleinfo']['depth'] < $depth) {
 
         //     $this->formstatus['target_audience'] = get_string('target_audience', 'local_users');
@@ -136,7 +135,10 @@ class custom_course_form extends moodleform {
         $core_component = new core_component();
         if ($formstatus == 0) {
 
-            local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(1, 1), false, 'local_costcenter', $categorycontext, $multiple = false);
+            local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(1, HIERARCHY_LEVELS), false, 'local_costcenter', $categorycontext, $multiple = true,
+            $prefix = '',
+            $open_path = '',
+            $ismandatory = true);
 
             $mform->addElement('text', 'fullname', get_string('course_name', 'local_courses'), 'maxlength="254" size="50"');
             $mform->addHelpButton('fullname', 'course_name', 'local_courses');
@@ -260,24 +262,30 @@ class custom_course_form extends moodleform {
                 $summaryfields .= ',overviewfiles_filemanager';
             }
         } elseif ($formstatus == 1) {
+            // if($this->course->open_path){
+            //     if(!is_siteadmin()){
+            //         $patharr = explode(',', $this->course->open_path);
+            //         $keyval = (int) array_search($USER->path, $patharr);
+            //         $this->course->open_path = $patharr[$keyval];
+            //     }else{
+            //         $this->course->open_path = explode(',', $this->course->open_path)[0];
+            //     }
+            // }
+            // list($zero, $org, $ctr, $bu, $cu, $territory) = explode("/", $this->course->open_path);
+            // $mform->addElement('hidden', 'open_costcenterid');
+            // $mform->setConstant('open_costcenterid', $org);
 
-            list($zero, $org, $ctr, $bu, $cu, $territory) = explode("/", $this->course->open_path);
-            $mform->addElement('hidden', 'open_costcenterid');
-            $mform->setConstant('open_costcenterid', $org);
-
-            local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(2, HIERARCHY_LEVELS), true, 'local_costcenter', $categorycontext, $multiple = true, '', '', true);
-
+            // local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(2, HIERARCHY_LEVELS), true, 'local_costcenter', $categorycontext, true);
             $mform->addElement('text', 'open_points', get_string('points', 'local_courses'));
-            $mform->addHelpButton('open_points', 'open_pointscourse', 'local_courses');
+            $mform->addHelpButton('open_points', 'open_pointscosurse', 'local_courses');
             $mform->setType('open_points', PARAM_INT);
-
             $costcenterid = explode('/', $this->course->open_path)[1];
             get_custom_fields($costcenterid, $mform, $moduletype = 'course');
-
-            $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'open_path', $costcenterpath = $this->course->open_path);
-
+            
+            
             $plugin_exists = \core_component::get_plugin_directory('local', 'skillrepository');
             if ($plugin_exists) {
+                $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'open_path', $costcenterpath = $this->course->open_path);
                 $skillselect = array(0 => get_string('select_skill', 'local_courses'));
                 $skillcostcentersql = "SELECT id,name FROM {local_skill}
                                     WHERE 1=1 $costcenterpathconcatsql ";
@@ -342,7 +350,7 @@ class custom_course_form extends moodleform {
             $handler->set_parent_context($categorycontext); // For course handler only.
             $handler->instance_form_definition($mform, empty($this->course->id) ? 0 : $this->course->id);
             $handler->instance_form_before_set_data($course);
-        } 
+        }
         // else if ($formstatus == 2) {
            
         //     $functionname = 'globaltargetaudience_elementlist';
@@ -375,7 +383,6 @@ class custom_course_form extends moodleform {
         } else {
             $course->open_categoryid = 0;
         }
-
         $this->set_data($course);
         $mform->disable_form_change_checker();
     }
@@ -412,6 +419,11 @@ class custom_course_form extends moodleform {
             if (isset($data['performancecatid']) && $data['form_status'] == 0) {
                 if ($data['performancecatid'] == 0) {
                     $errors['performancecatid'] = get_string('pleaseselectcategory', 'local_courses');
+                }
+            }
+            if (isset($data['open_department']) && $data['form_status'] == 0) {
+                if (!$data['open_department']) {
+                    $errors['open_department'] = get_string('selectopen_department', 'local_costcenter');
                 }
             }
             if (isset($data['open_path']) && $data['form_status'] == 0) {

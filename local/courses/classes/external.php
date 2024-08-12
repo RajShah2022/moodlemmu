@@ -185,7 +185,7 @@ class local_courses_external extends external_api {
                 local_costcenter_get_costcenter_path($validateddata);
 
                 if ($validateddata->open_path) {
-                    $validateddata->category = $DB->get_field('local_costcenter', 'category', array('path' => $validateddata->open_path));
+                    $validateddata->category = $DB->get_field('local_costcenter', 'category', array('id' => explode('/', $validateddata->open_path)[1]));
                 }
 
                 $validateddata->startdate = time();
@@ -316,7 +316,7 @@ class local_courses_external extends external_api {
                         }
                     }
                     if ($form_status == 1) {
-                         local_costcenter_get_costcenter_path($data);
+                        //  local_costcenter_get_costcenter_path($data);
                         $customcategoryid = get_modulecustomfield_category($courseid);
                         if (!empty($customcategoryid)) {
                             update_custom_targetaudience($customcategoryid, $data, $courseid);

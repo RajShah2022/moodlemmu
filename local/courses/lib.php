@@ -1060,6 +1060,7 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
     $selectsql = "SELECT c.id ,c.fullname, c.shortname, c.category, c.summary, c.visible, c.format, c.selfenrol, c.open_path, c.performancecatid, c.open_skill, c.open_coursecompletiondays, c.open_difficultylevel ";
     $joinsql;
     $fromsql = " FROM {course} AS c ";
+    $fromsql .= " JOIN {local_costcenter} AS lc ON FIND_IN_SET(lc.path, c.open_path) ";
     $wheresql = " WHERE c.id > 1 AND c.open_module IS NULL ";
     $orderby = " ORDER BY c.id DESC";
     $params = array();
@@ -1173,7 +1174,7 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
             }
 
             if ($costcenter_plugin_exists) {
-                $costcenterid = explode('/', $course->open_path)[1];
+                $costcenterid = explode('/', $course->path)[1];
                 $costcentername = (new \local_costcenter\lib\costcenter())::costcenter_field('fullname', array('id' => $costcenterid));
                 $courseslist[$count]["costcentername"] = $costcentername;
             }
@@ -1213,10 +1214,19 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
             $course =  (array)$course;
             local_costcenter_set_costcenter_path($course);
             $course = (object)$course;
+            $opendepartmentarr = [];
+            if(is_array($course->open_department)){
+                foreach($course->open_department as $departmentval){
+                    $opendepartmentarr[] = $DB->get_records_sql_menu('SELECT id,fullname
+                    FROM {local_costcenter}
+                    WHERE id IN(' . str_replace(',', '',$departmentval) . ')');
+                }
+                $courseslist[$count]["open_department"] = implode(',', $opendepartmentarr);
+            }else
             if ($course->open_department > 0) {
                 $courseslist[$count]["open_department"] = $DB->get_records_sql_menu('SELECT id,fullname
                 FROM {local_costcenter}
-                WHERE id IN(' . $course->open_department . ')');
+                WHERE id IN(' . str_replace(',', '',$course->open_department) . ')');
             } else {
                 $courseslist[$count]["open_department"] = get_string('all');
             }

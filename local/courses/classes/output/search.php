@@ -119,7 +119,7 @@ class search implements renderable {
             }
             if (!empty($paths)) {
                 foreach ($paths as $path) {
-                    $pathsql[] = " c.open_path LIKE '{$path}' ";
+                    $pathsql[] = "  FIND_IN_SET('{$path}',c.open_path) ";
                 }
                 $wheresql .= " AND ( " . implode(' OR ', $pathsql) . ' ) ';
             }
