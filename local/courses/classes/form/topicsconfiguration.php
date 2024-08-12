@@ -24,155 +24,88 @@ class topicsconfiguration extends dynamic_form {
      * Define the form
      */
     public function definition() {
-    global $DB;
+        global $DB;
 
-    $mform = $this->_form;
-    $this->_form->_attributes['class'] = 'topicsconfiguration_form';
+        $mform = $this->_form;
+        $this->_form->_attributes['class'] = 'topicsconfiguration_form';
 
-    $id = $this->optional_param('id', 0, PARAM_INT);
-    $courseid = $this->optional_param('courseid', 0, PARAM_INT);
+        $id = $this->optional_param('id', 0, PARAM_INT);
+        $courseid = $this->optional_param('courseid', 0, PARAM_INT);
 
-    $mform->addElement('hidden', 'id', $id);
-    $mform->setType('id', PARAM_INT);
+        $mform->addElement('hidden', 'id', $id);
+        $mform->setType('id', PARAM_INT);
 
-    $mform->addElement('hidden', 'courseid', $courseid);
-    $mform->setType('courseid', PARAM_INT);
+        $mform->addElement('hidden', 'courseid', $courseid);
+        $mform->setType('courseid', PARAM_INT);
 
-    $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
-    $format = course_get_format($course);
+        $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
+        $format = course_get_format($course);
 
-    $allsections = $format->get_modinfo()->get_section_info_all();
-    if(count($allsections) > 1) {
-        // Build the checkbox options.
-        $checkboxes = $this->build_section_paths($allsections);
+        $allsections = $format->get_modinfo()->get_section_info_all();
+        if(count($allsections) > 1) {
+            // Build the checkbox options.
+            $checkboxes = $this->build_section_paths($allsections);
 
-        // Add checkboxes to the form.
-        foreach ($checkboxes as $value => $label) {
-            $parent = $this->get_parent_id($allsections, $value);
-            $attributes = ['group' => 'checkboxgroup custom_switch'];
-             // Only add data-parent if the section has a parent.
-            if ($parent !== null) {
-                $attributes['data-parent'] = 'section_' . $parent;
-            }
-            $mform->addElement('advcheckbox', $value, '', $label, $attributes);
-        }    
-    } else {
-        $mform->addElement('static', 'notopics', '', get_string('notopics', 'local_courses'), array('class' => 'notopicselement'));
+            // Add checkboxes to the form.
+            foreach ($checkboxes as $value => $label) {
+                $parent = $this->get_parent_id($allsections, $value);
+                $attributes = ['group' => 'checkboxgroup custom_switch'];
+                 // Only add data-parent if the section has a parent.
+                if ($parent !== null) {
+                    $attributes['data-parent'] = $parent;
+                }
+                $mform->addElement('advcheckbox', $value, '', $label, $attributes);
+                // Add a help button if the checkbox is a child.
+                if ($parent !== null) {
+                    $mform->addHelpButton($value, 'childcheckboxhelp', 'local_courses');
+                }
+            }    
+        } else {
+            $mform->addElement('static', 'notopics', '', get_string('notopics', 'local_courses'), array('class' => 'notopicselement'));
+        }
     }
-}
-// /**
-//  * Helper function to get the parent ID of a section.
-//  *
-//  * @param array $sections
-//  * @param int $sectionid
-//  * @return int|null
-//  */
-// protected function get_parent_id($sections, $sectionid) {
-//     global $DB;
-//     foreach ($sections as $section) {
-//         if ($section->id == $sectionid && isset($section->parent)) {
-//             // print_r($section->parent);
-//             // return $DB->get_field('course_sections', 'id', array('section' => $section->parent));
 
-//         }
-//     }
-//     // die();
-//     return null;
-// }
-// protected function get_parent_id($sections, $sectionid) {
-//     global $DB;
-//     foreach ($sections as $section) {
-//         if ($section->id == $sectionid && isset($section->parent)) {
-//             // return $section->parent;
-//             $parentSections = $DB->get_records('course_sections', array('section' => $section->parent));
-//             foreach ($parentSections as $parentSection) {
-//                 if ($section->section == $parentSection->section) {
-//                     return $parentSection->id;
-//                 }
-//                 // return $parentSection->id;
-//             }
-
-//         }
-//     }
-//     return null;
-// }
-protected function get_parent_id($sections, $sectionid) {
-    foreach ($sections as $section) {
-        if ($section->id == $sectionid && !empty($section->parent)) {
-            // Find the parent section based on the parent ID.
-            foreach ($sections as $parentSection) {
-                if ($parentSection->section == $section->parent) {
-                    return $parentSection->id;
+    protected function get_parent_id($sections, $sectionid) {
+        foreach ($sections as $section) {
+            if ($section->id == $sectionid && !empty($section->parent)) {
+                // Find the parent section based on the parent ID.
+                foreach ($sections as $parentSection) {
+                    if ($parentSection->section == $section->parent) {
+                        return $parentSection->id;
+                    }
                 }
             }
         }
+        return null;
     }
-    return null;
-}
-protected function build_section_paths($sections) {
-    $paths = [];
+    protected function build_section_paths($sections) {
+        $paths = [];
 
-    // Helper function to recursively build paths.
-    $build_path = function($section, $sections, $current_path = '') use (&$build_path, &$paths) {
-        $section_name = $section->name ?: "Topic " . $section->section;
-        $full_path = $current_path ? $current_path . ' / ' . $section_name : $section_name;
+        // Helper function to recursively build paths.
+        $build_path = function($section, $sections, $current_path = '') use (&$build_path, &$paths) {
+            $section_name = $section->name ?: "Topic " . $section->section;
+            $full_path = $current_path ? $current_path . ' / ' . $section_name : $section_name;
 
-        // Add the current section to paths.
-        $paths[$section->id] = $full_path;
+            // Add the current section to paths.
+            $paths[$section->id] = $full_path;
 
-        // Check for children and build their paths.
-        foreach ($sections as $s) {
-            if (isset($s->parent) && $s->parent == $section->section) {
-                $build_path($s, $sections, $full_path);
+            // Check for children and build their paths.
+            foreach ($sections as $s) {
+                if (isset($s->parent) && $s->parent == $section->section) {
+                    $build_path($s, $sections, $full_path);
+                }
+            }
+        };
+
+        // Start building paths from the top-level sections.
+        foreach ($sections as $section) {
+            if (empty($section->parent) && $section->section > 0) { // No parent means it's a top-level section.
+                $build_path($section, $sections);
             }
         }
-    };
-
-    // Start building paths from the top-level sections.
-    foreach ($sections as $section) {
-        if (empty($section->parent) && $section->section > 0) { // No parent means it's a top-level section.
-            $build_path($section, $sections);
-        }
+        return $paths;
     }
-    return $paths;
-}
 
-/**
- * Build paths for each section based on hierarchical data.
- *
- * @param array $sections
- * @return array
- */
-// protected function build_section_paths($sections) {
-//     $paths = [];
-
-//     // Helper function to recursively build paths.
-//     $build_path = function($section, $sections, $current_path = '') use (&$build_path, &$paths) {
-//         $section_name = $section->name ?: "Topic " . $section->section;
-//         $full_path = $current_path ? $current_path . ' / ' . $section_name : $section_name;
-
-//         // Check if the section has any children.
-//         $has_children = false;
-//         foreach ($sections as $s) {
-//             if (isset($s->parent) && $s->parent == $section->section) {
-//                 $has_children = true;
-//                 $build_path($s, $sections, $full_path);
-//             }
-//         }
-//         // Add only if it has no children (leaf node) or has children but we want a checkbox for it too.
-//         if (!$has_children) {
-//             $paths[$section->id] = $full_path;
-//         }
-//     };
-
-//     // Start building paths from the top-level sections.
-//     foreach ($sections as $section) {
-//         if (empty($section->parent) && $section->section > 0) { // No parent means it's a top-level section.
-//             $build_path($section, $sections);
-//         }
-//     }
-//     return $paths;
-// }
 
     /**
      * Perform some moodle validation.
@@ -209,13 +142,6 @@ protected function build_section_paths($sections) {
      * Process the form submission, used if form was submitted via AJAX
      */
     public function process_dynamic_submission() {
-        // global $DB;
-        // $data = $this->get_data();
-        // if ($data->id == 0) {
-        //     api::insert_instance($data);
-        // } else {
-        //     api::update_instance($data);
-        // }
         $data = $this->get_data();
         api::insert_topicsconfig_instance($data);
     }
@@ -225,7 +151,6 @@ protected function build_section_paths($sections) {
      */
     public function set_data_for_dynamic_submission(): void {
         global $DB;
-
         $courseid = $this->optional_param('courseid', 0, PARAM_INT);
         if ($courseid) {
             $existingtopics = $DB->get_records('local_coursetopics', ['courseid' => $courseid], '', 'topic');

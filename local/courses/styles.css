@@ -1187,3 +1187,7 @@ body#page-local-courses-userdashboard .card_list_view {
 .custom_switch .form-check .APPROVED {
     color: #009240;
 }
+.custom_switch input[type="checkbox"].form-check-input.disabled-checkbox {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

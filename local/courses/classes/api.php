@@ -167,7 +167,7 @@ class api {
         if (!empty($groupIds)) {
             // Create new conditions with the group IDs
             $newConditions = array_values(array_map(function($groupId) {
-                return array("type" => "group", "id" => $groupId);
+                return array("type" => "group", "id" => (int)$groupId);
             }, $groupIds));
 
             // Iterate over all sections
@@ -179,29 +179,6 @@ class api {
 
                     // If the section is not linked to any topic, add restrictions
                     if (!array_key_exists($section->id, $linkedTopics)) {
-                        // // Decode the existing availability JSON
-                        // $existingAvailability = json_decode($section->availability, true);
-
-                        // // Initialize conditions array
-                        // $conditions = $newConditions;
-                        // if ($existingAvailability && isset($existingAvailability['c'])) {
-                        //     // Extract existing conditions
-                        //     $existingConditions = $existingAvailability['c'];
-
-                        //     // Check if there are changes to be made
-                        //     $mergedConditions = array_merge($existingConditions, $newConditions);
-
-                        //     // Remove duplicate conditions
-                        //     $mergedConditions = array_unique($mergedConditions, SORT_REGULAR);
-
-                        //     // Update conditions only if there's a change
-                        //     if ($existingConditions != $mergedConditions) {
-                        //         $conditions = $mergedConditions;
-                        //     } else {
-                        //         // No change, skip to next section
-                        //         continue;
-                        //     }
-                        // }
 
                         // Decode the existing availability JSON
                         $existingAvailability = json_decode($section->availability, true);
@@ -226,147 +203,12 @@ class api {
 
                         $sectiondata->availability = $availabilityJson;
                     } 
+                    
                     course_update_section($course, $section, $sectiondata);
                 }
             }
         }
     }
-
-    // public static function course_content_accessrestrictions($courseid) {
-    //     global $DB;
-    //     $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
-
-    //     // Query to get access topics list
-    //     // $accesstopics = "SELECT DISTINCT cs.*
-    //     //                  FROM {" . self::COURSESECTIONS_TABLE . "} cs
-    //     //                  JOIN {" . self::COURSETOPICS_TABLE . "} ct
-    //     //                    ON cs.id = ct.topic
-    //     //                  WHERE cs.course = :courseid";
-    //     $accesstopics = "SELECT DISTINCT cs.*
-    //                  FROM {" . self::COURSESECTIONS_TABLE . "} cs
-    //                  LEFT JOIN {" . self::COURSETOPICS_TABLE . "} ct
-    //                    ON cs.id = ct.topic
-    //                  WHERE cs.course = :courseid AND ct.topic IS NULL";
-    //     $topicsparams = array('courseid' => $courseid);
-    //     $accesstopicslist = $DB->get_records_sql($accesstopics, $topicsparams);
-    //     // Query to get cohort sync list
-    //     $cohortsync = "SELECT DISTINCT e.id, e.customint1, e.customint2
-    //                    FROM {" . self::ENROLL_TABLE . "} e
-    //                    JOIN {" . self::COURSEGROUPS_TABLE . "} cg
-    //                      ON e.customint1 = cg.groupid
-    //                    WHERE e.courseid = :courseid AND e.enrol = :enrol";
-    //     $cohortparams = array('courseid' => $courseid, 'enrol' => 'cohort');
-    //     $cohortsynclist = $DB->get_records_sql($cohortsync, $cohortparams);
-        
-    //     if (!empty($accesstopicslist) && !empty($cohortsynclist)) {
-    //         // Collect all group IDs (customint2) from cohort sync list
-    //         $groupIds = array_map(function($cohort) {
-    //             return $cohort->customint2;
-    //         }, $cohortsynclist);
-
-    //         // Prepare the availability JSON structure
-    //         // $availability = array(
-    //         //     "op" => "|",
-    //         //     "c" => array_map(function($groupId) {
-    //         //         return array("type" => "group", "id" => $groupId);
-    //         //     }, $groupIds),
-    //         //     "show" => false
-    //         // );
-    //         // Convert to JSON
-    //         // $availabilityJson = json_encode($availability);
-
-
-    //         // Prepare new group conditions
-    //         $newConditions = array_map(function($groupId) {
-    //             return array("type" => "group", "id" => $groupId);
-    //         }, $groupIds);
-
-            
-
-    //         // Update each section with the availability JSON
-    //         foreach ($accesstopicslist as $section) {
-    //             // $DB->update_record(self::COURSESECTIONS_TABLE, array(
-    //             //     'id' => $section->id,
-    //             //     'availability' => $availabilityJson
-    //             // ));
-    //             if($section->section > 0) {
-    //                 $sectiondata = new stdClass();
-    //                 $sectiondata->id = $section->id;
-
-    //                 // Decode the existing availability JSON
-    //                 $existingAvailability = json_decode($section->availability, true);
-
-    //                 if ($existingAvailability && isset($existingAvailability['c'])) {
-    //                     // Append new group conditions to existing conditions
-    //                     $existingAvailability = array(
-    //                         "op" => "|",
-    //                         "c" => array_merge($existingAvailability['c'], $newConditions),
-    //                         "show" => false
-    //                     );
-    //                 // $existingAvailability['c'] = array_merge($existingAvailability['c'], $newConditions);
-    //                 } else {
-    //                     // Create a new availability structure if none exists
-    //                     $existingAvailability = array(
-    //                         "op" => "|",
-    //                         "c" => $newConditions,
-    //                         "show" => false
-    //                     );
-    //                 }
-                    
-    //                 // Convert back to JSON
-    //                 $availabilityJson = json_encode($existingAvailability);
-
-    //                 $sectiondata->availability = $availabilityJson;
-
-    //                 course_update_section($course, $section, $sectiondata); 
-    //             }
-    //         }
-    //     }
-    // }
-
-    // /**
-    //  * Insert or update course configured groups instance
-    //  *
-    //  * @param stdClass $data
-    //  */
-    // public static function insert_groupsconfig_instance($data) {
-    //     global $DB, $USER;
-    //     try {
-    //         $courseid = $data->courseid;
-    //         $existinggroups = $DB->get_records(self::COURSEGROUPS_TABLE, ['courseid' => $courseid]);
-
-    //         // Prepare an array to track existing group IDs.
-    //         $existinggroupsids = [];
-    //         foreach ($existinggroups as $group) {
-    //             $existinggroupsids[$group->group] = $group->id;
-    //         }
-
-    //         // Insert or update checked groups.
-    //         foreach ($data as $key => $value) {
-    //             if (is_numeric($key) && $value == 1) {
-    //                 if (!isset($existinggroupsids[$key])) {
-    //                     // Insert new record for checked group.
-    //                     $record = new stdClass();
-    //                     $record->courseid = $courseid;
-    //                     $record->group = $key;
-    //                     $record->timecreated = time();
-    //                     $record->usercreated = $USER->id;
-    //                     print_r($record);
-    //                     $insertid = $DB->insert_record(self::COURSEGROUPS_TABLE, $record);
-    //                     print_r($insertid);
-    //                 }
-    //                 // Remove processed group from the existing list.
-    //                 unset($existinggroupsids[$key]);
-    //             }
-    //         }
-    //         // Delete unchecked topics that were previously checked.
-    //         foreach ($existinggroupsids as $groupid) {
-    //             $DB->delete_records(self::COURSEGROUPS_TABLE, ['id' => $groupid]);
-    //         }
-    //     } catch (\Exception $e) {
-    //         throw new \moodle_exception("Error in groups configuring");
-    //     }
-    // }
 
     public static function get_hod_roleid() {
         global $DB;
