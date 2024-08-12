@@ -32,7 +32,7 @@ class accesslib extends \local_costcenter\lib\accesslib{
 
     public static function course_costcenterpath($courseid = null) {
 
-        global $DB;
+        global $DB, $USER;
 
         $costcenterpath=null;
 
@@ -40,7 +40,15 @@ class accesslib extends \local_costcenter\lib\accesslib{
 
             $costcenterpath=$DB->get_field('course','open_path',  array('id'=> $courseid));
         }
-
+        if($costcenterpath){
+            if(!is_siteadmin()){
+                $patharr = explode(',', $costcenterpath);
+                $keyval = (int) array_search($USER->path, $patharr);
+                $costcenterpath = $patharr[$keyval];
+            }else{
+                $costcenterpath = explode(',', $costcenterpath)[0];
+            }
+        }
         return $costcenterpath;
 
     }
