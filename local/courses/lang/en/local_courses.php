@@ -471,3 +471,4 @@ $string['nogroups'] = '<div class="alert alert-info text-center">No Groups Avail
 $string['groups_cofiguration'] = 'Select Classes';
 $string['coursegroupsconfiguration'] = 'Select Classes for : <b>{$a->coursename}</b> (Level {$a->difficultylevel})';
 $string['classenrollmentrequeststatus'] = '<span class="{$a} ml-4 request_status">{$a}</span>';
+$string['childcheckboxhelp_help'] = 'Enable it\'s parent option to enable this option.';
