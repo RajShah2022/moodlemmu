@@ -147,7 +147,12 @@ function xmldb_local_request_install(){
     	array('name' => '[req_component]','module' => 'request','usercreated' => '2','timecreated' => $time,'usermodified' => 2,'timemodified' => NULL),
         array('name' => '[req_componentname]','module' => 'request','usercreated' => '2','timecreated' => $time,'usermodified' => 2,'timemodified' => NULL),
         array('name' => '[req_userfulname]','module' => 'request','usercreated' => '2','timecreated' => $time,'usermodified' => 2,'timemodified' => NULL),
-        array('name' => '[req_useremail]','module' => 'request','usercreated' => '2','timecreated' => $time,'usermodified' => 2,'timemodified' => NULL)
+        array('name' => '[req_useremail]','module' => 'request','usercreated' => '2','timecreated' => $time,'usermodified' => 2,'timemodified' => NULL),
+        array('name' => '[req_classlevel]','module' => 'request','usercreated' => '2','timecreated' => $time,'usermodified' => 2,'timemodified' => NULL),
+        array('name' => '[req_courselevel]','module' => 'request','usercreated' => '2','timecreated' => $time,'usermodified' => 2,'timemodified' => NULL),
+        array('name' => '[req_coursename]','module' => 'request','usercreated' => '2','timecreated' => $time,'usermodified' => 2,'timemodified' => NULL),
+        array('name' => '[req_rejectreason]','module' => 'request','usercreated' => '2','timecreated' => $time,'usermodified' => 2,'timemodified' => NULL),
+        
     );
     foreach($strings as $string){
         unset($string['timecreated']);

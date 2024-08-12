@@ -22,6 +22,7 @@ use context;
 use core;
 use moodleform;
 use context_system;
+use stdClass;
 
 require_once("$CFG->libdir/formslib.php");
 require_once($CFG->libdir . '/completionlib.php');
@@ -31,10 +32,24 @@ class rejectreasonform extends moodleform {
         global $CFG;
         $mform = $this->_form;
 
-        $course = $this->_customdata['componentname'];
+        $componentname = $this->_customdata['componentname'];
+        $component = $this->_customdata['component'];
         $requesteduser = $this->_customdata['requesteduser'];
+        $groupdifficultylevel = $this->_customdata['groupdifficultylevel'];
+        $coursename = $this->_customdata['coursename'];
+        $coursedifficultylevel = $this->_customdata['coursedifficultylevel'];
 
-        $mform->addElement('static', 'statictext', '', get_string('confirmmsgfor_deny', 'local_request', $requesteduser));
+        $denymsg = new stdClass();
+        $denymsg->groupname = $componentname;
+        $denymsg->groupdifficultylevel = $groupdifficultylevel;
+        $denymsg->coursename = $coursename;
+        $denymsg->coursedifficultylevel = $coursedifficultylevel;
+        $denymsg->requesteduser = $requesteduser;
+        if($component == 'Classes') {
+            $mform->addElement('static', 'statictext', '', get_string('groupsconfirmmsgfor_deny', 'local_request', $denymsg));
+        } else {
+            $mform->addElement('static', 'statictext', '', get_string('confirmmsgfor_deny', 'local_request', $requesteduser));
+        }
 
         $mform->addElement('textarea', 'reason', get_string('reason', 'local_request'), 'wrap="virtual" rows="2" cols="40"');
         $mform->setType('reason', PARAM_TEXT);
