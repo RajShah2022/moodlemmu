@@ -121,8 +121,6 @@ class local_request_external extends external_api {
                                   'daysdone' =>  new external_value(PARAM_RAW, 'daysdone', VALUE_OPTIONAL),
                                   'groupname' =>  new external_value(PARAM_RAW, 'groupname', VALUE_OPTIONAL),
                                   'coursename' =>  new external_value(PARAM_RAW, 'coursename', VALUE_OPTIONAL),
-                                  'groupdifficultylevel' =>  new external_value(PARAM_RAW, 'groupdifficultylevel', VALUE_OPTIONAL),
-                                  'coursedifficultylevel' =>  new external_value(PARAM_RAW, 'coursedifficultylevel', VALUE_OPTIONAL),
                                   'responded'  => new external_value(PARAM_INT, 'responded', VALUE_OPTIONAL),
                                   'rejectreason'  => new external_value(PARAM_RAW, 'rejectreason', VALUE_OPTIONAL),
                               )

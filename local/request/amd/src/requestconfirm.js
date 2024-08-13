@@ -157,11 +157,7 @@ define(['jquery',
             args.component = 'Learning path';
        }
        if(args.action && args.component){
-        if(args.component == 'Classes') {
-            var string= Str.get_string('groupsconfirmmsgfor_'+args.action, 'local_request', args);
-        } else {
-            var string= Str.get_string('confirmmsgfor_'+args.action, 'local_request', args);
-        }
+        var string= Str.get_string('confirmmsgfor_'+args.action, 'local_request', args);
        }
 
      return string;

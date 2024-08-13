@@ -925,7 +925,7 @@ function local_courses_quicklink_node() {
             $coursedata['view'] = TRUE;
             $coursedata['viewlink_title'] = get_string('view_courses', 'local_courses');
         }
-        // $coursedata['percentage'] = $percent;
+        $coursedata['percentage'] = $percent;
         $coursedata['count_total'] = $count_courses;
         $coursedata['count_active'] = $enrolcount;
         $coursedata['enroll_string'] = get_string('enrolcount', 'local_courses');

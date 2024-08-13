@@ -152,7 +152,7 @@ $plugin_exists = \core_component::get_plugin_directory('local', 'request');
 if ($plugin_exists) {
     if ((has_capability('local/request:approverecord', $categorycontext) || is_siteadmin())) {
         $extended_menu_links .= '<li><div class="courseedit course_extended_menu_itemcontainer">
-                            <a id="extended_menu_createcourses" class="pull-right course_extended_menu_itemlink" title = "' . get_string('request', 'local_request') . '" href = ' . $CFG->wwwroot . '/local/request/index.php>
+                            <a id="extended_menu_createcourses" class="pull-right course_extended_menu_itemlink" title = "' . get_string('request', 'local_request') . '" href = ' . $CFG->wwwroot . '/local/request/index.php?component=elearning>
                                 <i class="icon fa fa-share-square" aria-hidden="true"></i>
                             </a>
                         </div></li>';

@@ -32,7 +32,6 @@ class quick_links {
         global $CFG, $PAGE;
         $core_component = new core_component();
         $local_pluginlist = $core_component::get_plugin_list('local');
-        $tool_pluginlist = $core_component::get_plugin_list('tool');
         if ($PAGE->theme->settings->quicknavigationview) {
             $out = html_writer::start_tag("div", array("class" => "quick_nav_container"));
             // $out .= html_writer::start_tag("ul", array("class" => "quick_nav list-inline"));

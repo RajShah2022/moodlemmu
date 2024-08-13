@@ -54,8 +54,6 @@ class filters_form extends moodleform {
                 $filter = 'request';
             } else if ($value === 'evaluation_type') {
                 $filter = 'evaluation';
-            } else if ($value === 'roles') {
-                $filter = 'groups';
             } else if ($value === 'hierarchy_fields') {
                 require_once($CFG->dirroot . '/local/costcenter/lib.php');
                 local_costcenter_set_costcenter_path($this->_customdata, $prefix = 'filter');

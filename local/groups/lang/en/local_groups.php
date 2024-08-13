@@ -147,6 +147,5 @@ $string['hidecohort'] ='Make Inactive';
 $string['confirmhide'] ='Do you really want to inactive class "<b>{$a}</b>"?';
 $string['showcohort'] ='Make Active';
 $string['confirmshow'] ='Do you really want to active class "<b>{$a}</b>"?';
-$string['roles'] ='Roles';
 
 

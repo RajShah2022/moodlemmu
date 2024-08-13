@@ -76,12 +76,7 @@ class notification_triger
             $record->user_created = $email_log->user_created;
             $record->time_created = $email_log->time_created;
             $record->sent_date = time();
-            if($email_log->from_userid > 0 || $email_log->sent_by > 0){
-                $record->sent_by = $email_log->sent_by;
-            } else {
-                $record->sent_by = $supportuser->id;
-            }
-            
+            $record->sent_by = $supportuser->id;
             $body = '';
 
             $touser = $DB->get_record('user', array('id' => $record->to_userid, 'suspended' => 0,'deleted' => 0));
@@ -89,12 +84,8 @@ class notification_triger
                 $DB->update_record('local_emaillogs', $record);
                 continue;
             }
-            if($record->from_userid || $record->sent_by){
-                $from_user = $DB->get_record('user', array('id' => $record->from_userid));
-            } else {
-                $from_user= $supportuser;
-            }
-           
+         //   $from_user = $DB->get_record('user', array('id' => $record->from_userid));
+          $from_user= $supportuser;
 
             $get_notification_infoid = $DB->get_field('local_notification_info', 'notificationid', array('id' => $email_log->notification_infoid));
             $get_local_notification_type = $DB->get_record('local_notification_type', array('id' => $get_notification_infoid));

@@ -28,7 +28,6 @@ import ModalFactory from 'core/modal_factory';
 import Ajax from 'core/ajax';
 import Modal from 'core/modal';
 import ModalEvents from 'core/modal_events';
-import Notification from 'core/notification';
 import Templates from 'core/templates';
 import $ from 'jquery';
 
@@ -46,7 +45,6 @@ export const init = () => {
             e.preventDefault();
             e.stopImmediatePropagation();
             const coursename = topicsconfiguration.getAttribute('data-name');
-            const topicsselected = topicsconfiguration.getAttribute('data-topicsselected');
             getString('coursetopicsconfiguration', 'local_courses', coursename).then(function(title) {
                 const form = new DynamicForm({
                     formClass: 'local_courses\\form\\topicsconfiguration',
@@ -57,24 +55,7 @@ export const init = () => {
                 });
 
                
-                form.addEventListener(form.events.FORM_SUBMITTED, function() {
-                    let messages = '';
-                    let type = '';
-                    if(e.detail.warnings !== null && e.detail.warnings != undefined) {
-                        type = 'error';
-                        messages = e.detail.warnings.map(warning => warning.message);
-
-                    } else {
-                        type = 'success';
-                        messages = topicsselected;
-                    }
-                    Notification.addNotification({
-                        type: type,
-                        message: messages
-                    });
-                    setTimeout( function() { window.location.reload(); }, 1000);
-                    // window.location.reload();
-                });
+                form.addEventListener(form.events.FORM_SUBMITTED, () => window.location.reload());
 
                 form.show();
 
@@ -112,7 +93,6 @@ export const init = () => {
             e.preventDefault();
             e.stopImmediatePropagation();
             const coursename = groupsconfiguration.getAttribute('data-name');
-            const classesselected = groupsconfiguration.getAttribute('data-classesselected');
             const difficultylevel = groupsconfiguration.getAttribute('data-level');
             const titleparams = {coursename : coursename, difficultylevel : difficultylevel};
             getString('coursegroupsconfiguration', 'local_courses', titleparams).then(function(title) {
@@ -150,22 +130,6 @@ export const init = () => {
                     promises[0].done(function() {
                         window.location.reload();
                     }).fail(Notification.exception);
-
-                    let messages = '';
-                    let type = '';
-                    if(e.detail.warnings !== null && e.detail.warnings != undefined) {
-                        type = 'error';
-                        messages = e.detail.warnings.map(warning => warning.message);
-
-                    } else {
-                        type = 'success';
-                        messages = classesselected;
-                    }
-                    Notification.addNotification({
-                        type: type,
-                        message: messages
-                    });
-                    setTimeout( function() { window.location.reload(); }, 1000);
                 });
                 
                 form.show();
