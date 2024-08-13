@@ -31,7 +31,6 @@ define('LOCAL_COHORT_WITH_MEMBERS_ONLY', 5);
 define('LOCAL_COHORT_WITH_ENROLLED_MEMBERS_ONLY', 17);
 define('LOCAL_COHORT_WITH_NOTENROLLED_MEMBERS_ONLY', 23);
 
-
 class local_groups implements renderable {
      public function __construct($page, $perpage, $searchquery,$showall) {
         $context =  (new \local_groups\lib\accesslib())::get_module_context();
@@ -848,6 +847,22 @@ function local_group_users($type = null, $groupid = 0, $params = array(), $total
         $params = array_merge($params, $hrmsroleparams);
         $sql .= " AND u.open_hrmsrole {$hrmsrolesql} ";
     }
+    
+        
+    if (!empty($params['roles'])) {
+        $query = "SELECT u.id
+            FROM {user} AS u
+            JOIN {role_assignments} ra ON ra.userid = u.id
+            JOIN {context} c ON c.id = ra.contextid AND c.contextlevel = 40
+           WHERE ra.roleid IN ({$params['roles']}) ";
+        $roleusers = $DB->get_records_sql_menu($query);
+        if (!empty($roleusers)) {
+            $userslist = implode(',', array_keys($roleusers)); // Note: array_keys to get the user IDs
+            $sql .= " AND u.id IN ($userslist) ";
+        } else {
+            $sql .= " AND u.id IN (NULL) ";
+        }
+    }
     if (!empty($params['village'])) {
         $villages = explode(',', $params['village']);
         list($villagesql, $villageparam) = $DB->get_in_or_equal($villages, SQL_PARAMS_NAMED, 'village');
@@ -956,6 +971,66 @@ function groups_filter($mform,$query='',$searchanywhere=false, $page=0, $perpage
      );
     $select = $mform->addElement('autocomplete', 'groups', '', $groupslist,$options);
     $mform->setType('groups', PARAM_RAW);
+}
+
+/**
+ * [role_filter form element function]
+ * @param  [form] $mform [filter form]
+ * @return 
+ */
+function roles_filter($mform, $query='',$searchanywhere=false, $page=0, $perpage=25){
+    global $DB, $USER;
+    $systemcontext =  (new \local_groups\lib\accesslib())::get_module_context();
+    // Get the category context from the local_users access library.
+    $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
+
+    $roleslist = array();
+    $data = data_submitted();
+    $costcenterpathconcatsql = (new \local_groups\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='open_path');
+    $roleslist_sql = "SELECT r.id, r.name as fullname FROM {role} r 
+    JOIN {role_context_levels} rcl ON (rcl.contextlevel = 40 AND r.id = rcl.roleid)  
+    WHERE r.name != '' AND (r.archetype != 'manager' ";
+
+    // Adjust query conditions based on context depth.
+    if ($categorycontext->depth == 1) {
+        $roleslist_sql .= " OR r.shortname LIKE 'administrator' ";
+    }
+    if ($categorycontext->depth == 2 || is_siteadmin()) {
+        $roleslist_sql .= " OR r.shortname LIKE 'hod' ";
+    }
+
+    if(!empty($query)) { 
+        if ($searchanywhere) {
+            $roleslist_sql .= " AND r.name LIKE '%$query%' ";
+        } else {
+            $roleslist_sql .= " AND r.name LIKE '$query%' ";
+        }
+    }
+    
+     // Close the SQL query.
+    $roleslist_sql .= ")";
+    // $rolesparam['contextlevel'] = CONTEXT_COURSECAT;
+
+    if(isset($data->roles) && !empty(($data->roles))){
+        list($roles_sql, $rolesparam) = $DB->get_in_or_equal($data->roles, SQL_PARAMS_NAMED);
+        $roleslist_sql.=" AND r.id $roles_sql ";
+    }
+    if(!empty($query) || empty($mform)){ 
+        $roleslist = $DB->get_records_sql($roleslist_sql, $rolesparam, $page, $perpage);
+        return $roleslist;
+    }
+    if((isset($data->roles)&&!empty($data->roles))){ 
+        $roleslist = $DB->get_records_sql_menu($roleslist_sql, $rolesparam, $page, $perpage);
+    }
+    $options = array(
+        'ajax' => 'local_courses/form-options-selector',
+        'multiple' => true,
+        'data-action' => 'roles',
+        'data-options' => json_encode(array('id' => 0)),
+        'placeholder' => get_string('roles', 'local_groups')
+     );
+    $select = $mform->addElement('autocomplete', 'roles', '', $roleslist, $options);
+    $mform->setType('roles', PARAM_RAW);
 }
 /*
 * Author Rizwana
@@ -1091,22 +1166,60 @@ function local_groups_request_dependent_query($aliasname) {
    
 function local_groups_quicklink_node() {
     global $CFG, $PAGE, $OUTPUT;
-    $systemcontext = (new \local_groups\lib\accesslib())::get_module_context();
+    $orgid  = optional_param('orgid', 0, PARAM_INT);
+    $categorycontext = (new \local_groups\lib\accesslib())::get_module_context();
+    
     $content = '';
-    if (is_siteadmin() || has_capability('moodle/cohort:manage',$systemcontext)) {
+
+    if (is_siteadmin() || has_capability('local/groups:view', $categorycontext)) {
+        $sql = "SELECT count(c.id) FROM {cohort} c, {local_groups} g WHERE g.cohortid = c.id AND c.visible = :visible ";
+
+        $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'g.open_path', $orgid);
+
+        $params = array();
+
+        $activeparams = array();
+        $activeparams['visible'] = 1;
+
+        $inactiveparams = array();
+        $inactiveparams['visible'] = 0;
+
+        if ((is_siteadmin() || has_capability('local/groups:manage', $categorycontext)) && $orgid == 0) {
+            $sql .= "";
+        } else {
+            //costcenterid concating
+            $sql .= $costcenterpathconcatsql;
+        }
+
+        $count_activegroups = $DB->count_records_sql($sql, $activeparams);
+        $count_inactivegroups = $DB->count_records_sql($sql, $inactiveparams);
+        $count_groups = $DB->count_records_sql($sql, $params);
+
         $PAGE->requires->js_call_amd('local_groups/newgroup', 'load', array());
         $gropusdata = array();
+        $displayline = false;
+        $hascapablity = false;
+        if (has_capability('local/groups:manage', $categorycontext) || is_siteadmin()) {
+            $displayline = true;
+            $hascapablity = true;
+            $gropusdata['create_element'] = html_writer::link('javascript:void(0)', get_string('create'), array('onclick' => '(function(e){ require("local_groups/newgroup").init({contextid:' . $systemcontext->id . ', groupsid:0 }) })(event)'));
+        }
         $gropusdata['node_header_string'] = get_string('leftmenu_groups', 'local_groups');
         $gropusdata['pluginname'] = 'groups';
         $gropusdata['plugin_icon_class'] = 'fa fa-users';
-        $gropusdata['create'] = TRUE;
-        $gropusdata['create_element'] = html_writer::link('javascript:void(0)', get_string('create'), array('onclick' => '(function(e){ require("local_groups/newgroup").init({contextid:' . $systemcontext->id . ', groupsid:0 }) })(event)'));
+        $gropusdata['contextid'] = $categorycontext->id;
+        $gropusdata['create'] = $hascapablity;
         $gropusdata['viewlink_url'] = $CFG->wwwroot.'/local/groups/index.php';
-        $gropusdata['view'] = TRUE;
+        $gropusdata['view'] = true;
+        $gropusdata['displaystats'] = true;
+        $gropusdata['count_total'] = $count_groups;
+        $gropusdata['count_inactive'] = $count_inactivegroups;
+        $gropusdata['inactive_string'] = get_string('inactive_string', 'block_quick_navigation');
+        $gropusdata['count_active'] = $count_activegroups;
         $gropusdata['viewlink_title'] = get_string("view");
-        $gropusdata['space_count'] = 'one';
+        $gropusdata['space_count'] = 'two';
         $gropusdata['view_type'] = $PAGE->theme->settings->quicknavigationview;
-        $content = $OUTPUT->render_from_template('block_quick_navigation/quicklink_node', $gropusdata);
+        $content .= $OUTPUT->render_from_template('block_quick_navigation/quicklink_node', $gropusdata);
     }
     return array('2' => $content);
 }
