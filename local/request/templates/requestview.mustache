@@ -110,7 +110,7 @@
                         {{/ rejectreason}}
                         <div class='w-full mt-2 '>
                             <span class='pull-left'> 
-                                <span class="value_align mt-2 "><b>{{{requesteduser}}}</b> {{# str}} has_requested_for_enrolling_to,local_request {{/ str}}<b> {{^groupname}}{{{compname}}}{{/groupname}}{{#groupname}}{{groupname}}{{/groupname}}</b>{{#coursename}}<!--<span class='mx-2'>--> {{#str}}for, local_request{{/str}}<!--</span>--> <b> {{coursename}}</b>{{/coursename}}.</span>
+                                <span class="value_align mt-2 "><b>{{{requesteduser}}}</b> {{# str}} has_requested_for_enrolling_to,local_request {{/ str}}<b> {{^groupname}}{{{compname}}}{{/groupname}}{{#groupname}}{{groupname}} ({{#str}}level, local_request{{/str}} {{groupdifficultylevel}}){{/groupname}}</b>{{#coursename}}<!--<span class='mx-2'>--> {{#str}}for, local_request{{/str}}<!--</span>--> <b> {{coursename}} ({{#str}}level, local_request{{/str}} {{coursedifficultylevel}})</b>{{/coursename}}.</span>
                             </span>
                         </div>
 
@@ -121,7 +121,7 @@
                     {{# enablebutton}}
                     {{#approve_capability}}                
                         <span class="text-center req_status">
-                            <a href="javascript:void(0)" class="status_approve_link req_status_link " {{^responded}} id="status_approve_link_dummy" onclick='(function(e){ require("local_request/requestconfirm").init({ componentid:{{{componentid}}}, component:"{{{compname}}}", componentname:"{{{componentname}}}", id:{{{id}}}, action:"approve",  requesteduser: "{{{requesteduser}}}" })})(event)'  
+                            <a href="javascript:void(0)" class="status_approve_link req_status_link " {{^responded}} id="status_approve_link_dummy" onclick='(function(e){ require("local_request/requestconfirm").init({ componentid:{{{componentid}}}, component:"{{{compname}}}", componentname:" {{{componentname}}}", groupname:"{{{groupname}}}",  coursename:"{{{coursename}}}", coursedifficultylevel:"{{{coursedifficultylevel}}}", groupdifficultylevel:"{{{groupdifficultylevel}}}", id:{{{id}}}, action:"approve",  requesteduser: "{{{requesteduser}}}" })})(event)'  
                                         {{/responded}} >
                                          
                                       
@@ -133,7 +133,7 @@
                     {{#deny_capability}}
                         <span class="text-center req_status">
                         <a href="javascript:void(0)" class="status_reject_link req_status_link" {{^responded}}
-                                 id="status_reject_link_dummy"onclick='(function(e){ require("local_request/requestconfirm").init({ componentid:{{{componentid}}}, component:"{{{compname}}}", componentname:"{{{componentname}}}", id:{{{id}}}, action: "deny", requesteduser:"{{{requesteduser}}}" })})(event)' {{/responded}}>
+                                 id="status_reject_link_dummy"onclick='(function(e){ require("local_request/requestconfirm").init({ componentid:{{{componentid}}}, component:"{{{compname}}}", componentname:"{{{componentname}}}", groupname:"{{{groupname}}}",  coursename:"{{{coursename}}}", coursedifficultylevel:"{{{coursedifficultylevel}}}", groupdifficultylevel:"{{{groupdifficultylevel}}}", id:{{{id}}}, action: "deny", requesteduser:"{{{requesteduser}}}" })})(event)' {{/responded}}>
                                         {{#str}}deny,local_request{{/str}} </a>
                         </span>
                     {{/deny_capability}}
