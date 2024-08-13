@@ -150,10 +150,14 @@ class topicsconfiguration extends dynamic_form {
      * Load in existing data as form defaults
      */
     public function set_data_for_dynamic_submission(): void {
-        global $DB;
+        global $DB, $USER;
         $courseid = $this->optional_param('courseid', 0, PARAM_INT);
         if ($courseid) {
-            $existingtopics = $DB->get_records('local_coursetopics', ['courseid' => $courseid], '', 'topic');
+            $params['courseid'] = $courseid;
+            if(!is_siteadmin() && !api::is_administrator()){
+                $params['open_path'] = $USER->open_path;
+            }
+            $existingtopics = $DB->get_records('local_coursetopics', $params, '', 'topic');
 
             $data = new stdClass();
             foreach ($existingtopics as $topic => $record) {
