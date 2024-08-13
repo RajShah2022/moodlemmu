@@ -1171,7 +1171,7 @@ function local_groups_quicklink_node() {
     
     $content = '';
 
-    if (is_siteadmin() || has_capability('local/groups:view', $categorycontext)) {
+    if (is_siteadmin() || has_capability('moodle/cohort:view', $categorycontext)) {
         $sql = "SELECT count(c.id) FROM {cohort} c, {local_groups} g WHERE g.cohortid = c.id ";
         $visiblesql = " AND c.visible = :visible ";
         $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'g.open_path', $orgid);
@@ -1184,7 +1184,7 @@ function local_groups_quicklink_node() {
         $inactiveparams = array();
         $inactiveparams['visible'] = 0;
 
-        if ((is_siteadmin() || has_capability('local/groups:manage', $categorycontext)) && $orgid == 0) {
+        if ((is_siteadmin() || has_capability('moodle/cohort:manage', $categorycontext)) && $orgid == 0) {
             $sql .= "";
         } else {
             //costcenterid concating
