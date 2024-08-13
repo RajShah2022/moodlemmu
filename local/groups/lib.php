@@ -1165,15 +1165,15 @@ function local_groups_request_dependent_query($aliasname) {
 
    
 function local_groups_quicklink_node() {
-    global $CFG, $PAGE, $OUTPUT;
+    global $CFG, $PAGE, $OUTPUT, $DB;
     $orgid  = optional_param('orgid', 0, PARAM_INT);
     $categorycontext = (new \local_groups\lib\accesslib())::get_module_context();
     
     $content = '';
 
     if (is_siteadmin() || has_capability('local/groups:view', $categorycontext)) {
-        $sql = "SELECT count(c.id) FROM {cohort} c, {local_groups} g WHERE g.cohortid = c.id AND c.visible = :visible ";
-
+        $sql = "SELECT count(c.id) FROM {cohort} c, {local_groups} g WHERE g.cohortid = c.id ";
+        $visiblesql = " AND c.visible = :visible ";
         $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'g.open_path', $orgid);
 
         $params = array();
@@ -1191,18 +1191,18 @@ function local_groups_quicklink_node() {
             $sql .= $costcenterpathconcatsql;
         }
 
-        $count_activegroups = $DB->count_records_sql($sql, $activeparams);
-        $count_inactivegroups = $DB->count_records_sql($sql, $inactiveparams);
+        $count_activegroups = $DB->count_records_sql($sql . $visiblesql, $activeparams);
+        $count_inactivegroups = $DB->count_records_sql($sql . $visiblesql, $inactiveparams);
         $count_groups = $DB->count_records_sql($sql, $params);
 
-        $PAGE->requires->js_call_amd('local_groups/newgroup', 'load', array());
+        $content = $PAGE->requires->js_call_amd('local_groups/newgroup', 'load', array());
         $gropusdata = array();
         $displayline = false;
         $hascapablity = false;
         if (has_capability('local/groups:manage', $categorycontext) || is_siteadmin()) {
             $displayline = true;
             $hascapablity = true;
-            $gropusdata['create_element'] = html_writer::link('javascript:void(0)', get_string('create'), array('onclick' => '(function(e){ require("local_groups/newgroup").init({contextid:' . $systemcontext->id . ', groupsid:0 }) })(event)'));
+            $gropusdata['create_element'] = html_writer::link('javascript:void(0)', get_string('create'), array('onclick' => '(function(e){ require("local_groups/newgroup").init({contextid:' . $categorycontext->id . ', groupsid:0 }) })(event)'));
         }
         $gropusdata['node_header_string'] = get_string('leftmenu_groups', 'local_groups');
         $gropusdata['pluginname'] = 'groups';
