@@ -390,5 +390,19 @@ function xmldb_local_courses_upgrade($oldversion)
         }
         upgrade_plugin_savepoint(true, 2023060600.18, 'local', 'courses');
     }
+
+    if ($oldversion < 2023060600.20) {
+        $table1 = new xmldb_table('local_coursetopics');
+        $table2 = new xmldb_table('local_coursegroups');
+        $field = new xmldb_field('open_path');
+        $field->set_attributes(XMLDB_TYPE_CHAR, '255', null, null, null, null, null);
+        if (!$dbman->field_exists($table1, $field)) {
+            $dbman->add_field($table1, $field);
+        }
+        if (!$dbman->field_exists($table2, $field)) {
+            $dbman->add_field($table2, $field);
+        }
+        upgrade_plugin_savepoint(true, 2023060600.20, 'local', 'courses');
+    }
     return true;
 }

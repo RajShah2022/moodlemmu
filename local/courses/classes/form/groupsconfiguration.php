@@ -103,13 +103,6 @@ class groupsconfiguration extends dynamic_form {
      * Process the form submission, used if form was submitted via AJAX
      */
     public function process_dynamic_submission() {
-        // global $DB;
-        // $data = $this->get_data();
-        // if ($data->id == 0) {
-        //     api::insert_instance($data);
-        // } else {
-        //     api::update_instance($data);
-        // }
         $data = $this->get_data();
         api::insert_groupsconfig_instance($data);
     }
@@ -118,11 +111,15 @@ class groupsconfiguration extends dynamic_form {
      * Load in existing data as form defaults
      */
     public function set_data_for_dynamic_submission(): void {
-        global $DB;
+        global $DB, $USER;
 
         $courseid = $this->optional_param('courseid', 0, PARAM_INT);
         if ($courseid) {
-            $existinggroups = $DB->get_records('local_coursegroups', ['courseid' => $courseid], '', 'groupid');
+            $params['courseid'] = $courseid;
+            if(!is_siteadmin() && !api::is_administrator()){
+                $params['open_path'] = $USER->open_path;
+            }
+            $existinggroups = $DB->get_records('local_coursegroups', $params, '', 'groupid');
 
             $data = new stdClass();
             if(!empty($existinggroups)) {
