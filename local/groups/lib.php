@@ -1199,7 +1199,7 @@ function local_groups_quicklink_node() {
         $gropusdata = array();
         $displayline = false;
         $hascapablity = false;
-        if (has_capability('local/groups:manage', $categorycontext) || is_siteadmin()) {
+        if (has_capability('moodle/cohort:manage', $categorycontext) || is_siteadmin()) {
             $displayline = true;
             $hascapablity = true;
             $gropusdata['create_element'] = html_writer::link('javascript:void(0)', get_string('create'), array('onclick' => '(function(e){ require("local_groups/newgroup").init({contextid:' . $categorycontext->id . ', groupsid:0 }) })(event)'));
