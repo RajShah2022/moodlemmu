@@ -209,7 +209,10 @@ class api {
             }
         }
     }
-
+    public static function get_administrator_roleid() {
+        global $DB;
+        return $DB->get_field('role', 'id', array('shortname' => 'administrator'));
+    }
     public static function get_hod_roleid() {
         global $DB;
         return $DB->get_field('role', 'id', array('shortname' => 'hod'));

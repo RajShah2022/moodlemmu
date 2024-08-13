@@ -34,15 +34,22 @@ class notification{
 		switch($emailtype){
 			case 'request_add':
                 $strings = "[req_component], [req_componentname], 
-                            [req_userfulname], [req_useremail]";
+                            [req_userfulname], [req_useremail],
+                            [req_classlevel], [req_courselevel], 
+                            [req_coursename]";
+
                 break;
             case 'request_approve':
                 $strings = "[req_component], [req_componentname], 
-                            [req_userfulname], [req_useremail]";
+                            [req_userfulname], [req_useremail], 
+                            [req_classlevel], [req_courselevel], 
+                            [req_coursename]";
                 break; 
             case 'request_deny':
                 $strings = "[req_component], [req_componentname], 
-                            [req_userfulname], [req_useremail]";
+                            [req_userfulname], [req_useremail],
+                            [req_classlevel], [req_courselevel], 
+                            [req_coursename], [req_rejectreason]";
                 break;
 		}
 	}
@@ -76,13 +83,26 @@ class notification{
 		$datamailobject = new \stdClass();
 		if($requestcomponent->compname == 'elearning'){
             $comp_name = $this->db->get_field('course','fullname',array('id'=>$requestcomponent->componentid));
+        }else if ($requestcomponent->compname == 'groups'){
+            $comp_name = $this->db->get_field('cohort','name',array('id'=>$requestcomponent->componentid));
+            $req_classlevel = $this->db->get_field('local_groups', 'open_difficultylevel', array('id' => $requestcomponent->componentid));
+            if($requestcomponent->courseid > 0) {
+               $req_coursename = $this->db->get_field('course', 'fullname', array('id' => $requestcomponent->courseid));
+                $req_courselevel = $this->db->get_field('course', 'open_difficultylevel', array('id' => $requestcomponent->courseid)); 
+            }
+            
         }else{
         	$comp_name = $this->db->get_field('local_'.$requestcomponent->compname,'name',array('id'=>$requestcomponent->componentid));
         }
+
 		$datamailobject->req_component = $requestcomponent->compname;
 		$datamailobject->req_componentname = $comp_name;
         $datamailobject->req_userfulname = fullname($requesteduser);
         $datamailobject->req_useremail = $requesteduser->email;
+        $datamailobject->req_classlevel = $req_classlevel;
+        $datamailobject->req_coursename = $req_coursename;
+        $datamailobject->req_courselevel = $req_courselevel;
+        $datamailobject->req_rejectreason = $requestcomponent->rejectreason;
 		$datamailobject->body = $notification->body;
         $datamailobject->subject = $notification->subject;
         $datamailobject->componentid = $requestcomponent->id;
