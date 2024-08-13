@@ -202,7 +202,9 @@ class api {
                         $availabilityJson = json_encode($updatedAvailability);
 
                         $sectiondata->availability = $availabilityJson;
-                    } 
+                    } else {
+                        $sectiondata->availability = null;
+                    }
                     
                     course_update_section($course, $section, $sectiondata);
                 }
@@ -260,28 +262,27 @@ class api {
         }        
     }
     
-    public static function get_department_hodlist($costcenterpath = null, $hodcourserole = false) {
+    public static function get_costcenter_rolelist($costcenterpath = null, $roleid = false) {
         global $DB, $USER;
         $costcenterpath = $costcenterpath ? $costcenterpath : $USER->open_path;
         $context = (new \local_costcenter\lib\accesslib())::get_module_context($costcenterpath);
-        $hodroleid = self::get_hod_roleid();
         // $condition = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='u.open_path');
-        if($hodcourserole) {
-            $hodroleid = self::get_hodcourse_roleid();
+        if($roleid) {
+            $roleid = $roleid;
         } else {
-            $hodroleid = self::get_hod_roleid();
+            $roleid = self::get_hod_roleid();
         }
         $sql = "SELECT ra.id, ra.roleid, u.id as userid, u.firstname, u.lastname, u.email, u.open_employeeid, ra.contextid
         FROM {role_assignments} AS ra
         JOIN {user} AS u ON u.id = ra.userid
-        WHERE ra.contextid = :contextid AND ra.roleid = :hodroleid";
+        WHERE ra.contextid = :contextid AND ra.roleid = :roleid";
 
-        $params = array('contextid' => $context->id, 'hodroleid' => $hodroleid);
+        $params = array('contextid' => $context->id, 'roleid' => $roleid);
 
-        $hodlist = $DB->get_records_sql($sql, $params);
+        $rolelist = $DB->get_records_sql($sql, $params);
         $data = [
-            'hodlist' => $hodlist,
-            'hodcount' => count($hodlist),
+            'rolelist' => $rolelist,
+            'rolecount' => count($rolelist),
             'contextid' => $context->id
         ];
         return $data; 
@@ -290,9 +291,9 @@ class api {
     public static function add_hod_to_group($groupId) {
         global $CFG, $DB;
         $departmenth = $DB->get_field('local_groups', 'open_path', array('id' => $groupId));
-        $hodlist = self::get_department_hodlist($departmenth);
+        $hodlist = self::get_costcenter_rolelist($departmenth);
         if(!empty($hodlist)) {
-            foreach($hodlist['hodlist'] as $hodlist) {
+            foreach($hodlist['rolelist'] as $hodlist) {
                 local_groups_add_member($groupId, $hodlist->userid);
             }
         } 
@@ -301,9 +302,9 @@ class api {
     public static function remove_hod_from_group($groupId) {
         global $CFG, $DB;
         $departmenth = $DB->get_field('local_groups', 'open_path', array('id' => $groupId));
-        $hodlist = self::get_department_hodlist($departmenth);
+        $hodlist = self::get_costcenter_rolelist($departmenth);
         if(!empty($hodlist)) {
-            foreach($hodlist['hodlist'] as $hodlist) {
+            foreach($hodlist['rolelist'] as $hodlist) {
                 local_groups_remove_member($groupId, $hodlist->userid);
             }
         } 

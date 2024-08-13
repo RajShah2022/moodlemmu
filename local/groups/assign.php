@@ -123,6 +123,7 @@ if ($groups) {
     $department = !empty($filterdata->filteropen_department) ? implode(',', (array)$filterdata->filteropen_department) : null;
     $email = !empty($filterdata->email) ? implode(',', (array)$filterdata->email) : null;
     $filtergroup = !empty($filterdata->groups) ? implode(',', (array)$filterdata->groups) : null;
+    $filterrole = !empty($filterdata->roles) ? implode(',', (array)$filterdata->roles) : null;
     $idnumber = !empty($filterdata->idnumber) ? implode(',', (array)$filterdata->idnumber) : null;
     $uname = !empty($filterdata->users) ? implode(',', (array)$filterdata->users) : null;
     $subdepartment = !empty($filterdata->filteropen_subdepartment) ? implode(',', (array)$filterdata->filteropen_subdepartment) : null;
@@ -136,7 +137,7 @@ if ($groups) {
 
     // Create the user selector objects.
     $options = array('context' => $context->id, 'groupsid' => $id, 'organization' => $organization, 'department' => $department,'subdepartment'=>$subdepartment,'department4level'=>$department4level,'department5level'=>$department5level,
-    'states'=>$states,'district'=>$district,'subdistrict'=>$subdistrict,'village'=>$village, 'email' => $email, 'groups' => $filtergroup, 'idnumber' => $idnumber, 'uname' => $uname);
+    'states'=>$states,'district'=>$district,'subdistrict'=>$subdistrict,'village'=>$village, 'email' => $email, 'groups' => $filtergroup, 'roles' => $filterrole, 'idnumber' => $idnumber, 'uname' => $uname);
     
     if ( $add AND confirm_sesskey()) {        
         if($submit_value == "Add_All_Users"){

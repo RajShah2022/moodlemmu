@@ -305,9 +305,6 @@ $string['requesteddate']='Requested Date';
 $string['confirmmsgfor_approve']='<div class="pl-15 pr-15">Are you sure want to enroll {$a->requesteduser} to {$a->component}</div> ';
 $string['confirmmsgfor_deny']='<div class="pl-15 pr-15">Are you sure want to reject {$a} request</div>';
 
-$string['groupsconfirmmsgfor_approve']='<div class="pl-15 pr-15">Are you sure want to approve <b>{$a->groupname} (Level {$a->groupdifficultylevel})</b> enrollment request for course <b>{$a->coursename} (Level {$a->coursedifficultylevel})</b> by {$a->requesteduser}</div>';
-$string['groupsconfirmmsgfor_deny']='<div class="pl-15 pr-15">Are you sure want to reject <b>{$a->groupname} (Level {$a->groupdifficultylevel})</b> enrollment request for course <b>{$a->coursename} (Level {$a->coursedifficultylevel})</b> by {$a->requesteduser}</div>';
-
 $string['success_add'] ='<div class="pl-15 pr-15">Request has been sent, please wait for approval you will get notify shortly</div>';
 $string['success_approve']='Successfully enrolled';
 $string['success_deny']='Its got rejected, Please contact higher authority for the more information';
@@ -368,4 +365,3 @@ $string['error_in_fetching_listofrequests'] = 'Invalid parameters sent';
 $string['requestforenroll'] = 'Request';
 $string['left_menu_requests_enduser'] = 'My Requests';
 $string['for'] = 'For';
-$string['level'] = 'Level';
