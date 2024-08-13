@@ -929,7 +929,7 @@ function local_users_quicklink_node() {
         $countinformation['viewlink_url'] = $CFG->wwwroot . '/local/users/index.php';
         $countinformation['view'] = true;
         $countinformation['displaystats'] = true;
-        // $countinformation['percentage'] = $percent;
+        $countinformation['percentage'] = $percent;
         $countinformation['count_total'] = $count_users;
         $countinformation['count_inactive'] = $count_inactiveusers;
         $countinformation['inactive_string'] = get_string('inactive_string', 'block_quick_navigation');

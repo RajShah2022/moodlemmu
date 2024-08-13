@@ -345,21 +345,15 @@ class notifications
 
             case 'request_add':
                 $strings = "[req_component], [req_componentname], 
-                            [req_userfulname], [req_useremail],
-                            [req_classlevel], [req_courselevel], 
-                            [req_coursename]";
+                            [req_userfulname], [req_useremail]";
                 break;
             case 'request_approve':
                 $strings = "[req_component], [req_componentname], 
-                            [req_userfulname], [req_useremail],
-                            [req_classlevel], [req_courselevel], 
-                            [req_coursename]";
+                            [req_userfulname], [req_useremail]";
                 break;
             case 'request_deny':
                 $strings = "[req_component], [req_componentname], 
-                            [req_userfulname], [req_useremail],
-                            [req_classlevel], [req_courselevel], 
-                            [req_coursename], [req_rejectreason]";
+                            [req_userfulname], [req_useremail]";
                 break;
             case 'program_enrol':
                 $strings = "[program_name], [program_organization], [program_creater], [program_enroluserfulname], [program_link], [program_enroluseremail]";

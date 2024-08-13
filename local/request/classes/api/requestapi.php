@@ -118,24 +118,13 @@ use core_user;
           $requests=$DB->get_record('local_request_records', array('id'=> $newrecordid));
           $event->add_record_snapshot('local_request_records', $requests);
           $event->trigger();
-          $fromuser = \core_user::get_user($requests->createdbyid);
           $requesteduser = \core_user::get_user($requests->createdbyid);
           list($zero, $org_id, $ctr_id, $bu, $cu, $territory) = explode("/",$requesteduser->open_path);
-          $requesteduser->open_costcenterid = $org_id;
+          $requesteduser->open_costcenterid=$org_id;
           $requesteduser->open_departmentid = $ctr_id;     
-          if (!empty($CFG->supportuserid)) {
-              $touser = \core_user::get_support_user();
-          } else {
-              $touser = get_admin();
-          }
-
-          $logmail = $notification->request_notification($type, $requests, $touser, $fromuser, $requesteduser);
-          $costcenterpath = $DB->get_field('local_costcenter', 'path', array('id' => $org_id));
-          $costcenteradmins = api::get_costcenter_rolelist($costcenterpath, api::get_administrator_roleid());
-          foreach($costcenteradmins['rolelist'] as $costcenteradmin){
-            $touser = \core_user::get_user($costcenteradmin->userid);
-            $logmail = $notification->request_notification($type, $requests, $touser, $fromuser, $requesteduser);
-          }
+          
+          $touser = \core_user::get_support_user();
+          $logmail = $notification->request_notification($type, $requests, $touser, $lpcreatedid, $requesteduser);
 
       /*     foreach($lpcreated_id as $created_id){
           $costcenterid=explode('/',$created_id->open_path)[1];
@@ -224,12 +213,7 @@ use core_user;
         $touser = core_user::get_user($updaterecord->createdbyid);
         list($zero, $org_id, $ctr_id, $bu, $cu, $territory) = explode("/",$touser->open_path);
           $touser->costcenter=$org_id;     
-         $fromuserid = core_user::get_user($USER->id);
-        // if (!empty($CFG->supportuserid)) {
-        //       $touser = \core_user::get_support_user();
-        // } else {
-        //       $touser = get_admin();
-        // }
+        $fromuserid = core_user::get_support_user();
         $logmail = $notification->request_notification($type, $requests, $touser, $fromuserid, $requesteduser);
       } else{
         $updated_recordid =0;
@@ -319,12 +303,7 @@ use core_user;
         $touser = core_user::get_user($updaterecord->createdbyid);
         list($zero, $org_id, $ctr_id, $bu, $cu, $territory) = explode("/",$touser->open_path);
           $requesteduser->costcenter=$org_id;
-        $fromuserid = core_user::get_user($USER->id);
-        // if (!empty($CFG->supportuserid)) {
-        //       $touser = \core_user::get_support_user();
-        // } else {
-        //       $touser = get_admin();
-        // }
+        $fromuserid = core_user::get_support_user();
         $logmail = $notification->request_notification($type, $requests, $touser, $fromuserid, $requesteduser);
       }else{
         $updated_recordid =0;

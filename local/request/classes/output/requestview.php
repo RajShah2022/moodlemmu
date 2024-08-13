@@ -281,11 +281,9 @@ class requestview implements renderable, templatable {
                 }
                 if($request->compname == 'groups') {
                     $onerow['groupname'] = $DB->get_field('cohort', 'name', array('id' => $request->componentid));
-                    $onerow['groupdifficultylevel'] = $DB->get_field('local_groups', 'open_difficultylevel', array('id' => $request->componentid));
                 }
                 if($request->courseid > 0) {
                     $onerow['coursename'] = $DB->get_field('course', 'fullname', array('id' => $request->courseid));
-                    $onerow['coursedifficultylevel'] = $DB->get_field('course', 'open_difficultylevel', array('id' => $request->courseid));
                 }
                 $favcolor = "red";
 
