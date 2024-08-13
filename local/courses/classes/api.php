@@ -33,6 +33,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/course/lib.php');
 require_once($CFG->dirroot . '/local/groups/lib.php');
+require_once($CFG->dirroot . '/group/lib.php');
 
 class api {
     public const COURSETOPICS_TABLE = 'local_coursetopics';
@@ -178,7 +179,7 @@ class api {
                     $sectiondata->id = $section->id;
 
                     // If the section is not linked to any topic, add restrictions
-                    if (!array_key_exists($section->id, $linkedTopics)) {
+                    if (array_key_exists($section->id, $linkedTopics)) {
 
                         // Decode the existing availability JSON
                         $existingAvailability = json_decode($section->availability, true);
@@ -202,8 +203,9 @@ class api {
                         $availabilityJson = json_encode($updatedAvailability);
 
                         $sectiondata->availability = $availabilityJson;
+                        $sectiondata->visible = 1;
                     } else {
-                        $sectiondata->availability = null;
+                        $sectiondata->visible = 0;
                     }
                     
                     course_update_section($course, $section, $sectiondata);
@@ -258,6 +260,7 @@ class api {
                 $chohortplugin->update_communication($coursecohort->id, 'remove', $courseid);
                 $instance = $instances[$coursecohort->id];
                 $chohortplugin->delete_instance($instance);
+                groups_delete_group($coursecohort->customint2);
             }  
         }        
     }
