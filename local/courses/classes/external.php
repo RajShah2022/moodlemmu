@@ -234,13 +234,13 @@ class local_courses_external extends external_api {
                     $courseid = new stdClass();
                     $courseid->id = $data['id'];
                     $validateddata->category = $category_id;
-                    if ($validateddata->open_costcenterid != $org) {
+                    // if ($validateddata->open_costcenterid != $org) {
                         local_costcenter_get_costcenter_path($validateddata);
 
                         if ($validateddata->open_path) {
                             $validateddata->category = $DB->get_field('local_costcenter', 'category', array('path' => $validateddata->open_path));
                         }
-                    }
+                    // }
                     $validateddata->performancecatid = $data['performancecatid'];
                     $validateddata->open_categoryid = $data['performancecatid'];
                     $validateddata->performanceparentid = $data['performanceparentid'];
