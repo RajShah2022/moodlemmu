@@ -1131,6 +1131,15 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
 
             $course_in_list = new core_course_list_element($course);
             $context =  \context_course::instance($course->id);
+            if(api::is_hod()) {
+                $enrol_manual = enrol_get_plugin('manual');
+                $instance = $DB->get_record('enrol', array('courseid' => $course->id, 'enrol' => 'manual'), '*', MUST_EXIST);
+                $enrol_manual->enrol_user($instance, $USER->id, api::get_hodcourse_roleid());
+                // $enrol_manual->unenrol_user($instance, $USER->id);
+
+                $ishodcourse = true;
+            }
+
             $departmentcount = 1;
             $acceslib = new local_courses\local\general_lib();
             $enrolleduser = $acceslib->get_course_enrolled_users($course->id);
@@ -1261,12 +1270,6 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
                 } else {
                     $courseslist[$count]["courseimage"] = $courseimage;
                 }
-            }
-            if(api::is_hod()) {
-                $enrol_manual = enrol_get_plugin('manual');
-                $instance = $DB->get_record('enrol', array('courseid' => $course->id, 'enrol' => 'manual'), '*', MUST_EXIST);
-                $enrol_manual->enrol_user($instance, $USER->id, api::get_hodcourse_roleid());
-                $ishodcourse = true;
             }
             
             $enrolid = $DB->get_field('enrol', 'id', array('enrol' => 'manual', 'courseid' => $course->id));
