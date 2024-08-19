@@ -276,7 +276,12 @@ function local_groups_update_groups($groups) {
     // prevent NULLs
     $groups->component = '';
     }
-
+    $costcenterquerylib = new \local_costcenter\querylib();
+    $departmentname = $costcenterquerylib->costcenter_field('fullname', array('path' => $groups->open_path));
+    // if (!isset($groups->idnumber)) {
+    //     $groups->idnumber = NULL;
+    // }
+    $groups->idnumber = $departmentname .' - '. $groups->name;
     if(!empty($groups->description_editor['text'])){
         $groups->description = $groups->description_editor['text'];
     }else{
