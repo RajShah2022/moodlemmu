@@ -93,7 +93,7 @@ function xmldb_local_request_upgrade($oldversion) {
 	    }
 	    if ($oldversion < 2022101800.03) {
 	    	$table = new xmldb_table('local_request_records');
-	    	$field = new xmldb_field('courseid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+	    	$field = new xmldb_field('courseid', XMLDB_TYPE_INTEGER, '20', null, null, null, null);
 	    	if (!$dbman->field_exists($table, $field)) {
 	            $dbman->add_field($table, $field);
 	        }
