@@ -107,6 +107,11 @@ class edit_form extends moodleform {
                 $errors['costcenterid'] = get_string('requiredopen_costcenterid', 'local_costcenter');
             }
         }
+        if(isset($data['name'])) {
+            if($data['name'] == '' || empty(trim($data['name']))) {
+                $errors['name'] = get_string('groupname','local_groups'); 
+            }
+        }
         // if (isset($data['idnumber'])){
         //     if($data['idnumber'] == ''){
         //         $errors['idnumber'] = get_string('pleaseselectidnumber', 'local_groups');

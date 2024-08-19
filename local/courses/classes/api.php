@@ -250,6 +250,8 @@ class api {
                             ];
                             // Delete the records with matching componentid, courseid, and status.
                             $DB->delete_records_select(self::ENROLLMENT_REQUESTS_TABLE, $sql, $params);
+                            self::unenrollgroups($groupid, $courseid);
+                            self::remove_hod_from_group($groupid);
                     }
                 }
             }
@@ -796,7 +798,7 @@ class api {
             foreach ($coursecohortslist as $coursecohort) {
                 $instance = $instances[$coursecohort->id];
                 // Remove cohort from course
-                $cohortplugin->delete_instance($coursecohort->id);
+                $cohortplugin->delete_instance($instance);
 
                 // Delete associated group only if it is not linked to any other course
                 if (!$DB->record_exists('enrol', ['customint2' => $coursecohort->customint2])) {

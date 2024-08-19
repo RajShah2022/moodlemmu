@@ -385,7 +385,7 @@ class local_costcenter_renderer extends plugin_renderer_base {
                 $subdept_count_link = "javascript:void(0)";
             }
             $subdept = ($subdept > 0 ? $subdept : get_string('not_available', 'local_costcenter'));
-            $deparray = local_plugins_datacount($organisationid, 1532, $subdepartmentid, $l4departmentid, $l5departmentid);
+            $deparray = local_plugins_datacount($organisationid, $departmentid, $subdepartmentid, $l4departmentid, $l5departmentid);
 
             $deptedit = false;
             $deptdelete = false;

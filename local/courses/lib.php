@@ -816,11 +816,11 @@ function course_enrolled_users($type = null, $course_id = 0, $params = array(), 
     if ($type == 'add') {
         $sql .= " AND u.id NOT IN (SELECT ue.userid
                              FROM {user_enrolments} AS ue
-                             JOIN {enrol} e ON (e.id = ue.enrolid and e.courseid=$course_id and (e.enrol='manual' OR e.enrol='self' OR e.enrol='auto')))";
+                             JOIN {enrol} e ON (e.id = ue.enrolid and e.courseid=$course_id and (e.enrol='manual' OR e.enrol='self' OR e.enrol='auto' OR e.enrol='cohort')))";
     } elseif ($type == 'remove') {
         $sql .= " AND u.id IN (SELECT ue.userid
                              FROM {user_enrolments} AS ue
-                             JOIN {enrol} e ON (e.id = ue.enrolid and e.courseid=$course_id and (e.enrol='manual' OR e.enrol='self' OR e.enrol='auto')))";
+                             JOIN {enrol} e ON (e.id = ue.enrolid and e.courseid=$course_id and (e.enrol='manual' OR e.enrol='self' OR e.enrol='auto' OR e.enrol='cohort')))";
     }
 
     $order = " ORDER BY u.firstname  ASC ";
@@ -1210,7 +1210,7 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
                 'local/courses:grade_view',
                 $context
             ) || is_siteadmin()) && has_capability('local/courses:manage', $context)) ? true : false;
-            $courseslist[$count]["request_view"] = ((has_capability('local/request:approverecord', $maincheckcontext)) || is_siteadmin()) ? true : false;
+            // $courseslist[$count]["request_view"] = ((has_capability('local/request:approverecord', $maincheckcontext)) || is_siteadmin()) ? true : false;
 
             $coursesummary = \local_costcenter\lib::strip_tags_custom($chelper->get_course_formatted_summary(
                 $course_in_list,
