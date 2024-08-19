@@ -50,10 +50,11 @@
         <FIELD NAME="req_values" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false"  />
        <FIELD NAME="responder" TYPE="int" LENGTH="20" NOTNULL="false" SEQUENCE="false"  />
        <FIELD NAME="respondeddate" TYPE="int" LENGTH="20" NOTNULL="false" SEQUENCE="false"  />
+        <FIELD NAME="courseid" TYPE="int" LENGTH="20" NOTNULL="false" SEQUENCE="false"  />
+        <FIELD NAME="rejectreason" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false"  />
         <FIELD NAME="usermodified" TYPE="int" LENGTH="20" NOTNULL="false" SEQUENCE="false"  />
         <FIELD NAME="timecreated" TYPE="int" LENGTH="20" NOTNULL="false" SEQUENCE="false"  />
         <FIELD NAME="timemodified" TYPE="int" LENGTH="20" NOTNULL="false" SEQUENCE="false"  />
-        <FIELD NAME="rejectreason" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false"  />
         <FIELD NAME="c1" TYPE="char" LENGTH="300" NOTNULL="false" SEQUENCE="false"  />
         <FIELD NAME="c2" TYPE="char" LENGTH="300" NOTNULL="false" SEQUENCE="false" />
         <FIELD NAME="c3" TYPE="char" LENGTH="300" NOTNULL="false" SEQUENCE="false" />

@@ -435,47 +435,74 @@ class api {
     //     }
     // }
 
-
     public static function course_content_accessrestrictions($courseid) {
-        global $DB, $PAGE;
+        global $DB;
         $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
-
         // Get all sections from the COURSESECTIONS_TABLE for the given course
         $allSections = $DB->get_records(self::COURSESECTIONS_TABLE, ['course' => $courseid]);
 
         // Get all topics linked to course sections in the COURSETOPICS_TABLE
-        $linkedTopics = $DB->get_records_menu(self::COURSETOPICS_TABLE, null, '', 'topic, id');
+        $linkedTopics = $DB->get_records(self::COURSETOPICS_TABLE, ['courseid' => $courseid]);
 
-        // Query to get cohort sync list
-        $cohortsync = "SELECT DISTINCT e.id, e.customint1, e.customint2
+        // Query to get cohort sync list with open_path
+        $cohortsync = "SELECT DISTINCT e.customint1, e.customint2 AS groupid, cg.open_path
                        FROM {" . self::ENROLL_TABLE . "} e
                        JOIN {" . self::COURSEGROUPS_TABLE . "} cg
                          ON e.customint1 = cg.groupid
                        WHERE e.courseid = :courseid AND e.enrol = :enrol";
-        $cohortparams = array('courseid' => $courseid, 'enrol' => 'cohort');
+        $cohortparams = ['courseid' => $courseid, 'enrol' => 'cohort'];
         $cohortsynclist = $DB->get_records_sql($cohortsync, $cohortparams);
 
-        // Collect all group IDs (customint2) from cohort sync list
-        $groupIds = array_map(function($cohort) {
-            return $cohort->customint2;
-        }, $cohortsynclist);
+        // Create a map of group IDs and their corresponding open_path
+        $groupPaths = [];
+        foreach ($cohortsynclist as $cohort) {
+            $groupPaths[$cohort->groupid] = $cohort->open_path;
+        }
 
-        // Check if there are any group IDs
-        if (!empty($groupIds)) {
-            // Create new conditions with the group IDs
-            $newConditions = array_values(array_map(function($groupId) {
-                return array("type" => "group", "id" => (int)$groupId);
-            }, $groupIds));
+        // Create an associative array to map section IDs to topic IDs
+        $sectionsByTopic = [];
+        foreach ($linkedTopics as $topicRecord) {
+            $sectionsByTopic[$topicRecord->topic] = $topicRecord->topic;
+        }
+        // print_r($sectionsByTopic);
+        // Iterate over all sections
+        foreach ($allSections as $section) {
+            if ($section->section > 0) {
+                $sectiondata = new stdClass();
+                $sectiondata->id = $section->id;
 
-            // Iterate over all sections
-            foreach ($allSections as $section) {
-                
-                if ($section->section > 0) {
-                    $sectiondata = new stdClass();
-                    $sectiondata->id = $section->id;
+                // Determine if this section is linked to a topic
+                if (isset($sectionsByTopic[$section->id])) {
+                    $topicId = $sectionsByTopic[$section->id];
+                    $groupIdsForTopic = [];
 
-                    // If the section is not linked to any topic, add restrictions
-                    if (array_key_exists($section->id, $linkedTopics)) {
+                    // Get the topic record to check its open_path
+                    $topicRecord = $DB->get_record(self::COURSETOPICS_TABLE, ['topic' => $topicId]);
+                    
+                    // Admin topics (no open_path) should be visible to all groups
+                    if (is_null($topicRecord->open_path)) {
+                        // $groupIdsForTopic = array_keys($groupPaths);
+                        // Admin topics (no open_path) should be visible to all groups
+                        $groupIdsForTopic = array_merge($groupIdsForTopic, array_keys($groupPaths));
+                    } else {
+                        // HOD topics should be visible only to specific groups
+                        foreach ($groupPaths as $groupId => $path) {
+                            if ($topicRecord->open_path === $path) {
+                                $groupIdsForTopic[] = (int)$groupId;
+                            }
+                        }
+                    }
+
+                    // Apply restrictions if there are valid group IDs for the topic
+                    if (!empty($groupIdsForTopic)) {
+                        // Create new access restrictions with the group IDs
+                        // $newConditions = array_map(function($groupId) {
+                        //     return ["type" => "group", "id" => $groupId];
+                        // }, $groupIdsForTopic);
+
+                        $newConditions = array_map(function($groupId) {
+                            return ["type" => "group", "id" => $groupId];
+                        }, array_unique($groupIdsForTopic)); // Ensure group IDs are unique
 
                         // Decode the existing availability JSON
                         $existingAvailability = json_decode($section->availability, true);
@@ -488,27 +515,209 @@ class api {
 
                         // Remove duplicate conditions
                         $uniqueConditions = array_values(array_unique($allConditions, SORT_REGULAR));
+
                         // Create a new availability structure
-                        $updatedAvailability = array(
+                        $updatedAvailability = [
                             "op" => "|",
                             "c" => $uniqueConditions,
                             "show" => false
-                        );
+                        ];
 
                         // Convert to JSON
                         $availabilityJson = json_encode($updatedAvailability);
 
                         $sectiondata->availability = $availabilityJson;
                         $sectiondata->visible = 1;
-                    } else {
-                        // $sectiondata->visible = 0;
                     }
-                    
-                    course_update_section($course, $section, $sectiondata);
+                } else {
+                    // For sections not linked to any topic, ensure no restrictions are added
+                    // $sectiondata->availability = null;
+                    // $sectiondata->visible = 1;
                 }
+
+                // Update section with new availability and visibility settings
+                course_update_section($course, $section, $sectiondata);
             }
         }
     }
+
+
+
+    // public static function course_content_accessrestrictions($courseid) {
+    //     global $DB;
+
+    //     $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
+    //     // Get all sections from the COURSESECTIONS_TABLE for the given course
+    //     $allSections = $DB->get_records(self::COURSESECTIONS_TABLE, ['course' => $courseid]);
+
+    //     // Get all topics linked to course sections in the COURSETOPICS_TABLE
+    //     $linkedTopics = $DB->get_records(self::COURSETOPICS_TABLE, ['courseid' => $courseid]);
+
+    //     // Query to get cohort sync list with group IDs and open_path
+    //     $cohortsync = "SELECT DISTINCT e.customint1 AS groupid, cg.open_path
+    //                    FROM {" . self::ENROLL_TABLE . "} e
+    //                    JOIN {" . self::COURSEGROUPS_TABLE . "} cg
+    //                      ON e.customint1 = cg.groupid
+    //                    WHERE e.courseid = :courseid AND e.enrol = :enrol";
+    //     $cohortparams = ['courseid' => $courseid, 'enrol' => 'cohort'];
+    //     $cohortsynclist = $DB->get_records_sql($cohortsync, $cohortparams);
+
+    //     // Create a map of open_path to group IDs
+    //     $pathToGroups = [];
+    //     foreach ($cohortsynclist as $cohort) {
+    //         if (!isset($pathToGroups[$cohort->open_path])) {
+    //             $pathToGroups[$cohort->open_path] = [];
+    //         }
+    //         $pathToGroups[$cohort->open_path][] = $cohort->groupid;
+    //     }
+
+    //     // Iterate over all sections
+    //     foreach ($allSections as $section) {
+    //         if ($section->section > 0) {
+    //             $sectiondata = new stdClass();
+    //             $sectiondata->id = $section->id;
+
+    //             // Check if the section is linked to a topic
+    //             if (isset($linkedTopics[$section->id])) {
+    //                 $topic = $linkedTopics[$section->id];
+    //                 $groupIdsForTopic = [];
+
+    //                 // Admin topics (no open_path) should be visible to all groups
+    //                 if (is_null($topic->open_path)) {
+    //                     // Collect all groups from pathToGroups
+    //                     foreach ($pathToGroups as $groups) {
+    //                         $groupIdsForTopic = array_merge($groupIdsForTopic, $groups);
+    //                     }
+    //                 } else {
+    //                     // HOD topics should be visible only to specific groups
+    //                     if (isset($pathToGroups[$topic->open_path])) {
+    //                         $groupIdsForTopic = $pathToGroups[$topic->open_path];
+    //                     }
+    //                 }
+
+    //                 // Apply restrictions if there are valid group IDs for the topic
+    //                 if (!empty($groupIdsForTopic)) {
+    //                     // Create new access restrictions with the group IDs
+    //                     $newConditions = array_map(function($groupId) {
+    //                         return ["type" => "group", "id" => (int)$groupId];
+    //                     }, $groupIdsForTopic);
+
+    //                     // Decode the existing availability JSON
+    //                     $existingAvailability = json_decode($section->availability, true);
+
+    //                     // Initialize existing conditions
+    //                     $existingConditions = isset($existingAvailability['c']) ? $existingAvailability['c'] : [];
+
+    //                     // Merge new conditions with existing conditions
+    //                     $allConditions = array_merge($existingConditions, $newConditions);
+
+    //                     // Remove duplicate conditions
+    //                     $uniqueConditions = array_values(array_unique($allConditions, SORT_REGULAR));
+
+    //                     // Create a new availability structure
+    //                     $updatedAvailability = [
+    //                         "op" => "|",
+    //                         "c" => $uniqueConditions,
+    //                         "show" => false
+    //                     ];
+
+    //                     // Convert to JSON
+    //                     $availabilityJson = json_encode($updatedAvailability);
+
+    //                     $sectiondata->availability = $availabilityJson;
+    //                     $sectiondata->visible = 1;
+    //                 } else {
+    //                     // No valid group IDs, hide section
+    //                     $sectiondata->availability = null;
+    //                     $sectiondata->visible = 0;
+    //                 }
+    //             } else {
+    //                 // For sections not linked to any topic, ensure no restrictions are added
+    //                 $sectiondata->availability = null;
+    //                 $sectiondata->visible = 1;
+    //             }
+
+    //             // Update section with new availability and visibility settings
+    //             course_update_section($course, $section, $sectiondata);
+    //         }
+    //     }
+    // }
+
+
+
+    // public static function course_content_accessrestrictions_working_previously($courseid) {
+    //     global $DB, $PAGE;
+    //     $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
+
+    //     // Get all sections from the COURSESECTIONS_TABLE for the given course
+    //     $allSections = $DB->get_records(self::COURSESECTIONS_TABLE, ['course' => $courseid]);
+
+    //     // Get all topics linked to course sections in the COURSETOPICS_TABLE
+    //     $linkedTopics = $DB->get_records_menu(self::COURSETOPICS_TABLE, null, '', 'topic, id');
+
+    //     // Query to get cohort sync list
+    //     $cohortsync = "SELECT DISTINCT e.id, e.customint1, e.customint2
+    //                    FROM {" . self::ENROLL_TABLE . "} e
+    //                    JOIN {" . self::COURSEGROUPS_TABLE . "} cg
+    //                      ON e.customint1 = cg.groupid
+    //                    WHERE e.courseid = :courseid AND e.enrol = :enrol";
+    //     $cohortparams = array('courseid' => $courseid, 'enrol' => 'cohort');
+    //     $cohortsynclist = $DB->get_records_sql($cohortsync, $cohortparams);
+
+    //     // Collect all group IDs (customint2) from cohort sync list
+    //     $groupIds = array_map(function($cohort) {
+    //         return $cohort->customint2;
+    //     }, $cohortsynclist);
+
+    //     // Check if there are any group IDs
+    //     if (!empty($groupIds)) {
+    //         // Create new conditions with the group IDs
+    //         $newConditions = array_values(array_map(function($groupId) {
+    //             return array("type" => "group", "id" => (int)$groupId);
+    //         }, $groupIds));
+
+    //         // Iterate over all sections
+    //         foreach ($allSections as $section) {
+                
+    //             if ($section->section > 0) {
+    //                 $sectiondata = new stdClass();
+    //                 $sectiondata->id = $section->id;
+
+    //                 // If the section is not linked to any topic, add restrictions
+    //                 if (array_key_exists($section->id, $linkedTopics)) {
+
+    //                     // Decode the existing availability JSON
+    //                     $existingAvailability = json_decode($section->availability, true);
+
+    //                     // Initialize existing conditions
+    //                     $existingConditions = isset($existingAvailability['c']) ? $existingAvailability['c'] : [];
+
+    //                     // Merge new conditions with existing conditions
+    //                     $allConditions = array_merge($existingConditions, $newConditions);
+
+    //                     // Remove duplicate conditions
+    //                     $uniqueConditions = array_values(array_unique($allConditions, SORT_REGULAR));
+    //                     // Create a new availability structure
+    //                     $updatedAvailability = array(
+    //                         "op" => "|",
+    //                         "c" => $uniqueConditions,
+    //                         "show" => false
+    //                     );
+
+    //                     // Convert to JSON
+    //                     $availabilityJson = json_encode($updatedAvailability);
+
+    //                     $sectiondata->availability = $availabilityJson;
+    //                     $sectiondata->visible = 1;
+    //                 } else {
+    //                     // $sectiondata->visible = 0;
+    //                 }
+                    
+    //                 course_update_section($course, $section, $sectiondata);
+    //             }
+    //         }
+    //     }
+    // }
     public static function get_administrator_roleid() {
         global $DB;
         return $DB->get_field('role', 'id', array('shortname' => 'administrator'));
