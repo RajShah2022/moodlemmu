@@ -816,11 +816,11 @@ function course_enrolled_users($type = null, $course_id = 0, $params = array(), 
     if ($type == 'add') {
         $sql .= " AND u.id NOT IN (SELECT ue.userid
                              FROM {user_enrolments} AS ue
-                             JOIN {enrol} e ON (e.id = ue.enrolid and e.courseid=$course_id and (e.enrol='manual' OR e.enrol='self' OR e.enrol='auto')))";
+                             JOIN {enrol} e ON (e.id = ue.enrolid and e.courseid=$course_id and (e.enrol='manual' OR e.enrol='self' OR e.enrol='auto' OR e.enrol='cohort')))";
     } elseif ($type == 'remove') {
         $sql .= " AND u.id IN (SELECT ue.userid
                              FROM {user_enrolments} AS ue
-                             JOIN {enrol} e ON (e.id = ue.enrolid and e.courseid=$course_id and (e.enrol='manual' OR e.enrol='self' OR e.enrol='auto')))";
+                             JOIN {enrol} e ON (e.id = ue.enrolid and e.courseid=$course_id and (e.enrol='manual' OR e.enrol='self' OR e.enrol='auto' OR e.enrol='cohort')))";
     }
 
     $order = " ORDER BY u.firstname  ASC ";

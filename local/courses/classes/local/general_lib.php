@@ -380,7 +380,7 @@ class general_lib {
 
         $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'u.open_path');
 
-        $countsql = "SELECT COUNT(ue.id) ";
+        $countsql = "SELECT COUNT(DISTINCT(u.id)) ";
 
         $selectsql = "SELECT DISTINCT(u.id) as userid,ue.id,u.firstname, u.lastname, u.email, u.open_employeeid, cc.timecompleted ";
 
@@ -392,7 +392,7 @@ class general_lib {
             JOIN {user} u ON u.id = ue.userid AND u.deleted = 0 AND u.suspended=0
             JOIN {role_assignments} as ra ON ra.userid = u.id
             JOIN {context} AS cxt ON cxt.id=ra.contextid AND cxt.contextlevel = 50 AND cxt.instanceid=c.id
-            JOIN {role} as r ON r.id = ra.roleid AND r.shortname IN ('student','employee') ";
+            JOIN {role} as r ON r.id = ra.roleid AND r.shortname IN ('student','employee', 'manager', 'teacher', 'editingteacher', 'administrator', 'trainer') ";
         $leftjoinsql = " LEFT JOIN {course_completions} as cc ON cc.course = c.id AND u.id = cc.userid ";
 
         $wheresql = " WHERE c.id = :courseid ";
