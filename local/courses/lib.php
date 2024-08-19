@@ -1210,7 +1210,7 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
                 'local/courses:grade_view',
                 $context
             ) || is_siteadmin()) && has_capability('local/courses:manage', $context)) ? true : false;
-            $courseslist[$count]["request_view"] = ((has_capability('local/request:approverecord', $maincheckcontext)) || is_siteadmin()) ? true : false;
+            // $courseslist[$count]["request_view"] = ((has_capability('local/request:approverecord', $maincheckcontext)) || is_siteadmin()) ? true : false;
 
             $coursesummary = \local_costcenter\lib::strip_tags_custom($chelper->get_course_formatted_summary(
                 $course_in_list,
