@@ -400,6 +400,10 @@ class create_user extends moodleform {
             if (empty(trim($lastname))) {
                 $errors['lastname'] = get_string('vallastnamerequired', 'local_users');
             }
+            $role = $DB->get_record('role', array('id' => $data['roleid']));
+            if($role->shortname != 'administrator' && $data['open_department'] == 0) {
+                $errors['open_department'] = get_string('schoolmustselect', 'local_users', $role->name);   
+            }
             // OL72 issue department as mandatory.
             // $department = $data['open_departmentid'];
             // if (!$department) {
