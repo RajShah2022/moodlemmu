@@ -139,26 +139,26 @@ $string['createsubsubsubdepartment'] = 'Create New Territory';
 $string['subsubsubdepartment'] = 'Territory';
 $string['update_subsubdept'] = 'Update Region';
 $string['update_subsubsubdept'] = 'Update Territory';
-$string['open_costcenterid'] = 'School';
+$string['open_costcenterid'] = 'Organization';
 $string['open_department'] = 'School';
 $string['open_subdepartment'] = 'Department';
 $string['open_level4department'] = 'Sub Department';
 
 $string['nooflevel'] = 'No of Levels';
 $string['confignooflevel'] = 'No of Levels in the hierarchy';
-$string['selectopen_costcenterid'] = 'Select School';
+$string['selectopen_costcenterid'] = 'Select Organization';
 $string['selectopen_department'] = 'Select School';
 $string['selectopen_subdepartment'] = 'Select Department';
 $string['selectopen_level4department'] = 'Select  Sub Department';
 
-$string['requiredopen_costcenterid'] = 'Please select a School';
+$string['requiredopen_costcenterid'] = 'Please select a Organization';
 $string['select_level5department'] = 'Select Territory';
 $string['hold'] = 'Hold';
 $string['onlineexams'] = 'Online Exams';
 $string['configdashboard'] = 'Config Dashboard';
 
-$string['open_costcenteridlocal_costcenter_help'] = 'Select School';
-$string['open_costcenteridlocal_costcenter'] = 'School';
+$string['open_costcenteridlocal_costcenter_help'] = 'Select Organization';
+$string['open_costcenteridlocal_costcenter'] = 'Organization';
 $string['open_departmentlocal_costcenter_help'] = 'Select School';
 $string['open_departmentlocal_costcenter'] = 'School';
 $string['open_subdepartmentlocal_costcenter_help'] = 'Select Department';
