@@ -46,7 +46,7 @@ class filters_form extends moodleform {
         foreach ($filterlist as $key => $value) {
             if ($value === 'customfields' || $value === 'categories' || $value === 'elearning' || $value === 'status' /*|| $value === 'coursetype'*/) {
                 $filter = 'courses';
-            } else if ($value === 'email' || $value === 'states' || $value === 'district' || $value === 'subdistrict' || $value === 'village' || $value === 'employeeid' || $value === 'username' || $value === 'users' || $value === 'hrmsrole' || $value === 'project') {
+            } else if ($value === 'email' || $value === 'states' || $value === 'district' || $value === 'subdistrict' || $value === 'village' || $value === 'employeeid' || $value === 'username' || $value === 'users' || $value === 'hrmsrole' || $value === 'roles' || $value === 'project') {
                 $filter = 'users';
             } else if ($value === 'organizations' || $value === 'departments' /*|| $value === 'subdepartment' || $value === 'department4level' || $value === 'department5level'*/) {
                 $filter = 'costcenter';
@@ -54,8 +54,6 @@ class filters_form extends moodleform {
                 $filter = 'request';
             } else if ($value === 'evaluation_type') {
                 $filter = 'evaluation';
-            } else if ($value === 'roles') {
-                $filter = 'groups';
             } else if ($value === 'hierarchy_fields') {
                 require_once($CFG->dirroot . '/local/costcenter/lib.php');
                 local_costcenter_set_costcenter_path($this->_customdata, $prefix = 'filter');

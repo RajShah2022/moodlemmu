@@ -94,7 +94,7 @@ function get_filterslist() {
 	global $CFG, $PAGE,$USER;
 
 	$filterlist = array(/*'organizations', 'departments',
-            'subdepartment', 'department4level','department5level',*/'hierarchy_fields','idnumber', 'email','users','groups', 'roles');
+            'subdepartment', 'department4level','department5level',*/'hierarchy_fields', 'idnumber', 'email', 'users', 'roles');
 
 	/*if(!is_siteadmin()) {
 

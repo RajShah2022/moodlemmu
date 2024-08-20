@@ -978,65 +978,7 @@ function groups_filter($mform,$query='',$searchanywhere=false, $page=0, $perpage
     $mform->setType('groups', PARAM_RAW);
 }
 
-/**
- * [role_filter form element function]
- * @param  [form] $mform [filter form]
- * @return 
- */
-function roles_filter($mform, $query='',$searchanywhere=false, $page=0, $perpage=25){
-    global $DB, $USER;
-    $systemcontext =  (new \local_groups\lib\accesslib())::get_module_context();
-    // Get the category context from the local_users access library.
-    $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
 
-    $roleslist = array();
-    $data = data_submitted();
-    $costcenterpathconcatsql = (new \local_groups\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='open_path');
-    $roleslist_sql = "SELECT r.id, r.name as fullname FROM {role} r 
-    JOIN {role_context_levels} rcl ON (rcl.contextlevel = 40 AND r.id = rcl.roleid)  
-    WHERE r.name != '' AND (r.archetype != 'manager' ";
-
-    // Adjust query conditions based on context depth.
-    if ($categorycontext->depth == 1) {
-        $roleslist_sql .= " OR r.shortname LIKE 'administrator' ";
-    }
-    if ($categorycontext->depth == 2 || is_siteadmin()) {
-        $roleslist_sql .= " OR r.shortname LIKE 'hod' ";
-    }
-
-    if(!empty($query)) { 
-        if ($searchanywhere) {
-            $roleslist_sql .= " AND r.name LIKE '%$query%' ";
-        } else {
-            $roleslist_sql .= " AND r.name LIKE '$query%' ";
-        }
-    }
-    
-     // Close the SQL query.
-    $roleslist_sql .= ")";
-    // $rolesparam['contextlevel'] = CONTEXT_COURSECAT;
-
-    if(isset($data->roles) && !empty(($data->roles))){
-        list($roles_sql, $rolesparam) = $DB->get_in_or_equal($data->roles, SQL_PARAMS_NAMED);
-        $roleslist_sql.=" AND r.id $roles_sql ";
-    }
-    if(!empty($query) || empty($mform)){ 
-        $roleslist = $DB->get_records_sql($roleslist_sql, $rolesparam, $page, $perpage);
-        return $roleslist;
-    }
-    if((isset($data->roles)&&!empty($data->roles))){ 
-        $roleslist = $DB->get_records_sql_menu($roleslist_sql, $rolesparam, $page, $perpage);
-    }
-    $options = array(
-        'ajax' => 'local_courses/form-options-selector',
-        'multiple' => true,
-        'data-action' => 'roles',
-        'data-options' => json_encode(array('id' => 0)),
-        'placeholder' => get_string('roles', 'local_groups')
-     );
-    $select = $mform->addElement('autocomplete', 'roles', '', $roleslist, $options);
-    $mform->setType('roles', PARAM_RAW);
-}
 /*
 * Author Rizwana
 * Displays a node in left side menu
@@ -1179,8 +1121,8 @@ function local_groups_quicklink_node() {
     if (is_siteadmin() || has_capability('moodle/cohort:view', $categorycontext)) {
         $sql = "SELECT count(c.id) FROM {cohort} c, {local_groups} g WHERE g.cohortid = c.id ";
         $visiblesql = " AND c.visible = :visible ";
-        $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'g.open_path', $orgid);
-
+        $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'open_path');
+        $sql .=" $costcenterpathconcatsql";
         $params = array();
 
         $activeparams = array();
