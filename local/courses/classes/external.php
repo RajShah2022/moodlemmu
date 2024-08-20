@@ -523,12 +523,10 @@ class local_courses_external extends external_api {
             $return = array();
             if ($action === 'categories' || $action === 'elearning') {
                 $filter = 'courses';
-            } else if ($action === 'email' || $action === 'employeeid' || $action === 'username' || $action === 'users') {
+            } else if ($action === 'email' || $action === 'employeeid' || $action === 'username' || $action === 'users' || $action === 'roles') {
                 $filter = 'users';
             } else if ($action === 'organizations' || $action === 'departments' || $action === 'subdepartment' || $action === 'department4level' || $action === 'department5level') {
                 $filter = 'costcenter';
-            } else if ($action === 'roles') {
-                $filter = 'groups';
             } else {
                 $filter = $action;
             }
