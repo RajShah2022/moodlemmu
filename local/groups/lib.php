@@ -1121,8 +1121,8 @@ function local_groups_quicklink_node() {
     if (is_siteadmin() || has_capability('moodle/cohort:view', $categorycontext)) {
         $sql = "SELECT count(c.id) FROM {cohort} c, {local_groups} g WHERE g.cohortid = c.id ";
         $visiblesql = " AND c.visible = :visible ";
-        $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'g.open_path', $orgid);
-
+        $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'open_path');
+        $sql .=" $costcenterpathconcatsql";
         $params = array();
 
         $activeparams = array();
