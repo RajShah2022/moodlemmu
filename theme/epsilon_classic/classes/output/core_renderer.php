@@ -1335,16 +1335,16 @@ class core_renderer extends \core_renderer {
 
         if (is_array($roles) && (count($roles) > 0)) {
 
-            $switchrole = new stdClass(); /*Role for the Learner i.e user role */
-            $switchrole->itemtype = 'link';
-            $learner_record_sql = "SELECT id, name, shortname
-                                    FROM {role}
-                                    WHERE shortname = 'employee' AND archetype = 'student' ";
-            $learnerroleid = $DB->get_record_sql($learner_record_sql);
-            if (!empty($USER->access['rsw'])) {
-                $USER->access['rsw']['/1'] = $learnerroleid->id;
-            }
-            $rolename = get_string('employee', 'theme_epsilon_classic');
+            // $switchrole = new stdClass(); /*Role for the Learner i.e user role */
+            // $switchrole->itemtype = 'link';
+            // $learner_record_sql = "SELECT id, name, shortname
+            //                         FROM {role}
+            //                         WHERE shortname = 'employee' AND archetype = 'student' ";
+            // $learnerroleid = $DB->get_record_sql($learner_record_sql);
+            // if (!empty($USER->access['rsw'])) {
+            //     $USER->access['rsw']['/1'] = $learnerroleid->id;
+            // }
+            // $rolename = get_string('employee', 'theme_epsilon_classic');
 
             $rolesarray = [];
             foreach ($roles as $r) {
