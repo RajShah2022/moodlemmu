@@ -579,6 +579,15 @@ class syncfunctionality
             $this->errormessage = get_string('columnsarragement_error', 'local_users', $excel);
             $this->errorcount++;
         }
+        if($excel->role != 'administrator' && ($excel->school_code == 0 || !array_key_exists('school_code', (array)$excel) || empty($excel->school_code))) {
+            $strings = new stdClass;
+            $strings->line = $this->excel_line_number;
+            $strings->role = $excel->role;
+            echo '<div class="local_users_sync_error">'.get_string('schoolmustselectupload','local_users', $strings).'';
+            $this->errors[] = get_string('schoolmustselectupload','local_users', $strings);
+            $this->mfields[] = $excel->school_code;
+            $this->errorcount++;
+        }
     }
 
     public function prefixvalidations($excel)

@@ -334,8 +334,8 @@ if ($course) {
   $content.= '<button type="submit" class="custom_btn btn move btn-default" disabled="disabled" title="Add Selected Users" name="submit_value" value="Add Selected Users" id="user_assign_all" />
   ' . get_string('add_selected_users', 'local_courses') . '
   </button>';
-  $content.= '<label for="roleid"> '.get_string('assignrole', 'enrol_manual').'</label>';
-  $content.=    html_writer::select($roles, 'roleid', $roleid, false, array('class'=>'enrolselect'));
+  // $content.= '<label for="roleid"> '.get_string('assignrole', 'enrol_manual').'</label>';
+  // $content.=    html_writer::select($roles, 'roleid', $roleid, false, array('class'=>'enrolselect'));
   
   $content.= '</div>
   <div class="box1 col-md-5 col-12 pull-left">
