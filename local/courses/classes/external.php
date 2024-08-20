@@ -1310,30 +1310,30 @@ class local_courses_external extends external_api {
         }
 
         // If the admin deselects a group, remove all related records.
-        if (is_siteadmin() || api::is_administrator()) {
-            // Fetch all group IDs that are not in the selected groups.
-            $groupids = array_keys($groupDifficultyLevels);
-            $unselectedGroups = array_diff($groupids, $selectedGroups);
+        // if (is_siteadmin() || api::is_administrator()) {
+        //     // Fetch all group IDs that are not in the selected groups.
+        //     $groupids = array_keys($groupDifficultyLevels);
+        //     $unselectedGroups = array_diff($groupids, $selectedGroups);
 
-            foreach ($unselectedGroups as $groupId) {
-                // Remove records from ENROLLMENT_REQUESTS_TABLE for unselected groups.
-                $DB->delete_records('local_request_records', [
-                    'componentid' => $groupId,
-                    'courseid' => $courseid
-                ]);
+        //     foreach ($unselectedGroups as $groupId) {
+        //         // Remove records from ENROLLMENT_REQUESTS_TABLE for unselected groups.
+        //         $DB->delete_records('local_request_records', [
+        //             'componentid' => $groupId,
+        //             'courseid' => $courseid
+        //         ]);
 
-                // Also remove any related cohort enrollments.
-                $DB->delete_records('enrol', [
-                    'courseid' => $courseid,
-                    'enrol' => 'cohort',
-                    'customint1' => $groupId
-                ]);
+        //         // Also remove any related cohort enrollments.
+        //         $DB->delete_records('enrol', [
+        //             'courseid' => $courseid,
+        //             'enrol' => 'cohort',
+        //             'customint1' => $groupId
+        //         ]);
 
-                // If there are other cleanup operations for unenrolling groups, call them here.
-                api::unenrollgroups($groupId, $courseid);
-                api::remove_hod_from_group($groupId);
-            }
-        }
+        //         // If there are other cleanup operations for unenrolling groups, call them here.
+        //         api::unenrollgroups($groupId, $courseid);
+        //         api::remove_hod_from_group($groupId);
+        //     }
+        // }
 
         return true;
     }
