@@ -32,7 +32,9 @@ if (!(has_capability('local/users:manage', $categorycontext) && has_capability('
 }
 if ($format) {
     $fields = array(
-        'company_code' => 'company_code',
+        'role' => 'role',
+        'organization_code' => 'organization_code',
+        'school_code' => 'school_code',
         'username' => 'username',
         'password' => 'password',
         'employee_code' => 'employee_code',
@@ -41,8 +43,7 @@ if ($format) {
         'last_name' => 'last_name',
         'gender' => 'gender',
         'email' => 'email',
-        'role' => 'role',
-        'school_code' => 'school_code',
+        
         // 'department_code' => 'department_code',
         //'subdepartment_code' => 'subdepartment_code',
         'reportingmanager_empid' => 'reportingmanager_empid',

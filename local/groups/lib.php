@@ -1170,3 +1170,36 @@ function local_groups_quicklink_node() {
     }
     return array('2' => $content);
 }
+/**
+ * costcenterwise_groups_datacount
+ *
+ * @param  mixed $costcenter
+ * @param  mixed $department
+ * @param  mixed $subdepartment
+ * @param  mixed $l4department
+ * @param  mixed $l5department
+ * @return array
+ */
+function costcenterwise_groups_datacount($costcenter, $department = false, $subdepartment = false, $l4department = false, $l5department = false) {
+    global $USER, $DB, $CFG;
+    $params = array();
+    $params['costcenterpath'] = '%/' . $costcenter . '/%';
+    $countgroupssql = "SELECT count(id) FROM {local_groups} WHERE concat('/',open_path,'/') LIKE :costcenterpath ";
+
+    if ($l5department) {
+        $countgroupssql .= " AND concat('/',open_path,'/') LIKE :l5departmentpath ";
+        $params['l5departmentpath'] = '%/' . $l5department . '/%';
+    } else if ($l4department) {
+        $countgroupssql .= " AND concat('/',open_path,'/') LIKE :l4departmentpath ";
+        $params['l4departmentpath'] = '%/' . $l4department . '/%';
+    } else  if ($subdepartment) {
+        $countgroupssql .= " AND concat('/',open_path,'/') LIKE :subdepartmentpath ";
+        $params['subdepartmentpath'] = '%/' . $subdepartment . '/%';
+    } else  if ($department) {
+        $countgroupssql .= "  AND concat('/',open_path,'/') LIKE :departmentpath  ";
+        $params['departmentpath'] = '%/' . $department . '/%';
+    }
+
+    $countgroups = $DB->count_records_sql($countgroupssql, $params);
+    return ['datacount' => $countgroups];
+}

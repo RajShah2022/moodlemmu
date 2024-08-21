@@ -57,7 +57,7 @@ $PAGE->navbar->add(get_string('uploadusers', 'local_users'));
 $returnurl = new moodle_url('/local/users/index.php');
 
 $STD_FIELDS = array(
-    'company_code' => 'company_code',
+    'organization_code' => 'organization_code',
     'username' => 'username',
     'password' => 'password',
     'employee_code' => 'employee_code',
