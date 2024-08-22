@@ -472,6 +472,7 @@ class api {
             if ($section->section > 0) {
                 $sectiondata = new stdClass();
                 $sectiondata->id = $section->id;
+                $sectiondata->section = $section->section;
 
                 // Initialize the availability conditions
                 $allConditions = [];
@@ -518,9 +519,20 @@ class api {
                     $sectiondata->availability = null;
                     $sectiondata->visible = 0;
                 }
-
                 // Update section with new availability and visibility settings
                 course_update_section($course, $section, $sectiondata);
+
+                // Retrieve the list of modules (activities) in this section
+                $modules = !empty($section->sequence) ? explode(',', $section->sequence) : array();
+                if (!empty($modules)) {
+                    // Update each module's visibility to match the section's visibility
+                    foreach ($modules as $moduleid) {
+                        $DB->set_field('course_modules', 'visible', $sectiondata->visible, ['id' => $moduleid]);
+                    }
+                }
+
+                // set_section_visible($courseid, $sectiondata->section, $sectiondata->visible);
+
             }
         }
     }
