@@ -33,7 +33,7 @@ if (!(has_capability('local/users:manage', $categorycontext) && has_capability('
 if ($format) {
     $fields = array(
         'role' => 'role',
-        'organization_code' => 'organization_code',
+        // 'organization_code' => 'organization_code',
         'school_code' => 'school_code',
         'username' => 'username',
         'password' => 'password',

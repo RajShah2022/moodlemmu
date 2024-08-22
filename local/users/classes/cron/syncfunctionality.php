@@ -34,6 +34,7 @@ require_once($CFG->dirroot . '/admin/tool/uploaduser/locallib.php');
 
 use html_writer;
 use stdClass;
+use local_courses\api;
 
 define('MANUAL_ENROLL', 1);
 define('LDAP_ENROLL', 2);
@@ -79,15 +80,15 @@ class syncfunctionality
         }
         
         $mandatory_fields = [
+            'role',
             'first_name',
             'last_name',
             'username',
-            'organization_code',
+            // 'organization_code',
             'employee_code',
             'employee_status',
             'gender',
             'email',
-            'role',
         ];
         $this->mandatory_field_count = 0;
         while ($line = $cir->next()) {
@@ -182,15 +183,17 @@ class syncfunctionality
             $territoryid = !empty($territoryid) ? array_unique($territoryid): $territoryid;
 
             // To hold costcenterid.
-            if (($this->orgcount == 0)) {
-                $this->costcenterid = $this->get_org_hierarchyid($user->organization_code, $parent = 0, $orgid);
-            }else{
-                 $this->costcenterid =0;
-            }
+            // if (($this->orgcount == 0)) {
+                // $this->costcenterid = $this->get_org_hierarchyid($user->organization_code, $parent = 0, $orgid);
+                $this->costcenterid = 1;
+            // }else{
+                //  $this->costcenterid =0;
+            // }
 
             // To hold countryid.
             if (!empty($user->school_code) && ($this->orgcount == 0)) {
-                $school_code = $user->organization_code . "_" . $user->school_code;
+                // $school_code = $user->organization_code . "_" . $user->school_code;
+                $school_code = 'MDL' . "_" . $user->school_code;
                 $this->countryid = $this->get_country_hierarchyid($school_code, $parent = $this->costcenterid, $countryid, $user);
             }else{
                  $this->countryid =0;
@@ -351,7 +354,8 @@ class syncfunctionality
     {
         global $DB, $USER;
         $strings = new stdClass;
-        $strings->org = $excel->organization_code;
+        // $strings->org = $excel->organization_code;
+        $strings->org = 'MDL';
         $strings->dept = $excel->school_code;
         $strings->subdept = $excel->department_code;
         $strings->learner_id = $excel->employee_code;
@@ -360,7 +364,8 @@ class syncfunctionality
         $orgerror = 0;
         $categorylib = new \local_courses\catslib();
         if (!is_siteadmin()) {
-            $orgcostcenterid = $DB->get_field('local_costcenter', 'id', array('shortname' => $excel->organization_code));
+            // $orgcostcenterid = $DB->get_field('local_costcenter', 'id', array('shortname' => $excel->organization_code));
+            $orgcostcenterid = $DB->get_field('local_costcenter', 'id', array('shortname' => 'MDL'));
             if ($orgcostcenterid !== $orgid) {
                 echo '<div class=local_users_sync_error>' . get_string('orgcheckwithdhoh', 'local_users', $strings) . '</div>';
                 $this->errors[] = get_string('orgcheckwithdhoh', 'local_users', $strings);
@@ -371,7 +376,8 @@ class syncfunctionality
         }
         if ($orgerror == 0) {
             if (isset($excel->school_code) && empty($excel->department_code)) {
-                $orgcostcenterid = $DB->get_field('local_costcenter', 'id', array('shortname' => $excel->organization_code));
+                // $orgcostcenterid = $DB->get_field('local_costcenter', 'id', array('shortname' => $excel->organization_code));
+                $orgcostcenterid = $DB->get_field('local_costcenter', 'id', array('shortname' => 'MDL'));
                 // $categories = $categorylib->get_categories($orgcostcenterid);
                 // $countrycategory = $DB->get_field('local_costcenter', 'category', array('shortname' => $excel->country));
                 $countrycostcenterid = $DB->get_field('local_costcenter', 'id', array('shortname' => $excel->school_code));
@@ -475,7 +481,8 @@ class syncfunctionality
 
         $strings->identifier = 'school code';
         $strings->orgid = $user->school_code;
-        $strings->parentid = $user->organization_code;
+        // $strings->parentid = $user->organization_code;
+        $strings->parentid = 'MDL';
         $strings->line = $this->excel_line_number;
 
         if ($datal) {
@@ -878,7 +885,8 @@ class syncfunctionality
                     $where .= " AND ls.code = :state ";
                     $params[$key] = $user->state;
                     $strings->state = $user->state;
-                    $strings->parentid = $user->organization_code;
+                    // $strings->parentid = $user->organization_code;
+                    $strings->parentid = 'MDL';
                 }
                 if ($key == 'district') {
                     $select .= " ls.id as state, ld.id as district";
@@ -950,7 +958,12 @@ class syncfunctionality
         $user->middlename = $excel->middle_name ? $excel->middle_name : ' ';
         $user->phone1 = $excel->mobileno ? $excel->mobileno : '';
         $user->email = strtolower($excel->email);
-        $user->country = $excel->school_code ? $excel->school_code : 'IN';
+        // if(api::is_hod) {
+        //     $user->country = $excel->school_code ? $excel->school_code : 'IN';
+        // } else {
+            $user->country = $excel->school_code ? $excel->school_code : 'IN';
+        // }
+        
         $user->lang = $excel->language ? $excel->language : 'en';
         $user->open_group = $excel->discipline ? $excel->discipline : ' ';
         $user->learner_status = $excel->employee_status;
