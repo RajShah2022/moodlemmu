@@ -1328,7 +1328,7 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
                 if (!empty($autoenroll_plugin_exist)) {
                     $autoplugin = enrol_get_plugin('auto');
                     if (has_capability('local/courses:enrol', $maincheckcontext) && has_capability('local/courses:manage', $maincheckcontext)) {
-                        $courseslist[$count]["auto_enrol"] = $CFG->wwwroot . "/local/courses/courseautoenrol.php?id=" . $course->id;
+                        // $courseslist[$count]["auto_enrol"] = $CFG->wwwroot . "/local/courses/courseautoenrol.php?id=" . $course->id;
                     }
                 }
             }
@@ -1336,12 +1336,12 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
             if ($departmentcount > 1 && !(is_siteadmin())) {
                 $courseslist[$count]["editcourse"] = '';
                 $courseslist[$count]["update_status"] = '';
-                $courseslist[$count]["auto_enrol"] = '';
+                // $courseslist[$count]["auto_enrol"] = '';
             }
-            $enrolinstance = $DB->get_record('enrol', array('courseid' => $course->id, 'enrol' => 'auto'));
-            if ($enrolinstance) {
-                $courseslist[$count]["auto_enrol_active"] = $enrolinstance->status == 0 ? true : false;
-            }
+            // $enrolinstance = $DB->get_record('enrol', array('courseid' => $course->id, 'enrol' => 'auto'));
+            // if ($enrolinstance) {
+            //     $courseslist[$count]["auto_enrol_active"] = $enrolinstance->status == 0 ? true : false;
+            // }
             if (has_capability('local/courses:delete', $context) && has_capability('local/courses:manage', $context) && has_capability('moodle/course:delete', $context)) {
                 if ($options->viewType == 'table') {
                     $deleteactionshtml = html_writer::link('javascript:void(0)', $OUTPUT->pix_icon('t/delete', get_string('delete'), 'moodle', array('')), array('class' => "dropdown-item delete_icon", 'title' => get_string('delete'), 'id' => "courses_delete_confirm_" . $course->id, 'onclick' => '(function(e){ require(\'local_courses/courseAjaxform\').deleteConfirm({action:\'deletecourse\' , id: ' . $course->id . ', name:"' . $coursename . '" }) })(event)'));
