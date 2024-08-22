@@ -82,7 +82,7 @@ class syncfunctionality
             'first_name',
             'last_name',
             'username',
-            'company_code',
+            'organization_code',
             'employee_code',
             'employee_status',
             'gender',
@@ -183,34 +183,34 @@ class syncfunctionality
 
             // To hold costcenterid.
             if (($this->orgcount == 0)) {
-                $this->costcenterid = $this->get_org_hierarchyid($user->company_code, $parent = 0, $orgid);
+                $this->costcenterid = $this->get_org_hierarchyid($user->organization_code, $parent = 0, $orgid);
             }else{
                  $this->costcenterid =0;
             }
 
             // To hold countryid.
             if (!empty($user->school_code) && ($this->orgcount == 0)) {
-                $school_code = $user->company_code . "_" . $user->school_code;
+                $school_code = $user->organization_code . "_" . $user->school_code;
                 $this->countryid = $this->get_country_hierarchyid($school_code, $parent = $this->costcenterid, $countryid, $user);
             }else{
                  $this->countryid =0;
             }
 
             /*if (!empty($user->department_code) && ($this->orgcount == 0)) {
-                $department_code = $user->company_code . "_" . $user->school_code . "_" . $user->department_code;
+                $department_code = $user->organization_code . "_" . $user->school_code . "_" . $user->department_code;
                 $this->level3_bussinessid = $this->get_commercial_unitid($department_code, $this->countryid, $user, $buid);
             }else{
                  $this->level3_bussinessid =0;
             }
 
             if (!empty($user->subdepartment_code) && ($this->orgcount == 0)) {
-                $subdepartment_code = $user->company_code . "_" . $user->school_code . "_" . $user->department_code . "_" . $user->subdepartment_code;
+                $subdepartment_code = $user->organization_code . "_" . $user->school_code . "_" . $user->department_code . "_" . $user->subdepartment_code;
                 $this->level4_commercialid = $this->get_commercial_areaid($subdepartment_code, $this->level3_bussinessid, $user, $cuid);
             }else{
                  $this->level4_commercialid =0;
             }*/
             // if ($user->territory_code && ($this->orgcount == 0)) {
-            //     $territory_code = $user->company_code."_".$user->school_code."_".$user->department_code."_".$user->subdepartment_code."_".$user->territory_code;
+            //     $territory_code = $user->organization_code."_".$user->school_code."_".$user->department_code."_".$user->subdepartment_code."_".$user->territory_code;
             //     $this->level5_territoryid = $this->get_territoryid($territory_code, $this->level4_commercialid, $user, $territoryid);
             // }
             // if ($this->costcenterid && ($this->orgcount == 0)) {
@@ -222,7 +222,7 @@ class syncfunctionality
             //         $this->open_village = $profilefields->village;
             //     }
             // }
-            // if (!empty($user->company_code)) {
+            // if (!empty($user->organization_code)) {
 
             //     $this->categoryvalidations($user);
             // }
@@ -351,7 +351,7 @@ class syncfunctionality
     {
         global $DB, $USER;
         $strings = new stdClass;
-        $strings->org = $excel->company_code;
+        $strings->org = $excel->organization_code;
         $strings->dept = $excel->school_code;
         $strings->subdept = $excel->department_code;
         $strings->learner_id = $excel->employee_code;
@@ -360,7 +360,7 @@ class syncfunctionality
         $orgerror = 0;
         $categorylib = new \local_courses\catslib();
         if (!is_siteadmin()) {
-            $orgcostcenterid = $DB->get_field('local_costcenter', 'id', array('shortname' => $excel->company_code));
+            $orgcostcenterid = $DB->get_field('local_costcenter', 'id', array('shortname' => $excel->organization_code));
             if ($orgcostcenterid !== $orgid) {
                 echo '<div class=local_users_sync_error>' . get_string('orgcheckwithdhoh', 'local_users', $strings) . '</div>';
                 $this->errors[] = get_string('orgcheckwithdhoh', 'local_users', $strings);
@@ -371,7 +371,7 @@ class syncfunctionality
         }
         if ($orgerror == 0) {
             if (isset($excel->school_code) && empty($excel->department_code)) {
-                $orgcostcenterid = $DB->get_field('local_costcenter', 'id', array('shortname' => $excel->company_code));
+                $orgcostcenterid = $DB->get_field('local_costcenter', 'id', array('shortname' => $excel->organization_code));
                 // $categories = $categorylib->get_categories($orgcostcenterid);
                 // $countrycategory = $DB->get_field('local_costcenter', 'category', array('shortname' => $excel->country));
                 $countrycostcenterid = $DB->get_field('local_costcenter', 'id', array('shortname' => $excel->school_code));
@@ -425,10 +425,10 @@ class syncfunctionality
         $datal = $datalist[$fieldvalue];
         $strings = new stdClass;
         if ($parent == 0) {
-            $strings->identifier = 'company';
+            $strings->identifier = 'organization';
             $strings->orgid = $fieldvalue;
         } else {
-            $strings->identifier = 'bussiness unit';
+            $strings->identifier = 'school';
             $strings->orgid = $fieldvalue;
         }
         $strings->line = $this->excel_line_number;
@@ -475,7 +475,7 @@ class syncfunctionality
 
         $strings->identifier = 'school code';
         $strings->orgid = $user->school_code;
-        $strings->parentid = $user->company_code;
+        $strings->parentid = $user->organization_code;
         $strings->line = $this->excel_line_number;
 
         if ($datal) {
@@ -878,7 +878,7 @@ class syncfunctionality
                     $where .= " AND ls.code = :state ";
                     $params[$key] = $user->state;
                     $strings->state = $user->state;
-                    $strings->parentid = $user->company_code;
+                    $strings->parentid = $user->organization_code;
                 }
                 if ($key == 'district') {
                     $select .= " ls.id as state, ld.id as district";

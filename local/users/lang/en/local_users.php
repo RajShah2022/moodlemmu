@@ -109,7 +109,7 @@ $string['serviceid'] = 'Employee Code';
 $string['help_1'] = '<div class="helpmanual_table"><table class="generaltable" border="1">
 <tr class="field_type_head"><td class="empty_column"></td><td class="field_type font-weight-bold" style="text-align:left;border-left:1px solid white;padding-left:50px;">Mandatory Fields</td><tr>
 <th>Field</th><th>Restriction</th>
-<tr><td>company_code</td><td>Provide the Organization code</td></tr>
+<tr><td>organization_code</td><td>Provide the Organization code</td></tr>
 <tr><td>username</td><td>Enter the username, avoid additional spaces.</td></tr>
 <tr><td>employee_code</td><td>Enter the employee code, avoid additional spaces.</td></tr>
 <tr><td>firstname</td><td>Enter the first name.</td></tr>

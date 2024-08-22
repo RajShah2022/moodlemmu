@@ -572,7 +572,7 @@ function local_plugins_datacount($costcenterid, $departmentid = false, $subdepar
     $deparray = array();
     $deparray['datacount'] = 0;
 
-    $localplugins = ['classroom', 'learningplan', 'program', 'onlineexams', 'courses', 'users'];
+    $localplugins = ['classroom', 'learningplan', 'program', 'onlineexams', 'courses', 'users', 'groups'];
     foreach ($local_pluginlist as $key => $local_pluginname) {
         if (in_array($key, $localplugins)) {
             if (file_exists($CFG->dirroot . '/local/' . $key . '/lib.php')) {

@@ -212,7 +212,8 @@ $string['audience_commercial'] = '<p> <b>Region :</b> {$a}</p>';
 $string['help_1'] = '<div class="helpmanual_table"><table class="generaltable" border="1">
 <tr class="field_type_head"><td class="empty_column"></td><td class="field_type font-weight-bold" style="text-align:left;border-left:1px solid white;padding-left:50px;">Mandatory Fields</td><tr>
 <th>Field</th><th>Restriction</th>
-<tr><td>company_code</td><td>Provide the company code</td></tr>
+<tr><td>organization_code</td><td>Provide the organization code</td></tr>
+<tr><td>school_code</td><td>Provide the School code</td></tr>
 <tr><td>username</td><td>Enter the username, avoid additional spaces.</td></tr>
 <tr><td>employee_code</td><td>Enter the employee code, avoid additional spaces.</td></tr>
 <tr><td>firstname</td><td>Enter the first name.</td></tr>
@@ -220,11 +221,10 @@ $string['help_1'] = '<div class="helpmanual_table"><table class="generaltable" b
 <tr><td>email</td><td>Enter valid email.</td></tr>
 <tr><td>employee_status</td><td>Enter employee status as either \'Active\' or \'Inactive\', avoid additional spaces.</td></tr>
 <tr><td>gender</td><td>Enter gender as either \'male\',\'female\' or \'other\', avoid additional spaces.</td></tr>
-<tr><td>role</td><td>Enter Role (administrator, hod, editingteacher, student), avoid additional spaces.</td></tr>';
+<tr><td>role</td><td>Enter Role (administrator, hod, teacher, employee), avoid additional spaces.</td></tr>';
 $string['help_2'] = '</td></tr>
 <tr class="field_type_head"><td class="empty_column"></td><td class="field_type font-weight-bold" style="text-align:left;border-left:1px solid white;"><b  class="pad-md-l-50 hlep2-oh">Non-Mandatory Fields</b></td><tr>
 <th>Field</th><th>Restriction</th>
-<tr><td>school_code</td><td>Provide the School code</td></tr>
 <tr><td>password</td><td>Provide the password,Password must be at least 8 characters long,Password must have at least 1 digit(s),Password must have at least 1 upper case letter(s),
 Password must have at least 1 non-alphanumeric character(s) such as as *, -, or #..</td></tr>
 <tr><td>prefix</td><td>Enter prfix as either \'mr\', \'mrs\' or \'ms\', avoid additional spaces.</td></tr>
@@ -240,24 +240,23 @@ Password must have at least 1 non-alphanumeric character(s) such as as *, -, or 
 $string['help_1_orghead'] = '<table class="generaltable" border="1">
 <tr><td></td><td style="text-align:left;border-left:1px solid white;"><b class="pad-md-l-50 hlep1-oh">Mandatory Fields</b></td><tr>
 <th>Field</th><th>Restriction</th>
-<tr><td>department_code</td><td>Provide the School</td></tr>
+<tr><td>school_code</td><td>Provide the School</td></tr>
 <tr><td>username</td><td>Enter the username, avoid additional spaces.</td></tr>
 <tr><td>learner_id</td><td>Enter the employee code, avoid additional spaces.</td></tr>
 <tr><td>firstname</td><td>Enter the first name.</td></tr>
 <tr><td>lastname</td><td>Enter the last name.</td></tr>
 <tr><td>email</td><td>Enter valid email.</td></tr>
-<tr><td>learner_status</td><td>Enter Learner Status as either \'Active\' or \'Inactive\', avoid additional spaces.</td></tr>
+<tr><td>employee_status</td><td>Enter employee Status as either \'Active\' or \'Inactive\', avoid additional spaces.</td></tr>
 ';
 
 $string['help_1_dephead'] = '<table class="generaltable" border="1">
 <tr><td></td><td style="text-align:left;border-left:1px solid white;"><b class="pad-md-l-50 hlep1-dh">Mandatory Fields</b></td><tr>
 <th>Field</th><th>Restriction</th>
-<tr><td>company_code</td><td>Provide the School</td></tr>
 <tr><td>username</td><td>Enter the username, avoid additional spaces.</td></tr>
 <tr><td>learner_id</td><td>Enter the employee code, avoid additional spaces.</td></tr>
 <tr><td>firstname</td><td>Enter the first name.</td></tr>
 <tr><td>lastname</td><td>Enter the last name.</td></tr>
 <tr><td>email</td><td>Enter valid email.</td></tr>
-<tr><td>learner_status</td><td>Enter Learner Status as either \'Active\' or \'Inactive\', avoid additional spaces.</td></tr>
+<tr><td>employee_status</td><td>Enter employee Status as either \'Active\' or \'Inactive\', avoid additional spaces.</td></tr>
 ';
 $string['dashboard'] = 'Dashboard';
