@@ -187,18 +187,18 @@ class renderer extends mainbase  {
             //------Adding Custom Search Filters --------//
             $output.= "<table class='email-filter-table'>
                  <tr>";
-                 if(is_siteadmin() || has_capability('local/notifications:manage', (new \local_notifications\lib\accesslib())::get_module_context())){
-            $output.= "<td class='d-xs-block'>
-              <select class='custom_noti_filter custom-select form-control-danger' id='1'>
-                       <option value=''>".get_string('selectopen_costcenterid', 'local_costcenter')."</option>";
-                      foreach ($selorgdetails as $key => $value) {
-                        # code...
-                          $output.= "<option value=".$value->id.">".$value->fullname."</option>";
-                      }
+            //      if(is_siteadmin() || has_capability('local/notifications:manage', (new \local_notifications\lib\accesslib())::get_module_context())){
+            // $output.= "<td class='d-xs-block'>
+            //   <select class='custom_noti_filter custom-select form-control-danger' id='1'>
+            //            <option value=''>".get_string('selectopen_costcenterid', 'local_costcenter')."</option>";
+            //           foreach ($selorgdetails as $key => $value) {
+            //             # code...
+            //               $output.= "<option value=".$value->id.">".$value->fullname."</option>";
+            //           }
                    
-                     $output.= "</select>
-                   </td>";
-                 }
+            //          $output.= "</select>
+            //        </td>";
+            //      }
               $output .= "<td class='d-xs-block'>
                      <select class='custom_noti_filter custom-select form-control-danger' id='2' style='margin-left: 30px;'>
                        <option value=''>".get_string('select_status', 'local_notifications')."</option>

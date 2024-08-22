@@ -94,14 +94,14 @@ $show = '';
     if($mform->is_cancelled()){
         redirect('index.php');
     }
-    echo '<a class="btn-link btn-sm" title="'.get_string('filter').'" href="javascript:void(0);" data-toggle="collapse" data-target="#local_notifications-filter_collapse" aria-expanded="false" aria-controls="local_notifications-filter_collapse">
-        <i class="m-0 fa fa-sliders fa-2x" aria-hidden="true"></i>
-      </a>';
-    echo  '<div class="collapse '.$show.'" id="local_notifications-filter_collapse">
-                <div id="filters_form" class="card card-body p-2">';
-                    $mform->display();
-    echo        '</div>
-            </div>';
+    // echo '<a class="btn-link btn-sm" title="'.get_string('filter').'" href="javascript:void(0);" data-toggle="collapse" data-target="#local_notifications-filter_collapse" aria-expanded="false" aria-controls="local_notifications-filter_collapse">
+    //     <i class="m-0 fa fa-sliders fa-2x" aria-hidden="true"></i>
+    //   </a>';
+    // echo  '<div class="collapse '.$show.'" id="local_notifications-filter_collapse">
+    //             <div id="filters_form" class="card card-body p-2">';
+    //                 $mform->display();
+    // echo        '</div>
+    //         </div>';
 
 
 
