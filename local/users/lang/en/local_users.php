@@ -815,6 +815,7 @@ $string['prefix'] = 'Prefix';
 $string['skilltype'] = 'Skill Type';
 $string['invalidgender'] = 'Invailid gender at line {$a->line}. Enter only male\female\other';
 $string['schoolmustselectupload'] = 'For creating <b>{$a->role}</b> school_code can not empty or 0';
+$string['schoolmustbeall'] = 'For creating <b>{$a->role}</b> school_code should be empty or 0';
 $string['invalidprefix'] = 'Invailid prefix at line {$a->line}. Enter only mr\mrs\ms';
 $string['user_status'] = 'Select Status';
 $string['select_email'] = 'Select Work Email';
@@ -855,6 +856,7 @@ $string['organization_shortname'] = 'Organization Short Name';
 $string['activeregistration'] = 'Registration';
 $string['policystring'] = 'I have read and accept the ';
 $string['termsconditionstring'] = 'I have read and agree to the ';
-$string['rolenotexists'] = '\'{$a->roleshortname}\' Role does not exist at the line of uploaded excelsheet at line number {$a->excel_line_number}';
+$string['rolenotexists'] = '<b>{$a->roleshortname}</b> Role does not exist at the line  {$a->excel_line_number}';
+$string['rolenotexistsornotallowed'] = '<b>{$a->roleshortname}</b> Role does not exist or you are not allowed to create at the line  {$a->excel_line_number}';
 $string['schoolmustselect'] = '{$a} can not be created for \'<b>All</b>\' Schools';
-
+$string['administratornotforanyschool'] = '{$a} can be created only for \'<b>All</b>\' Schools';
