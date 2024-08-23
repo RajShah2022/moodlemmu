@@ -60,7 +60,7 @@ class create_user extends moodleform {
 
         if ($form_status == 0) {
 
-            if ($id == $USER->id) {
+            if ($id == $USER->id || $id > 0) {
                 $mform->addElement('static', 'rolename', get_string('open_role', 'local_users'), getrole($roleid)[$roleid]);
                 $mform->addElement('hidden', 'roleid', $roleid);
                 $mform->setType('roleid', PARAM_INT);
@@ -69,8 +69,12 @@ class create_user extends moodleform {
                 $mform->setType('roleid', PARAM_INT);
                 $mform->addRule('roleid', null, 'required', null, 'client');
             }
-
-            local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(1, 2), true, 'local_costcenter', $categorycontext, $multiple = false);
+            $static = false;
+            if($id > 0 ){
+                $static = true;
+            }
+            // local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(1, 2), true, 'local_users', $categorycontext, $multiple = false, '', '', false, $static = $static);
+            local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(1, 2), true, 'local_users', $categorycontext, $multiple = false);
 
             $count = count((array)$costcenters);
             $mform->addElement('hidden', 'count', $count);
@@ -400,10 +404,17 @@ class create_user extends moodleform {
             if (empty(trim($lastname))) {
                 $errors['lastname'] = get_string('vallastnamerequired', 'local_users');
             }
-            $role = $DB->get_record('role', array('id' => $data['roleid']));
-            if($role->shortname != 'administrator' && $data['open_department'] == 0) {
-                $errors['open_department'] = get_string('schoolmustselect', 'local_users', $role->name);   
-            }
+            // if($id > 0) {
+                $role = $DB->get_record('role', array('id' => $data['roleid']));
+                if($role->shortname != 'administrator' && ($data['open_department'] == 0 || $data['open_department'] == 'All')) {
+                    $errors['open_department'] = get_string('schoolmustselect', 'local_users', $role->name);   
+                } else {
+                    if ($data['open_department'] != 0) {
+                       $errors['open_department'] = get_string('administratornotforanyschool', 'local_users', $role->name);    
+                    }
+                }
+            // }
+            
             // OL72 issue department as mandatory.
             // $department = $data['open_departmentid'];
             // if (!$department) {

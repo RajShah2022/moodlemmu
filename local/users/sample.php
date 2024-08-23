@@ -30,11 +30,21 @@ $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
 if (!(has_capability('local/users:manage', $categorycontext) && has_capability('local/users:create', $categorycontext))) {
     echo print_error('no permission');
 }
+
 if ($format) {
     $fields = array(
-        'role' => 'role',
-        // 'organization_code' => 'organization_code',
-        'school_code' => 'school_code',
+        'role' => 'role'    
+    );
+    
+    if (is_siteadmin() || has_capability('local/costcenter:manage_multiorganizations', $categorycontext)) {
+        // For site admin
+        $fields['organization_code'] = 'organization_code';
+        $fields['school_code'] = 'school_code';
+    } else if (!is_siteadmin() && has_capability('local/costcenter:manage_ownorganization', $categorycontext)) {
+        // For organization head
+        $fields['school_code'] = 'school_code';
+    }
+    $fields += array(
         'username' => 'username',
         'password' => 'password',
         'employee_code' => 'employee_code',

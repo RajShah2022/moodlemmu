@@ -66,7 +66,7 @@ class syncfunctionality
     public function main_hrms_frontendform_method($cir, $filecolumns, $formdata)
     {
         global $DB, $USER, $CFG;
-    
+        $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
         $linenum = 1;
         $this->organizations = $this->get_organizations();
         $corecomponent = new \core_component();
@@ -90,6 +90,14 @@ class syncfunctionality
             'gender',
             'email',
         ];
+        // Handle organization_code or school_code based on capabilities.
+        if (is_siteadmin() || has_capability('local/costcenter:manage_multiorganizations', $categorycontext)) {
+            // For site admin, add organization_code.
+            $mandatory_fields = array_merge(array_slice($mandatory_fields, 0, 3), ['organization_code'], array_slice($mandatory_fields, 3));
+        } else if (!is_siteadmin() && has_capability('local/costcenter:manage_ownorganization', $categorycontext)) {
+            // For administrator, add school_code.
+            $mandatory_fields = array_merge(array_slice($mandatory_fields, 0, 3), ['school_code'], array_slice($mandatory_fields, 3));
+        }
         $this->mandatory_field_count = 0;
         while ($line = $cir->next()) {
             $this->orgcount = 0;
@@ -190,13 +198,30 @@ class syncfunctionality
                 //  $this->costcenterid =0;
             // }
 
+            if (($this->orgcount == 0)) {
+                if(is_siteadmin()) {
+                    if(!empty($user->organization_code)){
+                        $this->costcenterid = $this->get_org_hierarchyid($user->organization_code, $parent = 0, $orgid);
+                    } else {
+                        $this->costcenterid =0;
+                    }
+                    
+                } else {
+                    $this->costcenterid = 1;
+                }   
+            }
             // To hold countryid.
-            if (!empty($user->school_code) && ($this->orgcount == 0)) {
-                // $school_code = $user->organization_code . "_" . $user->school_code;
-                $school_code = 'MDL' . "_" . $user->school_code;
-                $this->countryid = $this->get_country_hierarchyid($school_code, $parent = $this->costcenterid, $countryid, $user);
-            }else{
-                 $this->countryid =0;
+            if(is_siteadmin() || api::is_administrator()) {
+                if (!empty($user->school_code) && ($this->orgcount == 0)) {
+                    // $school_code = $user->organization_code . "_" . $user->school_code;
+                    // $school_code = 'MDL'."_".$user->school_code;
+                    $school_code = $user->school_code;
+                    $this->countryid = $this->get_country_hierarchyid($school_code, $parent = $this->costcenterid, $countryid, $user);
+                }else{
+                     $this->countryid = 0;
+                }    
+            } else {
+                $this->countryid = $DB->get_field('local_costcenter', 'id', array('path' => $path));
             }
 
             /*if (!empty($user->department_code) && ($this->orgcount == 0)) {
@@ -586,7 +611,7 @@ class syncfunctionality
             $this->errormessage = get_string('columnsarragement_error', 'local_users', $excel);
             $this->errorcount++;
         }
-        if($excel->role != 'administrator' && ($excel->school_code == 0 || !array_key_exists('school_code', (array)$excel) || empty($excel->school_code))) {
+        if($excel->role != 'administrator' && ($this->countryid == '0' && empty($this->countryid))) {
             $strings = new stdClass;
             $strings->line = $this->excel_line_number;
             $strings->role = $excel->role;
@@ -594,6 +619,15 @@ class syncfunctionality
             $this->errors[] = get_string('schoolmustselectupload','local_users', $strings);
             $this->mfields[] = $excel->school_code;
             $this->errorcount++;
+        } else if ($excel->role == 'administrator' && ($excel->school_code !== '0' && !empty($excel->school_code))) {
+            $strings = new stdClass;
+            $strings->line = $this->excel_line_number;
+            $strings->role = $excel->role;
+            echo '<div class="local_users_sync_error">'.get_string('schoolmustbeall','local_users', $strings).'';
+            $this->errors[] = get_string('schoolmustbeall','local_users', $strings);
+            $this->mfields[] = $excel->school_code;
+            $this->errorcount++;
+            
         }
     }
 
@@ -988,7 +1022,12 @@ class syncfunctionality
         $user->open_district = $this->open_district;
         $user->open_subdistrict = $this->open_subdistrict;
         $user->open_village = $this->open_village;
-        $user->country = $excel->school_code;
+        if(api::is_hod()) {
+            $user->country = $DB->get_field('local_costcenter', 'fullname', array('path' => $user->open_path));
+        } else {
+            $user->country = $excel->school_code;
+        }
+        // $user->country = $excel->school_code;
         $user->timezone = in_array($excel->timezone, $this->timezones) ? $excel->timezone : $CFG->forcetimezone;
         local_costcenter_get_costcenter_path($user);
         if ($excel->reportingmanager_empid) {
@@ -996,7 +1035,11 @@ class syncfunctionality
             $user->open_supervisorid = $super_user;
         }
         $user->open_hrmsrole = $excel->role;
-        $user->institution = $excel->school_code;
+        if(api::is_hod()) {
+            $user->institution = $DB->get_field('local_costcenter', 'fullname', array('path' => $user->open_path));
+        } else {
+            $user->institution = $excel->school_code;
+        }
         $user->usermodified = $USER->id;
         if (!empty(trim($excel->password))) {
             $user->password = hash_internal_user_password(trim($excel->password));
@@ -1109,9 +1152,19 @@ class syncfunctionality
             $user->open_district = $this->open_district;
             $user->open_subdistrict = $this->open_subdistrict;
             $user->open_village = $this->open_village;
-            $user->country = $excel->school_code;
+            if(api::is_hod()) {
+                $user->country = $DB->get_field('local_costcenter', 'fullname', array('path' => $user->open_path));
+            } else {
+                $user->country = $excel->school_code;
+            }
+            // $user->country = $excel->school_code;
             $user->open_hrmsrole = $excel->role;
-            $user->institution = $excel->school_code;
+            if(api::is_hod()) {
+                $user->institution = $DB->get_field('local_costcenter', 'fullname', array('path' => $user->open_path));
+            } else {
+                $user->institution = $excel->school_code;
+            }
+            // $user->institution = $excel->school_code;
             $user->phone1 = $excel->mobileno ? $excel->mobileno : '';
             $user->open_state = $excel->state_name;
             $user->open_designation = $excel->designation;
@@ -1250,17 +1303,47 @@ class syncfunctionality
 
     public function roleid_validation($excel) {
         global $DB;
+        // Fetch the valid roles based on the provided SQL query.
+        $params = [];
+        $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
+
+        $sql = "SELECT r.shortname
+                  FROM {role} r
+                  JOIN {role_context_levels} rcl ON (rcl.contextlevel = :contextlevel AND r.id = rcl.roleid)
+                 WHERE r.name != '' AND (r.archetype != 'manager' ";
+
+        // Adjust query conditions based on context depth.
+        if ($categorycontext->depth == 1) {
+            $sql .= " OR r.shortname LIKE 'administrator' ";
+        }
+        if ($categorycontext->depth == 2 || is_siteadmin()) {
+            $sql .= " OR r.shortname LIKE 'hod' ";
+        }
+
+        // Close the SQL query.
+        $sql .= ")";
+
+        $params['contextlevel'] = CONTEXT_COURSECAT;
+
+        $valid_roles = $DB->get_records_sql_menu($sql, $params);
         if (array_key_exists('role', (array) $excel)) {
             $excel->role = strtolower($excel->role);
-            $roleexists = $DB->get_field('role', 'id', ['shortname' => $excel->role]);
-            if (!$roleexists) {
+            // Check if the role is valid.
+             if (!array_key_exists($excel->role, $valid_roles)) {
                 $strings = new stdClass();
                 $strings->roleshortname = $excel->role;
                 $strings->excel_line_number = $this->excel_line_number;
-                echo '<div class="local_users_sync_error">'.get_string('rolenotexists', 'local_users', $strings).'</div>';
-                $this->errors[] = get_string('rolenotexists', 'local_users', $strings);
+                
+                if(is_siteadmin()) {
+                    echo '<div class="local_users_sync_error">'.get_string('rolenotexists', 'local_users', $strings).'</div>';
+                    $this->errors[] = get_string('rolenotexists', 'local_users', $strings);
+                } else {
+                    echo '<div class="local_users_sync_error">'.get_string('rolenotexistsornotallowed', 'local_users', $strings).'</div>';
+                    $this->errors[] = get_string('rolenotexistsornotallowed', 'local_users', $strings);
+                }
                 $this->mfields[] = 'Role';
                 $this->errorcount++;
+                return;
             }
         } else {
             $strings = new stdClass();
