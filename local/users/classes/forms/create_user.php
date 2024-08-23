@@ -406,11 +406,12 @@ class create_user extends moodleform {
             }
             // if($id > 0) {
                 $role = $DB->get_record('role', array('id' => $data['roleid']));
-                if($role->shortname != 'administrator' && ($data['open_department'] == 0 || $data['open_department'] == 'All')) {
-                    $errors['open_department'] = get_string('schoolmustselect', 'local_users', $role->name);   
+                if($role->shortname == 'administrator' && $data['open_department'] != 0) {
+                    $errors['open_department'] = get_string('administratornotforanyschool', 'local_users', $role->name);   
+
                 } else {
-                    if ($data['open_department'] != 0) {
-                       $errors['open_department'] = get_string('administratornotforanyschool', 'local_users', $role->name);    
+                    if ($data['open_department'] == 0 || $data['open_department'] == 'All') {
+                        $errors['open_department'] = get_string('schoolmustselect', 'local_users', $role->name);
                     }
                 }
             // }
