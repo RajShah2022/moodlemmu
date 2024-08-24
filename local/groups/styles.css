@@ -17,6 +17,12 @@
 #page-local-groups-index .group_card .row{
 	margin: 0;
 }
+#page-local-groups-index .groups_content .group_id.info_title {
+	min-width: 50px;
+}
+/*#page-local-groups-index .groups_content .info_title {
+	min-width: 77px;
+}*/
 #page-local-groups-index .card_main .card-page .group_view {
 	margin-bottom: 10px;
 }

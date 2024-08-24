@@ -615,7 +615,7 @@ function local_groups_get_search_query($search, $tablealias = '') {
 function local_groups_get_groups($contextid, $page = 0, $perpage = 10, $search = '') {
     global $DB, $USER;
     $params = [];
-    $fields = "SELECT c.*, g.open_difficultylevel ";
+    $fields = "SELECT c.*, g.open_difficultylevel, g.open_path ";
     $countfields = "SELECT COUNT(c.id)";
     $sql = " FROM {cohort} c
              JOIN {local_groups} g ON c.id = g.cohortid
@@ -648,7 +648,7 @@ function local_groups_get_groups($contextid, $page = 0, $perpage = 10, $search =
  */
 function local_groups_get_all_groups($context,$page = 0, $perpage = 10, $search = '') {
     global $DB,$USER;
-    $fields = "SELECT c.*, ".context_helper::get_preload_record_columns_sql('ctx').", g.open_difficultylevel";
+    $fields = "SELECT c.*, ".context_helper::get_preload_record_columns_sql('ctx').", g.open_difficultylevel, g.open_path";
     $countfields = "SELECT COUNT(*)";
     $sql = " FROM {cohort} c
              JOIN {context} ctx ON ctx.id = c.contextid

@@ -22,7 +22,8 @@
             <th>{{#str}}group_name, local_groups{{/str}}</th>
             <th>{{#str}}tabgroupid, local_groups{{/str}}</th>
             <th>{{#str}}grouptabuserscount, local_groups{{/str}}</th>
-            <th>{{#str}}open_costcenterid, local_costcenter{{/str}}</th>
+            {{#issiteadmin}}<th>{{#str}}open_costcenterid, local_costcenter{{/str}}</th>{{/issiteadmin}}
+            <th>{{#str}}school, local_groups{{/str}}</th>
             <th>{{#str}}actions, local_users{{/str}}</th>
         </tr>
     </thead>
@@ -36,7 +37,8 @@
            
             <td>{{{ groupid }}}</td>
             <td>{{groupcount}}</td>
-            <td>{{ orgname }}</td>
+            {{#orgname}}<td>{{ orgname }}</td>{{/orgname}}
+            <td>{{ schoolname }}</td>
             <td>
                   <ul class="list-group list-group-horizontal list-unstyled" id="showoptions{{userid}}"> {{{actions}}} </ul>
                  {{{ copyaction }}}
