@@ -30,7 +30,7 @@ define('LOCAL_COHORT_COUNT_ENROLLED_MEMBERS', 3);
 define('LOCAL_COHORT_WITH_MEMBERS_ONLY', 5);
 define('LOCAL_COHORT_WITH_ENROLLED_MEMBERS_ONLY', 17);
 define('LOCAL_COHORT_WITH_NOTENROLLED_MEMBERS_ONLY', 23);
-
+use local_courses\api;
 class local_groups implements renderable {
      public function __construct($page, $perpage, $searchquery,$showall) {
         $context =  (new \local_groups\lib\accesslib())::get_module_context();
@@ -775,6 +775,16 @@ function local_group_users($type = null, $groupid = 0, $params = array(), $total
     if($lastitem!=0){
         $sql.= " AND u.id > $lastitem";
     }
+    if (api::is_hod()) {
+        $sql .= " AND u.id IN (
+                    SELECT ra.userid 
+                    FROM {role_assignments} ra
+                    JOIN {role} r ON r.id = ra.roleid
+                    JOIN {context} c ON c.id = ra.contextid
+                    WHERE r.shortname IN ('teacher', 'employee') AND c.contextlevel = 40
+                 )";
+    }
+
     if (!empty($params['email'])) {
         $sql.=" AND u.id IN ({$params['email']})";
     }
