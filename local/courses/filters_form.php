@@ -54,7 +54,11 @@ class filters_form extends moodleform {
                 $filter = 'request';
             } else if ($value === 'evaluation_type') {
                 $filter = 'evaluation';
-            } else if ($value === 'hierarchy_fields') {
+            } 
+            else if ($value === 'grouproles') {
+                $filter = 'groups';
+            } 
+            else if ($value === 'hierarchy_fields') {
                 require_once($CFG->dirroot . '/local/costcenter/lib.php');
                 local_costcenter_set_costcenter_path($this->_customdata, $prefix = 'filter');
                 local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, null, false, 'local_users', $categorycontext, $multiple = true, $prefix = 'filter');

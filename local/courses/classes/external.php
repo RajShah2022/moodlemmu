@@ -527,6 +527,8 @@ class local_courses_external extends external_api {
                 $filter = 'users';
             } else if ($action === 'organizations' || $action === 'departments' || $action === 'subdepartment' || $action === 'department4level' || $action === 'department5level') {
                 $filter = 'costcenter';
+            } else if ($action === 'grouproles') {
+                $filter = 'groups';
             } else {
                 $filter = $action;
             }

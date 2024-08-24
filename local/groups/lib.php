@@ -30,7 +30,7 @@ define('LOCAL_COHORT_COUNT_ENROLLED_MEMBERS', 3);
 define('LOCAL_COHORT_WITH_MEMBERS_ONLY', 5);
 define('LOCAL_COHORT_WITH_ENROLLED_MEMBERS_ONLY', 17);
 define('LOCAL_COHORT_WITH_NOTENROLLED_MEMBERS_ONLY', 23);
-use local_courses\api;
+
 class local_groups implements renderable {
      public function __construct($page, $perpage, $searchquery,$showall) {
         $context =  (new \local_groups\lib\accesslib())::get_module_context();
@@ -775,7 +775,7 @@ function local_group_users($type = null, $groupid = 0, $params = array(), $total
     if($lastitem!=0){
         $sql.= " AND u.id > $lastitem";
     }
-    if (api::is_hod()) {
+    if (!is_siteadmin()) {
         $sql .= " AND u.id IN (
                     SELECT ra.userid 
                     FROM {role_assignments} ra
@@ -864,12 +864,12 @@ function local_group_users($type = null, $groupid = 0, $params = array(), $total
     }
     
         
-    if (!empty($params['roles'])) {
+    if (!empty($params['grouproles'])) {
         $query = "SELECT u.id
             FROM {user} AS u
             JOIN {role_assignments} ra ON ra.userid = u.id
             JOIN {context} c ON c.id = ra.contextid AND c.contextlevel = 40
-           WHERE ra.roleid IN ({$params['roles']}) ";
+           WHERE ra.roleid IN ({$params['grouproles']}) ";
         $roleusers = $DB->get_records_sql_menu($query);
         if (!empty($roleusers)) {
             $userslist = implode(',', array_keys($roleusers)); // Note: array_keys to get the user IDs
@@ -988,7 +988,67 @@ function groups_filter($mform,$query='',$searchanywhere=false, $page=0, $perpage
     $mform->setType('groups', PARAM_RAW);
 }
 
+/**
+ * [role_filter form element function]
+ * @param  [form] $mform [filter form]
+ * @return 
+ */
+function grouproles_filter($mform, $query='',$searchanywhere=false, $page=0, $perpage=25){
+    global $DB, $USER;
+    // Get the category context from the local_users access library.
+    $categorycontext = (new \local_groups\lib\accesslib())::get_module_context();
+    $roleslist = array();
+    $data = data_submitted();
+    $costcenterpathconcatsql = (new \local_groups\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='open_path');
+    $roleslist_sql = "SELECT r.id, r.name as fullname FROM {role} r 
+    JOIN {role_context_levels} rcl ON (rcl.contextlevel = 40 AND r.id = rcl.roleid)  
+    WHERE r.name != '' AND (r.archetype != 'manager' ";
 
+    // Adjust query conditions based on context depth.
+    if(is_siteadmin()) {
+        if ($categorycontext->depth == 1) {
+            $roleslist_sql .= " OR r.shortname LIKE 'administrator' ";
+        }
+        if ($categorycontext->depth == 2 || is_siteadmin()) {
+            $roleslist_sql .= " OR r.shortname LIKE 'hod' ";
+        }    
+    }
+    
+
+    if(!empty($query)) { 
+        if ($searchanywhere) {
+            $roleslist_sql .= " AND r.name LIKE '%$query%' ";
+        } else {
+            $roleslist_sql .= " AND r.name LIKE '$query%' ";
+        }
+    }
+    
+     // Close the SQL query.
+    $roleslist_sql .= ")";
+    // $rolesparam['contextlevel'] = CONTEXT_COURSECAT;
+
+    if(isset($data->grouproles) && !empty(($data->grouproles))){
+        list($roles_sql, $rolesparam) = $DB->get_in_or_equal($data->grouproles, SQL_PARAMS_NAMED);
+        $roleslist_sql.=" AND r.id $roles_sql ";
+    }
+    if(!empty($query) || empty($mform)){ 
+        $roleslist = $DB->get_records_sql($roleslist_sql, $rolesparam, $page, $perpage);
+        return $roleslist;
+    }
+    if((isset($data->grouproles)&&!empty($data->grouproles))){ 
+        $roleslist = $DB->get_records_sql_menu($roleslist_sql, $rolesparam, $page, $perpage);
+    }
+
+    $options = array(
+        'ajax' => 'local_courses/form-options-selector',
+        'multiple' => true,
+        'data-action' => 'grouproles',
+        'data-options' => json_encode(array('id' => 0)),
+        'placeholder' => get_string('open_role', 'local_users')
+     );
+    $select = $mform->addElement('autocomplete', 'grouproles', '', $roleslist, $options);
+    $mform->setType('grouproles', PARAM_RAW);
+}
 /*
 * Author Rizwana
 * Displays a node in left side menu
