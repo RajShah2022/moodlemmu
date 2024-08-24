@@ -32,6 +32,8 @@ require_once($CFG->libdir . '/behat/lib.php');
 $addblockbutton = $OUTPUT->addblockbutton();
 
 $extraclasses = [];
+$currentrole = $OUTPUT->get_user_currentrole();
+$extraclasses[] = $currentrole;
 $bodyattributes = $OUTPUT->body_attributes($extraclasses);
 $blockshtml = $OUTPUT->blocks('side-pre');
 $hasblocks = (strpos($blockshtml, 'data-block=') !== false || !empty($addblockbutton));
@@ -73,7 +75,10 @@ $left_content = $OUTPUT->blocks('left_content');
 $header = $PAGE->activityheader;
 $headercontent = $header->export_for_template($renderer);
 $OUTPUT->seteditswtich_display(true);
-
+$hasquickaccessmenu = true;
+if($currentrole == 'teacher' || $currentrole == 'employee') {
+    $hasquickaccessmenu = false;
+}
 $templatecontext = [
     'sitename' => format_string($SITE->shortname, true, ['context' => context_course::instance(SITEID), "escape" => false]),
     'output' => $OUTPUT,
@@ -102,6 +107,7 @@ $templatecontext = [
     'overflow' => $overflow,
     'isloggedin' => isloggedin(),
     'addblockbutton' => $addblockbutton,
+    'hasquickaccessmenu' => $hasquickaccessmenu,
 ];
 
 echo $OUTPUT->render_from_template('theme_epsilon_classic/gamification', $templatecontext);

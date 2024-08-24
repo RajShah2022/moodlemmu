@@ -93,11 +93,13 @@
             <div class="divider border-left h-75 align-self-center mx-1"></div>
         {{/output.search_box}}
         {{#isloggedin}}
+        {{#hasquickaccessmenu}}
         <ul class="nav navbar-nav">
             <li class="nav-item">
                 {{> theme_epsilon_classic/quickaccess-popover}}
             </li> 
         </ul>
+        {{/hasquickaccessmenu}}
         {{/isloggedin}}
         
         {{#langmenu}}
