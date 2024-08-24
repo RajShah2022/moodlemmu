@@ -160,6 +160,7 @@
                                         <b class="break_all">{{ email }}</b>
                                     </span>
                                 </p>
+                                {{#orgstring}}
                                 <p class="mb-2 w-full">
                                     <span class="pull-left user_info_lable">{{# str}} open_costcenterid, local_costcenter{{/ str}}
                                         <span class="pull-right mr-2">:</span>
@@ -168,6 +169,24 @@
                                         <b>{{ orgstring }}</b>
                                     </span>
                                 </p>
+                                {{/orgstring}}
+                                {{^orgstring}}
+                                <p class="mb-2 w-full">
+                                    <span class="pull-left user_info_lable">{{# str}} role, local_users{{/ str}}
+                                        <span class="pull-right mr-2">:</span>
+                                    </span>
+                                    {{^ rolename}}
+                                        <span>
+                                            <b>{{#str}} na, local_users {{/str}}</b>
+                                        </span>
+                                    {{/ rolename}}
+                                    {{# rolename}}
+                                        <span title="{{rolename}}">
+                                            <b>{{rolename}}</b>
+                                        </span>
+                                    {{/ rolename}}
+                                </p>
+                                {{/orgstring}}
                                 
                             </div>
                             <div class="col-lg-5 col-md-12 col-12  userdetails_right">
@@ -204,6 +223,7 @@
                                         <b>{{ commercialarea }}</b>
                                     </span>
                                 </p>-->
+                                {{#orgstring}}
                                 <p class="mb-2 w-full">
                                     <span class="pull-left user_info_lable">{{# str}} role, local_users{{/ str}}
                                         <span class="pull-right mr-2">:</span>
@@ -228,6 +248,7 @@
                                         </span>
                                     {{/ rolename}}
                                 </p>
+                                {{/orgstring}}
                             </div>
                         </div>
                     </div>

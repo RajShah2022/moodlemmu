@@ -349,6 +349,7 @@ class local_users_external extends external_api {
         return [
             'totalcount' => $totalcount,
             'activeusercount' => $activeusercount,
+            'issiteadmin' => is_siteadmin() ? true : false,
             'inactiveusercount' => $inactiveusercount,
             'actionsicons' => $actionsicons,
             'records' => $data,
@@ -369,6 +370,7 @@ class local_users_external extends external_api {
             'dataoptions' => new external_value(PARAM_RAW, 'The data for the service'),
             'totalcount' => new external_value(PARAM_INT, 'total number of users in result set'),
             'activeusercount' => new external_value(PARAM_INT, 'total number of users in result set'),
+            'issiteadmin' => new external_value(PARAM_RAW, 'issiteadmin', VALUE_OPTIONAL),
             'inactiveusercount' => new external_value(PARAM_INT, 'total number of users in result set'),
             'wwwroot' => new external_value(PARAM_RAW, 'URL for wwwroot'),
             'filterdata' => new external_value(PARAM_RAW, 'The data for the service'),

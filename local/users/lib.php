@@ -1334,9 +1334,12 @@ function manage_users_content($stable, $users/*,$filterdata*/) {
         if (!$commercialarea) {
             $commercialarea = 'All';
         }
-        $orgstring = strlen($organization) > 24 ? substr($organization, 0, 24) . "..." : $organization;
-        $list['org'] = $organization;
-        $list['orgstring'] = $orgstring;
+        if(is_siteadmin()) {
+            $orgstring = strlen($organization) > 24 ? substr($organization, 0, 24) . "..." : $organization;
+            $list['org'] = $organization;
+            $list['orgstring'] = $orgstring; 
+        }
+        
         $deptstring = strlen($dept) > 24 ? substr($dept, 0, 24) . "..." : $dept;
         $designation = $user->open_designation;
         $designationstring = strlen($user->open_designation) > 14 ? substr($user->open_designation, 0, 14) .
