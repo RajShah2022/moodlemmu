@@ -228,6 +228,7 @@ class requestview implements renderable, templatable {
                 if ($request->status == 'APPROVED') {
                     $onerow['approvestatus'] = 1;
                     $onerow['responded'] = 1;
+                    $onerow['enablebutton'] = 0;
                 } else {
                     $onerow['approvestatus'] = 0;
                 }
@@ -235,14 +236,16 @@ class requestview implements renderable, templatable {
                 if ($request->status == 'REJECTED') {
                     $onerow['rejectstatus'] = 1;
                     $onerow['responded'] = 1;
+                    $onerow['enablebutton'] = 0;
                 } else {
                     $onerow['rejectstatus'] = 0;
                 }
                 if ($request->status == 'PENDING') {
                     $onerow['enablebutton'] = 1;
-                } else {
-                    $onerow['enablebutton'] = 1;
-                }
+                } 
+                // else {
+                //     $onerow['enablebutton'] = 1;
+                // }
                 $onerow['compname'] = get_string($request->compname, 'local_request');
                 $onerow['requestedby'] = $request->createdbyid;
 
