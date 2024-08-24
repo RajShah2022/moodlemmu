@@ -1393,51 +1393,8 @@ class local_courses_external extends external_api {
             
     //     }
 
-    //     // Send requests to admin and administrator for each mismatch.
-    //     if (!empty($requestsToSend)) {
-    //         foreach ($requestsToSend as $groupId) {
-    //             $previousrecord = $DB->record_exists('local_request_records', array('compname' => 'groups', 'module_id' => $groupId, 'componentid' => $groupId, 'courseid' => $courseid, 'status' => 'PENDING'));
-    //              $enrolmentexists = $DB->record_exists('enrol', [
-    //                 'courseid' => $courseid,
-    //                 'enrol' => 'cohort',
-    //                 'customint1' => $groupId
-    //             ]);
-    //             if(!is_siteadmin() && api::is_hod() && !$previousrecord && !$enrolmentexists) {
-    //                 \local_request\api\requestapi::create('groups', $groupId, $courseid);
-    //             }
-    //         }
-    //     }
-    //     return true;
-            
-    // }
 
     public static function groupenrollmentrequest_returns() {
         return new external_value(PARAM_BOOL, 'return');
     }
-
-    // private static function send_request_to_admin($groupId, $courseid) {
-    //     // Your logic to send a request to admin and administrator.
-    //     // This could involve sending an email or creating a notification in Moodle.
-
-    //     $adminRoleId = 1; // Adjust according to your role IDs.
-    //     $adminUserIds = get_role_users($adminRoleId, \context_system::instance());
-
-    //     foreach ($adminUserIds as $admin) {
-    //         // Example logic to send a message to the admin.
-    //         $message = new \core\message\message();
-    //         $message->component = 'local_courses';
-    //         $message->name = 'group_mismatch_notification';
-    //         $message->userfrom = \core_user::get_noreply_user();
-    //         $message->userto = $admin->id;
-    //         $message->subject = "Mismatch in Difficulty Level for Course ID {$courseid}";
-    //         $message->fullmessage = "The group ID {$groupId} has a different difficulty level than the course.";
-    //         $message->fullmessageformat = FORMAT_PLAIN;
-    //         $message->fullmessagehtml = '';
-    //         $message->smallmessage = '';
-    //         $message->notification = 1;
-
-    //         // Send the message.
-    //         message_send($message);
-    //     }
-    // }
 }

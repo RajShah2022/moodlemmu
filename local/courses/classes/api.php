@@ -118,7 +118,8 @@ class api {
                         // Update existing record if it already exists for this path.
                         $record = new stdClass();
                         $record->id = $existingtopicids[$key][$USER->open_path];
-                        $record->timecreated = time();
+                        $record->timemodified = time();
+                        $record->usermodified = $USER->id;
                         $DB->update_record(self::COURSETOPICS_TABLE, $record);
 
                         // Remove the topic from the list to be deleted.
@@ -198,7 +199,8 @@ class api {
                         // Update existing record if it already exists for this path.
                         $record = new stdClass();
                         $record->id = $existinggroupids[$key][$USER->open_path];
-                        $record->timecreated = time();
+                        $record->timemodified = time();
+                        $record->usermodified = $USER->id;
                         $DB->update_record(self::COURSEGROUPS_TABLE, $record);
 
                         // Remove the topic from the list to be deleted.
