@@ -28,8 +28,7 @@ use core_completion\progress;
 use local_courses\local\general_lib  as general_lib;
 use block_userdashboard\includes\generic_content;
 // use block_userdashboard\includes\user_course_details as user_course_details;
-
-
+require_once($CFG->dirroot . '/local/groups/lib.php');
 
 class userdashboard implements renderable {
 
@@ -191,7 +190,7 @@ class userdashboard implements renderable {
                 }else{
                     $onerow['label_name'] = get_string('start_course','block_userdashboard');
                 }
-             
+                $onerow['class'] = get_user_cohort_names($USER->id) ? get_user_cohort_names($USER->id) : '';
                 array_push($data->inprogress_elearning, $onerow);
                 
             } // end of foreach 

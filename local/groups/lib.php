@@ -1273,3 +1273,26 @@ function costcenterwise_groups_datacount($costcenter, $department = false, $subd
     $countgroups = $DB->count_records_sql($countgroupssql, $params);
     return ['datacount' => $countgroups];
 }
+function get_user_cohort_names($userid) {
+    global $DB;
+
+    // Join the cohort members table with the cohort table to get cohort names
+    $sql = "SELECT c.name
+            FROM {cohort_members} cm
+            JOIN {cohort} c ON cm.cohortid = c.id
+            WHERE cm.userid = :userid";
+
+    // Execute the query and fetch the cohort names
+    $cohorts = $DB->get_records_sql($sql, array('userid' => $userid));
+
+    // If the user belongs to any cohorts, return a comma-separated list of cohort names
+    if (!empty($cohorts)) {
+        $cohort_names = array();
+        foreach ($cohorts as $cohort) {
+            $cohort_names[] = $cohort->name;
+        }
+        return implode(', ', $cohort_names);
+    } else {
+        return '';
+    }
+}

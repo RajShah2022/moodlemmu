@@ -860,3 +860,4 @@ $string['rolenotexists'] = '<b>{$a->roleshortname}</b> Role does not exist at th
 $string['rolenotexistsornotallowed'] = '<b>{$a->roleshortname}</b> Role does not exist or you are not allowed to create at the line  {$a->excel_line_number}';
 $string['schoolmustselect'] = '{$a} can not be created for \'<b>All</b>\' Schools';
 $string['administratornotforanyschool'] = '{$a} can be created only for \'<b>All</b>\' Schools';
+$string['class'] = 'Class';

@@ -1041,6 +1041,8 @@ class local_courses_external extends external_api {
                         'index' => new external_value(PARAM_INT, 'Index of Card'),
                         'course_completedon' => new external_value(PARAM_RAW, 'course_completedon'),
                         'label_name' => new external_value(PARAM_RAW, 'course_completedon'),
+                        'class' => new external_value(PARAM_RAW, 'class', VALUE_OPTIONAL),
+
                     )
                 )
             ),
@@ -1146,6 +1148,7 @@ class local_courses_external extends external_api {
                                     'index' => new external_value(PARAM_INT, 'Index of Card'),
                                     'course_completedon' => new external_value(PARAM_RAW, 'course_completedon'),
                                     'label_name' => new external_value(PARAM_RAW, 'course_completedon'),
+                                    'class' => new external_value(PARAM_RAW, 'class', VALUE_OPTIONAL),
                                 )
                             )
                         ),
