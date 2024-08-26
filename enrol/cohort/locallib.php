@@ -47,6 +47,11 @@ class enrol_cohort_handler {
         if (!enrol_is_enabled('cohort')) {
             return true;
         }
+        
+        // added by rizwana ==> starts   (Role IDs for HOD and HOD Course roles )
+        $hodroleid = $DB->get_field('role', 'id', array('shortname' => 'hod'));
+        $hodcourseroleid = $DB->get_field('role', 'id', array('shortname' => 'hod_course'));
+        // added by rizwana ==> ends
 
         // Does any enabled cohort instance want to sync with this cohort?
         $sql = "SELECT e.*, r.id as roleexists
@@ -70,8 +75,34 @@ class enrol_cohort_handler {
                 $instance->roleid = 0;
             }
             unset($instance->roleexists);
+            //added by rizwana for adding category role in course also while enrolling user to course from group ===> starts
+            // Determine the role based on the category context
+            $categorycontext = (new \local_users\lib\accesslib())::get_module_context($event->relateduserid);
+
+            // Get all roles assigned to the user in the category context
+            $assignedroles = get_user_roles($categorycontext, $event->relateduserid);
+
+            // Default to the instance role ID
+            $roletoassign = $instance->roleid;
+
+            // Determine the correct role based on the category context
+            foreach ($assignedroles as $assignedrole) {
+                if ($assignedrole->roleid == $hodroleid) {
+                    $roletoassign = $hodcourseroleid;
+                    break; // Assign hod_course role and exit loop
+                } elseif ($assignedrole->roleid != $hodroleid) {
+                    $roletoassign = $assignedrole->roleid;
+                    break; // Assign this role and stop further processing
+                }
+            }
+            //added by rizwana ===> ends
+
+            // // No problem if already enrolled.
+            // $plugin->enrol_user($instance, $event->relateduserid, $instance->roleid, 0, 0, ENROL_USER_ACTIVE);
+
+            // 3rd parameter changed from  $instance->roleid to $roletoassign by Rizwana in below line
             // No problem if already enrolled.
-            $plugin->enrol_user($instance, $event->relateduserid, $instance->roleid, 0, 0, ENROL_USER_ACTIVE);
+            $plugin->enrol_user($instance, $event->relateduserid, $roletoassign, 0, 0, ENROL_USER_ACTIVE);
 
             // Sync groups.
             if ($instance->customint2) {
@@ -167,7 +198,6 @@ class enrol_cohort_handler {
 function enrol_cohort_sync(progress_trace $trace, $courseid = NULL) {
     global $CFG, $DB;
     require_once("$CFG->dirroot/group/lib.php");
-
     // Purge all roles if cohort sync disabled, those can be recreated later here by cron or CLI.
     if (!enrol_is_enabled('cohort')) {
         $trace->output('Cohort sync plugin is disabled, unassigning all plugin roles and stopping.');
@@ -187,15 +217,19 @@ function enrol_cohort_sync(progress_trace $trace, $courseid = NULL) {
     $plugin = enrol_get_plugin('cohort');
     $unenrolaction = $plugin->get_config('unenrolaction', ENROL_EXT_REMOVED_UNENROL);
 
+    // added by rizwana ==> starts   (Role IDs for HOD and HOD Course roles )
+    $hodroleid = $DB->get_field('role', 'id', array('shortname' => 'hod'));
+    $hodcourseroleid = $DB->get_field('role', 'id', array('shortname' => 'hod_course'));
+    // added by rizwana ==> ends
 
     // Iterate through all not enrolled yet users.
     $onecourse = $courseid ? "AND e.courseid = :courseid" : "";
     $sql = "SELECT cm.userid, e.id AS enrolid, ue.status
-              FROM {cohort_members} cm
-              JOIN {enrol} e ON (e.customint1 = cm.cohortid AND e.enrol = 'cohort' AND e.status = :enrolstatus $onecourse)
-              JOIN {user} u ON (u.id = cm.userid AND u.deleted = 0)
-         LEFT JOIN {user_enrolments} ue ON (ue.enrolid = e.id AND ue.userid = cm.userid)
-             WHERE ue.id IS NULL OR ue.status = :suspended";
+            FROM {cohort_members} cm
+            JOIN {enrol} e ON (e.customint1 = cm.cohortid AND e.enrol = 'cohort' AND e.status = :enrolstatus $onecourse)
+            JOIN {user} u ON (u.id = cm.userid AND u.deleted = 0)
+            LEFT JOIN {user_enrolments} ue ON (ue.enrolid = e.id AND ue.userid = cm.userid)
+            WHERE ue.id IS NULL OR ue.status = :suspended";
     $params = array();
     $params['courseid'] = $courseid;
     $params['suspended'] = ENROL_USER_SUSPENDED;
@@ -206,16 +240,70 @@ function enrol_cohort_sync(progress_trace $trace, $courseid = NULL) {
             $instances[$ue->enrolid] = $DB->get_record('enrol', array('id'=>$ue->enrolid));
         }
         $instance = $instances[$ue->enrolid];
+
+        // // Check if the user already has a role assigned in the course context
+        // $existing_role_assignments = $DB->get_records('role_assignments', array(
+        //     'userid' => $ue->userid,
+        //     'contextid' => $coursecontext->id
+        // ), '', 'roleid');
+
+        // if (empty($existing_role_assignments)) {
+        //     $roletoassign = $instance->roleid; // Default role for the instance
+
+        //     foreach ($assignedroles as $assignedrole) {
+        //         if ($assignedrole->roleid == $hodroleid) {
+        //             $roletoassign = $hodcourseroleid;
+        //             break; // Assign hod_course role and exit loop
+        //         } elseif ($assignedrole->roleid != $hodroleid) {
+        //             $roletoassign = $assignedrole->roleid;
+        //             break; // Assign this role and stop further processing
+        //         }
+        //     }
+
+        //     // Check if the determined role is different from the already assigned roles
+        //     if (!isset($existing_role_assignments[$roletoassign])) {
+        //         role_assign($roletoassign, $ue->userid, $coursecontext->id, 'enrol_cohort', $ue->enrolid);
+        //         $trace->output("assigning role: $ue->userid ==> $instance->courseid as " . $allroles[$roletoassign]->shortname, 1);
+        //     } else {
+        //         $trace->output("Role already assigned: $ue->userid ==> $instance->courseid as " . $allroles[$roletoassign]->shortname, 1);
+        //     }
+        // } else {
+        //     $trace->output("User $ue->userid already has a role assigned in course $instance->courseid; skipping role assignment.", 1);
+        // }
+
+        //added by Rizwana for adding category role in course also while enrolling user to course from group ===> starts
+        $coursecontext = context_course::instance($instance->courseid);
+        $categorycontext = (new \local_users\lib\accesslib())::get_module_context($ue->userid);
+
+        // Get all roles assigned to the user in the category context
+        $assignedroles = get_user_roles($categorycontext, $ue->userid);
+
+        // Default role for the instance
+        $roletoassign = $instance->roleid;
+        foreach ($assignedroles as $assignedrole) {
+            if ($assignedrole->roleid == $hodroleid) {
+                $roletoassign = $hodcourseroleid;
+                break; // Assign hod_course role and exit loop
+            } elseif ($assignedrole->roleid != $hodroleid) {
+                $roletoassign = $assignedrole->roleid;
+                break; // Assign this role and stop further processing
+            }
+        }
+
+        // Update instance role ID based on category context role
+        $instance->roleid = $roletoassign;
+        //added by Rizwana ===> end
+
         if ($ue->status == ENROL_USER_SUSPENDED) {
             $plugin->update_user_enrol($instance, $ue->userid, ENROL_USER_ACTIVE);
             $trace->output("unsuspending: $ue->userid ==> $instance->courseid via cohort $instance->customint1", 1);
         } else {
-            $plugin->enrol_user($instance, $ue->userid);
+            $plugin->enrol_user($instance, $ue->userid, $instance->roleid);
             $trace->output("enrolling: $ue->userid ==> $instance->courseid via cohort $instance->customint1", 1);
         }
     }
-    $rs->close();
 
+    $rs->close();
 
     // Unenrol as necessary.
     $sql = "SELECT ue.*, e.courseid
@@ -269,9 +357,37 @@ function enrol_cohort_sync(progress_trace $trace, $courseid = NULL) {
     $params['courseid'] = $courseid;
 
     $rs = $DB->get_recordset_sql($sql, $params);
+    //commented by Rizwana for reference
+    // foreach($rs as $ra) {
+    //     role_assign($ra->roleid, $ra->userid, $ra->contextid, 'enrol_cohort', $ra->itemid);
+    //     $trace->output("assigning role: $ra->userid ==> $ra->courseid as ".$allroles[$ra->roleid]->shortname, 1);
+    // }
     foreach($rs as $ra) {
-        role_assign($ra->roleid, $ra->userid, $ra->contextid, 'enrol_cohort', $ra->itemid);
-        $trace->output("assigning role: $ra->userid ==> $ra->courseid as ".$allroles[$ra->roleid]->shortname, 1);
+
+        //added by Rizwana for adding category role only in course also while enrolling user to course from group ===> starts
+
+        // Get the category context for the user
+        $categorycontext = (new \local_users\lib\accesslib())::get_module_context($ra->userid);
+
+        // Get all roles assigned to the user in the category context
+        $assignedroles = get_user_roles($categorycontext, $ra->userid);
+
+        // Determine the role to assign
+        $roletoassign = $ra->roleid; // Default role for the instance
+
+        foreach ($assignedroles as $assignedrole) {
+            if ($assignedrole->roleid == $hodroleid) {
+                $roletoassign = $hodcourseroleid;
+                break; // Assign hod_course role and exit loop
+            } elseif ($assignedrole->roleid != $hodroleid) {
+                $roletoassign = $assignedrole->roleid;
+                break; // Assign this role and stop further processing
+            }
+        }
+        // added by Rizwana ===> ends
+        // Assign the determined role
+        role_assign($roletoassign, $ra->userid, $ra->contextid, 'enrol_cohort', $ra->itemid);
+        $trace->output("assigning role: $ra->userid ==> $ra->courseid as ".$allroles[$roletoassign]->shortname, 1);
     }
     $rs->close();
 
@@ -297,7 +413,6 @@ function enrol_cohort_sync(progress_trace $trace, $courseid = NULL) {
         }
         $rs->close();
     }
-
     // Finally sync groups.
     $affectedusers = groups_sync_with_enrolment('cohort', $courseid);
     foreach ($affectedusers['removed'] as $gm) {
