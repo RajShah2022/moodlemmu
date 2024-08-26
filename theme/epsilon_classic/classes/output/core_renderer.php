@@ -47,6 +47,7 @@ use core_text;
 use user_picture;
 use costcenter;
 use theme_config;
+use local_courses\api;
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -1054,6 +1055,13 @@ class core_renderer extends \core_renderer {
                 $enrolid = $DB->get_field('enrol', 'id', array('courseid' => $courseid, 'enrol' => 'manual'));
                 $userenrollment = true;
             }
+            if (is_siteadmin() || ((has_capability(
+                'local/courses:enrol',
+                $maincheckcontext
+            )  || is_siteadmin()) && has_capability('local/courses:manage', $maincheckcontext)) || api::is_hod()) {
+                $enrolledusers = true;
+            }
+            
         }
         // if($this->page->pagetype === 'blocks-gamification-index'){
         //     $gamificationpage = true;
@@ -1091,6 +1099,7 @@ class core_renderer extends \core_renderer {
             "coursebackup" => $coursebackup,
             "enrolid" => $enrolid ?? 0,
             "userenrollment" => $userenrollment ?? false,
+            "enrolledusers" => $enrolledusers ?? false,
             "categorycontextid" => $categorycontext->id,
             // "gamificationpage" => $gamificationpage,
             "challenge_element" => $challenge_element,
@@ -1613,6 +1622,10 @@ class core_renderer extends \core_renderer {
         if ($newpageurl == $CFG->wwwroot . '/enrol/index.php' || $newpageurl == $CFG->wwwroot . '/enrol/') {
             redirect($CFG->wwwroot . '/my');
         }
+        if (($newpageurl == $CFG->wwwroot . '/user/index.php' || $newpageurl == $CFG->wwwroot . '/user/') && api::is_hod()) {
+            redirect($CFG->wwwroot . "/local/courses/enrolledusers.php?id=$COURSE->id"); 
+        }
+        http://localhost/lms/skryptech/user/index.php?id=9
         if ($newpageurl == $CFG->wwwroot . '/course/management.php') {
             redirect($CFG->wwwroot . '/local/custom_category/index.php'); //Category page redirection
         }

@@ -35,12 +35,14 @@
                     <a title="User enrolments" class="course_extended_menu_itemlink" href="{{config.wwwroot}}/local/courses/courseenrol.php?id={{courseid}}&enrolid={{enrolid}}"><i class="icon fa fa-user-plus fa-fw " aria-hidden="true"></i></a>
                 </div>
             </li>
+		{{/ userenrollment }}
+        {{#enrolledusers}}
             <li>
                 <div class="coursebackup course_extended_menu_itemcontainer">
                     <a title="{{# str }}enrolledusers, local_courses {{/ str }}" class="course_extended_menu_itemlink" href="{{config.wwwroot}}/local/courses/enrolledusers.php?id={{courseid}}"><i class="icon fa fa-user" aria-hidden="true"></i></a>
                 </div>
             </li>
-		{{/ userenrollment }}
+        {{/enrolledusers}}
 		{{# coursebackup}}
             <li>
             	<div class="coursebackup course_extended_menu_itemcontainer">

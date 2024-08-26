@@ -227,13 +227,13 @@ class local_courses_renderer extends plugin_renderer_base {
         $sql = " FROM {course} c
         JOIN {course_categories} cat ON cat.id = c.category
         JOIN {enrol} e ON e.courseid = c.id AND
-                    (e.enrol = 'manual' OR e.enrol = 'self' OR e.enrol = 'classroom' OR e.enrol = 'learningplan' OR e.enrol = 'auto')
+                    (e.enrol = 'manual' OR e.enrol = 'self' OR e.enrol = 'classroom' OR e.enrol = 'learningplan' OR e.enrol = 'auto' OR e.enrol = 'cohort')
         JOIN {user_enrolments} ue ON ue.enrolid = e.id
         JOIN {user} u ON u.id = ue.userid AND u.deleted = 0 AND u.suspended=0
         JOIN {local_costcenter} lc ON lc.path = u.open_path
         JOIN {role_assignments} as ra ON ra.userid = u.id
         JOIN {context} AS cxt ON cxt.id=ra.contextid AND cxt.contextlevel = 50 AND cxt.instanceid=c.id
-        JOIN {role} as r ON r.id = ra.roleid AND r.shortname IN ('student','employee')
+        JOIN {role} as r ON r.id = ra.roleid AND r.shortname IN ('student','employee', 'teacher')
         LEFT JOIN {course_completions} as cc ON cc.course = c.id AND u.id = cc.userid ";
 
         if ($dataobj->moduletype == 'onlineexam') {
@@ -318,7 +318,7 @@ class local_courses_renderer extends plugin_renderer_base {
                 }
                 $get_enrolid = "";
                 $get_enrolmentod = "";
-                $sql = "SELECT ue.id,e.enrol,ue.userid FROM {user_enrolments} as ue
+                $sql = "SELECT ue.id,e.enrol,e.customint1,ue.userid FROM {user_enrolments} as ue
                     JOIN {enrol} as e ON e.id = ue.enrolid
                     WHERE e.courseid = $dataobj->courseid AND ue.userid =$enroluser->userid ";
                 $userenrolment = $DB->get_records_sql($sql);
@@ -361,12 +361,12 @@ class local_courses_renderer extends plugin_renderer_base {
                             }
                         }
                     }
+                    $enrolmethod[] = $DB->get_field('cohort', 'name', array('id' => $userenrol->customint1));
                 }
                 if ($dataobj->moduletype != 'onlineexam') {
                     $userinfo[] = implode('<br />', $enroll);
                 }
                 $userinfo[] = implode(' <br>', $enrolmethod);
-
                 if ($cert_plugin_exists && $certificate_added) {
                     if (!empty($enroluser->timecompleted)) {
                         $icon = '<i class="icon fa fa-download" aria-hidden="true"></i>';
