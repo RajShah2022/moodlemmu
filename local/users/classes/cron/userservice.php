@@ -121,7 +121,7 @@ class userservice {
           'open_employeeid' => $open_employeeid, 'email' => $email, 'idnumber' => $idnumber));
     }
     public function write_error_db($userobject) {
-        global $DB;
+        global $DB, $USER;
         $userobject = (object)$userobject;
         // write error message to db and inform admin
         $syncerrors = new \stdclass();
@@ -131,6 +131,7 @@ class userservice {
             $this->errors[$userobject->open_employeeid]) : $this->errors[$userobject->open_employeeid];
         $syncerrors->error = $errors_list;
         $syncerrors->modified_by = 2;
+        $syncerrors->open_path = $USER->open_path;
         if (empty($userobject->email)) {
             $syncerrors->email = '-';
         } else {
