@@ -398,5 +398,14 @@ function xmldb_local_users_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2023061000.07, 'local', 'users');
     }
 
+    if ($oldversion <  2023061000.08) {
+        $table = new xmldb_table('local_syncerrors');
+        $field1 = new xmldb_field('open_path', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+        if (!$dbman->field_exists($table, $field1)) {
+            $dbman->add_field($table, $field1);
+        }
+        upgrade_plugin_savepoint(true, 2023061000.08, 'local', 'users');
+    }
+
     return true;
 }

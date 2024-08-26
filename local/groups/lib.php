@@ -625,8 +625,12 @@ function local_groups_get_groups($contextid, $page = 0, $perpage = 10, $search =
     $sql .= $costcenterpathconcatsql;
     $params['contextid'] = $contextid;
     $order = " ORDER BY  g.id DESC";
+    // if(isset($search) && isset($search->search_query)){
+    //    $sql .= " AND c.name LIKE '%".trim($search->search_query)."%'";
+    // }
     if(isset($search) && isset($search->search_query)){
-       $sql .= " AND c.name LIKE '%".trim($search->search_query)."%'";
+       $sql .= " AND c.name LIKE :name ";
+       $params['name'] = '%' . trim($search->search_query) . '%';
     }
     $allgroups = '';
     $totalgroups = $DB->count_records_sql($countfields . $sql, $params);
@@ -1013,23 +1017,21 @@ function grouproles_filter($mform, $query='',$searchanywhere=false, $page=0, $pe
             $roleslist_sql .= " OR r.shortname LIKE 'hod' ";
         }    
     }
-    
+    // Close the SQL query.
+    $roleslist_sql .= ")";
 
-    if(!empty($query)) { 
-        if ($searchanywhere) {
-            $roleslist_sql .= " AND r.name LIKE '%$query%' ";
-        } else {
-            $roleslist_sql .= " AND r.name LIKE '$query%' ";
-        }
+    if(!empty($query)){ 
+        $roleslist_sql .= " AND r.name LIKE :name ";
+        $rolesparam['name'] = '%' . trim($query) . '%';
     }
     
-     // Close the SQL query.
-    $roleslist_sql .= ")";
+     
     // $rolesparam['contextlevel'] = CONTEXT_COURSECAT;
 
     if(isset($data->grouproles) && !empty(($data->grouproles))){
-        list($roles_sql, $rolesparam) = $DB->get_in_or_equal($data->grouproles, SQL_PARAMS_NAMED);
+        list($roles_sql, $rolesparam) = $DB->get_in_or_equal($data->roles, SQL_PARAMS_NAMED);
         $roleslist_sql.=" AND r.id $roles_sql ";
+        $rolesparam = array_merge($rolesparam, $rolesparam);
     }
     if(!empty($query) || empty($mform)){ 
         $roleslist = $DB->get_records_sql($roleslist_sql, $rolesparam, $page, $perpage);
