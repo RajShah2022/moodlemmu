@@ -2102,4 +2102,10 @@ class core_renderer extends \core_renderer {
         global $USER;
         return ucwords($USER->firstname);
     }
+
+    public function get_user_currentrole() {
+        global $USER, $DB;
+        $current_roleid = $USER->useraccess['currentroleinfo']['roleid'];
+        return $DB->get_field('role', 'shortname', array('id' => $current_roleid));
+    }
 }

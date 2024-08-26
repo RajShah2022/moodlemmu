@@ -32,6 +32,7 @@ class local_users_renderer extends plugin_renderer_base {
     public function employees_profile_view($id) {
         global $CFG, $OUTPUT, $DB;
         require_once($CFG->dirroot . '/course/renderer.php');
+        require_once($CFG->dirroot . '/local/groups/lib.php');
         require_once($CFG->libdir . '/badgeslib.php');
 
         $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
@@ -238,6 +239,7 @@ class local_users_renderer extends plugin_renderer_base {
             "prefix" => $prefix,
             "profilefieldelements" => $profilefieldelements,
             "pluginposition" => $pluginposition,
+            "classes" => get_user_cohort_names($id) ? get_user_cohort_names($id) : get_string('na', 'local_users'),
         ];
         $value = $this->render_from_template('local_users/profile', $usersviewContext);
 

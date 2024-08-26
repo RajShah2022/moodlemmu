@@ -45,11 +45,12 @@
             <th>{{#str}}name, local_users{{/str}}</th>
             <th>{{#str}}employeeid, local_users{{/str}}</th>
             <th>{{#str}}email, local_users{{/str}}</th>
-            <th>{{#str}}open_costcenterid, local_costcenter{{/str}}</th>
+            {{#issiteadmin}}<th>{{#str}}open_costcenterid, local_costcenter{{/str}}</th>{{/issiteadmin}}
             <th>{{#str}}pluginname, local_costcenter{{/str}}</th>
             <!--<th>{{#str}}open_subdepartment, local_costcenter{{/str}}</th>
             <th>{{#str}}open_level4department, local_costcenter{{/str}}</th>-->
-            <th>{{#str}}designation, local_users{{/str}}</th>
+            <!--<th>{{#str}}designation, local_users{{/str}}</th>-->
+            <th>{{#str}}role, local_users{{/str}}</th>
             {{#actionsicons}}
             <th>{{#str}}actions, local_users{{/str}}</th>
             {{/actionsicons}}
@@ -68,11 +69,17 @@
             <td>
                 {{email}}
             </td>
-            <td> {{org}}</td>
+            {{#org}}<td> {{org}}</td>{{/org}}
             <td> {{dept}}</td>
-            <!--<td> {{commercialunit}}</td>
+           <!-- <td> {{commercialunit}}</td>
             <td> {{commercialarea}}</td>-->
-            <td>{{designationstring}}</td>
+            <!--<td>{{designationstring}}</td>-->
+            <td>
+                {{^ rolename}}{{#str}}na,local_users{{/str}}{{/ rolename}}
+                {{# rolename}}{{ rolename }}{{/ rolename}}
+            </td>
+
+
 
             {{#actionsicons}}
             <td>

@@ -60,7 +60,8 @@ $courseindex = core_course_drawer();
 if (!$courseindex) {
     $courseindexopen = false;
 }
-
+$currentrole = $OUTPUT->get_user_currentrole();
+$extraclasses[] = $currentrole;
 $bodyattributes = $OUTPUT->body_attributes($extraclasses);
 $forceblockdraweropen = $OUTPUT->firstview_fakeblocks();
 
@@ -86,7 +87,10 @@ $regionmainsettingsmenu = $buildregionmainsettings ? $OUTPUT->region_main_settin
 
 $header = $PAGE->activityheader;
 $headercontent = $header->export_for_template($renderer);
-
+$hasquickaccessmenu = true;
+if($currentrole == 'teacher' || $currentrole == 'employee') {
+    $hasquickaccessmenu = false;
+}
 $templatecontext = [
     'sitename' => format_string($SITE->shortname, true, ['context' => context_course::instance(SITEID), "escape" => false]),
     'output' => $OUTPUT,
@@ -107,7 +111,8 @@ $templatecontext = [
     'overflow' => $overflow,
     'isloggedin' => isloggedin(),
     'headercontent' => $headercontent,
-    'addblockbutton' => $addblockbutton
+    'addblockbutton' => $addblockbutton,
+    'hasquickaccessmenu' => $hasquickaccessmenu,
 ];
 
 echo $OUTPUT->render_from_template('theme_epsilon_classic/course', $templatecontext);

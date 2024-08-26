@@ -263,25 +263,31 @@ class local_groups_renderer extends plugin_renderer_base  {
         foreach($cohorts as $cohort) {
                 $line = array();
                 $groupname = $cohort->name;
-                if(strlen($groupname) >15){
-                     $groupname = substr($groupname, 0,15).'...';
+                if(strlen($groupname) >30){
+                     $groupname = substr($groupname, 0,30).'...';
                 }
 
                 $groupid  =$cohort->idnumber;
                 $visible = $cohort->visible;
-                if(strlen($groupid) >8){
-                     $groupid = clean_text(substr($groupid, 0,8)).'...';
+                if(strlen($groupid) >18){
+                     $groupid = clean_text(substr($groupid, 0,18)).'...';
                 }
                 $orgname = $DB->get_field_sql("SELECT cc.fullname FROM {local_costcenter} AS cc 
                 JOIN {local_groups} AS lg ON  concat('/',lg.open_path,'/') LIKE concat('%/',cc.id,'/%') AND cc.depth = 1 WHERE lg.cohortid=".$cohort->id);
+               
+                list($zero, $org_id, $school_id, $bu, $cu, $territory) = explode("/",$cohort->open_path);
+
                 $cohortcontext =  (new \local_groups\lib\accesslib())::get_module_context();
                 
              //   $cohortcontext = context::instance_by_id($cohort->contextid);
                 $urlparams = array('id' => $cohort->id, 'returnurl' => $baseurl->out_as_local_url());
                 $group_members_count = $DB->count_records('cohort_members', array('cohortid'=>$cohort->id));
                 $line['groupname'] = \local_costcenter\lib::strip_tags_custom(html_entity_decode($groupname));
-                $line['groupid'] = \local_costcenter\lib::strip_tags_custom(html_entity_decode($groupid));               
-                $line['orgname'] = $orgname;
+                $line['groupid'] = \local_costcenter\lib::strip_tags_custom(html_entity_decode($groupid));
+                if(is_siteadmin()) {
+                    $line['orgname'] = $orgname;
+                }
+                $line['schoolname'] = $DB->get_field('local_costcenter', 'fullname', array('id' => $school_id));
                 if($visible==1){
                 $line['visible'] = $visible;}
                 $buttons = array();

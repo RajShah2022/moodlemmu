@@ -32,6 +32,8 @@ require_once($CFG->libdir . '/behat/lib.php');
 $addblockbutton = $OUTPUT->addblockbutton();
 
 $extraclasses = [];
+$currentrole = $OUTPUT->get_user_currentrole();
+$extraclasses[] = $currentrole;
 $bodyattributes = $OUTPUT->body_attributes($extraclasses);
 $blockshtml = $OUTPUT->blocks('side-pre');
 $hasblocks = (strpos($blockshtml, 'data-block=') !== false || !empty($addblockbutton));
@@ -54,7 +56,6 @@ $primarymenu = $primary->export_for_template($renderer);
 $buildregionmainsettings = !$PAGE->include_region_main_settings_in_header_actions()  && !$PAGE->has_secondary_navigation();
 // If the settings menu will be included in the header then don't add it here.
 $regionmainsettingsmenu = $buildregionmainsettings ? $OUTPUT->region_main_settings_menu() : false;
-
 $layerone_detail_full = $OUTPUT->blocks('layerone_full', 'col-md-12');
 $layerone_detail_one = $OUTPUT->blocks('layerone_one', 'col-md-7 float-left');
 $layerone_detail_two = $OUTPUT->blocks('layerone_two', 'col-md-5 float-left');
@@ -66,7 +67,10 @@ $layertwo_detail_four = $OUTPUT->blocks('layertwo_four', 'col-md-6 float-left');
 
 $layertwo_three_one = $OUTPUT->blocks('layerthree_one', 'col-md-12');
 $layertwo_three_two = $OUTPUT->blocks('layerthree_two', 'col-md-12');
-
+$hasquickaccessmenu = true;
+if($currentrole == 'teacher' || $currentrole == 'employee') {
+    $hasquickaccessmenu = false;
+}
 $header = $PAGE->activityheader;
 $headercontent = $header->export_for_template($renderer);
 $OUTPUT->seteditswtich_display(true);
@@ -99,6 +103,7 @@ $templatecontext = [
     'is_siteadmin'=>is_siteadmin(),
     'has_adminaccess'=>has_capability('local/costcenter:view',$categorycontext),
     'addblockbutton' => $addblockbutton,
+    'hasquickaccessmenu' => $hasquickaccessmenu,
 ];
 
 echo $OUTPUT->render_from_template('theme_epsilon_classic/dashboard', $templatecontext);

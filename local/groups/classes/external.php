@@ -342,6 +342,7 @@ class local_groups_external extends external_api {
             'totalcount' => $group_count,
             'records' =>$result,
             'options' => $options,
+            'issiteadmin' => is_siteadmin() ? true : false,
             'dataoptions' => $dataoptions,
             'filterdata' => $filterdata,
         ];
@@ -354,6 +355,7 @@ class local_groups_external extends external_api {
     public static function  managegroupsview_returns() {
         return new external_single_structure([
             'options' => new external_value(PARAM_RAW, 'The paging data for the service'),
+            'issiteadmin' => new external_value(PARAM_RAW, 'issiteadmin', VALUE_OPTIONAL),
             'dataoptions' => new external_value(PARAM_RAW, 'The data for the service'),
             'totalcount' => new external_value(PARAM_INT, 'total number of users in result set'),
             'filterdata' => new external_value(PARAM_RAW, 'The data for the service'),
@@ -364,6 +366,7 @@ class local_groups_external extends external_api {
                                     'userid' => new external_value(PARAM_RAW, 'userid', VALUE_OPTIONAL),
                                     'groupid' => new external_value(PARAM_RAW, 'groupid', VALUE_OPTIONAL),
                                     'orgname' => new external_value(PARAM_RAW, 'groupname', VALUE_OPTIONAL),
+                                    'schoolname' => new external_value(PARAM_RAW, 'school name', VALUE_OPTIONAL),
                                     'groupname' => new external_value(PARAM_RAW, 'groupname', VALUE_OPTIONAL),
                                     'userimages' => new external_value(PARAM_RAW, 'user pic', VALUE_OPTIONAL),
                                     'location_url' => new external_value(PARAM_RAW, 'location_url', VALUE_OPTIONAL),

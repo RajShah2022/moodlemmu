@@ -292,6 +292,7 @@ use core_user;
       $updaterecord->timemodified = time();
       $updaterecord->status = 'REJECTED';
       $updaterecord->rejectreason = $comment;
+      $DB->delete_records('local_coursegroups', ['groupid' =>$updaterecord->componentid, 'courseid' => $updaterecord->courseid]);
       //--- checking earlier approved or not
       if($updaterecord->compname && $updaterecord->componentid){
         $component= $updaterecord->compname;

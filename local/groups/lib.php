@@ -615,7 +615,7 @@ function local_groups_get_search_query($search, $tablealias = '') {
 function local_groups_get_groups($contextid, $page = 0, $perpage = 10, $search = '') {
     global $DB, $USER;
     $params = [];
-    $fields = "SELECT c.*, g.open_difficultylevel ";
+    $fields = "SELECT c.*, g.open_difficultylevel, g.open_path ";
     $countfields = "SELECT COUNT(c.id)";
     $sql = " FROM {cohort} c
              JOIN {local_groups} g ON c.id = g.cohortid
@@ -648,7 +648,7 @@ function local_groups_get_groups($contextid, $page = 0, $perpage = 10, $search =
  */
 function local_groups_get_all_groups($context,$page = 0, $perpage = 10, $search = '') {
     global $DB,$USER;
-    $fields = "SELECT c.*, ".context_helper::get_preload_record_columns_sql('ctx').", g.open_difficultylevel";
+    $fields = "SELECT c.*, ".context_helper::get_preload_record_columns_sql('ctx').", g.open_difficultylevel, g.open_path";
     $countfields = "SELECT COUNT(*)";
     $sql = " FROM {cohort} c
              JOIN {context} ctx ON ctx.id = c.contextid
@@ -775,6 +775,16 @@ function local_group_users($type = null, $groupid = 0, $params = array(), $total
     if($lastitem!=0){
         $sql.= " AND u.id > $lastitem";
     }
+    if (!is_siteadmin()) {
+        $sql .= " AND u.id IN (
+                    SELECT ra.userid 
+                    FROM {role_assignments} ra
+                    JOIN {role} r ON r.id = ra.roleid
+                    JOIN {context} c ON c.id = ra.contextid
+                    WHERE r.shortname IN ('teacher', 'employee') AND c.contextlevel = 40
+                 )";
+    }
+
     if (!empty($params['email'])) {
         $sql.=" AND u.id IN ({$params['email']})";
     }
@@ -854,12 +864,12 @@ function local_group_users($type = null, $groupid = 0, $params = array(), $total
     }
     
         
-    if (!empty($params['roles'])) {
+    if (!empty($params['grouproles'])) {
         $query = "SELECT u.id
             FROM {user} AS u
             JOIN {role_assignments} ra ON ra.userid = u.id
             JOIN {context} c ON c.id = ra.contextid AND c.contextlevel = 40
-           WHERE ra.roleid IN ({$params['roles']}) ";
+           WHERE ra.roleid IN ({$params['grouproles']}) ";
         $roleusers = $DB->get_records_sql_menu($query);
         if (!empty($roleusers)) {
             $userslist = implode(',', array_keys($roleusers)); // Note: array_keys to get the user IDs
@@ -978,7 +988,67 @@ function groups_filter($mform,$query='',$searchanywhere=false, $page=0, $perpage
     $mform->setType('groups', PARAM_RAW);
 }
 
+/**
+ * [role_filter form element function]
+ * @param  [form] $mform [filter form]
+ * @return 
+ */
+function grouproles_filter($mform, $query='',$searchanywhere=false, $page=0, $perpage=25){
+    global $DB, $USER;
+    // Get the category context from the local_users access library.
+    $categorycontext = (new \local_groups\lib\accesslib())::get_module_context();
+    $roleslist = array();
+    $data = data_submitted();
+    $costcenterpathconcatsql = (new \local_groups\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='open_path');
+    $roleslist_sql = "SELECT r.id, r.name as fullname FROM {role} r 
+    JOIN {role_context_levels} rcl ON (rcl.contextlevel = 40 AND r.id = rcl.roleid)  
+    WHERE r.name != '' AND (r.archetype != 'manager' ";
 
+    // Adjust query conditions based on context depth.
+    if(is_siteadmin()) {
+        if ($categorycontext->depth == 1) {
+            $roleslist_sql .= " OR r.shortname LIKE 'administrator' ";
+        }
+        if ($categorycontext->depth == 2 || is_siteadmin()) {
+            $roleslist_sql .= " OR r.shortname LIKE 'hod' ";
+        }    
+    }
+    
+
+    if(!empty($query)) { 
+        if ($searchanywhere) {
+            $roleslist_sql .= " AND r.name LIKE '%$query%' ";
+        } else {
+            $roleslist_sql .= " AND r.name LIKE '$query%' ";
+        }
+    }
+    
+     // Close the SQL query.
+    $roleslist_sql .= ")";
+    // $rolesparam['contextlevel'] = CONTEXT_COURSECAT;
+
+    if(isset($data->grouproles) && !empty(($data->grouproles))){
+        list($roles_sql, $rolesparam) = $DB->get_in_or_equal($data->grouproles, SQL_PARAMS_NAMED);
+        $roleslist_sql.=" AND r.id $roles_sql ";
+    }
+    if(!empty($query) || empty($mform)){ 
+        $roleslist = $DB->get_records_sql($roleslist_sql, $rolesparam, $page, $perpage);
+        return $roleslist;
+    }
+    if((isset($data->grouproles)&&!empty($data->grouproles))){ 
+        $roleslist = $DB->get_records_sql_menu($roleslist_sql, $rolesparam, $page, $perpage);
+    }
+
+    $options = array(
+        'ajax' => 'local_courses/form-options-selector',
+        'multiple' => true,
+        'data-action' => 'grouproles',
+        'data-options' => json_encode(array('id' => 0)),
+        'placeholder' => get_string('open_role', 'local_users')
+     );
+    $select = $mform->addElement('autocomplete', 'grouproles', '', $roleslist, $options);
+    $mform->setType('grouproles', PARAM_RAW);
+}
 /*
 * Author Rizwana
 * Displays a node in left side menu
@@ -1202,4 +1272,27 @@ function costcenterwise_groups_datacount($costcenter, $department = false, $subd
 
     $countgroups = $DB->count_records_sql($countgroupssql, $params);
     return ['datacount' => $countgroups];
+}
+function get_user_cohort_names($userid) {
+    global $DB;
+
+    // Join the cohort members table with the cohort table to get cohort names
+    $sql = "SELECT c.name
+            FROM {cohort_members} cm
+            JOIN {cohort} c ON cm.cohortid = c.id
+            WHERE cm.userid = :userid";
+
+    // Execute the query and fetch the cohort names
+    $cohorts = $DB->get_records_sql($sql, array('userid' => $userid));
+
+    // If the user belongs to any cohorts, return a comma-separated list of cohort names
+    if (!empty($cohorts)) {
+        $cohort_names = array();
+        foreach ($cohorts as $cohort) {
+            $cohort_names[] = $cohort->name;
+        }
+        return implode(', ', $cohort_names);
+    } else {
+        return '';
+    }
 }
