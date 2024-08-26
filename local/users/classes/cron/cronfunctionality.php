@@ -984,6 +984,7 @@ class cronfunctionality {
         $mandatory_list = implode(',', $this->mfields);
         $syncerrors->error = $errors_list;
         $syncerrors->modified_by = $USER->id;
+        $syncerrors->open_path = $USER->open_path;
         $syncerrors->mandatory_fields = $mandatory_list;
         if (empty($excel->email)) {
             $syncerrors->email = '-';
@@ -1255,6 +1256,7 @@ class cronfunctionality {
             $wmandatory_list = implode(',', $this->wmfields);
             $syncwarnings->error = $werrors_list;
             $syncwarnings->modified_by = $USER->id;
+            $syncwarnings->open_path = $USER->open_path;
             $syncwarnings->mandatory_fields = $wmandatory_list;
             if (empty($excel->email)) {
                 $syncwarnings->email = '-';

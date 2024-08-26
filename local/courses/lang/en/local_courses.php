@@ -474,3 +474,4 @@ $string['classenrollmentrequeststatus'] = '<span class="{$a} ml-4 request_status
 $string['childcheckboxhelp_help'] = 'Enable it\'s parent option to enable this option.';
 $string['topicsselected'] = 'The Topics has been successfully selected for the course <b>{$a}</b>';
 $string['classesselected'] = 'The Classes has been successfully selected for the course <b>{$a}</b>';
+$string['class'] = 'Class';

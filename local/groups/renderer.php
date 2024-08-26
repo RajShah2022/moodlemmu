@@ -362,8 +362,31 @@ class local_groups_renderer extends plugin_renderer_base  {
                 //     $row->attributes['class'] = 'dimmed_text';
                 // }
                 $imagehtml = '';
+                $group = $DB->get_record('cohort', array('id' => $cohort->id));
+                $cohort_group  = $DB->get_record('local_groups', array('cohortid' => $cohort->id));
+                $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='u.open_path');
+                $params['suspended'] = 0;
+                $params['deleted'] = 0;
+  
+                $sql = "SELECT u.id as userid ";    
+                $sqlcount = "SELECT COUNT(u.id) ";                
+                $fromsql = " FROM {user} AS u 
+                        WHERE  u.id > 2 AND u.suspended = :suspended AND u.deleted = :deleted $costcenterpathconcatsql ";
+                if (!is_siteadmin()) {
+                    $fromsql .= " AND u.id IN (
+                                SELECT ra.userid 
+                                FROM {role_assignments} ra
+                                JOIN {role} r ON r.id = ra.roleid
+                                JOIN {context} c ON c.id = ra.contextid
+                                WHERE r.shortname IN ('teacher', 'employee') AND c.contextlevel = 40
+                             )";
+                }
+                $fromsql .= " AND u.id IN (SELECT userid FROM {cohort_members} WHERE cohortid = :cohortid) ";
+                $params['cohortid'] = $cohort->id;
                 
-                $group_images= $DB->get_records('cohort_members', array('cohortid'=>$cohort->id),$sort='id desc', $fields='*', $limitfrom=0, $limitnum=4);
+                $group_images = $DB->get_records_sql($sql.$fromsql, $params);
+                $cohort_users = $DB->count_records_sql($sqlcount.$fromsql, $params);
+                // $group_images= $DB->get_records('cohort_members', array('cohortid'=>$cohort->id),$sort='id desc', $fields='*', $limitfrom=0, $limitnum=4);
            foreach($group_images as $group_image){
               
                 $user_record = $DB->get_record('user',array('id'=>$group_image->userid));
@@ -381,7 +404,7 @@ class local_groups_renderer extends plugin_renderer_base  {
                 
            }
            $line['userimages'] = $imagehtml;
-           $cohort_users = $DB->count_records('cohort_members', array('cohortid'=>$cohort->id));
+           // $cohort_users = $DB->count_records_sql($sqlcount.$userssql, $params);
            $line['groupcount'] = $cohort_users;
            $line['userid']=$cohort->id;
            $line['location_url'] = $CFG->wwwroot . '/local/groups/assign.php?id='.$cohort->id;

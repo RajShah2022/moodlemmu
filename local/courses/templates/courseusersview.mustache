@@ -1,4 +1,5 @@
 <div>
+    {{#actions}}
     <ul class="course_extended_menu_list">
             <li>
                 <div class="coursebackup course_extended_menu_itemcontainer">
@@ -11,6 +12,7 @@
                 </div>
             </li>
     </ul>
+    {{/actions}}
     <table class='generaltable' id='course_users'>
         <thead>
             <tr>
@@ -27,7 +29,8 @@
                 {{/attempt}}
                 {{^attempt}}
                     <th>{{# str}} completiondate, local_courses{{/ str}}</th>
-                <th>{{# str}} enrolmethod, local_courses{{/ str}}</th>
+                    <th>{{# str}} enrolmethod, local_courses{{/ str}}</th>
+                    <th>{{# str}} class, local_courses{{/ str}}</th>
                 {{/attempt}}
                 {{#actions}}
                     <th>{{# str}} actions,local_courses{{/ str}}</th>

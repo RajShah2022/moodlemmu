@@ -172,14 +172,19 @@ function users_filter($mform, $query = '', $searchanywhere = false, $page = 0, $
           AND suspended = :suspended AND id <> :userid  $costcenterpathconcatsql";
     }
 
+    // if (!empty($query)) {
+    //     if ($searchanywhere) {
+    //         $likesql = $DB->sql_like("CONCAT(firstname, ' ',lastname)", "'%$query%'", false);
+    //         $userslist_sql .= " AND $likesql ";
+    //     } else {
+    //         $likesql = $DB->sql_like("CONCAT(firstname, ' ',lastname)", "'$query%'", false);
+    //         $userslist_sql .= " AND $likesql ";
+    //     }
+    // }
+
     if (!empty($query)) {
-        if ($searchanywhere) {
-            $likesql = $DB->sql_like("CONCAT(firstname, ' ',lastname)", "'%$query%'", false);
-            $userslist_sql .= " AND $likesql ";
-        } else {
-            $likesql = $DB->sql_like("CONCAT(firstname, ' ',lastname)", "'$query%'", false);
-            $userslist_sql .= " AND $likesql ";
-        }
+        $userslist_sql .= " AND  CONCAT(firstname, ' ',lastname) LIKE :fullname ";
+        $userslistparams['fullname'] = '%' . trim($query) . '%';
     }
     if (isset($data->users) && !empty(($data->users))) {
 
@@ -231,14 +236,18 @@ function email_filter($mform, $query = '', $searchanywhere = false, $page = 0, $
          :adminuserid AND deleted = :deleted AND suspended = :suspended AND id <> :userid $costcenterpathconcatsql";
     }
     if (!empty($query)) {
-        if ($searchanywhere) {
-            $likesql = $DB->sql_like('email', "'%$query%'", false);
-            $userslist_sql .= " AND $likesql ";
-        } else {
-            $likesql = $DB->sql_like('email', "'$query%'", false);
-            $userslist_sql .= " AND $likesql ";
-        }
+        $userslist_sql .= " AND  email LIKE :email ";
+        $userslistparams['email'] = '%' . trim($query) . '%';
     }
+    // if (!empty($query)) {
+    //     if ($searchanywhere) {
+    //         $likesql = $DB->sql_like('email', "'%$query%'", false);
+    //         $userslist_sql .= " AND $likesql ";
+    //     } else {
+    //         $likesql = $DB->sql_like('email', "'$query%'", false);
+    //         $userslist_sql .= " AND $likesql ";
+    //     }
+    // }
     if (isset($data->email) && !empty(($data->email))) {
 
         list($mailsql, $mailparam) = $DB->get_in_or_equal($data->email, SQL_PARAMS_NAMED);
@@ -289,14 +298,19 @@ function employeeid_filter($mform, $query = '', $searchanywhere = false, $page =
         $userslist_sql = "SELECT id, open_employeeid as fullname FROM {user} WHERE id > :adminuserid AND deleted = :deleted AND suspended = :suspended
           AND id <> :userid $costcenterpathconcatsql";
     }
+    // if (!empty($query)) {
+    //     if ($searchanywhere) {
+    //         $likesql = $DB->sql_like('open_employeeid', "'%$query%'", false);
+    //         $userslist_sql .= " AND $likesql ";
+    //     } else {
+    //         $likesql = $DB->sql_like('open_employeeid', "'$query%'", false);
+    //         $userslist_sql .= " AND $likesql ";
+    //     }
+    // }
+
     if (!empty($query)) {
-        if ($searchanywhere) {
-            $likesql = $DB->sql_like('open_employeeid', "'%$query%'", false);
-            $userslist_sql .= " AND $likesql ";
-        } else {
-            $likesql = $DB->sql_like('open_employeeid', "'$query%'", false);
-            $userslist_sql .= " AND $likesql ";
-        }
+        $userslist_sql .= " AND  open_employeeid LIKE :open_employeeid ";
+        $userslistparams['open_employeeid'] = '%' . trim($query) . '%';
     }
     if (isset($data->idnumber) && !empty(($data->idnumber))) {
         list($idsql, $idparam) = $DB->get_in_or_equal($data->idnumber, SQL_PARAMS_NAMED);
@@ -553,23 +567,22 @@ function roles_filter($mform, $query='',$searchanywhere=false, $page=0, $perpage
         $roleslist_sql .= " OR r.shortname LIKE 'hod' ";
     }
 
-    if(!empty($query)) { 
-        if ($searchanywhere) {
-            $roleslist_sql .= " AND r.name LIKE '%$query%' ";
-        } else {
-            $roleslist_sql .= " AND r.name LIKE '$query%' ";
-        }
-    }
-    
-     // Close the SQL query.
+    // Close the SQL query.
     $roleslist_sql .= ")";
+    
     // $rolesparam['contextlevel'] = CONTEXT_COURSECAT;
+    if(!empty($query)){ 
+        $roleslist_sql .= " AND r.name LIKE :name ";
+        $rolesparam['name'] = '%' . trim($query) . '%';
+    }
 
     if(isset($data->roles) && !empty(($data->roles))){
         list($roles_sql, $rolesparam) = $DB->get_in_or_equal($data->roles, SQL_PARAMS_NAMED);
         $roleslist_sql.=" AND r.id $roles_sql ";
+        $rolesparam = array_merge($rolesparam, $rolesparam);
     }
-    if(!empty($query) || empty($mform)){ 
+    // Execute query and return results.
+    if (!empty($query) || empty($mform)) {
         $roleslist = $DB->get_records_sql($roleslist_sql, $rolesparam, $page, $perpage);
         return $roleslist;
     }
@@ -1464,12 +1477,13 @@ function manage_syncerrors_count($stable, $filterdata) {
     $params = array();
     $countsql = " SELECT count(id) ";
     $selectsql = "SELECT * ";
-    $fromsql = " FROM {local_syncerrors} ls where 1=1";
+    $fromsql = " FROM {local_syncerrors} ls where 1=1 ";
     if (is_siteadmin()) {
         $fromsql .= " ";
     } else {
-        $fromsql .= " AND modified_by = :modified_by ";
+        $fromsql .= " AND (modified_by = :modified_by OR open_path = :open_path)";
         $params['modified_by'] = $USER->id;
+        $params['open_path'] = $USER->open_path;
     }
     $count = $DB->count_records_sql($countsql . $fromsql, $params);
     $fromsql .= " ORDER BY id DESC ";
