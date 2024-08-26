@@ -1099,11 +1099,12 @@ function groups_mass_enroll($cir, $groups, $context, $data) {
                 $result .= '<div class="alert alert-error">'.get_string('user_exist', 'local_groups', $fields[0] ). '</div>';
                 continue;
             } else {
-                $record = new stdClass();
-                $record->cohortid  = $groups->id;
-                $record->userid    = $user->id;
-                $record->timeadded = time();
-                $DB->insert_record('cohort_members', $record);
+                // $record = new stdClass();
+                // $record->cohortid  = $groups->id;
+                // $record->userid    = $user->id;
+                // $record->timeadded = time();
+                // $DB->insert_record('cohort_members', $record);
+                local_groups_add_member($groups->id, $user->id);
                 $result .= '<div class="alert alert-success">'.get_string('im:stats_i', 'local_groups', fullname($user)).'</div>';
 
                 $enrollablecount ++;
