@@ -74,7 +74,7 @@ class create_user extends moodleform {
                 $static = true;
             }
             // local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(1, 2), true, 'local_users', $categorycontext, $multiple = false, '', '', false, $static = $static);
-            local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(1, 2), true, 'local_costcenter', $categorycontext, $multiple = false);
+            local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(1, 2), true, 'local_costcenter', $categorycontext, $multiple = false, $prefix = '', $open_path = '', $ismandatory = true);
             
             $count = count((array)$costcenters);
             $mform->addElement('hidden', 'count', $count);
@@ -404,16 +404,16 @@ class create_user extends moodleform {
             if (empty(trim($lastname))) {
                 $errors['lastname'] = get_string('vallastnamerequired', 'local_users');
             }
-            // if($id > 0) {
+            if(!empty($data['roleid'])) {
                 $role = $DB->get_record('role', array('id' => $data['roleid']));
                 if($role->shortname != 'administrator' && ($data['open_department'] == 0 || $data['open_department'] == 'All')) {
                     $errors['open_department'] = get_string('schoolmustselect', 'local_users', $role->name);   
                 } else {
-                    if ($role->shortname == 'administrator' && $data['open_department'] != 0) {
+                    if ($role->shortname == 'administrator' && $data['open_department'] > 0) {
                        $errors['open_department'] = get_string('administratornotforanyschool', 'local_users', $role->name);    
                     }
                 }
-            // }
+            }
             
             // OL72 issue department as mandatory.
             // $department = $data['open_departmentid'];

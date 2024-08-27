@@ -324,6 +324,7 @@ class local_courses_renderer extends plugin_renderer_base {
                 $userenrolment = $DB->get_records_sql($sql);
                 $enrolmethod = array();
                 $enroll = array();
+                $groupname = array();
                 foreach ($userenrolment as $userenrol) {
                     $enroll[] = ucfirst($userenrol->enrol);
 
@@ -361,11 +362,18 @@ class local_courses_renderer extends plugin_renderer_base {
                             }
                         }
                     }
-                    $enrolmethod[] = $DB->get_field('cohort', 'name', array('id' => $userenrol->customint1));
+                    if($userenrol->customint1){
+                        $groupname[] = $DB->get_field('cohort', 'name', array('id' => $userenrol->customint1));
+                    } else {
+                        $groupname[] = get_string('na', 'local_users');
+                    }
+                    
                 }
                 if ($dataobj->moduletype != 'onlineexam') {
                     $userinfo[] = implode('<br />', $enroll);
                 }
+
+                $userinfo[] = implode(' <br>', $groupname);
                 $userinfo[] = implode(' <br>', $enrolmethod);
                 if ($cert_plugin_exists && $certificate_added) {
                     if (!empty($enroluser->timecompleted)) {
