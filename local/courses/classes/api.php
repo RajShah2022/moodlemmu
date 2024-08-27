@@ -38,6 +38,7 @@ require_once($CFG->dirroot . '/group/lib.php');
 class api {
     public const COURSETOPICS_TABLE = 'local_coursetopics';
     public const COURSEGROUPS_TABLE = 'local_coursegroups';
+    public const LOCAL_GROUPS = 'local_groups';
     public const ENROLLMENT_REQUESTS_TABLE = 'local_request_records';
     public const ENROLL_TABLE = 'enrol';
     public const COURSESECTIONS_TABLE = 'course_sections';
@@ -855,26 +856,33 @@ class api {
         return $enrolid;
     }
 
-    // public static function unenrollgroups($groupid, $courseid, $fields = null) {
-    //     global $DB;
-    //     $instances = enrol_get_instances($courseid, false);
-    //     $chohortplugin = enrol_get_plugin('cohort');
+    public static function delete_cohort_sync($courseid, $coursepaths) {
+        global $DB;
 
-    //     $params = [
-    //         'customint1' => $groupid,
-    //         'courseid' => $courseid,
-    //         'enrol' => 'cohort',
-    //     ];
-    //     $coursecohortslist = $DB->get_records('enrol', $params);
-    //     if(!empty($coursecohortslist)) {
-    //         foreach($coursecohortslist as $coursecohort) {
-    //             $chohortplugin->update_communication($coursecohort->id, 'remove', $courseid);
-    //             $instance = $instances[$coursecohort->id];
-    //             $chohortplugin->delete_instance($instance);
-    //             groups_delete_group($coursecohort->customint2);
-    //         }  
-    //     }        
-    // }
+        // Split the coursepaths into an array and properly quote each element
+        $coursepathsArray = array_map(function($path) {
+            return "'" . trim($path) . "'";
+        }, explode(',', $coursepaths));
+
+        // Join the quoted paths back into a comma-separated string
+        $coursepathsQuoted = implode(',', $coursepathsArray);
+
+        // print_r($coursepathsQuoted);
+
+        $cohortsync = "SELECT e.customint1, g.open_path
+                       FROM {" . self::ENROLL_TABLE . "} e
+                       JOIN {" . self::LOCAL_GROUPS . "} g
+                         ON e.customint1 = g.cohortid
+                       WHERE g.open_path NOT IN ($coursepathsQuoted) AND e.courseid = :courseid AND e.enrol = :enrol";
+
+        $cohortparams = ['courseid' => $courseid, 'enrol' => 'cohort'];
+        $cohortsynclist = $DB->get_records_sql($cohortsync, $cohortparams);
+        foreach($cohortsynclist as $cohortsynclist) {
+            $DB->delete_records(self::COURSEGROUPS_TABLE, ['groupid' => $cohortsynclist->customint1, 'courseid' => $courseid, 'open_path' =>$cohortsynclist->open_path]);
+            self::unenrollgroups($cohortsynclist->customint1, $courseid);
+        }
+    }
+
 
     public static function unenrollgroups($groupid, $courseid, $fields = null) {
         global $DB;
