@@ -560,7 +560,7 @@ function course_create_section($courseorid, $position = 0, $skipcheck = false) {
     $cw->sequence = '';
     $cw->name = null;
     // changed by Rizwana --> from 1 to 0 for hidding sections by deafault 
-    if($lastsection > 0) {
+    if($cw->section > 0) {
         $cw->visible = 0;    
     } else {
         $cw->visible = 1;
