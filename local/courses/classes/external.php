@@ -1237,7 +1237,6 @@ class local_courses_external extends external_api {
     }
     public static function groupenrollmentrequest($courseid, $selectedGroups) {
         global $DB, $USER;
-
         // Get the course's open_difficultylevel.
         $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
         $courseDifficultylevel = $course->open_difficultylevel;
@@ -1268,7 +1267,6 @@ class local_courses_external extends external_api {
                 }
             }
         }
-
         // Handle enrollment for cohorts to add.
         if (!empty($cohortsToAdd)) {
             $fields = [
@@ -1279,7 +1277,6 @@ class local_courses_external extends external_api {
                 'courseid' => $courseid,
                 'type' => 'cohort'
             ];
-
             if (api::is_hod()) {
                 if ($enrol_manual = enrol_get_plugin('manual')) {
                     $instance = $DB->get_record('enrol', ['courseid' => $courseid, 'enrol' => 'manual'], '*', MUST_EXIST);
@@ -1313,7 +1310,7 @@ class local_courses_external extends external_api {
                 }
             }
         }
-
+        api::course_content_accessrestrictions($courseid);
         // If the admin deselects a group, remove all related records.
         // if (is_siteadmin() || api::is_administrator()) {
         //     // Fetch all group IDs that are not in the selected groups.

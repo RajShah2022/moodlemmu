@@ -217,7 +217,6 @@ class api {
                     }
                 }
             }
-
             if ($isadmin) {
                 // Admin-specific: Delete unchecked topics across all open paths.
                 foreach ($existinggroupids as $groupid => $paths) {
@@ -454,21 +453,19 @@ class api {
                        JOIN {" . self::COURSEGROUPS_TABLE . "} cg
                          ON e.customint1 = cg.groupid AND e.courseid = cg.courseid
                        WHERE e.courseid = :courseid AND e.enrol = :enrol";
+
         $cohortparams = ['courseid' => $courseid, 'enrol' => 'cohort'];
         $cohortsynclist = $DB->get_records_sql($cohortsync, $cohortparams);
-
         // Create a map of customint2 (group information) to open_path
         $groupPaths = [];
         foreach ($cohortsynclist as $cohort) {
             $groupPaths[$cohort->customint2] = $cohort->open_path;
         }
-
         // Create an associative array to map section IDs to topic IDs
         $sectionsByTopic = [];
         foreach ($linkedTopics as $topicRecord) {
             $sectionsByTopic[$topicRecord->topic] = $topicRecord->topic;
         }
-
         // Iterate over all sections
         foreach ($allSections as $section) {
             if ($section->section > 0) {
@@ -485,7 +482,6 @@ class api {
                     
                     // Get all topic records for the specific topic ID
                     $topicRecords = $DB->get_records(self::COURSETOPICS_TABLE, ['topic' => $topicId]);
-
                     // Iterate through each topic record
                     foreach ($topicRecords as $topicRecord) {
                         if (is_null($topicRecord->open_path)) {
