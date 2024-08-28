@@ -185,15 +185,15 @@ class create_user extends moodleform {
                 'data-action' => 'user_supervisor_selector',
                 'noselectionstring' => get_string('noselection', 'form')
             );
-            $select = $mform->addElement(
-                'autocomplete',
-                'open_supervisorid',
-                get_string('supervisor', 'local_users'),
-                $reportingmanger,
-                $supervisoroptions
-            );
+            // $select = $mform->addElement(
+            //     'autocomplete',
+            //     'open_supervisorid',
+            //     get_string('supervisor', 'local_users'),
+            //     $reportingmanger,
+            //     $supervisoroptions
+            // );
 
-            $mform->setType('open_supervisorid', PARAM_RAW);
+            // $mform->setType('open_supervisorid', PARAM_RAW);
 
             //$costcenterid = ($open_costcenterid) ? $open_costcenterid : 0;
             $costcenterid = ($this->_ajaxformdata['open_costcenterid']) ? $this->_ajaxformdata['open_costcenterid'] : (($open_costcenterid) ? $open_costcenterid : 0);
