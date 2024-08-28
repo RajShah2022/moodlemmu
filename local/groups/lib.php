@@ -1040,7 +1040,7 @@ function grouproles_filter($mform, $query='',$searchanywhere=false, $page=0, $pe
     // $rolesparam['contextlevel'] = CONTEXT_COURSECAT;
 
     if(isset($data->grouproles) && !empty(($data->grouproles))){
-        list($roles_sql, $rolesparam) = $DB->get_in_or_equal($data->roles, SQL_PARAMS_NAMED);
+        list($roles_sql, $rolesparam) = $DB->get_in_or_equal($data->grouproles, SQL_PARAMS_NAMED);
         $roleslist_sql.=" AND r.id $roles_sql ";
         $rolesparam = array_merge($rolesparam, $rolesparam);
     }

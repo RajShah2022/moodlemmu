@@ -100,7 +100,7 @@ class accesslib extends \local_costcenter\lib\accesslib{
                                 JOIN {role_assignments} as ra ON ra.contextid = cot.id
                                 JOIN {user} u ON u.id = ra.userid AND u.confirmed = 1
                                                 AND u.deleted = 0 AND u.suspended = 0
-                                JOIN {role} as r ON r.id = ra.roleid AND r.shortname IN ('student','employee', 'manager', 'teacher', 'editingteacher', 'administrator', 'trainer', 'hod_course')
+                                JOIN {role} as r ON r.id = ra.roleid AND r.shortname IN ('employee', 'teacher')
                                 WHERE c.id = :courseid $costcenterpathconcatsql";
 
             $enrolledusercount =  $DB->count_records_sql($enrolledusersssql, $params);

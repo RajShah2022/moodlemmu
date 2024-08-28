@@ -933,7 +933,7 @@ function local_users_quicklink_node() {
 
     $categorycontext = (new \local_users\lib\accesslib())::get_module_context();
 
-    $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'open_path', $orgid);
+    $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'open_path');
 
     $local_users = '';
     if (is_siteadmin() || has_capability('local/users:view', $categorycontext)) {
@@ -951,11 +951,14 @@ function local_users_quicklink_node() {
         $inactiveparams['suspended'] = 1;
         $inactiveparams['deleted'] = 0;
 
-        if ((is_siteadmin() || has_capability('local/costcenter:manage_multiorganizations', $categorycontext)) && $orgid == 0) {
+        if (is_siteadmin() && $orgid == 0) {
             $sql .= "";
         } else {
             //costcenterid concating
-            $sql .= $costcenterpathconcatsql;
+            $sql .= " AND id != :userid " . $costcenterpathconcatsql;
+            $activeparams['userid'] = $USER->id;
+            $inactiveparams['userid'] = $USER->id;
+            $params['userid'] = $USER->id;
         }
 
         $count_activeusers = $DB->count_records_sql($sql . $suspendsql, $activeparams);

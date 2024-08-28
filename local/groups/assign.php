@@ -74,8 +74,9 @@ $PAGE->navbar->add(get_string('cohorts', 'local_groups'), new moodle_url('/local
 $PAGE->navbar->add(get_string('assign', 'local_groups'));
 
 $PAGE->set_title(get_string('assigncohorts', 'local_groups'));
-
-$PAGE->set_heading($COURSE->fullname);
+if(!$add&&!$remove){
+$PAGE->set_heading(get_string('assignto', 'local_groups', format_string($groups->name)));
+}
 $PAGE->requires->jquery();
 $PAGE->requires->jquery_plugin('ui');
 // $PAGE->requires->js('/local/classroom/js/jquery.bootstrap-duallistbox.js',true);
@@ -87,9 +88,7 @@ if($view == 'ajax'){
 	exit;
 }
 echo $OUTPUT->header();
-if(!$add&&!$remove){
-echo $OUTPUT->heading(get_string('assignto', 'local_groups', format_string($groups->name)));
-}
+
 
 if ($groups) {
   $organization = null;
