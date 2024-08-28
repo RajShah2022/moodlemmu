@@ -276,12 +276,23 @@ function local_groups_update_groups($groups) {
     // prevent NULLs
     $groups->component = '';
     }
+    $cohort_group = $DB->get_record('local_groups', array('cohortid'=>$groups->id));
     $costcenterquerylib = new \local_costcenter\querylib();
-    $departmentname = $costcenterquerylib->costcenter_field('fullname', array('path' => $groups->open_path));
+    if(!empty($groups->open_path)){
+        $departmentname = $costcenterquerylib->costcenter_field('fullname', array('path' => $groups->open_path));
+    } else {
+        $departmentname = $costcenterquerylib->costcenter_field('fullname', array('path' => $cohort_group->open_path));
+    }
+    if(!empty($groups->name)) {
+        $groupname = $groups->name;
+    } else {
+        $groupname = $DB->get_field('cohort', 'name', array('id' => $groups->id));
+    }
+    
     // if (!isset($groups->idnumber)) {
     //     $groups->idnumber = NULL;
     // }
-    $groups->idnumber = $departmentname .' - '. $groups->name;
+    $groups->idnumber = $departmentname .' - '. $groupname;
     if(!empty($groups->description_editor['text'])){
         $groups->description = $groups->description_editor['text'];
     }else{
@@ -296,7 +307,7 @@ function local_groups_update_groups($groups) {
 
     $groups->timemodified = time();
     $DB->update_record('cohort', $groups);
-    $cohort_group = $DB->get_record('local_groups', array('cohortid'=>$groups->id));
+    
     $DB->update_record('local_groups', $groups);
     $event = \core\event\cohort_updated::create(array(
         'context' =>(new \local_groups\lib\accesslib())::get_module_context(),
