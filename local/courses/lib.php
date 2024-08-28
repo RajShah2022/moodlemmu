@@ -888,19 +888,20 @@ function local_courses_quicklink_node() {
                 $sql .= $costcenterpathconcatsql . " OR FIND_IN_SET('{$USER->open_path}', c.open_path)";
             }
             $open_path = (new \local_courses\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'u.open_path');
-            $enrolsql = "SELECT count(u.id)
+            $enrolsql = "SELECT count(DISTINCT(u.id))
                     FROM {user} u
                     JOIN {user_enrolments} ue ON ue.userid = u.id
                     JOIN {enrol} e ON e.id = ue.enrolid
                     JOIN {course} c ON  e.courseid = c.id AND FIND_IN_SET(u.open_path, c.open_path)
                     WHERE e.status = 0 AND u.suspended = 0 AND u.deleted = 0
-                    AND ue.status = 0 AND c.open_coursetype=0 $open_path ";
+                    AND ue.status = 0 AND c.open_coursetype=0 $open_path AND u.id != :userid";
+            $params['userid'] = $USER->id;
             $completioncount = "SELECT count(u.id) FROM {course_completions} AS cp
                                 JOIN {course} AS c ON cp.course = c.id
                                 JOIN {user} AS u ON cp.userid = u.id 
                                 WHERE c.enablecompletion = 1
                                 AND c.open_coursetype=0 $open_path";
-            $enrolcount = $DB->get_field_sql($enrolsql);
+            $enrolcount = $DB->get_field_sql($enrolsql, $params);
             $completioncount = $DB->get_field_sql($completioncount);
             $count_courses = $DB->count_records_sql($sql);
 
