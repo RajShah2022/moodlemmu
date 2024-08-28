@@ -190,7 +190,7 @@ class userdashboard implements renderable {
                 }else{
                     $onerow['label_name'] = get_string('start_course','block_userdashboard');
                 }
-                $onerow['class'] = get_user_cohort_names($USER->id) ? get_user_cohort_names($USER->id) : '';
+                $onerow['class'] = get_user_cohort_names(null, $inprogress_coursename->id) ? get_user_cohort_names(null, $inprogress_coursename->id) : '';
                 array_push($data->inprogress_elearning, $onerow);
                 
             } // end of foreach 
