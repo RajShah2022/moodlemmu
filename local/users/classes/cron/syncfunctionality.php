@@ -615,7 +615,7 @@ class syncfunctionality
             $strings = new stdClass;
             $strings->line = $this->excel_line_number;
             $strings->role = $excel->role;
-            echo '<div class="local_users_sync_error">'.get_string('schoolmustselectupload','local_users', $strings).'';
+            echo '<div class="local_users_sync_error"> '.get_string('schoolmustselectupload','local_users', $strings).'</div>';
             $this->errors[] = get_string('schoolmustselectupload','local_users', $strings);
             $this->mfields[] = $excel->school_code;
             $this->errorcount++;
