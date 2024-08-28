@@ -316,15 +316,19 @@ class local_courses_renderer extends plugin_renderer_base {
                         $userinfo[] = 'N/A';
                     }
                 }
+                $coursecontext = context_course::instance($dataobj->courseid);
                 $get_enrolid = "";
                 $get_enrolmentod = "";
                 $sql = "SELECT ue.id,e.enrol,e.customint1,ue.userid FROM {user_enrolments} as ue
                     JOIN {enrol} as e ON e.id = ue.enrolid
+                    JOIN {role_assignments} as ra ON ra.userid = ue.userid
+                    JOIN {role} as r ON r.id = ra.roleid 
                     WHERE e.courseid = $dataobj->courseid AND ue.userid =$enroluser->userid ";
                 $userenrolment = $DB->get_records_sql($sql);
                 $enrolmethod = array();
                 $enroll = array();
                 $groupname = array();
+                $rolename = array();
                 foreach ($userenrolment as $userenrol) {
                     $enroll[] = ucfirst($userenrol->enrol);
 
@@ -367,6 +371,11 @@ class local_courses_renderer extends plugin_renderer_base {
                     } else {
                         $groupname[] = get_string('na', 'local_users');
                     }
+                    if($userenrol->rolename){
+                        $rolename[] = $userenrol->rolename;
+                    } else {
+                        $rolename[] = get_string('na', 'local_users');
+                    }
                     
                 }
                 if ($dataobj->moduletype != 'onlineexam') {
@@ -374,6 +383,7 @@ class local_courses_renderer extends plugin_renderer_base {
                 }
 
                 $userinfo[] = implode(' <br>', $groupname);
+                $userinfo[] = implode(' <br>', $rolename);
                 $userinfo[] = implode(' <br>', $enrolmethod);
                 if ($cert_plugin_exists && $certificate_added) {
                     if (!empty($enroluser->timecompleted)) {
