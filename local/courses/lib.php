@@ -904,7 +904,6 @@ function local_courses_quicklink_node() {
             $enrolcount = $DB->get_field_sql($enrolsql, $params);
             $completioncount = $DB->get_field_sql($completioncount);
             $count_courses = $DB->count_records_sql($sql);
-            $DB->set_debug(false);
 
             if ($completioncount == 0 || $enrolcount == 0) {
                 $percent = 0;
