@@ -737,6 +737,9 @@ function local_costcenter_get_hierarchy_fields($mform, $ajaxformdata, $customdat
                     list($idsql, $idparams) = $DB->get_in_or_equal($levelelementids, SQL_PARAMS_NAMED, 'levelelements');
                     $levelsql = "SELECT id, fullname FROM {local_costcenter} WHERE id {$idsql} ";
                     $levelelements += $DB->get_records_sql_menu($levelsql, $idparams);
+                    if ($enableallfield) {
+                        $levelelements += [0 => get_string('all')];
+                    }
                 }
             }
             $mform->addElement('autocomplete', $prefix . $fields[$level], get_string($fields[$level], 'local_costcenter'), $levelelements, $levelelementoptions);
