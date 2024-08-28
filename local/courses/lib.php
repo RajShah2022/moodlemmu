@@ -893,8 +893,11 @@ function local_courses_quicklink_node() {
                     JOIN {user_enrolments} ue ON ue.userid = u.id
                     JOIN {enrol} e ON e.id = ue.enrolid
                     JOIN {course} c ON  e.courseid = c.id AND FIND_IN_SET(u.open_path, c.open_path)
+                    JOIN {role_assignments} as ra ON ra.userid = u.id
+                    JOIN {context} AS cxt ON cxt.id=ra.contextid AND cxt.contextlevel = 50 AND cxt.instanceid=c.id
+                    JOIN {role} as r ON r.id = ra.roleid AND r.shortname IN ('student','employee', 'teacher')
                     WHERE e.status = 0 AND u.suspended = 0 AND u.deleted = 0
-                    AND ue.status = 0 AND c.open_coursetype=0 $open_path AND u.id != :userid";
+                    AND ue.status = 0 AND c.open_coursetype=0 $open_path ";
             $params['userid'] = $USER->id;
             $completioncount = "SELECT count(u.id) FROM {course_completions} AS cp
                                 JOIN {course} AS c ON cp.course = c.id

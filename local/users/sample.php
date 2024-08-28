@@ -56,7 +56,7 @@ if ($format) {
         
         // 'department_code' => 'department_code',
         //'subdepartment_code' => 'subdepartment_code',
-        'reportingmanager_empid' => 'reportingmanager_empid',
+        // 'reportingmanager_empid' => 'reportingmanager_empid',
         // 'language' => 'language',
         'designation' => 'designation',
         // 'employment_type' => 'employment_type',
