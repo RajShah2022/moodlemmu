@@ -248,6 +248,7 @@ $string['help_1_orghead'] = '<table class="generaltable" border="1">
 <tr><td>lastname</td><td>Enter the last name.</td></tr>
 <tr><td>email</td><td>Enter valid email.</td></tr>
 <tr><td>employee_status</td><td>Enter employee Status as either \'Active\' or \'Inactive\', avoid additional spaces.</td></tr>
+<tr><td>gender</td><td>Enter gender as either \'male\',\'female\' or \'other\', avoid additional spaces.</td></tr>
 ';
 
 $string['help_1_dephead'] = '<table class="generaltable" border="1">
@@ -260,5 +261,6 @@ $string['help_1_dephead'] = '<table class="generaltable" border="1">
 <tr><td>lastname</td><td>Enter the last name.</td></tr>
 <tr><td>email</td><td>Enter valid email.</td></tr>
 <tr><td>employee_status</td><td>Enter employee Status as either \'Active\' or \'Inactive\', avoid additional spaces.</td></tr>
+<tr><td>gender</td><td>Enter gender as either \'male\',\'female\' or \'other\', avoid additional spaces.</td></tr>
 ';
 $string['dashboard'] = 'Dashboard';

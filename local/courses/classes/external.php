@@ -273,8 +273,9 @@ class local_courses_external extends external_api {
                         $coursecontext = context_course::instance($courseid->id, MUST_EXIST);
                         local_tags_tag::set_item_tags('local_courses', 'courses', $courseid->id, $coursecontext, $validateddata->tags, 0, $validateddata->open_departmentid);
                     }
-                    //  $coursedata = $DB->get_record('course',array('id' => $data['id']));
-                    //  insert::add_enrol_method_tocourse($coursedata, $coursedata->selfenrol);
+                    
+                     api::delete_cohort_sync($validateddata->id, $validateddata->open_path);
+                    
 
                 } else {
                     $data = (object)$data;

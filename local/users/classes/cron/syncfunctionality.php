@@ -1200,20 +1200,20 @@ class syncfunctionality
                 $categorysql = $DB->get_record('local_costcenter', ['id' => $costid], $fields = 'category', $strictness = IGNORE_MISSING);
                 $categoryid = $categorysql->category;
                 $categorycontext = \context_coursecat::instance($categoryid);
-                $var = $DB->get_record('role_assignments', ['userid' => $userid]);
-                if (!$var) {
+                $roleexists = $DB->get_record('role_assignments', ['userid' => $userid, 'contextid' => $categorycontext->id]);
+                if (!$roleexists) {
                     $roles  = new \local_assignroles\local\assignrole();
                     $roles->rolesassign((array) $userid, $user->roleid, $categorycontext->id);
                 } else {
-                    $role = (object) [
-                        'id' => $var->id,
-                        'roleid' => $user->roleid,
-                        'userid' => $userid,
-                        'timemodified' => time(),
-                        'contextid' => $categorycontext->id,
-                        'modifierid' => $USER->id,
-                    ];
-                    $DB->update_record('role_assignments', $role);
+                    if($roleexists->shortname != $excel->role){
+                        $strings = new StdClass();
+                        $strings->role = $excel->role;
+                        $strings->excel_line_number = $this->excel_line_number;
+                        echo '<div class=local_users_sync_error>' . get_string('rolecannotchange_error', 'local_users', $strings) . '</div>';
+                        $this->errors[] = get_string('rolecannotchange_error', 'local_users', $strings);
+                        $this->mfields[] = 'role';
+                        $this->errorcount++;  
+                    }
                 }
             }
 

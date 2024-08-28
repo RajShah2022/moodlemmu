@@ -1625,7 +1625,9 @@ class core_renderer extends \core_renderer {
         if (($newpageurl == $CFG->wwwroot . '/user/index.php' || $newpageurl == $CFG->wwwroot . '/user/') && api::is_hod()) {
             redirect($CFG->wwwroot . "/local/courses/enrolledusers.php?id=$COURSE->id"); 
         }
-        http://localhost/lms/skryptech/user/index.php?id=9
+        if ($newpageurl == $CFG->wwwroot . '/group/index.php' && api::is_hod()) {
+            redirect($CFG->wwwroot . '/my');
+        }
         if ($newpageurl == $CFG->wwwroot . '/course/management.php') {
             redirect($CFG->wwwroot . '/local/custom_category/index.php'); //Category page redirection
         }

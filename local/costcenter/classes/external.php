@@ -836,6 +836,8 @@ class local_costcenter_external extends external_api
                     break;
                 case 'user_supervisor_selector':
                     $sqlparams['parentpath'] = $formoptions->parentid ? '%/' . $formoptions->parentid . '/%' : 0;
+                    $sqlparams['deptpath'] = $formoptions->departmentid ? '%/' . $formoptions->departmentid . '/%' : 0;
+                    $sqlparams['open_path'] = $USER->open_path ? '%' . $USER->open_path . '%' : NULL;
                     if (!empty($query)) {
                         $fields = array("u.firstname", "u.lastname");
                         foreach ($fields as $field) {
@@ -848,7 +850,13 @@ class local_costcenter_external extends external_api
                     }
                     $fields = "SELECT id, concat(u.firstname,' ',u.lastname) AS fullname ";
                     $userssql = " FROM {user} AS u
-                                         WHERE u.suspended = 0 AND u.deleted = 0 $concatsql AND CONCAT('/', u.open_path,'/') LIKE :parentpath ";
+                                  WHERE u.suspended = 0 
+                                    AND u.deleted = 0 
+                                    AND u.id > 2 
+                                    $concatsql 
+                                    AND (CONCAT('/', u.open_path,'/') LIKE :open_path OR :open_path_null IS NULL)";
+
+                    $sqlparams['open_path_null'] = $sqlparams['open_path'];
                     if ($formoptions->id > 0) {
                         $userssql .= " AND u.id <> :userid ";
                         $sqlparams['userid'] = $formoptions->id;
