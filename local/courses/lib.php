@@ -1055,9 +1055,9 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
     $maincheckcontext = $categorycontext = (new \local_courses\lib\accesslib())::get_module_context();
 
     $chelper = new coursecat_helper();
-    $countsql  = "SELECT count(c.id) ";
+    $countsql  = "SELECT count(DISTINCT(c.id)) ";
 
-    $selectsql = "SELECT c.id ,c.fullname, c.shortname, c.category, c.summary, c.visible, c.format, c.selfenrol, c.open_path, c.performancecatid, c.open_skill, c.open_coursecompletiondays, c.open_difficultylevel ";
+    $selectsql = "SELECT DISTINCT c.id ,c.fullname, c.shortname, c.category, c.summary, c.visible, c.format, c.selfenrol, c.open_path, c.performancecatid, c.open_skill, c.open_coursecompletiondays, c.open_difficultylevel ";
     $joinsql;
     $fromsql = " FROM {course} AS c ";
     $fromsql .= " JOIN {local_costcenter} AS lc ON FIND_IN_SET(lc.path, c.open_path) ";
