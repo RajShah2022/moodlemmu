@@ -652,6 +652,7 @@ $string['empstatusempty_error'] = 'Provide learner status for  employee code \'{
 $string['mobileno_error'] = 'Enter a valid mobile number for employee code \'{$a->learner_id}\' of uploaded excelsheet at line {$a->excel_line_number}';
 
 $string['validmobileno_error'] = 'Enter a valid mobile number of 10 digits for employee code \'{$a->learner_id}\' of uploaded excelsheet at line {$a->excel_line_number}';
+$string['rolecannotchange_error'] = 'Role can not be updated {$a->excel_line_number}';
 
 $string['select_org'] = '--Select Company--';
 $string['select_dept'] = '--Select Bussiness Unit--';
