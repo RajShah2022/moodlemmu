@@ -163,6 +163,8 @@ class create_user extends moodleform {
             $mform->setType('open_employeeid', PARAM_RAW);
             $open_costcenterid = $this->_customdata['open_costcenterid'] > 0 ?
                 $this->_customdata['open_costcenterid'] : $this->_ajaxformdata['open_costcenterid'];
+            $open_departmentid = $this->_customdata['open_department'] > 0 ?
+                $this->_customdata['open_department'] : $this->_ajaxformdata['open_department'];
 
             $reportingmanger[0] = get_string('select_reportingto', 'local_users');
             if ($id) {
@@ -176,7 +178,7 @@ class create_user extends moodleform {
                 'data-contextid' => $categorycontext->id,
                 'data-parentclass' => 'open_costcenterid_select',
                 'data-selectstring' => get_string('select_reportingto', 'local_users'),
-                'data-options' => json_encode(array('id' => $id, 'parentid' => $open_costcenterid, 'enableallfield' => false)),
+                'data-options' => json_encode(array('id' => $id, 'parentid' => $open_costcenterid, 'departmentid' => $open_departmentid, 'enableallfield' => false)),
                 'data-class' => 'supervisor_select',
                 'multiple' => false,
                 'ajax' => 'local_costcenter/form-options-selector',

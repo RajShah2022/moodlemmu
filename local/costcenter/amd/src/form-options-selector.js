@@ -159,6 +159,7 @@
                 if(!(parentid == undefined && formoptions.parentid > 0)){
                     formoptions.parentid = parentid;
                 }
+            
                 if(action === 'user_position_selector'){
                     formoptions.domainid = $("#id_open_domainid").val();
                 }
