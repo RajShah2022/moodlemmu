@@ -652,7 +652,7 @@ $string['empstatusempty_error'] = 'Provide learner status for  employee code \'{
 $string['mobileno_error'] = 'Enter a valid mobile number for employee code \'{$a->learner_id}\' of uploaded excelsheet at line {$a->excel_line_number}';
 
 $string['validmobileno_error'] = 'Enter a valid mobile number of 10 digits for employee code \'{$a->learner_id}\' of uploaded excelsheet at line {$a->excel_line_number}';
-$string['rolecannotchange_error'] = 'Role can not be updated {$a->excel_line_number}';
+$string['rolecannotchange_error'] = 'Role can not be updated at line {$a->excel_line_number}';
 
 $string['select_org'] = '--Select Company--';
 $string['select_dept'] = '--Select Bussiness Unit--';
@@ -815,8 +815,8 @@ $string['employmentstatus_help'] = 'Enter the employment status of the user';
 $string['prefix'] = 'Prefix';
 $string['skilltype'] = 'Skill Type';
 $string['invalidgender'] = 'Invailid gender at line {$a->line}. Enter only male\female\other';
-$string['schoolmustselectupload'] = 'For creating <b>{$a->role}</b> school_code can not empty or 0';
-$string['schoolmustbeall'] = 'For creating <b>{$a->role}</b> school_code should be empty or 0';
+$string['schoolmustselectupload'] = 'For creating user as <b>{$a->role}</b> school code can not empty or 0 at line {$a->line}';
+$string['schoolmustbeall'] = 'For creating user as <b>{$a->role}</b> school code should be empty or 0 at line {$a->line}';
 $string['invalidprefix'] = 'Invailid prefix at line {$a->line}. Enter only mr\mrs\ms';
 $string['user_status'] = 'Select Status';
 $string['select_email'] = 'Select Work Email';

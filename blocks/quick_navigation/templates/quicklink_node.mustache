@@ -168,6 +168,7 @@
                     {{/ count_activelink_url}}
                     {{/ view}}</span></span></div>
             </li>
+            {{^is_count_inactive}}
             <li class="dashbaord_count_item"><div class="">
                 <span class="d-block dashboard_count_string">{{inactive_string}}</span><span class="dashboard_count_value">
                 {{# view}}
@@ -179,6 +180,8 @@
                 {{/ count_inactivelink_url}}
                     {{/ view}}</span></div>
             </li>
+            {{/ is_count_inactive}}
+
         </ul>
     {{/ displaystats}}
 </div>

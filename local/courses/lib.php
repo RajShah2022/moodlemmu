@@ -862,7 +862,7 @@ function local_courses_leftmenunode() {
 }
 
 function local_courses_quicklink_node() {
-    global $CFG, $PAGE, $OUTPUT, $DB;
+    global $CFG, $PAGE, $OUTPUT, $DB, $USER;
 
     $orgid  = optional_param('orgid', 0, PARAM_INT);
 
@@ -875,30 +875,29 @@ function local_courses_quicklink_node() {
         $PAGE->requires->js_call_amd('local_courses/courseAjaxform', 'load');
         $coursedata = array();
         if (is_siteadmin() || has_capability('local/courses:view', $categorycontext)) {
-            $sql = "SELECT count(c.id) FROM {course} c
-            JOIN {local_costcenter} AS co ON co.path = c.open_path
+            $sql = "SELECT count(DISTINCT(c.id)) FROM {course} c
+            JOIN {local_costcenter} AS co ON FIND_IN_SET(co.path,  c.open_path)
             JOIN {course_categories} AS cc ON cc.id = c.category
-            WHERE c.id > 1 AND c.open_coursetype=0 ";
+            WHERE c.id > 1 AND c.open_coursetype=0  ";
             // Join is removed to get the count which is displayed in local/courses
             //  JOIN {local_custom_category} As ct ON ct.id = c.performancecatid
-
             if (is_siteadmin() && $orgid == 0) {
                 $sql .= "";
             } else {
                 //costcenterid concating
-                $sql .= $costcenterpathconcatsql;
+                $sql .= $costcenterpathconcatsql . " OR FIND_IN_SET('{$USER->open_path}', c.open_path)";
             }
-            $open_path = (new \local_courses\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'c.open_path');
+            $open_path = (new \local_courses\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'u.open_path');
             $enrolsql = "SELECT count(u.id)
                     FROM {user} u
                     JOIN {user_enrolments} ue ON ue.userid = u.id
                     JOIN {enrol} e ON e.id = ue.enrolid
-                    JOIN {course} c ON  e.courseid = c.id
+                    JOIN {course} c ON  e.courseid = c.id AND FIND_IN_SET(u.open_path, c.open_path)
                     WHERE e.status = 0 AND u.suspended = 0 AND u.deleted = 0
-                    AND ue.status = 0 AND c.open_coursetype=0 $open_path";
+                    AND ue.status = 0 AND c.open_coursetype=0 $open_path ";
             $completioncount = "SELECT count(u.id) FROM {course_completions} AS cp
                                 JOIN {course} AS c ON cp.course = c.id
-                                JOIN {user} AS u ON cp.userid = u.id
+                                JOIN {user} AS u ON cp.userid = u.id 
                                 WHERE c.enablecompletion = 1
                                 AND c.open_coursetype=0 $open_path";
             $enrolcount = $DB->get_field_sql($enrolsql);
@@ -929,8 +928,9 @@ function local_courses_quicklink_node() {
         $coursedata['count_total'] = $count_courses;
         $coursedata['count_active'] = $enrolcount;
         $coursedata['enroll_string'] = get_string('enrolcount', 'local_courses');
-        $coursedata['inactive_string'] = get_string('completioncount', 'local_courses');
-        $coursedata['count_inactive'] = $completioncount;
+        // $coursedata['inactive_string'] = get_string('completioncount', 'local_courses');
+        // $coursedata['count_inactive'] = 0;
+        $coursedata['is_count_inactive'] = true;
         $coursedata['space_count'] = 'two';
         $coursedata['view_type'] = $PAGE->theme->settings->quicknavigationview;
         $content = $OUTPUT->render_from_template('block_quick_navigation/quicklink_node', $coursedata);
@@ -1055,9 +1055,9 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
     $maincheckcontext = $categorycontext = (new \local_courses\lib\accesslib())::get_module_context();
 
     $chelper = new coursecat_helper();
-    $countsql  = "SELECT count(c.id) ";
+    $countsql  = "SELECT count(DISTINCT(c.id)) ";
 
-    $selectsql = "SELECT c.id ,c.fullname, c.shortname, c.category, c.summary, c.visible, c.format, c.selfenrol, c.open_path, c.performancecatid, c.open_skill, c.open_coursecompletiondays, c.open_difficultylevel ";
+    $selectsql = "SELECT DISTINCT c.id ,c.fullname, c.shortname, c.category, c.summary, c.visible, c.format, c.selfenrol, c.open_path, c.performancecatid, c.open_skill, c.open_coursecompletiondays, c.open_difficultylevel ";
     $joinsql;
     $fromsql = " FROM {course} AS c ";
     $fromsql .= " JOIN {local_costcenter} AS lc ON FIND_IN_SET(lc.path, c.open_path) ";

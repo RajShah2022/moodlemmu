@@ -392,7 +392,7 @@ class general_lib {
             JOIN {user} u ON u.id = ue.userid AND u.deleted = 0 AND u.suspended=0
             JOIN {role_assignments} as ra ON ra.userid = u.id
             JOIN {context} AS cxt ON cxt.id=ra.contextid AND cxt.contextlevel = 50 AND cxt.instanceid=c.id
-            JOIN {role} as r ON r.id = ra.roleid AND r.shortname IN ('student','employee', 'manager', 'teacher', 'editingteacher', 'administrator', 'trainer', 'hod_course') ";
+            JOIN {role} as r ON r.id = ra.roleid AND r.shortname IN ('student','employee', 'teacher') ";
         $leftjoinsql = " LEFT JOIN {course_completions} as cc ON cc.course = c.id AND u.id = cc.userid ";
 
         $wheresql = " WHERE c.id = :courseid ";
