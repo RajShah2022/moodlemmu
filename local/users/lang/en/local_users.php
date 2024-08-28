@@ -127,7 +127,6 @@ Password must have at least 1 non-alphanumeric character(s) such as as *, -, or 
 <tr><td>department_code</td><td>Enter department code. Department must already exist under specified bussiness unit in system as part of Organization hierarchy.</td></tr>
 <tr><td>subdepartment_code</td><td>Enter sub department code. Sub Department must already exist under specified department in system as part of Organization hierarchy.</td></tr>
 <tr><td>mobileno</td><td>Enter Numerics only.</td></tr>
-<tr><td>reportingmanager_empid</td><td>Enter reporting manger employee code, avoid additional spaces..</td></tr>
 
 <tr><td>designation</td><td>Enter Designation for the user.</td></tr>
 <tr><td>employment_type</td><td>Enter employment type for the user.</td></tr>
