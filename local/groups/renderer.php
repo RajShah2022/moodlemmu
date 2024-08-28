@@ -337,9 +337,9 @@ class local_groups_renderer extends plugin_renderer_base  {
                             $OUTPUT->pix_icon('i/enrolusers', get_string('assign', 'core_cohort')) .html_writer::tag('span',get_string('assign', 'core_cohort'),array('class'=>'hidestrings')),
                             array( 'class'=>'dropdown-item','title' => get_string('assign', 'core_cohort')));
                         $editcolumnisempty = false;
-                           $buttons[] = html_writer::link(new moodle_url('/local/groups/mass_enroll.php', $urlparams),
-                            $OUTPUT->pix_icon('i/users', get_string('bulk_enroll', 'local_groups')) .html_writer::tag('span',get_string('bulk_enroll', 'local_groups'),array('class'=>'hidestrings')),
-                            array('class'=>'dropdown-item', 'title' => get_string('bulk_enroll', 'local_groups')));
+                           // $buttons[] = html_writer::link(new moodle_url('/local/groups/mass_enroll.php', $urlparams),
+                           //  $OUTPUT->pix_icon('i/users', get_string('bulk_enroll', 'local_groups')) .html_writer::tag('span',get_string('bulk_enroll', 'local_groups'),array('class'=>'hidestrings')),
+                           //  array('class'=>'dropdown-item', 'title' => get_string('bulk_enroll', 'local_groups')));
                     }       
                     if ($cohortmanager) 
                     $buttons[] =  html_writer::link(
