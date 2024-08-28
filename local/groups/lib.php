@@ -1276,17 +1276,36 @@ function costcenterwise_groups_datacount($costcenter, $department = false, $subd
     $countgroups = $DB->count_records_sql($countgroupssql, $params);
     return ['datacount' => $countgroups];
 }
-function get_user_cohort_names($userid) {
-    global $DB;
+function get_user_cohort_names($userid = null, $courseid = null ) {
+    global $DB, $USER;
+    $cohorts = [];
+    if($userid) {
+        // Get cohort names based on user ID
+        $sql = "SELECT c.name
+                FROM {cohort_members} cm
+                JOIN {cohort} c ON cm.cohortid = c.id
+                WHERE cm.userid = :userid";
 
-    // Join the cohort members table with the cohort table to get cohort names
-    $sql = "SELECT c.name
-            FROM {cohort_members} cm
-            JOIN {cohort} c ON cm.cohortid = c.id
-            WHERE cm.userid = :userid";
+        $cohorts = $DB->get_records_sql($sql, array('userid' => $userid));
+    }
+    
+    if($courseid) {
 
-    // Execute the query and fetch the cohort names
-    $cohorts = $DB->get_records_sql($sql, array('userid' => $userid));
+        $cohortsync = "SELECT c.name
+                       FROM {cohort} c
+                       JOIN {local_groups} g ON g.cohortid = c.id
+                       JOIN {enrol} e ON e.customint1 = c.id
+                       JOIN {user_enrolments} ue ON ue.enrolid = e.id 
+                       WHERE g.open_path = :open_path AND e.courseid = :courseid AND e.enrol = :enrol AND ue.userid = :userid";
+
+        $cohortparams = [
+            'open_path' => trim($USER->open_path),
+            'userid' => $USER->id,
+            'courseid' => $courseid,
+            'enrol' => 'cohort'
+        ];
+        $cohorts = $DB->get_records_sql($cohortsync, $cohortparams);
+    }
 
     // If the user belongs to any cohorts, return a comma-separated list of cohort names
     if (!empty($cohorts)) {
