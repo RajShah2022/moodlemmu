@@ -221,7 +221,7 @@ class local_courses_renderer extends plugin_renderer_base {
     function get_course_enrolledusers($dataobj) {
         global $DB, $USER, $OUTPUT, $CFG;
 
-        $countsql = "SELECT COUNT(DISTINCT u.id) ";
+        $countsql = "SELECT COUNT(u.id) ";
         $selectsql = "SELECT DISTINCT(u.id) as userid,ue.id,u.firstname, u.lastname, u.email, u.open_employeeid,
             cc.timecompleted ";
         $sql = " FROM {course} c

@@ -94,7 +94,7 @@ class accesslib extends \local_costcenter\lib\accesslib{
 
             $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='u.open_path');
 
-            $enrolledusersssql = " SELECT COUNT(DISTINCT(u.id)) as ccount
+            $enrolledusersssql = " SELECT COUNT(u.id) as ccount
                                 FROM {course} c
                                 JOIN {context} AS cot ON cot.instanceid = c.id AND cot.contextlevel = 50
                                 JOIN {role_assignments} as ra ON ra.contextid = cot.id
