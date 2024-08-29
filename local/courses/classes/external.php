@@ -195,6 +195,7 @@ class local_courses_external extends external_api {
                 $validateddata->performanceparentid = $data['performanceparentid'];
                 $validateddata->open_coursecompletiondays = $validateddata->open_coursecompletiondays ? $validateddata->open_coursecompletiondays : 0;
                 $validateddata->groupmode = 1;
+                $validateddata->groupmodeforce = 1;
 
                 $courseid = create_course($validateddata, $editoroptions);
 
@@ -333,6 +334,7 @@ class local_courses_external extends external_api {
                         $courseopenpath = $DB->get_field('course', 'open_path', array('id' => $validateddata->id));
                         $data->costcenterid = explode('/', $courseopenpath)[1];
                         $data->groupmode = 1;
+                        $data->groupmodeforce = 1;
                         insert_fields_mapped($data);
                     }
                     update_course($data);
