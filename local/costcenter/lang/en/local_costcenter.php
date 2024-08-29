@@ -229,7 +229,6 @@ $string['help_2'] = '</td></tr>
 Password must have at least 1 non-alphanumeric character(s) such as as *, -, or #..</td></tr>
 <tr><td>prefix</td><td>Enter prfix as either \'mr\', \'mrs\' or \'ms\', avoid additional spaces.</td></tr>
 <tr><td>mobileno</td><td>Enter Numerics only.</td></tr>
-<tr><td>reportingmanager_empid</td><td>Enter reporting manger employee code, avoid additional spaces..</td></tr>
 
 <tr><td>designation</td><td>Enter Designation for the user.</td></tr>
 <tr><td>date_of_birth</td><td>Enter date of birth of the user. (Date format is \'dd-mm-yyyy\')</td></tr>
