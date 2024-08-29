@@ -319,7 +319,7 @@ class local_courses_renderer extends plugin_renderer_base {
                 $coursecontext = context_course::instance($dataobj->courseid);
                 $get_enrolid = "";
                 $get_enrolmentod = "";
-                $sql = "SELECT ue.id,e.enrol,e.customint1,ue.userid FROM {user_enrolments} as ue
+                $sql = "SELECT ue.id,e.enrol,e.customint1,ue.userid,r.name as rolename FROM {user_enrolments} as ue
                     JOIN {enrol} as e ON e.id = ue.enrolid
                     JOIN {role_assignments} as ra ON ra.userid = ue.userid
                     JOIN {role} as r ON r.id = ra.roleid 
