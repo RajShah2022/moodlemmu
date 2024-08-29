@@ -887,8 +887,8 @@ function local_courses_quicklink_node() {
                 //costcenterid concating
                 $sql .= $costcenterpathconcatsql . " OR FIND_IN_SET('{$USER->open_path}', c.open_path)";
             }
-            $open_path = (new \local_courses\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'u.open_path');
-            $enrolsql = "SELECT count(DISTINCT(u.id))
+            $open_path = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'u.open_path');
+            $enrolsql = "SELECT count(u.id)
                     FROM {user} u
                     JOIN {user_enrolments} ue ON ue.userid = u.id
                     JOIN {enrol} e ON e.id = ue.enrolid
@@ -904,10 +904,11 @@ function local_courses_quicklink_node() {
                                 JOIN {user} AS u ON cp.userid = u.id 
                                 WHERE c.enablecompletion = 1
                                 AND c.open_coursetype=0 $open_path";
+                                $DB->set_debug(true);
             $enrolcount = $DB->get_field_sql($enrolsql, $params);
             $completioncount = $DB->get_field_sql($completioncount);
             $count_courses = $DB->count_records_sql($sql);
-
+            $DB->set_debug(false);
             if ($completioncount == 0 || $enrolcount == 0) {
                 $percent = 0;
             } else {
