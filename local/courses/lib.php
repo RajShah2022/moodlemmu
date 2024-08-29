@@ -820,7 +820,6 @@ function course_enrolled_users($type = null, $course_id = 0, $params = array(), 
         $query = "SELECT u.id
             FROM {user} AS u
             JOIN {role_assignments} ra ON ra.userid = u.id
-            JOIN {context} c ON c.id = ra.contextid AND c.contextlevel = 40
            WHERE ra.roleid IN ({$params['courseroles']}) ";
         $roleusers = $DB->get_records_sql_menu($query);
         if (!empty($roleusers)) {
