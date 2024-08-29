@@ -1022,10 +1022,10 @@ function grouproles_filter($mform, $query='',$searchanywhere=false, $page=0, $pe
     // Adjust query conditions based on context depth.
     if(is_siteadmin()) {
         if ($categorycontext->depth == 1) {
-            $roleslist_sql .= " OR r.shortname LIKE 'administrator' ";
+            // $roleslist_sql .= " OR r.shortname LIKE 'administrator' ";
         }
         if ($categorycontext->depth == 2 || is_siteadmin()) {
-            $roleslist_sql .= " OR r.shortname LIKE 'hod' ";
+            // $roleslist_sql .= " OR r.shortname LIKE 'hod' ";
         }    
     }
     // Close the SQL query.
