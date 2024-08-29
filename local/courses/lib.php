@@ -827,7 +827,6 @@ function course_enrolled_users($type = null, $course_id = 0, $params = array(), 
     }
 
     $order = " ORDER BY u.firstname  ASC ";
-
     if ($total == 0) {
         $availableusers = $DB->get_records_sql_menu($sql . $order, $params, $lastitem, $perpage);
     } else {
