@@ -851,8 +851,8 @@ class api {
     }
     
     public static function enrollgroups($course, $fields = null) {
-        $chohortplugin = enrol_get_plugin('cohort');
-        $enrolid = $chohortplugin->add_instance($course, $fields);
+        $cohortplugin = enrol_get_plugin('cohort');
+        $enrolid = $cohortplugin->add_instance($course, $fields);
         return $enrolid;
     }
 
