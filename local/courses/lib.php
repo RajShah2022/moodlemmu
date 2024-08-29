@@ -816,6 +816,20 @@ function course_enrolled_users($type = null, $course_id = 0, $params = array(), 
         else
             $sql .= " AND u.id =0";
     }
+    if (!empty($params['courseroles'])) {
+        $query = "SELECT u.id
+            FROM {user} AS u
+            JOIN {role_assignments} ra ON ra.userid = u.id
+            JOIN {context} c ON c.id = ra.contextid AND c.contextlevel = 40
+           WHERE ra.roleid IN ({$params['courseroles']}) ";
+        $roleusers = $DB->get_records_sql_menu($query);
+        if (!empty($roleusers)) {
+            $userslist = implode(',', array_keys($roleusers)); // Note: array_keys to get the user IDs
+            $sql .= " AND u.id IN ($userslist) ";
+        } else {
+            $sql .= " AND u.id IN (NULL) ";
+        }
+    }
     if ($type == 'add') {
         $sql .= " AND u.id NOT IN (SELECT ue.userid
                              FROM {user_enrolments} AS ue
@@ -1728,4 +1742,64 @@ function difficulty_levels() {
 
     // Return the array of difficulty levels.
     return $levels;
+}
+
+/**
+ * [role_filter form element function]
+ * @param  [form] $mform [filter form]
+ * @return 
+ */
+function courseroles_filter($mform, $query='',$searchanywhere=false, $page=0, $perpage=25){
+    global $DB, $USER;
+    // Get the category context from the local_users access library.
+    $categorycontext = (new \local_groups\lib\accesslib())::get_module_context();
+    $roleslist = array();
+    $data = data_submitted();
+    $costcenterpathconcatsql = (new \local_groups\lib\accesslib())::get_costcenter_path_field_concatsql($columnname='open_path');
+    $roleslist_sql = "SELECT r.id, r.name as fullname FROM {role} r 
+    JOIN {role_context_levels} rcl ON (rcl.contextlevel = 40 AND r.id = rcl.roleid)  
+    WHERE r.name != '' AND (r.archetype != 'manager' ";
+
+    // Adjust query conditions based on context depth.
+    if(is_siteadmin()) {
+        if ($categorycontext->depth == 1) {
+            // $roleslist_sql .= " OR r.shortname LIKE 'administrator' ";
+        }
+        if ($categorycontext->depth == 2 || is_siteadmin()) {
+            // $roleslist_sql .= " OR r.shortname LIKE 'hod' ";
+        }    
+    }
+    // Close the SQL query.
+    $roleslist_sql .= ")";
+
+    if(!empty($query)){ 
+        $roleslist_sql .= " AND r.name LIKE :name ";
+        $rolesparam['name'] = '%' . trim($query) . '%';
+    }
+    
+     
+    // $rolesparam['contextlevel'] = CONTEXT_COURSECAT;
+
+    if(isset($data->courseroles) && !empty(($data->courseroles))){
+        list($roles_sql, $rolesparam) = $DB->get_in_or_equal($data->courseroles, SQL_PARAMS_NAMED);
+        $roleslist_sql.=" AND r.id $roles_sql ";
+        $rolesparam = array_merge($rolesparam, $rolesparam);
+    }
+    if(!empty($query) || empty($mform)){ 
+        $roleslist = $DB->get_records_sql($roleslist_sql, $rolesparam, $page, $perpage);
+        return $roleslist;
+    }
+    if((isset($data->courseroles)&&!empty($data->courseroles))){ 
+        $roleslist = $DB->get_records_sql_menu($roleslist_sql, $rolesparam, $page, $perpage);
+    }
+
+    $options = array(
+        'ajax' => 'local_courses/form-options-selector',
+        'multiple' => true,
+        'data-action' => 'courseroles',
+        'data-options' => json_encode(array('id' => 0)),
+        'placeholder' => get_string('open_role', 'local_users')
+     );
+    $select = $mform->addElement('autocomplete', 'courseroles', '', $roleslist, $options);
+    $mform->setType('courseroles', PARAM_RAW);
 }
