@@ -380,7 +380,7 @@ class general_lib {
 
         $costcenterpathconcatsql = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'u.open_path');
 
-        $countsql = "SELECT COUNT(u.id) ";
+        $countsql = "SELECT COUNT(DISTINCT(u.id)) ";
 
         $selectsql = "SELECT DISTINCT(u.id) as userid,ue.id,u.firstname, u.lastname, u.email, u.open_employeeid, cc.timecompleted ";
 

@@ -689,9 +689,12 @@ function course_enrolled_users($type = null, $course_id = 0, $params = array(), 
     if ($total == 0) {
         $sql = "SELECT u.id,concat(u.firstname,' ',u.lastname,' ','(',u.idnumber,')') as fullname";
     } else {
-        $sql = "SELECT count(u.id) as total";
+        $sql = "SELECT count(DISTINCT(u.id)) as total";
     }
-    $sql .= " FROM {user} AS u WHERE  u.id > 2 AND u.suspended = :suspended AND u.deleted = :deleted ";
+    $sql .= " FROM {user} AS u 
+    JOIN {role_assignments} as ra ON ra.userid = u.id
+    JOIN {role} as r ON r.id = ra.roleid AND r.shortname IN ('student','employee', 'teacher')
+    WHERE  u.id > 2 AND u.suspended = :suspended AND u.deleted = :deleted ";
     // if($lastitem!=0){
     //    $sql.=" AND u.id > $lastitem ";
     // }
