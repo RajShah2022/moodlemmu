@@ -524,7 +524,7 @@ class local_courses_external extends external_api {
 
         if ($action) {
             $return = array();
-            if ($action === 'categories' || $action === 'elearning') {
+            if ($action === 'categories' || $action === 'elearning' || $action === 'courseroles') {
                 $filter = 'courses';
             } else if ($action === 'email' || $action === 'employeeid' || $action === 'username' || $action === 'users' || $action === 'roles') {
                 $filter = 'users';

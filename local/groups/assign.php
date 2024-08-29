@@ -104,8 +104,9 @@ if ($groups) {
   $subdistrict=null;
   $village=null;
   $filterlist = get_filterslist();
+  $filterlist[]= 'grouproles';
   $data_submitted=data_submitted();
-  $mform = new filters_form($url, array('filterlist'=>$filterlist,'enrolid'=>0, 'courseid'=>$id, 'action' => 'user_enrolment')+(array)$data_submitted);
+  $mform = new filters_form($url, array('filterlist'=>$filterlist ,'enrolid'=>0, 'courseid'=>$id, 'action' => 'user_enrolment')+(array)$data_submitted);
   
   if ($mform->is_cancelled()) {
     redirect($PAGE->url);

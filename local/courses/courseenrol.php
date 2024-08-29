@@ -137,6 +137,7 @@ if ($course) {
   $subdistrict   = null;
   $village   = null;
   $filterlist = get_filterslist();
+  $filterlist[] = 'courseroles';
   $filterparams = array('options' => null, 'dataoptions' => null);
   $mform = new filters_form($PAGE->url, array('filterlist' => $filterlist, 'enrolid' => $enrolid, 'courseid' => $course_id, 'filterparams' => $filterparams, 'action' => 'user_enrolment') + (array)$data_submitted);
   if ($mform->is_cancelled()) {
@@ -167,10 +168,11 @@ if ($course) {
     $groups = !empty($filterdata->groups) ? implode(',', (array)$filterdata->groups) : null;
     $location = !empty($filterdata->location) ? implode(',', (array)$filterdata->location) : null;
     $hrmsrole = !empty($filterdata->hrmsrole) ? implode(',', (array)$filterdata->hrmsrole) : null;
+    $courseroles = !empty($filterdata->courseroles) ? implode(',', (array)$filterdata->courseroles) : null;
   }
 
   // Create the user selector objects.
-  $options = array('context' => $context->id, 'courseid' => $course_id, 'organization' => $organization, 'department' => $department, 'subdepartment' => $subdepartment, 'department4level' => $department4level, 'department5level' => $department5level, 'email' => $email, 'idnumber' => $idnumber, 'uname' => $uname, 'groups' => $groups, 'hrmsrole' => $hrmsrole, 'location' => $location, 'states' => $states, 'district' => $district, 'subdistrict' => $subdistrict, 'village' => $village);
+  $options = array('context' => $context->id, 'courseid' => $course_id, 'organization' => $organization, 'department' => $department, 'subdepartment' => $subdepartment, 'department4level' => $department4level, 'department5level' => $department5level, 'email' => $email, 'idnumber' => $idnumber, 'uname' => $uname, 'groups' => $groups, 'hrmsrole' => $hrmsrole, 'location' => $location, 'states' => $states, 'district' => $district, 'subdistrict' => $subdistrict, 'village' => $village, 'courseroles' => $courseroles);
   $dataobj = $course_id;
   $fromuserid = $USER->id;
   if ($add and confirm_sesskey()) {
