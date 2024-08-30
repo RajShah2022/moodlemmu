@@ -34,6 +34,7 @@ use \local_onlinetests\local\userdashboard_content as onlinetests;
 use \local_evaluation\local\userdashboard_content as evaluation;
 use \local_program\local\userdashboard_content as program;
 use local_onlineexams\local\general_lib as examslib;
+use local_courses\api;
 
 
 class local_users_external extends external_api {
@@ -91,7 +92,20 @@ class local_users_external extends external_api {
                 $password = $validateddata->password;
                 $uid = $userlib->insert_newuser($validateddata);
                 set_user_preference('auth_forcepasswordchange', $validateddata->preference_auth_forcepasswordchange, $uid);
+                $hodroleid = api::get_hod_roleid();
+                if($hodroleid == $validateddata->roleid){
+                    $csql = "SELECT id FROM {course} WHERE FIND_IN_SET('{$validateddata->open_path}',open_path)";
+                    $courses = $DB->get_records_sql($csql);
+                    foreach($courses as $c){
+                        $enrol_manual = enrol_get_plugin('manual');
+                        $instance = $DB->get_record('enrol', array('courseid' => $c->id, 'enrol' => 'manual'), '*', MUST_EXIST);
+                        $enrol_manual->enrol_user($instance, $uid, api::get_hodcourse_roleid());
+                        // $enrol_manual->unenrol_user($instance, $USER->id);
+                        $ishodcourse = true;
+                    }
+                }
             }
+
             $formheaders = array_keys($mform->formstatus);
             $next = $form_status + 1;
             $nextform = array_key_exists($next, $formheaders);
