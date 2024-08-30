@@ -362,6 +362,39 @@ class local_courses_external extends external_api {
             } else {
                 $existing_method->status = 1;
             }
+            $enrol_manual = enrol_get_plugin('manual');
+            $instance = $DB->get_record('enrol', array('courseid' => $courseid->id, 'enrol' => 'manual'), '*', MUST_EXIST);
+            $hodroleid = api::get_hod_roleid();
+            $query = "SELECT u.id
+            FROM {user} AS u
+            JOIN {role_assignments} ra ON ra.userid = u.id
+            JOIN {context} c ON c.id = ra.contextid AND c.contextlevel = 40
+            WHERE ra.roleid IN ({$hodroleid})  AND FIND_IN_SET(u.open_path, '{$validateddata->open_path}')";
+            $roleusers = $DB->get_records_sql($query);
+            $userarr = [];
+            if(!empty($roleusers)){
+                foreach($roleusers as $ruser){
+                    $enrol_manual->enrol_user($instance, $ruser->id, api::get_hodcourse_roleid());
+                    $ishodcourse = true;
+                    $userarr[] = $ruser->id; 
+                }
+                $enrolledusers = implode(',', $userarr);
+                $unenroluserssql = "SELECT (u.id)
+                    FROM {user} u
+                    JOIN {user_enrolments} ue ON ue.userid = u.id
+                    JOIN {enrol} e ON e.id = ue.enrolid
+                    JOIN {course} c ON  e.courseid = c.id 
+                    JOIN {role_assignments} as ra ON ra.userid = u.id
+                    JOIN {role} as r ON r.id = ra.roleid AND r.shortname IN ('hod_course')
+                    WHERE e.status = 0 AND u.suspended = 0 AND u.deleted = 0
+                    AND ue.status = 0 AND c.open_coursetype=0 AND c.id =:courseid AND u.id NOT IN ({$enrolledusers})";
+                $unenrolusers = $DB->get_records_sql($unenroluserssql, ['courseid' => $courseid->id]);
+                if(!empty($unenrolusers)){
+                    foreach($unenrolusers as $uuser){
+                        $enrol_manual->unenrol_user($instance, $uuser->id);
+                    }
+                }
+            }
             $DB->update_record('enrol', $existing_method);
         } else {
             // Generate a warning.
