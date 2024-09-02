@@ -230,7 +230,7 @@ class local_courses_renderer extends plugin_renderer_base {
                     (e.enrol = 'manual' OR e.enrol = 'self' OR e.enrol = 'classroom' OR e.enrol = 'learningplan' OR e.enrol = 'auto' OR e.enrol = 'cohort')
         JOIN {user_enrolments} ue ON ue.enrolid = e.id
         JOIN {user} u ON u.id = ue.userid AND u.deleted = 0 AND u.suspended=0
-        JOIN {local_costcenter} lc ON lc.path = u.open_path
+        JOIN {local_costcenter} lc ON FIND_IN_SET(u.open_path, lc.path)
         JOIN {role_assignments} as ra ON ra.userid = u.id
         JOIN {context} AS cxt ON cxt.id=ra.contextid AND cxt.contextlevel = 50 AND cxt.instanceid=c.id
         JOIN {role} as r ON r.id = ra.roleid AND r.shortname IN ('student','employee', 'teacher')
@@ -255,7 +255,6 @@ class local_courses_renderer extends plugin_renderer_base {
         } else {
             $concatsql = '';
         }
-
         $courseusers = $DB->get_records_sql($selectsql . $sql . $concatsql, $params, $dataobj->start, $dataobj->length);
         $enrolleduserscount = $DB->count_records_sql($countsql . $sql . $concatsql, $params);
 
