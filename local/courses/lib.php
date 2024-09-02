@@ -1084,7 +1084,7 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
     $joinsql;
     $fromsql = " FROM {course} AS c ";
     $fromsql .= " JOIN {local_costcenter} AS lc ON FIND_IN_SET(lc.path, c.open_path) ";
-    $wheresql = " WHERE c.id > 1 AND c.open_module IS NULL AND c.id =4";
+    $wheresql = " WHERE c.id > 1 AND c.open_module IS NULL ";
     $orderby = " ORDER BY c.id DESC";
     $params = array();
 
