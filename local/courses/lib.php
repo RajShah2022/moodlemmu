@@ -692,8 +692,7 @@ function course_enrolled_users($type = null, $course_id = 0, $params = array(), 
         $sql = "SELECT count(DISTINCT(u.id)) as total";
     }
     $sql .= " FROM {user} AS u 
-    JOIN {role_assignments} as ra ON ra.userid = u.id
-    JOIN {role} as r ON r.id = ra.roleid AND r.shortname IN ('student','employee', 'teacher')
+    JOIN {course} c ON FIND_IN_SET(u.open_path , c.open_path) AND c.id = {$course_id}
     WHERE  u.id > 2 AND u.suspended = :suspended AND u.deleted = :deleted ";
     // if($lastitem!=0){
     //    $sql.=" AND u.id > $lastitem ";
@@ -832,11 +831,17 @@ function course_enrolled_users($type = null, $course_id = 0, $params = array(), 
     if ($type == 'add') {
         $sql .= " AND u.id NOT IN (SELECT ue.userid
                              FROM {user_enrolments} AS ue
-                             JOIN {enrol} e ON (e.id = ue.enrolid and e.courseid=$course_id and (e.enrol='manual' OR e.enrol='self' OR e.enrol='auto' OR e.enrol='cohort')))";
+                             JOIN {enrol} e ON (e.id = ue.enrolid and e.courseid=$course_id and (e.enrol='manual' OR e.enrol='self' OR e.enrol='auto' OR e.enrol='cohort'))
+                             JOIN mdl_role_assignments ra ON ra.userid = ue.userid
+                             JOIN mdl_context AS cxt ON cxt.id=ra.contextid AND cxt.contextlevel = 50 AND cxt.instanceid=$course_id
+                             JOIN mdl_role as r ON r.id = ra.roleid AND r.shortname IN ('student','employee', 'teacher'))";
     } elseif ($type == 'remove') {
         $sql .= " AND u.id IN (SELECT ue.userid
                              FROM {user_enrolments} AS ue
-                             JOIN {enrol} e ON (e.id = ue.enrolid and e.courseid=$course_id and (e.enrol='manual' OR e.enrol='self' OR e.enrol='auto' OR e.enrol='cohort')))";
+                             JOIN {enrol} e ON (e.id = ue.enrolid and e.courseid=$course_id and (e.enrol='manual' OR e.enrol='self' OR e.enrol='auto' OR e.enrol='cohort'))
+                             JOIN mdl_role_assignments ra ON ra.userid = ue.userid
+                             JOIN mdl_context AS cxt ON cxt.id=ra.contextid AND cxt.contextlevel = 50 AND cxt.instanceid=$course_id
+                             JOIN mdl_role as r ON r.id = ra.roleid AND r.shortname IN ('student','employee', 'teacher'))";
     }
 
     $order = " ORDER BY u.firstname  ASC ";
@@ -1079,7 +1084,7 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
     $joinsql;
     $fromsql = " FROM {course} AS c ";
     $fromsql .= " JOIN {local_costcenter} AS lc ON FIND_IN_SET(lc.path, c.open_path) ";
-    $wheresql = " WHERE c.id > 1 AND c.open_module IS NULL ";
+    $wheresql = " WHERE c.id > 1 AND c.open_module IS NULL AND c.id =4";
     $orderby = " ORDER BY c.id DESC";
     $params = array();
 
