@@ -410,8 +410,6 @@ class general_lib {
         $params = [
             'courseid' => $courseid,
         ];
-        // echo $selectsql . $fromsql . $joinsql . $leftjoinsql . $wheresql;
-        // print_r($params);
         $courseusers = $DB->get_records_sql($selectsql . $fromsql . $joinsql . $leftjoinsql . $wheresql, $params, $dataobj->start, $dataobj->length);
         $usercount = $DB->count_records_sql($countsql . $fromsql . $joinsql . $leftjoinsql . $wheresql, $params);
         $data = [

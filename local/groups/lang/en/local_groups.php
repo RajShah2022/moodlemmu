@@ -104,8 +104,8 @@ $string['availablelist'] = 'Available users';
 $string['selectedlist'] = 'Selected users';
 $string['enrolledlist'] = 'Enrolled users';
 $string['completedlist'] = 'Completed users';
-$string['enrolluserssuccess'] = '<b>{$a->changecount}</b> Employee(s) successfully enrolled to this <b>"{$a->group}"</b> class .';
-$string['unenrolluserssuccess'] = '<b>{$a->changecount}</b> Employee(s) successfully un enrolled from this <b>"{$a->group}"</b> class .';
+$string['enrolluserssuccess'] = '<b>{$a->changecount}</b> User(s) successfully enrolled to this <b>"{$a->group}"</b> class .';
+$string['unenrolluserssuccess'] = '<b>{$a->changecount}</b> User(s) successfully un enrolled from this <b>"{$a->group}"</b> class .';
 
 $string['enrollusers'] = 'Class <b>"{$a}"</b> enrollment is in process...';
 
@@ -115,7 +115,7 @@ $string['leftmenu_groups'] = 'Manage Classes';
 $string['enroll'] = 'Assign them to class';
 $string['bulk_enroll'] = 'Bulk Assignments';
 $string['user_exist'] = '{$a} - already enrolled to this class';
-$string['im:stats_i'] = '{$a} Employee(s) successfully enrolled to this class';
+$string['im:stats_i'] = '{$a} User(s) successfully enrolled to this class';
 $string['edit']='Actions';
 $string['addnewgroups']='Add New class';
 $string['editgroups']='Edit class';

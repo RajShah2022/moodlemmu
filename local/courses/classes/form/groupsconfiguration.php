@@ -9,7 +9,7 @@ use context_system;
 use local_courses\api;
 require_once($CFG->libdir . '/formslib.php');
 /**
- * Defines Courses Topics Settings form
+ * Defines Courses Groups Settings form
  *
  * @module     local_courses
  * @copyright  2024 Moodle India Information Solutions Pvt Ltd
@@ -59,7 +59,6 @@ class groupsconfiguration extends dynamic_form {
 
                 // Fetch the latest status.
                 $requeststatus = $DB->get_field_sql($sql, $params);
-                // $requeststatus = $DB->get_field('local_request_records', 'status', array('componentid' => $id, 'courseid' => $courseid));
                 $mform->addElement('advcheckbox', $id, '', $name->fullname . ' (' . get_string('difficultylevels', 'local_courses', $name->open_difficultylevel) . ')' . get_string('classenrollmentrequeststatus', 'local_courses', $requeststatus), ['class' => 'custom_switch']);
             }  
         } else {
@@ -78,7 +77,6 @@ class groupsconfiguration extends dynamic_form {
     public function validation($data, $files) {
         global $DB;
         $errors = parent::validation($data, $files);
-        // $context = \context_system::instance();
         return $errors;
     }
 

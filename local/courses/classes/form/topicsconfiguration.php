@@ -117,7 +117,6 @@ class topicsconfiguration extends dynamic_form {
     public function validation($data, $files) {
         global $DB;
         $errors = parent::validation($data, $files);
-        // $context = \context_system::instance();
         return $errors;
     }
 
