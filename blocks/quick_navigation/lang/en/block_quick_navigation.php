@@ -29,7 +29,7 @@ $string['pluginname'] = 'Quick Navigation';
 $string['quick_navigation:viewquicknavigation'] = 'View quick navigation block';
 
 $string['users_content'] = 'Create and Manage users.';
-$string['inactive_string'] = 'In Active';
+$string['inactive_string'] = 'Inactive';
 $string['active'] = 'Active';
 $string['total'] = 'Total';
 $string['pluginname'] = 'Quick navigation';

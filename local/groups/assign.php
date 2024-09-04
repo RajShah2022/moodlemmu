@@ -163,7 +163,7 @@ if ($groups) {
             $result->group=$groups->name; 
 
             echo $OUTPUT->notification(get_string('enrolluserssuccess', 'local_groups',$result),'success');
-            $button = new single_button($url, get_string('click_continue','local_groups'), 'get', true);
+            $button = new single_button($url, get_string('continue'), 'get', true);
             $button->class = 'continuebutton';
             echo $OUTPUT->render($button);
             echo $OUTPUT->footer();
@@ -193,7 +193,7 @@ if ($groups) {
 			$result->group=$groups->name; 
 			
 			echo $OUTPUT->notification(get_string('unenrolluserssuccess', 'local_groups',$result),'success');
-			$button = new single_button($PAGE->url, get_string('click_continue','local_groups'), 'get', true);
+			$button = new single_button($PAGE->url, get_string('continue'), 'get', true);
 			$button->class = 'continuebutton';
 			echo $OUTPUT->render($button);
       echo $OUTPUT->footer();
