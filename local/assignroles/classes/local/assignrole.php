@@ -39,8 +39,8 @@ class assignrole{
 	public function rolesassign($users,$roleid,$contextid){
 		global $CFG;
 	    require_once($CFG->dirroot . '/lib/accesslib.php');
-		foreach($users as $key=>$user){
-			 role_assign($roleid, $user, $contextid); 
+		foreach($users as $key=>$user) {
+			role_assign($roleid, $user, $contextid); 
 	   	}
  	}
  	/**
