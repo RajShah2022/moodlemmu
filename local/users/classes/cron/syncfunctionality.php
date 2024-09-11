@@ -1081,6 +1081,11 @@ class syncfunctionality
         $rolesql = "SELECT r.id
                       FROM {role} r
                      WHERE r.shortname = :rolename ";
+// Added by Hemanth start - student as employee
+        if ($excel->role == 'student') {
+            $excel->role = 'employee';
+        }
+// Added by Hemanth --end
         $roleid = $DB->get_field_sql($rolesql, ['rolename' => $excel->role]);
         $user->roleid = $roleid;
 
@@ -1328,6 +1333,12 @@ class syncfunctionality
         $params['contextlevel'] = CONTEXT_COURSECAT;
 
         $valid_roles = $DB->get_records_sql_menu($sql, $params);
+// Added by Hemanth start - employee as student validation
+        if (array_key_exists('employee', $valid_roles)) {
+            $valid_roles['student'] = $valid_roles['employee'];
+            unset($valid_roles['employee']);
+        }
+// Added by Hemanth --end
         if (array_key_exists('role', (array) $excel)) {
             $excel->role = strtolower($excel->role);
             // Check if the role is valid.
