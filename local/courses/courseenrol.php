@@ -224,7 +224,7 @@ if ($course) {
       }
 
       echo $OUTPUT->notification(get_string('enrolluserssuccess', 'local_courses', $result), 'success');
-      $button = new single_button($PAGE->url, get_string('click_continue', 'local_courses'), 'get', true);
+      $button = new single_button($PAGE->url, get_string('continue'), 'get', true);
       $button->class = 'continuebutton';
       echo $OUTPUT->render($button);
       echo $OUTPUT->footer();
@@ -290,7 +290,7 @@ if ($course) {
       }
 
       echo $OUTPUT->notification(get_string('unenrolluserssuccess', 'local_courses', $result), 'success');
-      $button = new single_button($PAGE->url, get_string('click_continue', 'local_courses'), 'get', true);
+      $button = new single_button($PAGE->url, get_string('continue'), 'get', true);
       $button->class = 'continuebutton';
       echo $OUTPUT->render($button);
       die();

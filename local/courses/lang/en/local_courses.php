@@ -206,8 +206,8 @@ $string['need_manage_approval'] = 'Need Manager Approval';
 $string['costcannotbenonnumericwithargs'] = 'Cost should be in numeric but given "{$a}"';
 $string['pointscannotbenonnumericwithargs'] = 'Points should be in numeric but given "{$a}"';
 $string['need_self_enrol'] = 'Need Self Enroll';
-$string['enrolluserssuccess'] = '<b>{$a->changecount}</b> Employee(s) successfully enrolled to this <b>"{$a->course}"</b> course .';
-$string['unenrolluserssuccess'] = '<b>{$a->changecount}</b> Employee(s) successfully un enrolled from this <b>"{$a->course}"</b> course .';
+$string['enrolluserssuccess'] = '<b>{$a->changecount}</b> User(s) successfully enrolled to this <b>"{$a->course}"</b> course .';
+$string['unenrolluserssuccess'] = '<b>{$a->changecount}</b> User(s) successfully un enrolled from this <b>"{$a->course}"</b> course .';
 
 $string['enrollusers'] = 'Course <b>"{$a}"</b> enrollment is in process...';
 
