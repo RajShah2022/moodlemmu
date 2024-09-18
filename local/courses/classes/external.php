@@ -50,7 +50,7 @@ class local_courses_external extends external_api {
         return new external_function_parameters(
             array(
                 'contextid' => new external_value(PARAM_INT, 'The context id for the course'),
-                'form_status' => new external_value(PARAM_INT, 'Form position', 0),
+                // 'form_status' => new external_value(PARAM_INT, 'Form position', 0),
                 'id' => new external_value(PARAM_INT, 'Course id', 0),
                 'jsonformdata' => new external_value(PARAM_RAW, 'The data from the create course form, encoded as a json array')
             )
@@ -66,7 +66,7 @@ class local_courses_external extends external_api {
      * @param string $jsonformdata The data from the form, encoded as a json array.
      * @return int new course id.
      */
-    public static function submit_create_course_form($contextid, $form_status, $id, $jsonformdata) {
+    public static function submit_create_course_form($contextid, $id, $jsonformdata) {
         global $DB, $CFG, $USER;
         require_once($CFG->dirroot . '/course/lib.php');
         require_once($CFG->libdir . '/formslib.php');
@@ -75,7 +75,7 @@ class local_courses_external extends external_api {
         // We always must pass webservice params through validate_parameters.
         $params = self::validate_parameters(
             self::submit_create_course_form_parameters(),
-            ['contextid' => $contextid, 'form_status' => $form_status,  'jsonformdata' => $jsonformdata]
+            ['contextid' => $contextid, 'jsonformdata' => $jsonformdata]
         );
 
         $context = context::instance_by_id($params['contextid'], MUST_EXIST);
@@ -139,7 +139,7 @@ class local_courses_external extends external_api {
             'editoroptions' => $editoroptions,
             'returnto' => $returnto,
             'get_coursedetails' => $get_coursedetails,
-            'form_status' => $form_status,
+            // 'form_status' => $form_status,
             'costcenterid' => $data['open_path'],
             'courseid' => $data['id'],
             'childfieldid' => $data['childfieldid'],
@@ -152,7 +152,7 @@ class local_courses_external extends external_api {
 
         if ($validateddata) {
 
-            $formheaders = array_keys($mform->formstatus);
+            // $formheaders = array_keys($mform->formstatus);
             $category_id = $data['category'];
 
             $categorycontext = (new \local_courses\lib\accesslib())::get_module_context($course->id);
@@ -231,7 +231,7 @@ class local_courses_external extends external_api {
                 list($zero, $org, $ctr, $bu, $cu, $territory) = explode("/", $open_path);
                 // $validateddata->open_identifiedas=$validateddata->identifiedtype;
 
-                if ($form_status == 0) {
+                // if ($form_status == 0) {
                     $courseid = new stdClass();
                     $courseid->id = $data['id'];
                     $validateddata->category = $category_id;
@@ -278,81 +278,81 @@ class local_courses_external extends external_api {
                      api::delete_cohort_sync($validateddata->id, $validateddata->open_path);
                     
 
-                } else {
-                    $data = (object)$data;
+                // } else {
+                //     $data = (object)$data;
 
-                    if (isset($validateddata->startdate)) {
-                        $data->startdate = $validateddata->startdate;
-                    }
-                    if (isset($validateddata->enddate)) {
-                        $data->enddate = $validateddata->enddate;
-                    }
+                //     if (isset($validateddata->startdate)) {
+                //         $data->startdate = $validateddata->startdate;
+                //     }
+                //     if (isset($validateddata->enddate)) {
+                //         $data->enddate = $validateddata->enddate;
+                //     }
 
-                    // added for startek data saving.
-                    $data->open_hrmsrole    = (!empty($data->open_hrmsrole)) ? implode(',', array_filter($data->open_hrmsrole)) : null;
-                    if (!empty($data->open_hrmsrole)) {
-                        $data->open_hrmsrole = $data->open_hrmsrole;
-                    } else {
-                        $data->open_hrmsrole = NULL;
-                    }
-                    $data->open_location    = (!empty($data->open_location)) ? implode(',', array_filter($data->open_location)) : null;
-                    if (!empty($data->open_location)) {
-                        $data->open_location = $data->open_location;
-                    } else {
-                        $data->open_location = NULL;
-                    }
+                //     // added for startek data saving.
+                //     $data->open_hrmsrole    = (!empty($data->open_hrmsrole)) ? implode(',', array_filter($data->open_hrmsrole)) : null;
+                //     if (!empty($data->open_hrmsrole)) {
+                //         $data->open_hrmsrole = $data->open_hrmsrole;
+                //     } else {
+                //         $data->open_hrmsrole = NULL;
+                //     }
+                //     $data->open_location    = (!empty($data->open_location)) ? implode(',', array_filter($data->open_location)) : null;
+                //     if (!empty($data->open_location)) {
+                //         $data->open_location = $data->open_location;
+                //     } else {
+                //         $data->open_location = NULL;
+                //     }
 
-                    $courseid = new stdClass();
-                    $courseid->id = $data->id;
-                    $courseid->module = 'course';
-                    if ($form_status == 2) {
-                        $data->open_group = ($data->open_group == '_qf__force_multiselect_submission') ? NULL : implode(',', (array)$data->open_group);
-                        $data->open_designation = ($data->open_designation == '_qf__force_multiselect_submission') ? NULL : implode(',', (array)$data->open_designation);
-                    } else {
-                        if ($validateddata->map_certificate == 1) {
+                //     $courseid = new stdClass();
+                //     $courseid->id = $data->id;
+                //     $courseid->module = 'course';
+                //     if ($form_status == 2) {
+                //         $data->open_group = ($data->open_group == '_qf__force_multiselect_submission') ? NULL : implode(',', (array)$data->open_group);
+                //         $data->open_designation = ($data->open_designation == '_qf__force_multiselect_submission') ? NULL : implode(',', (array)$data->open_designation);
+                //     } else {
+                //         if ($validateddata->map_certificate == 1) {
 
-                            $data->open_certificateid = $validateddata->open_certificateid;
-                        } else {
+                //             $data->open_certificateid = $validateddata->open_certificateid;
+                //         } else {
 
-                            $data->open_certificateid = null;
-                        }
-                    }
-                    if ($form_status == 1) {
-                        //  local_costcenter_get_costcenter_path($data);
-                        $customcategoryid = get_modulecustomfield_category($courseid);
-                        if (!empty($customcategoryid)) {
-                            update_custom_targetaudience($customcategoryid, $data, $courseid);
-                        }
+                //             $data->open_certificateid = null;
+                //         }
+                //     }
+                //     if ($form_status == 1) {
+                //         //  local_costcenter_get_costcenter_path($data);
+                //         $customcategoryid = get_modulecustomfield_category($courseid);
+                //         if (!empty($customcategoryid)) {
+                //             update_custom_targetaudience($customcategoryid, $data, $courseid);
+                //         }
 
-                        if ($data->open_path) {
-                            $data->category = $DB->get_field('local_costcenter', 'category', array('path' => $data->open_path));
-                        }
+                //         if ($data->open_path) {
+                //             $data->category = $DB->get_field('local_costcenter', 'category', array('path' => $data->open_path));
+                //         }
                         
-                        $data->open_points = (!empty($validateddata->open_points)) ? $validateddata->open_points : 0;
+                //         $data->open_points = (!empty($validateddata->open_points)) ? $validateddata->open_points : 0;
 
-                        $data->childfieldid = $validateddata->childfieldid;
-                        $courseopenpath = $DB->get_field('course', 'open_path', array('id' => $validateddata->id));
-                        $data->costcenterid = explode('/', $courseopenpath)[1];
-                        $data->groupmode = 1;
-                        $data->groupmodeforce = 1;
-                        insert_fields_mapped($data);
-                    }
-                    update_course($data);
+                //         $data->childfieldid = $validateddata->childfieldid;
+                //         $courseopenpath = $DB->get_field('course', 'open_path', array('id' => $validateddata->id));
+                //         $data->costcenterid = explode('/', $courseopenpath)[1];
+                //         $data->groupmode = 1;
+                //         $data->groupmodeforce = 1;
+                //         insert_fields_mapped($data);
+                //     }
+                //     update_course($data);
 
-                    // purge appropriate caches in case fix_course_sortorder() did not change anything
-                    cache_helper::purge_by_event('changesincourse');
-                    cache_helper::purge_by_event('changesincoursecat');
-                }
+                //     // purge appropriate caches in case fix_course_sortorder() did not change anything
+                //     cache_helper::purge_by_event('changesincourse');
+                //     cache_helper::purge_by_event('changesincoursecat');
+                // }
             }
-            $next = $form_status + 1;
-            $nextform = array_key_exists($next, $formheaders);
-            if ($nextform !== false) {
-                $form_status = $next;
-                $error = false;
-            } else {
-                $form_status = -1;
-                $error = true;
-            }
+            // $next = $form_status + 1;
+            // $nextform = array_key_exists($next, $formheaders);
+            // if ($nextform !== false) {
+            //     $form_status = $next;
+            //     $error = false;
+            // } else {
+            //     $form_status = -1;
+            //     $error = true;
+            // }
             $enrolid = $DB->get_field('enrol', 'id', array('courseid' => $courseid->id, 'enrol' => 'manual'));
             $existing_method = $DB->get_record('enrol', array('courseid' => $courseid->id, 'enrol' => 'self'));
             $courseenrolid = $DB->get_field('course', 'selfenrol', array('id' => $courseid->id));
@@ -403,7 +403,7 @@ class local_courses_external extends external_api {
         $return = array(
             'courseid' => $courseid->id,
             'enrolid' => $enrolid,
-            'form_status' => $form_status
+            // 'form_status' => $form_status
         );
 
         return $return;
@@ -419,7 +419,7 @@ class local_courses_external extends external_api {
         return new external_single_structure(array(
             'courseid' => new external_value(PARAM_INT, 'Course id'),
             'enrolid' => new external_value(PARAM_INT, 'manual enrol id for the course'),
-            'form_status' => new external_value(PARAM_INT, 'form_status'),
+            // 'form_status' => new external_value(PARAM_INT, 'form_status'),
         ));
     }
 

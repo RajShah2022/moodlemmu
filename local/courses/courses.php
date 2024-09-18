@@ -99,37 +99,37 @@ $extended_menu_links = '<div class="course_contextmenu_extended">
 if (is_siteadmin() || (
     has_capability('moodle/course:create', $categorycontext) || has_capability('moodle/course:update', $categorycontext) || has_capability('local/courses:manage', $categorycontext))) {
     // $sql = "SELECT id,name FROM {block_learnerscript} WHERE category = 'course'" ;
-    $coursereports = array(); //$DB->get_records_sql($sql);
+    // $coursereports = array(); //$DB->get_records_sql($sql);
 
-    $extended_menu_links .= '<li><div class="dropdown"><a href="#" tabindex="0" class=" dropdown-toggle icon-no-margin" id="dropdown-1" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" aria-controls="reportswitch" title="' . get_string('course_reports', 'local_courses') . '">
-            <i class="icon fa fa-signal" aria-hidden="true"></i>
-        </a>';
+    // $extended_menu_links .= '<li><div class="dropdown"><a href="#" tabindex="0" class=" dropdown-toggle icon-no-margin" id="dropdown-1" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" aria-controls="reportswitch" title="' . get_string('course_reports', 'local_courses') . '">
+    //         <i class="icon fa fa-signal" aria-hidden="true"></i>
+    //     </a>';
 
-    $extended_menu_links .= '<div class="dropdown-menu dropdown-menu-right menu  align-tr-br" id="reportswitch" data-rel="menu-content" aria-labelledby="action-menu-toggle-1" role="menu" data-align="tr-br">';
-    $reports_info = array();
-    if ($coursereports) {
+    // $extended_menu_links .= '<div class="dropdown-menu dropdown-menu-right menu  align-tr-br" id="reportswitch" data-rel="menu-content" aria-labelledby="action-menu-toggle-1" role="menu" data-align="tr-br">';
+    // $reports_info = array();
+    // if ($coursereports) {
 
-        foreach ($coursereports as $course) {
-            $reports = array();
-            $reports['id'] = $course->id;
-            $reports['name'] = $course->name;
-            $reports_info[] = $reports;
-            $extended_menu_links .= '<div class="dropdown-divider" role="presentation"><span class="filler">&nbsp;</span></div>
-                                            <a href=' . $CFG->wwwroot . '/blocks/learnerscript/viewreport.php?id=' . $course->id . ' class="dropdown-item menu-action" role="menuitem" data-title="' . $course->name . '" aria-label="' . $course->name . '"target="_blank">
-                                                <span class="menu-action-text">
-                                                    ' . $course->name . '
-                                                </span>
-                                            </a>';
-        }
-    } else {
+    //     foreach ($coursereports as $course) {
+    //         $reports = array();
+    //         $reports['id'] = $course->id;
+    //         $reports['name'] = $course->name;
+    //         $reports_info[] = $reports;
+    //         $extended_menu_links .= '<div class="dropdown-divider" role="presentation"><span class="filler">&nbsp;</span></div>
+    //                                         <a href=' . $CFG->wwwroot . '/blocks/learnerscript/viewreport.php?id=' . $course->id . ' class="dropdown-item menu-action" role="menuitem" data-title="' . $course->name . '" aria-label="' . $course->name . '"target="_blank">
+    //                                             <span class="menu-action-text">
+    //                                                 ' . $course->name . '
+    //                                             </span>
+    //                                         </a>';
+    //     }
+    // } else {
 
-        $url = $CFG->wwwroot . '/blocks/learnerscript/reportsview.php';
-        $enable = get_string('enablereports', 'local_courses', $url);
+    //     $url = $CFG->wwwroot . '/blocks/learnerscript/reportsview.php';
+    //     $enable = get_string('enablereports', 'local_courses', $url);
 
-        $extended_menu_links .= '<div class="dropdown-divider" role="presentation"><span class="filler">&nbsp;</span></div>
-                                            ' . $OUTPUT->notification($enable, 'notifyerror');
-    }
-    $extended_menu_links .= '</div></div></li>';
+    //     $extended_menu_links .= '<div class="dropdown-divider" role="presentation"><span class="filler">&nbsp;</span></div>
+    //                                         ' . $OUTPUT->notification($enable, 'notifyerror');
+    // }
+    // $extended_menu_links .= '</div></div></li>';
     if ((has_capability('local/courses:exportcourses', $categorycontext) || is_siteadmin())) {
         $extended_menu_links .= "<li>
             <div class='coursebackup course_extended_menu_itemcontainer'>

@@ -188,7 +188,7 @@ class api {
                             $DB->delete_records_select(self::ENROLLMENT_REQUESTS_TABLE, $sql, $params);
                         }
                         self::unenrollgroups($groupid, $courseid);
-                        self::remove_hod_from_group($groupid);
+                        // self::remove_hod_from_group($groupid);
                     }
                 }
             } else {
@@ -206,7 +206,7 @@ class api {
                             // Delete the records with matching componentid, courseid, and status.
                             $DB->delete_records_select(self::ENROLLMENT_REQUESTS_TABLE, $sql, $params);
                             self::unenrollgroups($groupid, $courseid);
-                            self::remove_hod_from_group($groupid);
+                            // self::remove_hod_from_group($groupid);
                     }
                 }
             }

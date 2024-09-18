@@ -38,18 +38,10 @@ $table = new html_table();
 $table->id = "courses";
 $table->head[] = get_string('coursename', 'local_courses');
 $table->head[] = get_string('coursecode', 'local_courses');
-//$table->head[] = get_string('coursetype','local_courses');
 $table->head[] = get_string('open_departmentlocal_courses', 'local_courses');
-//$table->head[] = get_string('open_subdepartmentlocal_courses', 'local_courses');
-//$table->head[] = get_string('open_level4departmentlocal_courses', 'local_courses');
-//$table->head[] = get_string('open_level5departmentlocal_courses','local_courses');
 $table->head[] = get_string('category', 'local_courses');
 $table->head[] = get_string('enrollments', 'local_courses');
-//$table->head[] = get_string('points','local_courses');
 $table->head[] = get_string('completed', 'local_courses');
-//$table->head[] = get_string('skill','local_courses');
-//$table->head[] = get_string('ratings','local_courses');
-//$table->head[] = get_string('tags','local_courses');
 $table->head[] = get_string('summary', 'local_courses');
 $table->head[] = get_string('format', 'local_courses');
 $table->head[] = get_string('selfenrol', 'local_courses');
@@ -61,9 +53,13 @@ $stable->length = 0;
 $coursedata = get_listof_courses($stable, $filtervalues);
 $data = [];
 foreach ($coursedata['hascourses'] as $course) {
-    //  local_costcenter_set_costcenter_path($course);
-    //, $course['points'], $course['skillname'], $course['tagstringtotal']
-    $data[] = [$course['coursename'], $course['shortname']/*, $course['coursetype']*/, $course['open_department'], /*$course['open_subdepartment'], $course['open_level4department'], */ $course['catname'], $course['enrolled_count'], $course['completed_count']/*, $course['ratings_value']*/, $course['fullcoursesummary'], $course['format'], $course['selfenrol']];
+  
+
+    // Ensure category name is properly populated
+    $category = !empty($course['catname']) ? $course['catname'] : 'N/A'; // Fallback in case of empty category
+
+    $data[] = [$course['coursename'], $course['shortname'], $course['open_department'],
+        $category, $course['enrolled_count'], $course['completed_count'], $course['fullcoursesummary'], $course['format'], $course['selfenrol']];
 }
 $table->id = "users";
 $table->data = $data;
