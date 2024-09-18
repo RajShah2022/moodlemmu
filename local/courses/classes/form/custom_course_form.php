@@ -42,15 +42,15 @@ require_once($CFG->dirroot . '/local/custom_fields/lib.php');
 class custom_course_form extends moodleform {
     protected $course;
     protected $context;
-    public $formstatus;
+    // public $formstatus;
     public function __construct($action = null, $customdata = null, $method = 'post', $target = '', $attributes = null, $editable = true, $formdata = null) {
 
         global $USER;
 
-        $this->formstatus = array(
-            'manage_course' => get_string('manage_course', 'local_courses'),
-            'other_details' => get_string('courseother_details', 'local_courses'),
-        );
+        // $this->formstatus = array(
+        //     'manage_course' => get_string('manage_course', 'local_courses'),
+        //     'other_details' => get_string('courseother_details', 'local_courses'),
+        // );
         $costcenterdepth = local_costcenter_get_fields();
 
         $depth = count($costcenterdepth);
@@ -71,14 +71,14 @@ class custom_course_form extends moodleform {
         $course_id        = $this->_customdata['courseid']; // this contains the data of this form
         $category      = $this->_customdata['category'];
         $childfieldid = $this->_customdata['childfieldid'];
-        $formstatus = $this->_customdata['form_status'];
+        // $formstatus = $this->_customdata['form_status'];
         $get_coursedetails = $this->_customdata['get_coursedetails'];
         $editoroptions = $this->_customdata['editoroptions'];
         $returnto = $this->_customdata['returnto'];
         $returnurl = $this->_customdata['returnurl'];
         $categorycontext = (new \local_courses\lib\accesslib())::get_module_context();
-        $formheaders = array_keys($this->formstatus);
-        $formheader = $formheaders[$formstatus];
+        // $formheaders = array_keys($this->formstatus);
+        // $formheader = $formheaders[$formstatus];
         $costcenterid = $this->_ajaxformdata['open_costcenterid'];
         if (empty($category)) {
             $category = $CFG->defaultrequestcategory;
@@ -107,8 +107,8 @@ class custom_course_form extends moodleform {
         $mform->addElement('hidden', 'childfieldid', $childfieldid);
         $mform->setType('childfieldid', PARAM_RAW);
 
-        $mform->addElement('hidden', 'form_status', $formstatus);
-        $mform->setType('form_status', PARAM_ALPHANUM);
+        // $mform->addElement('hidden', 'form_status', $formstatus);
+        // $mform->setType('form_status', PARAM_ALPHANUM);
 
         $mform->addElement('hidden', 'returnurl', null);
         $mform->setType('returnurl', PARAM_LOCALURL);
@@ -133,7 +133,7 @@ class custom_course_form extends moodleform {
 
         $categorycontext = (new \local_courses\lib\accesslib())::get_module_context($courseid);
         $core_component = new core_component();
-        if ($formstatus == 0) {
+        // if ($formstatus == 0) {
 
             local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(1, HIERARCHY_LEVELS), false, 'local_costcenter', $categorycontext, $multiple = true,
             $prefix = '',
@@ -261,7 +261,7 @@ class custom_course_form extends moodleform {
                 $mform->addHelpButton('overviewfiles_filemanager', 'courseoverviewfiles');
                 $summaryfields .= ',overviewfiles_filemanager';
             }
-        } elseif ($formstatus == 1) {
+        // } elseif ($formstatus == 1) {
             // if($this->course->open_path){
             //     if(!is_siteadmin()){
             //         $patharr = explode(',', $this->course->open_path);
@@ -276,81 +276,81 @@ class custom_course_form extends moodleform {
             // $mform->setConstant('open_costcenterid', $org);
 
             // local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(2, HIERARCHY_LEVELS), true, 'local_costcenter', $categorycontext, true);
-            $mform->addElement('text', 'open_points', get_string('points', 'local_courses'));
-            $mform->addHelpButton('open_points', 'open_pointscosurse', 'local_courses');
-            $mform->setType('open_points', PARAM_INT);
-            $costcenterid = explode('/', $this->course->open_path)[1];
-            get_custom_fields($costcenterid, $mform, $moduletype = 'course');
+            // $mform->addElement('text', 'open_points', get_string('points', 'local_courses'));
+            // $mform->addHelpButton('open_points', 'open_pointscosurse', 'local_courses');
+            // $mform->setType('open_points', PARAM_INT);
+            // $costcenterid = explode('/', $this->course->open_path)[1];
+            // get_custom_fields($costcenterid, $mform, $moduletype = 'course');
             
             
-            $plugin_exists = \core_component::get_plugin_directory('local', 'skillrepository');
-            if ($plugin_exists) {
-                $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'open_path', $costcenterpath = $this->course->open_path);
-                $skillselect = array(0 => get_string('select_skill', 'local_courses'));
-                $skillcostcentersql = "SELECT id,name FROM {local_skill}
-                                    WHERE 1=1 $costcenterpathconcatsql ";
+            // $plugin_exists = \core_component::get_plugin_directory('local', 'skillrepository');
+            // if ($plugin_exists) {
+            //     $costcenterpathconcatsql = (new \local_costcenter\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'open_path', $costcenterpath = $this->course->open_path);
+            //     $skillselect = array(0 => get_string('select_skill', 'local_courses'));
+            //     $skillcostcentersql = "SELECT id,name FROM {local_skill}
+            //                         WHERE 1=1 $costcenterpathconcatsql ";
 
-                $skills = $DB->get_records_sql_menu($skillcostcentersql);
+            //     $skills = $DB->get_records_sql_menu($skillcostcentersql);
 
-                if (!empty($skills)) {
-                    $skillselect = $skillselect + $skills;
-                }
+            //     if (!empty($skills)) {
+            //         $skillselect = $skillselect + $skills;
+            //     }
 
-                $mform->addElement('select',  'open_skill', get_string('open_skillcourse', 'local_courses'), $skillselect);
-                $mform->addHelpButton('open_skill', 'open_skillcourse', 'local_courses');
-                $mform->setType('open_skill', PARAM_INT);
+            //     $mform->addElement('select',  'open_skill', get_string('open_skillcourse', 'local_courses'), $skillselect);
+            //     $mform->addHelpButton('open_skill', 'open_skillcourse', 'local_courses');
+            //     $mform->setType('open_skill', PARAM_INT);
 
-                $levelselect = array(0 => get_string('select_level', 'local_courses'));
+            //     $levelselect = array(0 => get_string('select_level', 'local_courses'));
 
-                $levelsql = "SELECT id,name FROM {local_course_levels}
-                                    WHERE 1=1 $costcenterpathconcatsql ";
+            //     $levelsql = "SELECT id,name FROM {local_course_levels}
+            //                         WHERE 1=1 $costcenterpathconcatsql ";
 
-                $levels = $DB->get_records_sql_menu($levelsql);
+            //     $levels = $DB->get_records_sql_menu($levelsql);
 
-                if (!empty($levels)) {
-                    $levelselect = $levelselect + $levels;
-                }
-                $mform->addElement('select',  'open_level', get_string('open_levelcourse', 'local_courses'), $levelselect);
-                $mform->addHelpButton('open_level', 'open_levelcourse', 'local_courses');
-                $mform->setType('open_level', PARAM_INT);
-            }
+            //     if (!empty($levels)) {
+            //         $levelselect = $levelselect + $levels;
+            //     }
+            //     $mform->addElement('select',  'open_level', get_string('open_levelcourse', 'local_courses'), $levelselect);
+            //     $mform->addHelpButton('open_level', 'open_levelcourse', 'local_courses');
+            //     $mform->setType('open_level', PARAM_INT);
+            // }
 
-            // $mform->addElement(
-            //     'date_time_selector',
-            //     'startdate',
-            //     get_string('startdate', 'local_courses'),
-            //     array()
-            // );
-            // $mform->addHelpButton('startdate', 'startdate');
+            // // $mform->addElement(
+            // //     'date_time_selector',
+            // //     'startdate',
+            // //     get_string('startdate', 'local_courses'),
+            // //     array()
+            // // );
+            // // $mform->addHelpButton('startdate', 'startdate');
 
-            // $mform->addElement('date_time_selector', 'enddate', get_string('enddate', 'local_courses'), array('optional' => false));
-            // $mform->addHelpButton('enddate', 'enddate');
+            // // $mform->addElement('date_time_selector', 'enddate', get_string('enddate', 'local_courses'), array('optional' => false));
+            // // $mform->addHelpButton('enddate', 'enddate');
 
-            $certificate_plugin_exist = $core_component::get_plugin_directory('tool', 'certificate');
-            if ($certificate_plugin_exist) {
-                $checkboxes = array();
-                $checkboxes[] = $mform->createElement('advcheckbox', 'map_certificate', null, '', array(), array(0, 1));
-                $mform->addGroup($checkboxes, 'map_certificate', get_string('add_certificate', 'local_courses'), array(' '), false);
-                $mform->addHelpButton('map_certificate', 'add_certificate', 'local_courses');
+            // $certificate_plugin_exist = $core_component::get_plugin_directory('tool', 'certificate');
+            // if ($certificate_plugin_exist) {
+            //     $checkboxes = array();
+            //     $checkboxes[] = $mform->createElement('advcheckbox', 'map_certificate', null, '', array(), array(0, 1));
+            //     $mform->addGroup($checkboxes, 'map_certificate', get_string('add_certificate', 'local_courses'), array(' '), false);
+            //     $mform->addHelpButton('map_certificate', 'add_certificate', 'local_courses');
 
-                $select = array(0 => get_string('select_certificate', 'local_courses'));
-                $certificatesql = "SELECT id,name FROM {tool_certificate_templates}
-                                    WHERE 1=1 AND open_path=:openpath";
+            //     $select = array(0 => get_string('select_certificate', 'local_courses'));
+            //     $certificatesql = "SELECT id,name FROM {tool_certificate_templates}
+            //                         WHERE 1=1 AND open_path=:openpath";
 
-                $cert_templates = $DB->get_records_sql_menu($certificatesql, array('openpath' => "/" . $costcenterid));
-                $certificateslist = $select + $cert_templates;
+            //     $cert_templates = $DB->get_records_sql_menu($certificatesql, array('openpath' => "/" . $costcenterid));
+            //     $certificateslist = $select + $cert_templates;
 
-                $mform->addElement('select',  'open_certificateid', get_string('certificate_template', 'local_courses'), $certificateslist);
-                $mform->addHelpButton('open_certificateid', 'certificate_template', 'local_courses');
-                $mform->setType('open_certificateid', PARAM_INT);
-                $mform->hideIf('open_certificateid', 'map_certificate', 'neq', 1);
-            }
+            //     $mform->addElement('select',  'open_certificateid', get_string('certificate_template', 'local_courses'), $certificateslist);
+            //     $mform->addHelpButton('open_certificateid', 'certificate_template', 'local_courses');
+            //     $mform->setType('open_certificateid', PARAM_INT);
+            //     $mform->hideIf('open_certificateid', 'map_certificate', 'neq', 1);
+            // }
 
-            $handler = \core_course\customfield\course_handler::create();
-            $handler->set_parent_context($categorycontext); // For course handler only.
-            $handler->instance_form_definition($mform, empty($this->course->id) ? 0 : $this->course->id);
-            $handler->instance_form_before_set_data($course);
-        }
+            // $handler = \core_course\customfield\course_handler::create();
+            // $handler->set_parent_context($categorycontext); // For course handler only.
+            // $handler->instance_form_definition($mform, empty($this->course->id) ? 0 : $this->course->id);
+            // $handler->instance_form_before_set_data($course);
+        // }
         // else if ($formstatus == 2) {
            
         //     $functionname = 'globaltargetaudience_elementlist';

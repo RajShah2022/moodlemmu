@@ -399,7 +399,7 @@ function local_courses_output_fragment_custom_course_form($args) {
         'editoroptions' => $editoroptions,
         'returnto' => $returnto,
         'get_coursedetails' => $get_coursedetails,
-        'form_status' => $args->form_status,
+        // 'form_status' => $args->form_status,
         'costcenterid' => $data->open_path,
     );
     local_costcenter_set_costcenter_path($formdata);
@@ -413,19 +413,19 @@ function local_courses_output_fragment_custom_course_form($args) {
         // If we were passed non-empty form data we want the mform to call validation functions and show errors.
         $mform->is_validated();
     }
-    $formheaders = array_keys($mform->formstatus);
-    $nextform = array_key_exists($args->form_status, $formheaders);
-    if ($nextform === false) {
-        return false;
-    }
+    // $formheaders = array_keys($mform->formstatus);
+    // $nextform = array_key_exists($args->form_status, $formheaders);
+    // if ($nextform === false) {
+    //     return false;
+    // }
     ob_start();
-    $formstatus = array();
-    foreach (array_values($mform->formstatus) as $k => $mformstatus) {
-        $activeclass = $k == $args->form_status ? 'active' : '';
-        $formstatus[] = array('name' => $mformstatus, 'activeclass' => $activeclass, 'form-status' => $k);
-    }
-    $formstatusview = new \local_courses\output\form_status($formstatus);
-    $o .= $renderer->render($formstatusview);
+    // $formstatus = array();
+    // foreach (array_values($mform->formstatus) as $k => $mformstatus) {
+    //     $activeclass = $k == $args->form_status ? 'active' : '';
+    //     $formstatus[] = array('name' => $mformstatus, 'activeclass' => $activeclass, 'form-status' => $k);
+    // }
+    // $formstatusview = new \local_courses\output\form_status($formstatus);
+    // $o .= $renderer->render($formstatusview);
     $mform->display();
     $o .= ob_get_contents();
     ob_end_clean();
@@ -1154,6 +1154,8 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
 
             $course_in_list = new core_course_list_element($course);
             $context =  \context_course::instance($course->id);
+            $categoryname = $DB->get_field('local_custom_category','fullname',array('id'=>$course->category));
+            
 
             $departmentcount = 1;
             $acceslib = new local_courses\local\general_lib();
@@ -1209,8 +1211,8 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
             $courseslist[$count]["tagstring"] = \local_costcenter\lib::strip_tags_custom($tagstring);
             $courseslist[$count]["tagstringtotal"] = $tagstringtotal;
             $courseslist[$count]["tagenable"] = $tagenable;
-            $courseslist[$count]["catname"] = \local_costcenter\lib::strip_tags_custom($catname);
-            $courseslist[$count]["catnamestring"] = \local_costcenter\lib::strip_tags_custom($catnamestring);
+            $courseslist[$count]["catname"] = \local_costcenter\lib::strip_tags_custom($categoryname);
+            $courseslist[$count]["catnamestring"] = \local_costcenter\lib::strip_tags_custom($categoryname);
             $courseslist[$count]["enrolled_count"] = $enrolled_count;
             $courseslist[$count]["courseid"] = $course->id;
             $courseslist[$count]["completiondays"] = $course->open_coursecompletiondays;
@@ -1241,18 +1243,34 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
             $opendepartmentarr = [];
             if(is_array($course->open_department)){
                 foreach($course->open_department as $departmentval){
-                    $opendepartmentarr[] = $DB->get_records_sql_menu('SELECT id,fullname
-                    FROM {local_costcenter}
-                    WHERE id IN(' . str_replace(',', '',$departmentval) . ')');
+                    // Fetch the department names as an associative array (id => fullname)
+                    $departmentrecords = $DB->get_records_sql_menu('SELECT id,fullname
+                                                                    FROM {local_costcenter}
+                                                                    WHERE id IN(' . str_replace(',', '',$departmentval) . ')');
+                    // Extract the department names (fullnames) only
+                    if (!empty($departmentrecords)) {
+                        // Merge department names into the main array, ensuring no overwriting
+                        $opendepartmentarr = array_merge($opendepartmentarr, array_values($departmentrecords));
+                    }
                 }
-                $courseslist[$count]["open_department"] = implode(',', $opendepartmentarr);
-            }else
-            if ($course->open_department > 0) {
-                $courseslist[$count]["open_department"] = $DB->get_records_sql_menu('SELECT id,fullname
-                FROM {local_costcenter}
-                WHERE id IN(' . str_replace(',', '',$course->open_department) . ')');
-            } else {
-                $courseslist[$count]["open_department"] = get_string('all');
+                // Implode the department names with a comma separator after all have been collected
+                $courseslist[$count]["open_department"] = implode(',', array_unique($opendepartmentarr));
+                // Use array_unique to prevent duplicates
+            }else {
+                 if ($course->open_department > 0) {
+                    // $courseslist[$count]["open_department"] = $DB->get_records_sql_menu('SELECT id,fullname
+                    //     FROM {local_costcenter}
+                    //     WHERE id IN(' . str_replace(',', '',$course->open_department) . ')');
+                    // Fetch the department names for non-array values of open_department
+                    $departmentrecords = $DB->get_records_sql_menu('SELECT id, fullname
+                                                                    FROM {local_costcenter}
+                                                                    WHERE id IN(' . str_replace(',', '', $course->open_department) . ')');
+                    if (!empty($departmentrecords)) {
+                        $courseslist[$count]["open_department"] = implode(',', array_values($departmentrecords));
+                    }
+                } else {
+                    $courseslist[$count]["open_department"] = get_string('all');
+                }
             }
             if ($course->open_subdepartment > 0) {
                 $courseslist[$count]["open_subdepartment"] = $DB->get_records_sql_menu('SELECT id,fullname
@@ -1734,6 +1752,13 @@ function difficulty_levels() {
         get_string('difficultylevels', 'local_courses', 3),
         get_string('difficultylevels', 'local_courses', 4),
         get_string('difficultylevels', 'local_courses', 5),
+        get_string('difficultylevels', 'local_courses', 6),
+        get_string('difficultylevels', 'local_courses', 7),
+        get_string('difficultylevels', 'local_courses', 8),
+        get_string('difficultylevels', 'local_courses', 9),
+        get_string('difficultylevels', 'local_courses', 10),
+        get_string('difficultylevels', 'local_courses', 11),
+        get_string('difficultylevels', 'local_courses', 12),
     ];
 
     // Return the array of difficulty levels.

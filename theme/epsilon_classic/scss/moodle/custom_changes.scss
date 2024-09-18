@@ -4228,3 +4228,16 @@ form#filteringform #fgroup_id_buttonar .felement .form-group.fitem{
 #page-course-admin.hod div#linkcourseadmin .container-fluid .row:nth-of-type(2) .list-unstyled li:nth-of-type(1) {
     display: none;
 }
+/*added to hide Restore as a new course as per UAT changes*/
+body#page-backup-restore .bcs-new-course.backup-section {
+    display: none;
+}
+.path-grade-report-grader .heading .gradeitemheader{
+    color: #fff;
+}
+.path-grade-report-grader .gradeparent table .heading .action-menu .cellmenubtn i {
+    color: #fff;
+}
+body.path-grade-report-grader.hasstickyfooter .gradeparent tr.lastrow {
+    bottom: inherit;
+}
