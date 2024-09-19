@@ -651,6 +651,7 @@ $string['mobileno_error'] = 'Enter a valid mobile number for employee code \'{$a
 
 $string['validmobileno_error'] = 'Enter a valid mobile number of 10 digits for employee code \'{$a->learner_id}\' of uploaded excelsheet at line {$a->excel_line_number}';
 $string['rolecannotchange_error'] = 'Role can not be updated at line {$a->excel_line_number}';
+$string['schoolcannotchange_error'] = 'You can not update other school user at line {$a->excel_line_number} with username {$a->username}';
 
 $string['select_org'] = '--Select Company--';
 $string['select_dept'] = '--Select Bussiness Unit--';
