@@ -586,6 +586,7 @@ class syncfunctionality
 
     public function gendervalidations($excel)
     {
+        global $USER, $DB;
         //validation for gender
         $strings = new stdClass;
         $strings->learner_id = $excel->employee_code;
@@ -628,6 +629,18 @@ class syncfunctionality
             $this->mfields[] = $excel->school_code;
             $this->errorcount++;
             
+        }
+        if(api::is_hod() && $this->countryid > 0) {
+            $exceluserpath = $DB->get_field('user', 'open_path', array('username' => $excel->username, 'email' => $excel->email));
+                if ($exceluserpath && $exceluserpath != $USER->open_path) {
+                    $strings = new StdClass();
+                    $strings->excel_line_number = $this->excel_line_number;
+                    $strings->username = $excel->username;
+                    echo '<div class=local_users_sync_error>' . get_string('schoolcannotchange_error', 'local_users', $strings) . '</div>';
+                    $this->errors[] = get_string('schoolcannotchange_error', 'local_users', $strings);
+                    $this->mfields[] = 'school_code';
+                    $this->errorcount++;
+                }
         }
     }
 
@@ -1163,14 +1176,12 @@ class syncfunctionality
             } else {
                 $user->country = $excel->school_code;
             }
-            // $user->country = $excel->school_code;
             $user->open_hrmsrole = $excel->role;
             if(api::is_hod()) {
                 $user->institution = $DB->get_field('local_costcenter', 'fullname', array('path' => $user->open_path));
             } else {
                 $user->institution = $excel->school_code;
             }
-            // $user->institution = $excel->school_code;
             $user->phone1 = $excel->mobileno ? $excel->mobileno : '';
             $user->open_state = $excel->state_name;
             $user->open_designation = $excel->designation;
