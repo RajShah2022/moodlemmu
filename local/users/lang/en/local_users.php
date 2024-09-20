@@ -650,6 +650,11 @@ $string['empstatusempty_error'] = 'Provide learner status for  employee code \'{
 $string['mobileno_error'] = 'Enter a valid mobile number for employee code \'{$a->learner_id}\' of uploaded excelsheet at line {$a->excel_line_number}';
 
 $string['validmobileno_error'] = 'Enter a valid mobile number of 10 digits for employee code \'{$a->learner_id}\' of uploaded excelsheet at line {$a->excel_line_number}';
+
+$string['validdateofjoining'] = 'Enter a valid date_of_joining of (Date format is \'dd-mm-yyyy\') of uploaded excelsheet at line {$a->excel_line_number}';
+
+$string['validdateofbirth'] = 'Enter a valid date_of_birth of (Date format is \'dd-mm-yyyy\') of uploaded excelsheet at line {$a->excel_line_number}';
+
 $string['rolecannotchange_error'] = 'Role can not be updated at line {$a->excel_line_number}';
 $string['schoolcannotchange_error'] = 'You can not update other school user at line {$a->excel_line_number} with username {$a->username}';
 
