@@ -4241,3 +4241,7 @@ body#page-backup-restore .bcs-new-course.backup-section {
 body.path-grade-report-grader.hasstickyfooter .gradeparent tr.lastrow {
     bottom: inherit;
 }
+body#page-course-view-flexsections.hod .description .section_availability,
+body#page-course-view-topics.hod .description .section_availability {
+    display: none;
+}
