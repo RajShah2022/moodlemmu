@@ -367,7 +367,7 @@ class api {
         // Join the quoted paths back into a comma-separated string
         $coursepathsQuoted = implode(',', $coursepathsArray);
 
-        // print_r($coursepathsQuoted);
+
 
         $cohortsync = "SELECT e.customint1, g.open_path
                        FROM {" . self::ENROLL_TABLE . "} e
