@@ -1244,9 +1244,19 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
             if(is_array($course->open_department)){
                 foreach($course->open_department as $departmentval){
                     // Fetch the department names as an associative array (id => fullname)
-                    $departmentrecords = $DB->get_records_sql_menu('SELECT id,fullname
-                                                                    FROM {local_costcenter}
-                                                                    WHERE id IN(' . str_replace(',', '',$departmentval) . ')');
+
+                    if (api::is_hod()) {
+                        $condition = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'path');
+
+                        $departmentrecords = $DB->get_records_sql_menu('SELECT id,fullname
+                                                                          FROM {local_costcenter}
+                                                                         WHERE 1 = 1 '.$condition);
+                    } else {
+                        $departmentrecords = $DB->get_records_sql_menu('SELECT id,fullname
+                                                                          FROM {local_costcenter}
+                                                                         WHERE id IN(' . str_replace(',', '',$departmentval) . ')');
+                    }
+
                     // Extract the department names (fullnames) only
                     if (!empty($departmentrecords)) {
                         // Merge department names into the main array, ensuring no overwriting
@@ -1262,9 +1272,18 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
                     //     FROM {local_costcenter}
                     //     WHERE id IN(' . str_replace(',', '',$course->open_department) . ')');
                     // Fetch the department names for non-array values of open_department
-                    $departmentrecords = $DB->get_records_sql_menu('SELECT id, fullname
-                                                                    FROM {local_costcenter}
-                                                                    WHERE id IN(' . str_replace(',', '', $course->open_department) . ')');
+
+                    if (api::is_hod()) {
+                        $condition = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'path');
+                        $departmentrecords = $DB->get_records_sql_menu('SELECT id,fullname
+                                                                          FROM {local_costcenter}
+                                                                         WHERE 1 = 1 '.$condition);
+                    } else {
+                        $departmentrecords = $DB->get_records_sql_menu('SELECT id,fullname
+                                                                          FROM {local_costcenter}
+                                                                         WHERE id IN(' . str_replace(',', '',$departmentval) . ')');
+                    }
+
                     if (!empty($departmentrecords)) {
                         $courseslist[$count]["open_department"] = implode(',', array_values($departmentrecords));
                     }
