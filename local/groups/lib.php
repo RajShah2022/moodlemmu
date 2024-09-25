@@ -1287,12 +1287,12 @@ function costcenterwise_groups_datacount($costcenter, $department = false, $subd
     $countgroups = $DB->count_records_sql($countgroupssql, $params);
     return ['datacount' => $countgroups];
 }
-function get_user_cohort_names($userid = null, $courseid = null ) {
+function get_user_cohort_names($userid = null, $courseid = null, $list = false) {
     global $DB, $USER;
     $cohorts = [];
     if($userid) {
         // Get cohort names based on user ID
-        $sql = "SELECT c.name
+        $sql = "SELECT c.id, c.name
                 FROM {cohort_members} cm
                 JOIN {cohort} c ON cm.cohortid = c.id
                 WHERE cm.userid = :userid";
@@ -1302,7 +1302,7 @@ function get_user_cohort_names($userid = null, $courseid = null ) {
     
     if($courseid) {
 
-        $cohortsync = "SELECT c.name
+        $cohortsync = "SELECT c.id, c.name
                        FROM {cohort} c
                        JOIN {local_groups} g ON g.cohortid = c.id
                        JOIN {enrol} e ON e.customint1 = c.id
@@ -1317,15 +1317,18 @@ function get_user_cohort_names($userid = null, $courseid = null ) {
         ];
         $cohorts = $DB->get_records_sql($cohortsync, $cohortparams);
     }
-
-    // If the user belongs to any cohorts, return a comma-separated list of cohort names
-    if (!empty($cohorts)) {
-        $cohort_names = array();
-        foreach ($cohorts as $cohort) {
-            $cohort_names[] = $cohort->name;
-        }
-        return implode(', ', $cohort_names);
+    if($list) {
+        return $cohorts;
     } else {
-        return '';
+        // If the user belongs to any cohorts, return a comma-separated list of cohort names
+        if (!empty($cohorts)) {
+            $cohort_names = array();
+            foreach ($cohorts as $cohort) {
+                $cohort_names[] = $cohort->name;
+            }
+            return implode(', ', $cohort_names);
+        } else {
+            return '';
+        } 
     }
 }

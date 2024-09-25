@@ -155,4 +155,21 @@ $capabilities = array(
             'manager' => CAP_ALLOW
         )
     ),
+    'local/courses:canconfiguregroupcontent' => array(
+        'riskbitmask' => RISK_SPAM,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSECAT,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW
+        )
+    ),
+    'local/courses:canviewgroupcontent' => array(
+        'riskbitmask' => RISK_SPAM,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSECAT,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW
+        )
+    ),
+    
 );

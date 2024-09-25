@@ -36,6 +36,8 @@ require_once($CFG->dirroot . '/group/lib.php');
 class api {
     public const COURSETOPICS_TABLE = 'local_coursetopics';
     public const COURSEGROUPS_TABLE = 'local_coursegroups';
+    public const COURSEGROUPTOPICS_TABLE = 'local_coursegrouptopics';
+    public const COURSEGROUPMODULES_TABLE = 'local_coursegroupmodules';
     public const LOCAL_GROUPS = 'local_groups';
     public const ENROLLMENT_REQUESTS_TABLE = 'local_request_records';
     public const ENROLL_TABLE = 'enrol';
@@ -217,8 +219,555 @@ class api {
         }
     }
 
+    public static function insert_groupcontentconfig_instance($data) {
+        global $DB, $USER;
 
-    public static function course_content_accessrestrictions($courseid) {
+        try {
+            $categorycontext = (new \local_courses\lib\accesslib())::get_module_context();
+            $courseid = $data->courseid;
+            $groupid = $data->groupid;
+
+            // Load all existing topics and activities for the course group.
+            $alltopics = $DB->get_records(self::COURSEGROUPTOPICS_TABLE, ['courseid' => $courseid, 'groupid' => $groupid]);
+
+            $allactivities = $DB->get_records(self::COURSEGROUPMODULES_TABLE, ['courseid' => $courseid, 'groupid' => $groupid]);
+
+            // Prepare arrays to track existing topic and activity IDs.
+            $existingtopicids = [];
+            $existingactivityids = [];
+            foreach ($alltopics as $topic) {
+                $existingtopicids[$topic->topic][$topic->open_path] = $topic->id;
+            }
+            foreach ($allactivities as $activity) {
+                $existingactivityids[$activity->moduleid][$activity->open_path] = $activity->id;
+            }
+
+            // Track selected topics and activities.
+            $selectedtopics = [];
+            $selectedactivities = [];
+            // print_r($data);
+            // Insert or update checked topics and activities.
+            foreach ($data as $key => $value) {
+                // print_r($key);
+                // print_r($value);
+                if (preg_match('/^section_(\d+)$/', $key, $matches) && $value == 1) {
+                    $topicid = $matches[1];
+                    $selectedtopics[$topicid] = true;
+
+                    if (isset($existingtopicids[$topicid][$USER->open_path])) {
+                        // Update existing record if it already exists for this path.
+                        $record = new stdClass();
+                        $record->id = $existingtopicids[$topicid][$USER->open_path];
+                        $record->timemodified = time();
+                        $record->usermodified = $USER->id;
+                        $DB->update_record(self::COURSEGROUPTOPICS_TABLE, $record);
+
+                        // Remove the topic from the list to be deleted.
+                        unset($existingtopicids[$key][$USER->open_path]);
+                    } else {
+
+                        // Insert new record for a newly checked topic.
+                        $record = new stdClass();
+                        $record->courseid = $courseid;
+                        $record->groupid = $groupid;
+                        $record->topic = $topicid;
+                        $record->open_path = $USER->open_path;
+                        $record->timecreated = time();
+                        $record->usercreated = $USER->id;
+                        // print_r($record);
+                        $createdid = $DB->insert_record(self::COURSEGROUPTOPICS_TABLE, $record);
+                    }
+                }
+
+                if (preg_match('/^activity_(\d+)$/', $key, $matches) && $value == 1) {
+                    $activityid = $matches[1];
+                    $selectedactivities[$activityid] = true;
+
+                    if (isset($existingactivityids[$activityid][$USER->open_path]) && isset($topicid)) {
+                        $record = new stdClass();
+                        $record->id = $existingactivityids[$activityid][$USER->open_path];
+                        $record->timemodified = time();
+                        $record->usermodified = $USER->id;
+                        $DB->update_record(self::COURSEGROUPMODULES_TABLE, $record);
+
+                        unset($existingactivityids[$activityid][$USER->open_path]);
+                    } else {
+                        $record = new stdClass();
+                        $record->courseid = $courseid;
+                        $record->groupid = $groupid;
+                        $record->topicid = $topicid;
+                        $record->moduleid = $activityid;
+                        $record->open_path = $USER->open_path;
+                        $record->timecreated = time();
+                        $record->usercreated = $USER->id;
+                        // print_r($record);
+                        $DB->insert_record(self::COURSEGROUPMODULES_TABLE, $record);
+                    }
+                }
+            }
+            
+            // Delete any unchecked topics and activities.
+            foreach ($existingtopicids as $topicid => $paths) {
+                if (!isset($selectedtopics[$topicid]) && isset($paths[$USER->open_path])) {
+                    $DB->delete_records(self::COURSEGROUPTOPICS_TABLE, ['id' => $paths[$USER->open_path]]);
+                }
+            }
+
+            foreach ($existingactivityids as $activityid => $paths) {
+                if (!isset($selectedactivities[$activityid]) && isset($paths[$USER->open_path])) {
+                    $DB->delete_records(self::COURSEGROUPMODULES_TABLE, ['id' => $paths[$USER->open_path]]);
+                }
+            }
+
+            self::update_section_availability($courseid, $groupid);
+        } catch (\Exception $e) {
+            throw new \moodle_exception("Error in class content configuring: " . $e->getMessage());
+        }
+    }
+
+    // public static function insert_groupcontentconfig_instance($data) {
+    //     global $DB, $USER;
+
+    //     try {
+    //         $categorycontext = (new \local_courses\lib\accesslib())::get_module_context();
+    //         $courseid = $data->courseid;
+    //         $groupid = $data->groupid;
+
+    //         // Load all existing topics for the course of the group.
+    //         $alltopics = $DB->get_records(self::COURSEGROUPTOPICS_TABLE, ['courseid' => $courseid, 'groupid' => $groupid]);
+
+    //         // Prepare arrays to track topics by their open paths.
+    //         $existingtopicids = [];
+    //         foreach ($alltopics as $topic) {
+    //             if (!isset($existingtopicids[$topic->topic])) {
+    //                 $existingtopicids[$topic->topic] = [];
+    //             }
+    //             $existingtopicids[$topic->topic][$topic->open_path] = $topic->id;
+    //             // $existingtopicids[$topic->topic][$topic->groupid] = $topic->id;
+    //         }
+
+    //         // Track topics that are selected in the current form submission.
+    //         $selectedtopics = [];
+
+    //         // Insert or update checked topics.
+    //         foreach ($data as $key => $value) {
+    //             if (is_numeric($key) && $value == 1) {
+    //                 $selectedtopics[$key] = true;
+
+    //                 if (isset($existingtopicids[$key][$USER->open_path])) {
+    //                     // Update existing record if it already exists for this path.
+    //                     $record = new stdClass();
+    //                     $record->id = $existingtopicids[$key][$USER->open_path];
+    //                     $record->timemodified = time();
+    //                     $record->usermodified = $USER->id;
+    //                     $updatedid = $DB->update_record(self::COURSEGROUPTOPICS_TABLE, $record);
+
+    //                     // Remove the topic from the list to be deleted.
+    //                     unset($existingtopicids[$key][$USER->open_path]);
+    //                 } else {
+    //                     // Insert new record for a newly checked topic.
+    //                     $record = new stdClass();
+    //                     $record->courseid = $courseid;
+    //                     $record->groupid = $groupid;
+    //                     $record->topic = $key;
+    //                     $record->open_path = $USER->open_path;
+    //                     $record->timecreated = time();
+    //                     $record->usercreated = $USER->id;
+    //                     $createdid = $DB->insert_record(self::COURSEGROUPTOPICS_TABLE, $record);
+    //                 }
+    //             }
+    //         }
+            
+    //         // Non-admins should only delete their unchecked topics for their path.
+    //         foreach ($existingtopicids as $topicid => $paths) {
+    //             if (!isset($selectedtopics[$topicid]) && isset($paths[$USER->open_path])) {
+    //                 $DB->delete_records(self::COURSEGROUPTOPICS_TABLE, ['id' => $paths[$USER->open_path]]);
+    //             }
+    //         }
+
+    //         // self::course_content_accessrestrictions($courseid, $groupid);
+    //     } catch (\Exception $e) {
+    //         throw new \moodle_exception("Error in class content configuring: " . $e->getMessage());
+    //     }
+    // }
+
+    public static function course_content_accessrestrictions($courseid, $groupid = false) {
+        global $DB;
+
+        // Fetch teacher and employee (student) role IDs as integers
+        $teacherRoleId = (int)self::get_teacher_roleid();
+        $employeeRoleId = (int)self::get_student_roleid();
+
+        // Get the course record
+        $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
+
+        // Get all sections from the COURSESECTIONS_TABLE for the given course
+        $allSections = $DB->get_records(self::COURSESECTIONS_TABLE, ['course' => $courseid]);
+
+        // if($DB->record_exists(self::COURSEGROUPTOPICS_TABLE, ['courseid' => $courseid])){
+        //     // Get all topics linked to course sections in the COURSETOPICS_TABLE
+            $linkedTopics = $DB->get_records(self::COURSETOPICS_TABLE, ['courseid' => $courseid]);
+        // } else {
+            // Get all topics linked to course sections in the COURSETOPICS_TABLE
+            // $linkedTopics = $DB->get_records(self::COURSEGROUPTOPICS_TABLE, ['courseid' => $courseid]);
+        // }
+        
+
+        // Query to get cohort sync list with open_path
+        $cohortsync = "SELECT DISTINCT e.customint1 AS groupid, e.customint2, cg.open_path
+                       FROM {" . self::ENROLL_TABLE . "} e
+                       JOIN {" . self::COURSEGROUPS_TABLE . "} cg
+                         ON e.customint1 = cg.groupid AND e.courseid = cg.courseid
+                       WHERE e.courseid = :courseid AND e.enrol = :enrol";
+
+        $cohortparams = ['courseid' => $courseid, 'enrol' => 'cohort'];
+        $cohortsynclist = $DB->get_records_sql($cohortsync, $cohortparams);
+
+        // Create a map of customint2 (group information) to open_path
+        $groupPaths = [];
+        foreach ($cohortsynclist as $cohort) {
+            $groupPaths[$cohort->customint2] = $cohort->open_path;
+        }
+
+        // Create an associative array to map section IDs to topic IDs
+        $sectionsByTopic = [];
+        foreach ($linkedTopics as $topicRecord) {
+            $sectionsByTopic[$topicRecord->topic] = $topicRecord->topic;
+        }
+        // Iterate over all sections
+        foreach ($allSections as $section) {
+            if ($section->section > 0) {
+                $sectiondata = new stdClass();
+                $sectiondata->id = $section->id;
+                $sectiondata->section = $section->section;
+
+                // Initialize the availability conditions
+                $allConditions = [];
+
+                // Determine if this section is linked to a topic
+                if (isset($sectionsByTopic[$section->id])) {
+                    $topicId = $sectionsByTopic[$section->id];
+                    
+                    // Get all topic records for the specific topic ID
+                    $topicRecords = $DB->get_records(self::COURSETOPICS_TABLE, ['topic' => $topicId]);
+
+                    // Iterate through each topic record
+                    foreach ($topicRecords as $topicRecord) {
+                        if (is_null($topicRecord->open_path)) {
+                            // // Admin topics (no open_path) should be visible to all groups
+                            // $allConditions = array_merge($allConditions, array_map(function($customint2) {
+                            //     return ["type" => "group", "id" => $customint2];
+                            // }, array_keys($groupPaths)));
+
+                            // Admin topics (no open_path) should be visible to all groups
+                            foreach (array_keys($groupPaths) as $customint2) {
+                                $allConditions[] = [
+                                    "op" => "&",
+                                    "c" => [
+                                        ["type" => "group", "id" => $customint2],
+                                        ["type" => "role", "id" => $teacherRoleId] // Add role condition for 'teacher'
+                                    ]
+                                ];
+                            }
+
+                        } else {
+                            // HOD topics should be visible only to specific groups
+                            foreach ($groupPaths as $customint2 => $path) {
+                                if ($topicRecord->open_path === $path) {
+                                    // $allConditions[] = ["type" => "group", "id" => $customint2];
+                                    $allConditions[] = [
+                                        "op" => "&",
+                                        "c" => [
+                                            ["type" => "group", "id" => $customint2],
+                                            ["type" => "role", "id" => $teacherRoleId] // Add role condition for 'teacher'
+                                        ]
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Remove duplicate conditions
+                $uniqueConditions = array_values(array_unique($allConditions, SORT_REGULAR));
+
+                // Create a new availability structure if conditions exist, else set null
+                if (!empty($uniqueConditions)) {
+                    $updatedAvailability = [
+                        "op" => "|",
+                        "c" => $uniqueConditions,
+                        "show" => false
+                    ];
+                    $availabilityJson = json_encode($updatedAvailability);
+                    $sectiondata->availability = $availabilityJson;
+                    $sectiondata->visible = 1;
+                } else {
+                    $sectiondata->availability = null;
+                    $sectiondata->visible = 0;
+                }
+                // Update section with new availability and visibility settings
+                course_update_section($course, $section, $sectiondata);
+
+                // Retrieve the list of modules (activities) in this section
+                // $modules = !empty($section->sequence) ? explode(',', $section->sequence) : array();
+                // if (!empty($modules)) {
+                //     // Update each module's visibility to match the section's visibility
+                //     foreach ($modules as $moduleid) {
+                //         $DB->set_field('course_modules', 'visible', $sectiondata->visible, ['id' => $moduleid]);
+                //     }
+                // }
+            }
+        }
+    }
+
+    public static function update_section_availability($courseid, $groupid = false) {
+        global $DB;
+
+        // Get the course record
+        $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
+
+        // Get all sections from the COURSESECTIONS_TABLE for the given course
+        $allSections = $DB->get_records(self::COURSESECTIONS_TABLE, ['course' => $courseid]);
+
+        // Get all topics linked to course sections for a group in the COURSEGROUPTOPICS_TABLE
+        $linkedTopics = $DB->get_records(self::COURSEGROUPTOPICS_TABLE, ['courseid' => $courseid, 'groupid' => $groupid]);
+
+        // Query to get cohort sync list with open_path
+        $cohortsync = "SELECT DISTINCT e.customint1 AS groupid, e.customint2, cg.open_path
+                       FROM {" . self::ENROLL_TABLE . "} e
+                       JOIN {" . self::COURSEGROUPTOPICS_TABLE . "} cg
+                         ON e.customint1 = cg.groupid AND e.courseid = cg.courseid
+                       WHERE e.courseid = :courseid AND e.enrol = :enrol AND cg.groupid = :groupid";
+
+        $cohortparams = ['courseid' => $courseid, 'enrol' => 'cohort', 'groupid' => $groupid];
+        $cohortsynclist = $DB->get_records_sql($cohortsync, $cohortparams);
+
+        // Create a map of customint2 (group information) to open_path
+        $groupPaths = [];
+        foreach ($cohortsynclist as $cohort) {
+            $groupPaths[$cohort->customint2] = $cohort->open_path;
+        }
+
+        // Create an associative array to map section IDs to topic IDs
+        $sectionsByTopic = [];
+        foreach ($linkedTopics as $topicRecord) {
+            $sectionsByTopic[$topicRecord->topic] = $topicRecord->topic;
+        }
+
+        // Iterate over all sections
+        foreach ($allSections as $section) {
+            $sectiondata = new stdClass();
+            $sectiondata->id = $section->id;
+            $sectiondata->section = $section->section;
+
+            // Initialize the availability conditions
+            $allConditions = [];
+
+            // Determine if this section is linked to a topic
+            if (isset($sectionsByTopic[$section->id])) {
+                $topicId = $sectionsByTopic[$section->id];
+
+                // Get all topic records for the specific topic ID
+                $topicRecords = $DB->get_records(self::COURSEGROUPTOPICS_TABLE, ['topic' => $topicId, 'groupid' => $groupid]);
+
+                // Iterate through each topic record and apply group/role restrictions
+                foreach ($topicRecords as $topicRecord) {
+                    foreach ($groupPaths as $customint2 => $path) {
+                        if ($topicRecord->open_path === $path) {
+                            $existingAvailability = json_decode($section->availability, true);
+                            $existingConditions = isset($existingAvailability['c']) ? $existingAvailability['c'] : [];
+                            
+                            // Iterate over existing conditions to merge
+                            foreach ($existingConditions as &$condition) {
+                                if (isset($condition['c'])) {
+                                    foreach ($condition['c'] as &$subCondition) {
+                                        if ($subCondition['type'] === 'group' && $subCondition['id'] === $groupid) {
+                                            // Update the matching group condition
+                                            $subCondition = ["type" => "group", "id" => $customint2];
+                                        }
+                                    }
+                                }
+                            }
+
+                            $newCondition = [
+                                "op" => "&",
+                                "c" => [
+                                    ["type" => "group", "id" => $customint2]
+                                ]
+                            ];
+                            $existingConditions[] = $newCondition;
+
+                            // Remove duplicate conditions and merge
+                            $uniqueConditions = array_values(array_unique($existingConditions, SORT_REGULAR));
+
+                            // Update the availability
+                            if (!empty($uniqueConditions)) {
+                                $updatedAvailability = [
+                                    "op" => "|",
+                                    "c" => $uniqueConditions,
+                                    "show" => false
+                                ];
+                                $availabilityJson = json_encode($updatedAvailability);
+                                $sectiondata->availability = $availabilityJson;
+                                $sectiondata->visible = 1;
+                            }
+
+                            // Apply the changes
+                            course_update_section($course, $section, $sectiondata);
+                        }
+                    }
+
+                    // Fetch the modules linked to this topic from mdl_local_coursegroupmodules
+                    $linkedModules = $DB->get_records(self::COURSEGROUPMODULES_TABLE, ['courseid' => $courseid, 'topicid' => $topicId]);
+
+                    // Iterate through each module and apply the same conditions
+                    foreach ($linkedModules as $module) {
+                        $moduleConditions = [];
+                        foreach ($groupPaths as $customint2 => $path) {
+                            if ($module->open_path === $path) {
+                                // $moduleConditions[] = [
+                                //     "op" => "|",
+                                //     "c" => [
+                                //         ["type" => "group", "id" => $customint2],
+                                //         ["type" => "role", "id" => $teacherRoleId],
+                                //         ["type" => "role", "id" => $employeeRoleId]
+                                //     ]
+                                // ];
+                                $moduleConditions[] = ["type" => "group", "id" => $customint2];
+                            }
+                        }
+
+                        // Remove duplicate conditions for modules
+                        $uniqueModuleConditions = array_values(array_unique($moduleConditions, SORT_REGULAR));
+
+                        // Update module availability if conditions exist
+                        if (!empty($uniqueModuleConditions)) {
+                            $moduleAvailability = [
+                                "op" => "|",
+                                "c" => $uniqueModuleConditions,
+                                "show" => false
+                            ];
+                            $moduleAvailabilityJson = json_encode($moduleAvailability);
+
+                            // Update the availability field in course_modules
+                            $DB->set_field('course_modules', 'availability', $moduleAvailabilityJson, ['id' => $module->moduleid]);
+                            $DB->set_field('course_modules', 'visible', $sectiondata->visible, ['id' => $module->moduleid]);
+                            \course_modinfo::purge_course_module_cache($courseid, $module->moduleid);
+                            rebuild_course_cache($course->id, true, true);
+                        } 
+                        // else {
+                        //     $DB->set_field('course_modules', 'visible', $section->visible, ['id' => $module->moduleid]);
+                        // }
+                    }
+                }
+            }
+        }
+    }
+
+    public static function update_section_availability_bkp($courseid, $groupid = false) {
+        global $DB;
+
+        // Fetch teacher and employee (student) role IDs as integers
+        $teacherRoleId = (int)self::get_teacher_roleid();
+        $employeeRoleId = (int)self::get_student_roleid();
+
+        // Get the course record
+        $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
+
+        // Get all sections from the COURSESECTIONS_TABLE for the given course
+        $allSections = $DB->get_records(self::COURSESECTIONS_TABLE, ['course' => $courseid]);
+
+        
+        // Get all topics linked to course sections for a group in the COURSEGROUPTOPICS_TABLE
+        $linkedTopics = $DB->get_records(self::COURSEGROUPTOPICS_TABLE, ['courseid' => $courseid,'groupid' => $groupid]);
+
+        // Query to get cohort sync list with open_path
+        $cohortsync = "SELECT DISTINCT e.customint1 AS groupid, e.customint2, cg.open_path
+                       FROM {" . self::ENROLL_TABLE . "} e
+                       JOIN {" . self::COURSEGROUPTOPICS_TABLE . "} cg
+                         ON e.customint1 = cg.groupid AND e.courseid = cg.courseid
+                       WHERE e.courseid = :courseid AND e.enrol = :enrol";
+
+        $cohortparams = ['courseid' => $courseid, 'enrol' => 'cohort'];
+        $cohortsynclist = $DB->get_records_sql($cohortsync, $cohortparams);
+
+        
+        // Create a map of customint2 (group information) to open_path
+        $groupPaths = [];
+        foreach ($cohortsynclist as $cohort) {
+            $groupPaths[$cohort->customint2] = $cohort->open_path;
+        }
+
+        // Create an associative array to map section IDs to topic IDs
+        $sectionsByTopic = [];
+        foreach ($linkedTopics as $topicRecord) {
+            $sectionsByTopic[$topicRecord->topic] = $topicRecord->topic;
+        }
+
+        // Iterate over all sections
+        foreach ($allSections as $section) {
+            $sectiondata = new stdClass();
+            $sectiondata->id = $section->id;
+            $sectiondata->section = $section->section;
+
+            // Initialize the availability conditions
+            $allConditions = [];
+
+            // Determine if this section is linked to a topic
+            if (isset($sectionsByTopic[$section->id])) {
+                $topicId = $sectionsByTopic[$section->id];
+                
+                // Get all topic records for the specific topic ID
+                $topicRecords = $DB->get_records(self::COURSETOPICS_TABLE, ['topic' => $topicId]);
+
+                // Iterate through each topic record
+                foreach ($topicRecords as $topicRecord) {
+                    // Teacher topics should be visible only to specific groups
+                    foreach ($groupPaths as $customint2 => $path) {
+                        if ($topicRecord->open_path === $path) {
+                            // $allConditions[] = ["type" => "group", "id" => $customint2];
+                            $allConditions[] = [
+                                "op" => "|",
+                                "c" => [
+                                    ["type" => "group", "id" => $customint2],
+                                    ["type" => "role", "id" => $teacherRoleId], // Add role condition for 'teacher'
+                                    ["type" => "role", "id" => $employeeRoleId] // Add role condition for 'student'
+                                ]
+                            ];
+                        }
+                    }
+                }
+            }
+
+            // Remove duplicate conditions
+            $uniqueConditions = array_values(array_unique($allConditions, SORT_REGULAR));
+
+            // Create a new availability structure if conditions exist, else set null
+            if (!empty($uniqueConditions)) {
+                $updatedAvailability = [
+                    "op" => "|",
+                    "c" => $uniqueConditions,
+                    "show" => false
+                ];
+                $availabilityJson = json_encode($updatedAvailability);
+                $sectiondata->availability = $availabilityJson;
+                $sectiondata->visible = 1;
+            }
+            // Update section with new availability and visibility settings
+            course_update_section($course, $section, $sectiondata);
+
+            // // Retrieve the list of modules (activities) in this section
+            // $modules = !empty($section->sequence) ? explode(',', $section->sequence) : array();
+            // if (!empty($modules)) {
+            //     // Update each module's visibility to match the section's visibility
+            //     foreach ($modules as $moduleid) {
+            //         $DB->set_field('course_modules', 'visible', $sectiondata->visible, ['id' => $moduleid]);
+            //     }
+            // }
+        }
+    }
+
+    public static function course_content_accessrestrictions_bkp($courseid, $groupid = false) {
         global $DB;
         $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
         // Get all sections from the COURSESECTIONS_TABLE for the given course
@@ -327,6 +876,16 @@ class api {
     public static function get_hodcourse_roleid() {
         global $DB;
         return $DB->get_field('role', 'id', array('shortname' => 'hod_course'));
+    }
+
+    public static function get_teacher_roleid() {
+        global $DB;
+        return $DB->get_field('role', 'id', array('shortname' => 'teacher'));
+    }
+
+    public static function get_student_roleid() {
+        global $DB;
+        return $DB->get_field('role', 'id', array('shortname' => 'employee'));
     }
 
     public static function is_hod() {
