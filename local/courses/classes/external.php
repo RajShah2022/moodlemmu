@@ -1347,6 +1347,7 @@ class local_courses_external extends external_api {
             }
         }
         api::course_content_accessrestrictions($courseid);
+        api::update_section_availability($courseid);
         // If the admin deselects a group, remove all related records.
         // if (is_siteadmin() || api::is_administrator()) {
         //     // Fetch all group IDs that are not in the selected groups.

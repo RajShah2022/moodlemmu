@@ -100,6 +100,8 @@ class api {
                         // Delete all records for this topic if it is not selected by the admin.
                         foreach ($paths as $pathid) {
                             $DB->delete_records(self::COURSETOPICS_TABLE, ['id' => $pathid]);
+                            $DB->delete_records(self::COURSEGROUPTOPICS_TABLE, ['topic' => $topicid]);
+                            $DB->delete_records(self::COURSEGROUPMODULES_TABLE, ['topicid' => $topicid]);
                         }
                     }
                 }
@@ -108,11 +110,14 @@ class api {
                 foreach ($existingtopicids as $topicid => $paths) {
                     if (!isset($selectedtopics[$topicid]) && isset($paths[$USER->open_path])) {
                         $DB->delete_records(self::COURSETOPICS_TABLE, ['id' => $paths[$USER->open_path]]);
+                        $DB->delete_records(self::COURSEGROUPTOPICS_TABLE, ['topic' => $topicid]);
+                        $DB->delete_records(self::COURSEGROUPMODULES_TABLE, ['topicid' => $topicid]);
                     }
                 }
             }
 
             self::course_content_accessrestrictions($courseid);
+            self::update_section_availability($courseid);
         } catch (\Exception $e) {
             throw new \moodle_exception("Error in topics configuring: " . $e->getMessage());
         }
@@ -180,6 +185,8 @@ class api {
                         // Delete all records for this topic if it is not selected by the admin.
                         foreach ($paths as $pathid) {
                             $DB->delete_records(self::COURSEGROUPS_TABLE, ['id' => $pathid]);
+                            $DB->delete_records(self::COURSEGROUPTOPICS_TABLE, ['groupid' => $groupid]);
+                            $DB->delete_records(self::COURSEGROUPMODULES_TABLE, ['groupid' => $groupid]);
                             $sql = "componentid = :componentid AND courseid = :courseid AND status = :pending";
                             $params = [
                                 'componentid' => $groupid,
@@ -198,6 +205,8 @@ class api {
                 foreach ($existinggroupids as $groupid => $paths) {
                     if (!isset($selectedgroups[$groupid]) && isset($paths[$USER->open_path])) {
                         $DB->delete_records(self::COURSEGROUPS_TABLE, ['id' => $paths[$USER->open_path]]);
+                        $DB->delete_records(self::COURSEGROUPTOPICS_TABLE, ['groupid' => $groupid]);
+                        $DB->delete_records(self::COURSEGROUPMODULES_TABLE, ['groupid' => $groupid]);
                             $sql = "componentid = :componentid AND courseid = :courseid AND status = :pending";
                             $params = [
                                 'componentid' => $groupid,
@@ -214,6 +223,7 @@ class api {
             }
 
             self::course_content_accessrestrictions($courseid);
+            self::update_section_availability($courseid);
         } catch (\Exception $e) {
             throw new \moodle_exception("Error in classes enrollment: " . $e->getMessage());
         }
@@ -520,7 +530,7 @@ class api {
         }
     }
 
-    public static function update_section_availability($courseid, $groupid = false) {
+    public static function update_section_availability($courseid) {
         global $DB;
 
         // Get the course record
@@ -530,23 +540,7 @@ class api {
         $allSections = $DB->get_records(self::COURSESECTIONS_TABLE, ['course' => $courseid]);
 
         // Get all topics linked to course sections for a group in the COURSEGROUPTOPICS_TABLE
-        $linkedTopics = $DB->get_records(self::COURSEGROUPTOPICS_TABLE, ['courseid' => $courseid, 'groupid' => $groupid]);
-
-        // Query to get cohort sync list with open_path
-        $cohortsync = "SELECT DISTINCT e.customint1 AS groupid, e.customint2, cg.open_path
-                       FROM {" . self::ENROLL_TABLE . "} e
-                       JOIN {" . self::COURSEGROUPTOPICS_TABLE . "} cg
-                         ON e.customint1 = cg.groupid AND e.courseid = cg.courseid
-                       WHERE e.courseid = :courseid AND e.enrol = :enrol AND cg.groupid = :groupid";
-
-        $cohortparams = ['courseid' => $courseid, 'enrol' => 'cohort', 'groupid' => $groupid];
-        $cohortsynclist = $DB->get_records_sql($cohortsync, $cohortparams);
-
-        // Create a map of customint2 (group information) to open_path
-        $groupPaths = [];
-        foreach ($cohortsynclist as $cohort) {
-            $groupPaths[$cohort->customint2] = $cohort->open_path;
-        }
+        $linkedTopics = $DB->get_records(self::COURSEGROUPTOPICS_TABLE, ['courseid' => $courseid]);
 
         // Create an associative array to map section IDs to topic IDs
         $sectionsByTopic = [];
@@ -568,10 +562,25 @@ class api {
                 $topicId = $sectionsByTopic[$section->id];
 
                 // Get all topic records for the specific topic ID
-                $topicRecords = $DB->get_records(self::COURSEGROUPTOPICS_TABLE, ['topic' => $topicId, 'groupid' => $groupid]);
+                $topicRecords = $DB->get_records(self::COURSEGROUPTOPICS_TABLE, ['topic' => $topicId]);
 
                 // Iterate through each topic record and apply group/role restrictions
                 foreach ($topicRecords as $topicRecord) {
+                    // Query to get cohort sync list with open_path
+                    $cohortsync = "SELECT DISTINCT e.customint1 AS groupid, e.customint2, cg.open_path
+                                   FROM {" . self::ENROLL_TABLE . "} e
+                                   JOIN {" . self::COURSEGROUPTOPICS_TABLE . "} cg
+                                     ON e.customint1 = cg.groupid AND e.courseid = cg.courseid
+                                   WHERE e.courseid = :courseid AND e.enrol = :enrol AND cg.groupid = :groupid";
+
+                    $cohortparams = ['courseid' => $courseid, 'enrol' => 'cohort', 'groupid' => $topicRecord->groupid];
+                    $cohortsynclist = $DB->get_records_sql($cohortsync, $cohortparams);
+
+                    // Create a map of customint2 (group information) to open_path
+                    $groupPaths = [];
+                    foreach ($cohortsynclist as $cohort) {
+                        $groupPaths[$cohort->customint2] = $cohort->open_path;
+                    }
                     foreach ($groupPaths as $customint2 => $path) {
                         if ($topicRecord->open_path === $path) {
                             $existingAvailability = json_decode($section->availability, true);
@@ -618,7 +627,7 @@ class api {
                     }
 
                     // Fetch the modules linked to this topic from mdl_local_coursegroupmodules
-                    $linkedModules = $DB->get_records(self::COURSEGROUPMODULES_TABLE, ['courseid' => $courseid, 'topicid' => $topicId]);
+                    $linkedModules = $DB->get_records(self::COURSEGROUPMODULES_TABLE, ['courseid' => $courseid, 'topicid' => $topicId, 'groupid' => $topicRecord->groupid]);
 
                     // Iterate through each module and apply the same conditions
                     foreach ($linkedModules as $module) {
