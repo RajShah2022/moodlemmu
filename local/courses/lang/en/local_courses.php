@@ -264,7 +264,10 @@ $string['courses:update'] = 'Update course';
 $string['courses:view'] = 'View course';
 $string['courses:visibility'] = 'Course visibility';
 $string['courses:enrol'] = 'Course enrol';
-$string['courses:canconfigure'] = 'Can Configure Course';
+$string['courses:canconfiguretopics'] = 'Configure Course Topics';
+$string['courses:canconfiguregroups'] = 'Configure Course Classes';
+$string['courses:canconfiguregroupcontent'] = 'Configure Course Class Content';
+$string['courses:canviewgroupcontent'] = 'View Course Class Content';
 
 $string['reason_linkedtocostcenter'] = 'As this Course category is linked with the Company/School Code, you can not delete this category';
 $string['reason_subcategoriesexists'] = 'As we have sub-categories in this Course category, you can not delete this category';
