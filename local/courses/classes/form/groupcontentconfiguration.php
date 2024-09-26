@@ -51,6 +51,7 @@ class groupcontentconfiguration extends dynamic_form {
         $user_can_edit = false;
         if(has_capability('local/courses:canconfiguregroupcontent', $categorycontext)) {
             $user_can_edit = true;
+        }
             $params['courseid'] = $courseid;
             $params['open_path'] = $USER->open_path;
             $existingtopics = $DB->get_records('local_coursetopics', $params, 'topic DESC', 'topic');
@@ -96,7 +97,6 @@ class groupcontentconfiguration extends dynamic_form {
             } else {
                 $mform->addElement('static', 'notopics', '', get_string('notopics', 'local_courses'), array('class' => 'notopicselement'));
             }
-        }
     }
 
     protected function get_parent_id($sections, $sectionid) {

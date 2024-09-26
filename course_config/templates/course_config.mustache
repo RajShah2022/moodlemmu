@@ -17,10 +17,8 @@
 {{#cohortslist}}
 <div class="mb-2 d-flex justify-content-between">
     <div><a>{{cohortname}}</a></div>
-    {{#canmanage}}
         <div>
              <a data-action="groupcontentconfiguration" data-name="{{ cohortname }}" data-id = 0 data-courseid={{courseid}} data-groupid={{cohortid}} href="javascript:void(0)" class="mr-2" data-topicsselected='{{# str}} topicsselected , local_courses, {{ cohortname }} {{/ str}}' title ="{{# str}} topics_cofiguration, local_courses {{/str}}" ><i class="fa fa-list" aria-hidden="true"></i></a>
         </div>
-    {{/canmanage}}
 </div>
 {{/cohortslist}}
