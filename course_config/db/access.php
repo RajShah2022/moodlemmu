@@ -27,14 +27,14 @@ defined('MOODLE_INTERNAL') || die();
 $capabilities = array(
 
     // Whether or not the user can add the block on their dashboard.
-    // We don't allow anyone to add it, the teacher/manager should add it
-    // to their default dashboards.
-    // 'block/course_config:myaddinstance' => array(
-    //     'captype' => 'write',
-    //     'contextlevel' => CONTEXT_COURSECAT,
-    //     'archetypes' => [],
-    //     'clonepermissionsfrom' => 'moodle/my:manageblocks'
-    // ),
+    'block/course_config:myaddinstance' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => array(
+                        'teacher' => CAP_ALLOW
+                    ),
+        'clonepermissionsfrom' => 'moodle/my:manageblocks'
+    ),
 
     // Whether or not the user can add the block.
     'block/course_config:addinstance' => array(
@@ -53,7 +53,7 @@ $capabilities = array(
     // Whether or not a user can see the block.
     'block/course_config:view' => array(
         'captype' => 'write',
-        'contextlevel' => CONTEXT_COURSE,
+        'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => array(
             'manager'        => CAP_PROHIBIT,
             'coursecreator'  => CAP_PROHIBIT,
@@ -66,20 +66,6 @@ $capabilities = array(
         ),
         'clonepermissionsfrom' => 'block/course_config:addinstance',
     ),
-
-    // Whether or not the user can manage all aspects of the block.
-    // 'block/course_config:manage' => array(
-    //     'captype' => 'write',
-    //     'contextlevel' => CONTEXT_COURSE,
-    //     'archetypes' => array(
-    //         'manager'        => CAP_PROHIBIT,
-    //         'coursecreator'  => CAP_PROHIBIT,
-    //         'editingteacher' => CAP_PROHIBIT,
-    //         'teacher'        => CAP_ALLOW,
-    //         'student'        => CAP_PROHIBIT,
-    //         'guest'          => CAP_PROHIBIT,
-    //         'user'           => CAP_PROHIBIT,
-    //         'frontpage'      => CAP_PROHIBIT
-    //     ),
-    // )
 );
+
+     

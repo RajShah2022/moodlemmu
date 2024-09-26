@@ -31,7 +31,7 @@ class course_config {
 
     public function display_course_config_links() {
         global $USER, $COURSE, $OUTPUT;
-        $categorycontext = (new \local_courses\lib\accesslib())::get_module_context();
+        $categorycontext = (new \local_costcenter\lib\accesslib())::get_module_context();
         $cohortslist = get_user_cohort_names(null, $COURSE->id, true) ? get_user_cohort_names(null, $COURSE->id, true) : '';
         // $cohortslist = get_user_cohort_names($USER->id, null, true) ? get_user_cohort_names($USER->id, null, true) : '';
         // $data = [];
@@ -44,7 +44,7 @@ class course_config {
         }
         $context = [
             'cohortslist' => $data,
-            'canview' => (has_capability('local/courses:canviewgroupcontent', $categorycontext) && !is_siteadmin()) ? true : false,
+            'canmanage' => (has_capability('local/courses:canconfiguregroupcontent', $categorycontext) && !is_siteadmin()) ? true : false,
             'coursename' => $COURSE->fullname,
             'courseid' => $COURSE->id
         ];

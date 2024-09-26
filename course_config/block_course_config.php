@@ -37,7 +37,6 @@ class block_course_config extends block_base {
 	}
 
 	function get_content() {
-		global $COURSE;
 		$general_lib = new local_courses\local\general_lib();
 		$theme = $general_lib->get_theme();
 
@@ -46,23 +45,18 @@ class block_course_config extends block_base {
 		}
 
 		$this->content = new stdClass();
-        // if ($COURSE->id == SITEID) {
-            $context = \local_costcenter\lib\accesslib::get_module_context();
-        // } else {
-        //     $context = context_course::instance($COURSE->id);
-        // }
-        // print_r($context);exit;
-		// $systemcontext = \local_costcenter\lib\accesslib::get_module_context();
-		// if(is_siteadmin() || has_capability('block/course_config:view', $context)){
-			// print_r('have cap');exit;
+        
+		$context = \local_costcenter\lib\accesslib::get_module_context();
+        
+		if(!is_siteadmin() && has_capability('local/courses:canviewgroupcontent', $context)){
 			$this->page->requires->js_call_amd('theme_' . $theme . '/quickactions', 'quickactionsCall');
 			$this->page->requires->js_call_amd('local_courses/contentconfiguration', 'init', array());
 			$course_config = new course_config();
 
 			$this->content->text = $course_config->display_course_config_links();
-		// }else{
-		// 	$this->content->text = '';
-		// }
+		} else {
+			$this->content->text = '';
+		}
 		$this->content->footer = '';
 		return $this->content;
 	}
