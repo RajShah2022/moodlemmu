@@ -36,6 +36,7 @@ const Selectors = {
     actions: {
         topicsconfiguration: '[data-action="topicsconfiguration"]',
         groupsconfiguration: '[data-action="groupsconfiguration"]',
+        groupcontentconfiguration: '[data-action="groupcontentconfiguration"]',
     },
 };
 
@@ -179,13 +180,78 @@ export const init = () => {
 
                         modalRoot.on(ModalEvents.hidden, () => {
                             modalRoot.animate({"right": "-85%"}, 500);
+                            // setTimeout(function() {
+                            //     form.modal.destroy();
+                            // }, 1000);
+                            form.modal.setBody('');
+                        });
+                    }
+                });
+            });
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        let groupcontentconfiguration = e.target.closest(Selectors.actions.groupcontentconfiguration);
+        if (groupcontentconfiguration) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            const name = groupcontentconfiguration.getAttribute('data-name');
+            const topicsselected = groupcontentconfiguration.getAttribute('data-topicsselected');
+            getString('coursetopicsconfiguration', 'local_courses', name).then(function(title) {
+                const form = new DynamicForm({
+                    formClass: 'local_courses\\form\\groupcontentconfiguration',
+                    args: { id: groupcontentconfiguration.getAttribute('data-id'), courseid: groupcontentconfiguration.getAttribute('data-courseid'), groupid: groupcontentconfiguration.getAttribute('data-groupid') },
+                    modalConfig: { title },
+                    saveButtonText: getString('save'),
+                    returnFocus: groupcontentconfiguration,
+                });
+
+               
+                form.addEventListener(form.events.FORM_SUBMITTED, function() {
+                    let messages = '';
+                    let type = '';
+                    if(e.detail.warnings !== null && e.detail.warnings != undefined) {
+                        type = 'error';
+                        messages = e.detail.warnings.map(warning => warning.message);
+
+                    } else {
+                        type = 'success';
+                        messages = topicsselected;
+                    }
+                    Notification.addNotification({
+                        type: type,
+                        message: messages
+                    });
+                    setTimeout( function() { window.location.reload(); }, 1000);
+                    // window.location.reload();
+                });
+
+                form.show();
+
+                // Add classes and animate when the form is loaded
+                form.addEventListener(form.events.LOADED, function() {
+                    
+                    bindToggleTopicCheckboxEvents(); // Ensure checkbox binding on form load
+                    // Call toggleTopicCheckboxes immediately to set initial states
+                    if (form.modal) {
+                        const modalRoot = form.modal.getRoot();
+                        modalRoot.addClass('openLMStransition local_coursegroupcontentconfiguration');
+                        modalRoot.animate({"right": "0"}, 500); // Animate to bring it into view
+
+                        modalRoot.on(ModalEvents.hidden, () => {
+                            modalRoot.animate({"right": "-85%"}, 500);
                             setTimeout(function() {
                                 form.modal.destroy();
                             }, 1000);
                             form.modal.setBody('');
                         });
+
                     }
                 });
+
+
+
             });
         }
     });
@@ -222,6 +288,34 @@ function toggleTopicCheckboxes() {
             }
         });
     });
+
+    $('.groupcontentconfiguration_form input[type="checkbox"]').each(function () {
+        const childCheckbox = $(this);
+        const parentId = childCheckbox.data('parent');
+        const parentCheckbox = $(`input[name="${parentId}"]`);
+        if (parentId) {
+            // Check if the child checkbox should be disabled
+            const shouldDisable = !parentCheckbox.is(':checked');
+
+            if (shouldDisable) {
+                childCheckbox.prop('disabled', true).prop('checked', false);
+                childCheckbox.addClass('disabled-checkbox'); // Add the class when disabled
+            } else {
+                childCheckbox.prop('disabled', false);
+                childCheckbox.removeClass('disabled-checkbox'); // Remove the class when enabled
+            }
+        }
+
+        parentCheckbox.on('change', function () {
+            if (!parentCheckbox.is(':checked')) {
+                childCheckbox.prop('checked', false).prop('disabled', true);
+                childCheckbox.addClass('disabled-checkbox'); // Add the class when disabled
+            } else {
+                childCheckbox.prop('disabled', false);
+                childCheckbox.removeClass('disabled-checkbox'); // Remove the class when enabled
+            }
+        });
+    });
 }
 
 
@@ -232,6 +326,11 @@ function bindToggleTopicCheckboxEvents() {
 
     // Use delegated event handling for dynamic content
     $(document).on('change', '.topicsconfiguration_form input[type="checkbox"]', function () {
+        toggleTopicCheckboxes();
+    });
+
+    // Use delegated event handling for dynamic content
+    $(document).on('change', '.groupcontentconfiguration_form input[type="checkbox"]', function () {
         toggleTopicCheckboxes();
     });
 }

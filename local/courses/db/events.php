@@ -22,8 +22,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use local_courses\event\coursetopic_added;
+use local_courses\event\coursetopic_updated;
+use local_courses\event\courseclass_added;
+use local_courses\event\courseclass_updated;
 
-//// List of observers.
+//List of observers.
 $observers = array(
 
     array(
@@ -33,5 +37,21 @@ $observers = array(
     array(
         'eventname'   => '\core\event\course_completed',
         'callback'    => 'local_courses_observer::course_completed_notification',
-    )
+    ),
+    array(
+        'eventname'   => coursetopic_added::class,
+        'callback'    => 'local_courses::coursetopic_added',
+    ),
+    array(
+        'eventname'   => coursetopic_updated::class,
+        'callback'    => 'local_courses::coursetopic_updated',
+    ),
+    array(
+        'eventname'   => courseclass_added::class,
+        'callback'    => 'local_courses::courseclass_added',
+    ),
+    array(
+        'eventname'   => courseclass_updated::class,
+        'callback'    => 'local_courses::courseclass_updated',
+    ),
 );

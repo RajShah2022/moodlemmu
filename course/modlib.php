@@ -61,8 +61,9 @@ function add_moduleinfo($moduleinfo, $course, $mform = null) {
     $newcm->course           = $course->id;
     $newcm->module           = $moduleinfo->module;
     $newcm->instance         = 0; // Not known yet, will be updated later (this is similar to restore code).
-    $newcm->visible          = $moduleinfo->visible;
-    $newcm->visibleold       = $moduleinfo->visible;
+    // changed by Rizwana --> from $moduleinfo->visible to 0 for hidding activity by deafault
+    $newcm->visible          = 0;
+    $newcm->visibleold       = 0;
     $newcm->visibleoncoursepage = $moduleinfo->visibleoncoursepage;
     if (isset($moduleinfo->cmidnumber)) {
         $newcm->idnumber         = $moduleinfo->cmidnumber;

@@ -395,7 +395,7 @@ function xmldb_local_courses_upgrade($oldversion)
         $table1 = new xmldb_table('local_coursetopics');
         $table2 = new xmldb_table('local_coursegroups');
         $field = new xmldb_field('open_path');
-        $field->set_attributes(XMLDB_TYPE_CHAR, '255', null, null, null, null, null);
+        $field->set_attributes(XMLDB_TYPE_CHAR, '100', null, null, null, null, null);
         if (!$dbman->field_exists($table1, $field)) {
             $dbman->add_field($table1, $field);
         }
@@ -403,6 +403,59 @@ function xmldb_local_courses_upgrade($oldversion)
             $dbman->add_field($table2, $field);
         }
         upgrade_plugin_savepoint(true, 2023060600.20, 'local', 'courses');
+    }
+    if ($oldversion < 2023060600.22) {
+        // $table = new xmldb_table('local_coursetopics');
+        // $field1 = new xmldb_field('teacherenabled');
+        // $field1->set_attributes(XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 0);
+        // $field2 = new xmldb_field('groupid');
+        // $field2->set_attributes(XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 0);
+        // if (!$dbman->field_exists($table, $field1)) {
+        //     $dbman->add_field($table, $field1);
+        // }
+        // if (!$dbman->field_exists($table, $field2)) {
+        //     $dbman->add_field($table, $field2);
+        // }
+        $table1 = new xmldb_table('local_coursegrouptopics');
+        $table2 = new xmldb_table('local_coursegroupmodules');
+        if (!$dbman->table_exists($table1)) {
+            // Adding fields.
+            $table1->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+            $table1->add_field('open_path', XMLDB_TYPE_CHAR, '100', null, null, null, null);
+            $table1->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0);
+            $table1->add_field('topic', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0);
+            $table1->add_field('groupid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0);
+            $table1->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, null, null, 0);
+            $table1->add_field('usercreated', XMLDB_TYPE_INTEGER, '10', null, null, null, 0);
+            $table1->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, null, null, 0);
+            $table1->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, null, null, 0);
+
+            // Adding key.
+            $table1->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+            // Create table.
+            $dbman->create_table($table1);
+        }
+        if (!$dbman->table_exists($table2)) {
+            // Adding fields.
+            $table2->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+            $table2->add_field('open_path', XMLDB_TYPE_CHAR, '100', null, null, null, null);
+            $table2->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0);
+            $table2->add_field('groupid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0);
+            $table2->add_field('topicid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0);
+            $table2->add_field('moduleid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, 0);
+            $table2->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, null, null, 0);
+            $table2->add_field('usercreated', XMLDB_TYPE_INTEGER, '10', null, null, null, 0);
+            $table2->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, null, null, 0);
+            $table2->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, null, null, 0);
+
+            // Adding key.
+            $table2->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+            // Create table.
+            $dbman->create_table($table2);
+        }
+        upgrade_plugin_savepoint(true, 2023060600.22, 'local', 'courses');
     }
     return true;
 }
