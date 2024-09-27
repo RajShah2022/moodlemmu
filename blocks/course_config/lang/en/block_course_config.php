@@ -27,6 +27,5 @@ $string['course_config:myaddinstance'] = 'Add a new course configuration block t
 $string['course_config:addinstance'] = 'Add a new course configuration block';
 $string['pluginname'] = 'Course Configuration';
 $string['course_config:view'] = 'View course configuration Block';
-// $string['course_config:manage'] = 'Manage course configurations';
 
 

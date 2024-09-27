@@ -66,21 +66,6 @@ $capabilities = array(
         ),
         'clonepermissionsfrom' => 'block/course_config:addinstance',
     ),
-    // Whether or not the user can manage all aspects of the block.
-    // 'block/course_config:manage' => array(
-    //     'captype' => 'write',
-    //     'contextlevel' => CONTEXT_COURSE,
-    //     'archetypes' => array(
-    //         'manager'        => CAP_PROHIBIT,
-    //         'coursecreator'  => CAP_PROHIBIT,
-    //         'editingteacher' => CAP_PROHIBIT,
-    //         'teacher'        => CAP_ALLOW,
-    //         'student'        => CAP_PROHIBIT,
-    //         'guest'          => CAP_PROHIBIT,
-    //         'user'           => CAP_PROHIBIT,
-    //         'frontpage'      => CAP_PROHIBIT
-    //     ),
-    // )
 );
 
      

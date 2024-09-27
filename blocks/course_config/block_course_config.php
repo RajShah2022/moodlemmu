@@ -37,7 +37,6 @@ class block_course_config extends block_base {
 	}
 
 	function get_content() {
-		global $COURSE, $USER;
 		$general_lib = new local_courses\local\general_lib();
 		$theme = $general_lib->get_theme();
 
@@ -47,7 +46,7 @@ class block_course_config extends block_base {
 
 		$this->content = new stdClass();
         
-		$context = \local_costcenter\lib\accesslib::get_module_context();
+		$context = \local_courses\lib\accesslib::get_module_context();
         
 		if(!is_siteadmin() && has_capability('local/courses:canviewgroupcontent', $context)){
 			$this->page->requires->js_call_amd('theme_' . $theme . '/quickactions', 'quickactionsCall');
