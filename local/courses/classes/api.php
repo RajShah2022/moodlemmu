@@ -42,6 +42,7 @@ class api {
     public const ENROLLMENT_REQUESTS_TABLE = 'local_request_records';
     public const ENROLL_TABLE = 'enrol';
     public const COURSESECTIONS_TABLE = 'course_sections';
+    public const COURSEMODULES_TABLE = 'course_modules';
 
     public static function insert_topicsconfig_instance($data) {
         global $DB, $USER;
@@ -319,17 +320,19 @@ class api {
             // Delete any unchecked topics and activities.
             foreach ($existingtopicids as $topicid => $paths) {
                 if (!isset($selectedtopics[$topicid]) && isset($paths[$USER->open_path])) {
+                    self::update_deleted_section_availability($courseid, $topicid, $groupid);
                     $DB->delete_records(self::COURSEGROUPTOPICS_TABLE, ['id' => $paths[$USER->open_path]]);
                 }
             }
 
             foreach ($existingactivityids as $activityid => $paths) {
                 if (!isset($selectedactivities[$activityid]) && isset($paths[$USER->open_path])) {
+                    self::update_deleted_module_availability($courseid, $activityid, $groupid);
                     $DB->delete_records(self::COURSEGROUPMODULES_TABLE, ['id' => $paths[$USER->open_path]]);
                 }
             }
 
-            self::update_section_availability($courseid, $groupid);
+            self::update_section_availability($courseid);
         } catch (\Exception $e) {
             throw new \moodle_exception("Error in class content configuring: " . $e->getMessage());
         }
@@ -519,13 +522,14 @@ class api {
                 course_update_section($course, $section, $sectiondata);
 
                 // Retrieve the list of modules (activities) in this section
-                // $modules = !empty($section->sequence) ? explode(',', $section->sequence) : array();
-                // if (!empty($modules)) {
-                //     // Update each module's visibility to match the section's visibility
-                //     foreach ($modules as $moduleid) {
-                //         $DB->set_field('course_modules', 'visible', $sectiondata->visible, ['id' => $moduleid]);
-                //     }
-                // }
+                $modules = !empty($section->sequence) ? explode(',', $section->sequence) : array();
+                if (!empty($modules)) {
+                    // Update each module's visibility to match the section's visibility
+                    foreach ($modules as $moduleid) {
+                        $DB->set_field('course_modules', 'visible', 0, ['id' => $moduleid]);
+                        $DB->set_field('course_modules', 'availability', null, ['id' => $moduleid]);
+                    }
+                }
             }
         }
     }
@@ -590,8 +594,8 @@ class api {
                             foreach ($existingConditions as &$condition) {
                                 if (isset($condition['c'])) {
                                     foreach ($condition['c'] as &$subCondition) {
-                                        if ($subCondition['type'] === 'group' && $subCondition['id'] === $groupid) {
-                                            // Update the matching group condition
+                                        if ($subCondition['type'] === 'group' && $subCondition['id'] === $customint2) {
+                                            // // Update the matching group condition
                                             $subCondition = ["type" => "group", "id" => $customint2];
                                         }
                                     }
@@ -600,10 +604,9 @@ class api {
 
                             $newCondition = [
                                 "op" => "&",
-                                "c" => [
-                                    ["type" => "group", "id" => $customint2]
-                                ]
+                                "c" => [["type" => "group", "id" => $customint2]]
                             ];
+                           
                             $existingConditions[] = $newCondition;
 
                             // Remove duplicate conditions and merge
@@ -628,27 +631,46 @@ class api {
 
                     // Fetch the modules linked to this topic from mdl_local_coursegroupmodules
                     $linkedModules = $DB->get_records(self::COURSEGROUPMODULES_TABLE, ['courseid' => $courseid, 'topicid' => $topicId, 'groupid' => $topicRecord->groupid]);
+                    // Iterate through each module and apply the same conditions
+                    // print_r($groupPaths);
+                    // print_r($linkedModules);
 
                     // Iterate through each module and apply the same conditions
                     foreach ($linkedModules as $module) {
                         $moduleConditions = [];
+                        // print_r($groupPaths);
+
+                        // Fetch the current availability for the module
+                        $moduleRecord = $DB->get_record('course_modules', ['id' => $module->moduleid], 'id, availability');
+                        $existingAvailability = !empty($moduleRecord->availability) ? json_decode($moduleRecord->availability, true) : [];
+
+                        // If there are existing conditions, retrieve them
+                        $existingConditions = isset($existingAvailability['c']) ? $existingAvailability['c'] : [];
                         foreach ($groupPaths as $customint2 => $path) {
                             if ($module->open_path === $path) {
-                                // $moduleConditions[] = [
-                                //     "op" => "|",
-                                //     "c" => [
-                                //         ["type" => "group", "id" => $customint2],
-                                //         ["type" => "role", "id" => $teacherRoleId],
-                                //         ["type" => "role", "id" => $employeeRoleId]
-                                //     ]
-                                // ];
-                                $moduleConditions[] = ["type" => "group", "id" => $customint2];
+                                $newCondition = ["type" => "group", "id" => $customint2];
+
+                                // Check if this group restriction already exists to avoid duplicates
+                                $groupExists = false;
+                                foreach ($existingConditions as $condition) {
+                                    if ($condition['type'] === 'group' && $condition['id'] === $customint2) {
+                                        $groupExists = true;
+                                        break;
+                                    }
+                                }
+
+                                // Add the new group condition only if it doesn't already exist
+                                if (!$groupExists) {
+                                    $moduleConditions[] = $newCondition;
+                                }
                             }
                         }
+                        // Merge new conditions with the existing ones
+                        $mergedConditions = array_merge($existingConditions, $moduleConditions);
 
                         // Remove duplicate conditions for modules
-                        $uniqueModuleConditions = array_values(array_unique($moduleConditions, SORT_REGULAR));
-
+                        $uniqueModuleConditions = array_values(array_unique($mergedConditions, SORT_REGULAR));
+                        // print_r($uniqueModuleConditions);
                         // Update module availability if conditions exist
                         if (!empty($uniqueModuleConditions)) {
                             $moduleAvailability = [
@@ -672,6 +694,92 @@ class api {
             }
         }
     }
+
+    public static function update_deleted_section_availability($courseid, $topicid, $groupid) {
+        global $DB;
+        // Get all sections from the COURSESECTIONS_TABLE for the given course
+        $allSections = $DB->get_records(self::COURSESECTIONS_TABLE, ['course' => $courseid]);
+
+        // Iterate over all sections
+        foreach ($allSections as $section) {
+            $sectiondata = new stdClass();
+            $sectiondata->id = $section->id;
+            $sectiondata->section = $section->section;
+            if($section->id == $topicid) {
+                $topicRecord = $DB->get_record(self::COURSEGROUPTOPICS_TABLE, ['topic' => $topicid, 'groupid' => $groupid]);
+                // Query to get cohort sync list with open_path
+                $cohortsync = "SELECT DISTINCT e.customint1 AS groupid, e.customint2, cg.open_path
+                               FROM {" . self::ENROLL_TABLE . "} e
+                               JOIN {" . self::COURSEGROUPTOPICS_TABLE . "} cg
+                                 ON e.customint1 = cg.groupid AND e.courseid = cg.courseid
+                               WHERE e.courseid = :courseid AND e.enrol = :enrol AND cg.groupid = :groupid";
+                $cohortparams = ['courseid' => $courseid, 'enrol' => 'cohort', 'groupid' => $topicRecord->groupid];
+                $cohortsynclist = $DB->get_record_sql($cohortsync, $cohortparams);
+                
+                $existingAvailability = json_decode($section->availability, true);
+                $existingConditions = isset($existingAvailability['c']) ? $existingAvailability['c'] : [];
+                
+                // Traverse through each condition and remove the matching group condition only if it's standalone
+                foreach ($existingConditions as $key => &$condition) {
+                    // Check if the condition has nested conditions (which is typical with "op" => "&")
+                    if (isset($condition['c'])) {
+                        $subconditions = $condition['c'];
+                        
+                        // Count conditions within the block
+                        $totalConditions = count($subconditions);
+
+                        // Check if the condition block contains only one subcondition with the group ID to remove
+                        if ($totalConditions == 1 && isset($subconditions[0]['type']) && $subconditions[0]['type'] === 'group' && $subconditions[0]['id'] == $cohortsynclist->customint2) {
+                            // Remove this whole condition as it's a standalone group condition
+                            unset($existingConditions[$key]);
+                        } 
+                    }
+                }
+               
+                $uniqueConditions = array_values(array_unique($existingConditions, SORT_REGULAR));
+                // Update the availability
+                if (!empty($uniqueConditions)) {
+                    $updatedAvailability = [
+                        "op" => "|",
+                        "c" => $uniqueConditions,
+                        "show" => false
+                    ];
+                    $availabilityJson = json_encode($updatedAvailability);
+                    $sectiondata->availability = $availabilityJson;
+                     // Apply the changes
+                    course_update_section($courseid, $section, $sectiondata);
+                }
+            }
+        }
+    }
+
+
+
+
+    public static function update_deleted_module_availability($courseid, $moduleid, $groupid) {
+        global $DB;
+        $moduleRecord = $DB->get_record(self::COURSEGROUPMODULES_TABLE, ['courseid' => $courseid, 'moduleid' => $moduleid, 'groupid' => $groupid]);
+
+        $cousreModulesRecord = $DB->get_record(self::COURSEMODULES_TABLE, ['course' => $courseid, 'id' => $moduleid, 'section' => $moduleRecord->topicid]);
+
+        $cohortsync = "SELECT DISTINCT e.customint1 AS groupid, e.customint2, cg.open_path
+                       FROM {" . self::ENROLL_TABLE . "} e
+                       JOIN {" . self::COURSEGROUPMODULES_TABLE . "} cg
+                         ON e.customint1 = cg.groupid AND e.courseid = cg.courseid
+                       WHERE e.courseid = :courseid AND e.enrol = :enrol AND cg.groupid = :groupid";
+
+        $cohortparams = ['courseid' => $courseid, 'enrol' => 'cohort', 'groupid' => $moduleRecord->groupid];
+        $cohortsynclist = $DB->get_record_sql($cohortsync, $cohortparams);
+
+        $existingAvailability = json_decode($cousreModulesRecord->availability, true);
+        if(!empty($existingAvailability)){
+            $DB->set_field('course_modules', 'availability', '', ['id' => $cousreModulesRecord->id]);
+            $DB->set_field('course_modules', 'visible', 0, ['id' => $cousreModulesRecord->id]);
+            \course_modinfo::purge_course_module_cache($courseid, $cousreModulesRecord->id);
+            rebuild_course_cache($courseid, true, true);
+        }
+    }
+
 
     public static function update_section_availability_bkp($courseid, $groupid = false) {
         global $DB;
