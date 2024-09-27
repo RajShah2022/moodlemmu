@@ -1191,3 +1191,6 @@ body#page-local-courses-userdashboard .card_list_view {
     opacity: 0.5;
     cursor: not-allowed;
 }
+.groupcontentconfiguration.cannotupdate .modal-content .modal-footer {
+  display: none;
+}
