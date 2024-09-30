@@ -4619,8 +4619,11 @@ class restore_module_structure_step extends restore_structure_step {
         if (!has_capability('moodle/course:setforcedlanguage', context_course::instance($data->course))) {
             unset($data->lang);
         }
-        // added by Rizwana --> from for hidding activity by deafault
-        $data->visible = 0;
+        // added by Rizwana --> for hidding activity by deafault (not for deafault section activities)
+        if($data->section > 0){
+            $data->visible = 0; 
+        }
+        
         // course_module record ready, insert it
         $newitemid = $DB->insert_record('course_modules', $data);
         // save mapping
