@@ -241,36 +241,6 @@ function enrol_cohort_sync(progress_trace $trace, $courseid = NULL) {
         }
         $instance = $instances[$ue->enrolid];
 
-        // // Check if the user already has a role assigned in the course context
-        // $existing_role_assignments = $DB->get_records('role_assignments', array(
-        //     'userid' => $ue->userid,
-        //     'contextid' => $coursecontext->id
-        // ), '', 'roleid');
-
-        // if (empty($existing_role_assignments)) {
-        //     $roletoassign = $instance->roleid; // Default role for the instance
-
-        //     foreach ($assignedroles as $assignedrole) {
-        //         if ($assignedrole->roleid == $hodroleid) {
-        //             $roletoassign = $hodcourseroleid;
-        //             break; // Assign hod_course role and exit loop
-        //         } elseif ($assignedrole->roleid != $hodroleid) {
-        //             $roletoassign = $assignedrole->roleid;
-        //             break; // Assign this role and stop further processing
-        //         }
-        //     }
-
-        //     // Check if the determined role is different from the already assigned roles
-        //     if (!isset($existing_role_assignments[$roletoassign])) {
-        //         role_assign($roletoassign, $ue->userid, $coursecontext->id, 'enrol_cohort', $ue->enrolid);
-        //         $trace->output("assigning role: $ue->userid ==> $instance->courseid as " . $allroles[$roletoassign]->shortname, 1);
-        //     } else {
-        //         $trace->output("Role already assigned: $ue->userid ==> $instance->courseid as " . $allroles[$roletoassign]->shortname, 1);
-        //     }
-        // } else {
-        //     $trace->output("User $ue->userid already has a role assigned in course $instance->courseid; skipping role assignment.", 1);
-        // }
-
         //added by Rizwana for adding category role in course also while enrolling user to course from group ===> starts
         $coursecontext = context_course::instance($instance->courseid);
         $categorycontext = (new \local_users\lib\accesslib())::get_module_context($ue->userid);

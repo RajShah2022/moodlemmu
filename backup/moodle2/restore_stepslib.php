@@ -1618,7 +1618,7 @@ class restore_section_structure_step extends restore_structure_step {
             $section->summary = $data->summary;
             $section->summaryformat = $data->summaryformat;
             $section->sequence = '';
-            // changed by Rizwana --> from $data->visible to 0 for hidding sections by deafault
+            // changed by Rizwana --> from $data->visible to 0 for hiding sections by default
             $section->visible = 0;
             if (empty($CFG->enableavailability)) { // Process availability information only if enabled.
                 $section->availability = null;
@@ -4619,11 +4619,11 @@ class restore_module_structure_step extends restore_structure_step {
         if (!has_capability('moodle/course:setforcedlanguage', context_course::instance($data->course))) {
             unset($data->lang);
         }
-        // added by Rizwana --> for hidding activity by deafault (not for deafault section activities)
+        // added by Rizwana --> for hiding activity by default (not for default section activities) ===> starts
         if($data->section > 0){
             $data->visible = 0; 
         }
-        
+        // added by Rizwana ===> ends
         // course_module record ready, insert it
         $newitemid = $DB->insert_record('course_modules', $data);
         // save mapping

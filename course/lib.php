@@ -559,12 +559,13 @@ function course_create_section($courseorid, $position = 0, $skipcheck = false) {
     $cw->summaryformat = FORMAT_HTML;
     $cw->sequence = '';
     $cw->name = null;
-    // changed by Rizwana --> from 1 to 0 for hidding sections by deafault 
+    // changed by Rizwana --> from 1 to 0 for hiding sections by default (not for default section) ===> starts
     if($cw->section > 0) {
         $cw->visible = 0;    
     } else {
         $cw->visible = 1;
     }
+    // changed by Rizwana ===> ends
     $cw->availability = null;
     $cw->timemodified = time();
     $cw->id = $DB->insert_record("course_sections", $cw);
