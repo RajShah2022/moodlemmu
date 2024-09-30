@@ -54,7 +54,7 @@ class groupcontentconfiguration extends dynamic_form {
         }
             $params['courseid'] = $courseid;
             $params['open_path'] = $USER->open_path;
-            $existingtopics = $DB->get_records('local_coursetopics', $params, 'topic DESC', 'topic');
+            $existingtopics = $DB->get_records('local_coursetopics', $params, 'topic ASC', 'topic');
             foreach($existingtopics as $existingtopic) {
                 $sectionnumber = $DB->get_field('course_sections', 'section', array('id' =>  $existingtopic->topic));
                 $allsections[] = $format->get_modinfo()->get_section_info($sectionnumber);
