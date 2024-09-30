@@ -1903,8 +1903,10 @@ abstract class base {
         }
         $newsection->summary = $originalsection->summary;
         $newsection->summaryformat = $originalsection->summaryformat;
-        $newsection->visible = $originalsection->visible;
-        $newsection->availability = $originalsection->availability;
+        // changed by Rizwana --> from $originalsection->visible to 0 for hidding duplicated sections by deafault
+        $newsection->visible = 0;
+        // changed by Rizwana --> from $originalsection->availability to null for not adding group availability for duplicated sections by deafault
+        $newsection->availability = null;
         course_update_section($course, $newsection, $newsection);
 
         $modinfo = $this->get_modinfo();

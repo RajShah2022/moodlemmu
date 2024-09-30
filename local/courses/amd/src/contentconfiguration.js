@@ -198,6 +198,8 @@ export const init = () => {
             e.stopImmediatePropagation();
             const name = groupcontentconfiguration.getAttribute('data-name');
             const topicsselected = groupcontentconfiguration.getAttribute('data-topicsselected');
+            const actionclass = groupcontentconfiguration.getAttribute('data-actionclass');
+
             getString('coursetopicsconfiguration', 'local_courses', name).then(function(title) {
                 const form = new DynamicForm({
                     formClass: 'local_courses\\form\\groupcontentconfiguration',
@@ -231,12 +233,17 @@ export const init = () => {
 
                 // Add classes and animate when the form is loaded
                 form.addEventListener(form.events.LOADED, function() {
-                    
                     bindToggleTopicCheckboxEvents(); // Ensure checkbox binding on form load
-                    // Call toggleTopicCheckboxes immediately to set initial states
+
+                     // Prepare classes
+                    let classes = ['openLMStransition', 'groupcontentconfiguration'];
+                    if (actionclass) {
+                        classes.push(actionclass);
+                    }
+                    
                     if (form.modal) {
                         const modalRoot = form.modal.getRoot();
-                        modalRoot.addClass('openLMStransition local_coursegroupcontentconfiguration');
+                        modalRoot.addClass(classes.join(' '));
                         modalRoot.animate({"right": "0"}, 500); // Animate to bring it into view
 
                         modalRoot.on(ModalEvents.hidden, () => {

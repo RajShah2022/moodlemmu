@@ -44,7 +44,7 @@ class course_config {
         }
         $context = [
             'cohortslist' => $data,
-            // 'canmanage' => (has_capability('local/courses:canconfiguregroupcontent', $categorycontext) && !is_siteadmin()) ? true : false,
+            'canmanage' => (has_capability('local/courses:canconfiguregroupcontent', $categorycontext) && !is_siteadmin()) ? true : false,
             'coursename' => $COURSE->fullname,
             'courseid' => $COURSE->id
         ];
