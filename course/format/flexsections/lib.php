@@ -1465,8 +1465,10 @@ class format_flexsections extends core_courseformat\base {
         }
         $newsection->summary = $originalsection->summary;
         $newsection->summaryformat = $originalsection->summaryformat;
-        $newsection->visible = $originalsection->visible;
-        $newsection->availability = $originalsection->availability;
+        // changed by Rizwana --> from $originalsection->visible to 0 for hidding duplicated sections by deafault
+        $newsection->visible = 0;
+        // changed by Rizwana --> from $originalsection->availability to null for not adding group availability for duplicated sections by deafault
+        $newsection->availability = null;
 
         foreach (array_keys($this->section_format_options()) as $key) {
             $newsection->$key = $originalsection->$key ?? null;
@@ -1525,6 +1527,8 @@ class format_flexsections extends core_courseformat\base {
         foreach ($sectionstocopy as $s) {
             foreach (($modinfo->sections[$s->section] ?? []) as $modnumber) {
                 $originalcm = $modinfo->cms[$modnumber];
+                // added by Rizwana --> for hidding duplicated activity by deafault
+                $originalcm->visible = 0;
                 duplicate_module($course, $originalcm, $parentmapping[$s->section]->id, false);
             }
         }
