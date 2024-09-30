@@ -1313,15 +1313,9 @@ class local_courses_external extends external_api {
                 'courseid' => $courseid,
                 'type' => 'cohort'
             ];
-            if (api::is_hod()) {
-                if ($enrol_manual = enrol_get_plugin('manual')) {
-                    $instance = $DB->get_record('enrol', ['courseid' => $courseid, 'enrol' => 'manual'], '*', MUST_EXIST);
-                    $enrol_manual->enrol_user($instance, $USER->id, api::get_hodcourse_roleid());
-                    api::enrollgroups($course, $fields);
-                }   
-            } else {
+
                 api::enrollgroups($course, $fields);
-            }
+
         }
 
         // Handle mismatches by sending requests to admin and administrator.

@@ -52,51 +52,58 @@ class groupcontentconfiguration extends dynamic_form {
         if(has_capability('local/courses:canconfiguregroupcontent', $categorycontext)) {
             $user_can_edit = true;
         }
-            $params['courseid'] = $courseid;
-            $params['open_path'] = $USER->open_path;
-            $existingtopics = $DB->get_records('local_coursetopics', $params, 'topic ASC', 'topic');
-            foreach($existingtopics as $existingtopic) {
-                $sectionnumber = $DB->get_field('course_sections', 'section', array('id' =>  $existingtopic->topic));
-                $allsections[] = $format->get_modinfo()->get_section_info($sectionnumber);
-            }
         
-
-            if(!empty($allsections)) {
-                // Build the checkbox options.
-                $checkboxes = $this->build_section_paths($allsections);
-
-                // Add checkboxes to the form.
-                foreach ($checkboxes as $value => $label) {
-                    $parent = $this->get_parent_id($allsections, $value);
-                    $attributes = ['group' => 'checkboxgroup custom_switch'];
-                    if (!$user_can_edit) {
-                        $attributes['disabled'] = 'disabled';
-                    }
-                     // Only add data-parent if the section has a parent.
-                    if ($parent !== null) {
-                        $attributes['data-parent'] = 'section_' . $parent;
-                    }
-                    $sectionid = 'section_' . $value;
-                    $mform->addElement('advcheckbox', $sectionid, '', $label, $attributes);
-                    // Add a help button if the checkbox is a child.
-                    if ($parent !== null) {
-                        $mform->addHelpButton($sectionid, 'childcheckboxhelp', 'local_courses');
-                    }
-                    $activities = $modinfo->get_cms();
-                    foreach ($activities as $cm) {
-                        if ($cm->section == $value) {
-                            $attributes['data-parent'] = 'section_' . $value;
-                            $activityname = $cm->name;
-                            $activityid = 'activity_' . $cm->id;
-                            $attributes['class'] = 'ml-1';
-                            $mform->addElement('advcheckbox', $activityid, '', $activityname, $attributes);
-                            $mform->setType($activityid, PARAM_INT);
-                        }
-                    }
-                }    
-            } else {
-                $mform->addElement('static', 'notopics', '', get_string('notopics', 'local_courses'), array('class' => 'notopicselement'));
+        $params['courseid'] = $courseid;
+        $params['open_path'] = $USER->open_path;
+        $existingtopics = $DB->get_records('local_coursetopics', $params, '', 'topic');
+        $allsections = [];
+        foreach($existingtopics as $existingtopic) {
+            $sectionnumber = $DB->get_field('course_sections', 'section', array('id' =>  $existingtopic->topic));
+            $sectioninfo = $format->get_modinfo()->get_section_info($sectionnumber);
+            // Store sections ordered by the section number
+            if ($sectioninfo) {
+                $allsections[$sectioninfo->section] = $sectioninfo;
             }
+        }
+        // Sort sections by their section number (just in case it's not ordered already).
+        ksort($allsections);
+
+        if(!empty($allsections)) {
+            // Build the checkbox options.
+            $checkboxes = $this->build_section_paths($allsections);
+
+            // Add checkboxes to the form.
+            foreach ($checkboxes as $value => $label) {
+                $parent = $this->get_parent_id($allsections, $value);
+                $attributes = ['group' => 'checkboxgroup custom_switch'];
+                if (!$user_can_edit) {
+                    $attributes['disabled'] = 'disabled';
+                }
+                 // Only add data-parent if the section has a parent.
+                if ($parent !== null) {
+                    $attributes['data-parent'] = 'section_' . $parent;
+                }
+                $sectionid = 'section_' . $value;
+                $mform->addElement('advcheckbox', $sectionid, '', $label, $attributes);
+                // Add a help button if the checkbox is a child.
+                if ($parent !== null) {
+                    $mform->addHelpButton($sectionid, 'childcheckboxhelp', 'local_courses');
+                }
+                $activities = $modinfo->get_cms();
+                foreach ($activities as $cm) {
+                    if ($cm->section == $value) {
+                        $attributes['data-parent'] = 'section_' . $value;
+                        $activityname = $cm->name;
+                        $activityid = 'activity_' . $cm->id;
+                        $attributes['class'] = 'ml-1';
+                        $mform->addElement('advcheckbox', $activityid, '', $activityname, $attributes);
+                        $mform->setType($activityid, PARAM_INT);
+                    }
+                }
+            }    
+        } else {
+            $mform->addElement('static', 'notopics', '', get_string('notopics', 'local_courses'), array('class' => 'notopicselement'));
+        }
     }
 
     protected function get_parent_id($sections, $sectionid) {
