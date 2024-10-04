@@ -59,26 +59,27 @@ class create_user extends moodleform {
         $roleid = $this->_customdata['roleid'] > 0 ? $this->_customdata['roleid'] : 0;
 
         if ($form_status == 0) {
-
-            if ($id == $USER->id || $id > 0) {
-                $mform->addElement('static', 'rolename', get_string('open_role', 'local_users'), getrole($roleid)[$roleid]);
-                $mform->addElement('hidden', 'roleid', $roleid);
-                $mform->setType('roleid', PARAM_INT);
-            } else {
-                $mform->addElement('select', 'roleid', get_string('open_role', 'local_users'), getrole($roleid));
-                $mform->setType('roleid', PARAM_INT);
-                $mform->addRule('roleid', null, 'required', null, 'client');
+            if(!is_siteadmin($id)) {
+                if ($id == $USER->id || $id > 0) {
+                    $mform->addElement('static', 'rolename', get_string('open_role', 'local_users'), getrole($roleid)[$roleid]);
+                    $mform->addElement('hidden', 'roleid', $roleid);
+                    $mform->setType('roleid', PARAM_INT);
+                } else {
+                    $mform->addElement('select', 'roleid', get_string('open_role', 'local_users'), getrole($roleid));
+                    $mform->setType('roleid', PARAM_INT);
+                    $mform->addRule('roleid', null, 'required', null, 'client');
+                }
+                $static = false;
+                if($id > 0 ){
+                    $static = true;
+                }
+                // local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(1, 2), true, 'local_users', $categorycontext, $multiple = false, '', '', false, $static = $static);
+                local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(1, 2), true, 'local_costcenter', $categorycontext, $multiple = false, $prefix = '', $open_path = '', $ismandatory = true);
+                
+                $count = count((array)$costcenters);
+                $mform->addElement('hidden', 'count', $count);
+                $mform->setType('count', PARAM_INT);
             }
-            $static = false;
-            if($id > 0 ){
-                $static = true;
-            }
-            // local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(1, 2), true, 'local_users', $categorycontext, $multiple = false, '', '', false, $static = $static);
-            local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata, range(1, 2), true, 'local_costcenter', $categorycontext, $multiple = false, $prefix = '', $open_path = '', $ismandatory = true);
-            
-            $count = count((array)$costcenters);
-            $mform->addElement('hidden', 'count', $count);
-            $mform->setType('count', PARAM_INT);
             $mform->addElement('text', 'username', get_string('username', 'local_users'), ['autocomplete' => 'false']);
             $mform->addRule('username', get_string('usernamerequired', 'local_users'), 'required', null, 'client');
             $mform->setType('username', PARAM_RAW);
@@ -406,14 +407,19 @@ class create_user extends moodleform {
             if (empty(trim($lastname))) {
                 $errors['lastname'] = get_string('vallastnamerequired', 'local_users');
             }
-            if(!empty($data['roleid'])) {
-                $role = $DB->get_record('role', array('id' => $data['roleid']));
-                if($role->shortname != 'administrator' && ($data['open_department'] == 0 || $data['open_department'] == 'All')) {
-                    $errors['open_department'] = get_string('schoolmustselect', 'local_users', $role->name);   
-                } else {
-                    if ($role->shortname == 'administrator' && $data['open_department'] > 0) {
-                       $errors['open_department'] = get_string('administratornotforanyschool', 'local_users', $role->name);    
+            if(!is_siteadmin($id)){
+               if(!empty($data['roleid'])) {
+                    $role = $DB->get_record('role', array('id' => $data['roleid']));
+                    if($role->shortname != 'administrator' && ($data['open_department'] == 0 || $data['open_department'] == 'All')) {
+                        $errors['open_department'] = get_string('schoolmustselect', 'local_users', $role->name);   
+                    } else {
+                        if ($role->shortname == 'administrator' && $data['open_department'] > 0) {
+                           $errors['open_department'] = get_string('administratornotforanyschool', 'local_users', $role->name);    
+                        }
                     }
+                }
+                if ($data['roleid'] == 0) {
+                    $errors['roleid'] = get_string('required');
                 }
             }
             
@@ -495,10 +501,6 @@ class create_user extends moodleform {
                 ) {
                     $errors['open_employeeid'] = get_string('open_employeeidexist', 'local_users');
                 }
-            }
-
-            if ($data['roleid'] == 0) {
-                $errors['roleid'] = get_string('required');
             }
         }
         if ($form_status == 2) { // As these fields are in only form part 3(form_status=2).
