@@ -537,6 +537,10 @@ class api {
     public static function update_section_availability($courseid) {
         global $DB;
 
+        // Fetch teacher and employee (student) role IDs as integers
+        $teacherRoleId = (int)self::get_teacher_roleid();
+        $employeeRoleId = (int)self::get_student_roleid();
+
         // Get the course record
         $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
 
@@ -648,7 +652,15 @@ class api {
                         $existingConditions = isset($existingAvailability['c']) ? $existingAvailability['c'] : [];
                         foreach ($groupPaths as $customint2 => $path) {
                             if ($module->open_path === $path) {
-                                $newCondition = ["type" => "group", "id" => $customint2];
+                                // $newCondition = ["type" => "group", "id" => $customint2];
+
+                                $newCondition = [
+                                    "op" => "|",
+                                    "c" => [
+                                        ["type" => "group", "id" => $customint2],
+                                        ["type" => "role", "id" => $teacherRoleId] // Add role condition for 'teacher'
+                                    ]
+                                ];
 
                                 // Check if this group restriction already exists to avoid duplicates
                                 $groupExists = false;
