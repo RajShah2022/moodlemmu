@@ -71,13 +71,15 @@ function local_users_output_fragment_new_create_user($args) {
         }
 
         $path = explode('/', $data->open_path);
-        $costid = $path[2] ?: ($path[1] ?: 0);
-        $categorysql = $DB->get_record('local_costcenter', ['id' => $costid], $fields = 'category', $strictness = IGNORE_MISSING);
-        $categoryid = $categorysql->category;
-        $categorycontext = \context_coursecat::instance($categoryid);
-        $var = $DB->get_record('role_assignments', array('userid' => $data->id, 'contextid' => $categorycontext->id));
-        if ($var) {
-            $data->roleid = $var->roleid;
+        if(!is_siteadmin($args->id)){
+            $costid = $path[2] ?: ($path[1] ?: 0);
+            $categorysql = $DB->get_record('local_costcenter', ['id' => $costid], $fields = 'category', $strictness = IGNORE_MISSING);
+            $categoryid = $categorysql->category;
+            $categorycontext = \context_coursecat::instance($categoryid);
+            $var = $DB->get_record('role_assignments', array('userid' => $data->id, 'contextid' => $categorycontext->id));
+            if ($var) {
+                $data->roleid = $var->roleid;
+            }
         }
 
         useredit_load_preferences($data);

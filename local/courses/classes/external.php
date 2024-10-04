@@ -1342,89 +1342,12 @@ class local_courses_external extends external_api {
         }
         api::course_content_accessrestrictions($courseid);
         api::update_section_availability($courseid);
-        // If the admin deselects a group, remove all related records.
-        // if (is_siteadmin() || api::is_administrator()) {
-        //     // Fetch all group IDs that are not in the selected groups.
-        //     $groupids = array_keys($groupDifficultyLevels);
-        //     $unselectedGroups = array_diff($groupids, $selectedGroups);
 
-        //     foreach ($unselectedGroups as $groupId) {
-        //         // Remove records from ENROLLMENT_REQUESTS_TABLE for unselected groups.
-        //         $DB->delete_records('local_request_records', [
-        //             'componentid' => $groupId,
-        //             'courseid' => $courseid
-        //         ]);
-
-        //         // Also remove any related cohort enrollments.
-        //         $DB->delete_records('enrol', [
-        //             'courseid' => $courseid,
-        //             'enrol' => 'cohort',
-        //             'customint1' => $groupId
-        //         ]);
-
-        //         // If there are other cleanup operations for unenrolling groups, call them here.
-        //         api::unenrollgroups($groupId, $courseid);
-        //         api::remove_hod_from_group($groupId);
-        //     }
-        // }
 
         return true;
     }
 
-    // public static function groupenrollmentrequest($courseid, $selectedGroups) {
-    //     global $DB, $USER;
-
-    //     // Get the course's open_difficultylevel
-    //     $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
-    //     $courseDifficultylevel = $course->open_difficultylevel;
-
-    //     // Get the groups' open_difficultylevel
-    //     $groupDifficultyLevels = $DB->get_records_list('local_groups', 'cohortid', $selectedGroups, '', 'cohortid, open_difficultylevel');
-
-    //     $requestsToSend = [];
-    //     $cohortsToAdd = [];
-
-    //     foreach ($groupDifficultyLevels as $groupId => $group) {
-    //         $addhods = api::add_hod_to_group($groupId);
-
-    //         if (($courseDifficultylevel - $group->open_difficultylevel) > 2) {
-    //             // Add group ID to the list of requests to send if there's a mismatch.
-    //             $requestsToSend[] = $groupId;
-    //         } else {
-    //             // Check if the cohort enrollment method already exists for the course
-    //             $exists = $DB->record_exists('enrol', [
-    //                 'courseid' => $courseid,
-    //                 'enrol' => 'cohort',
-    //                 'customint1' => $groupId
-    //             ]);
-
-    //             if (!$exists) {
-    //                 // Add cohort IDs that should be synchronized
-    //                 $cohortsToAdd[] = $groupId;
-    //             }
-    //         }
-    //     }
-    //     if (!empty($cohortsToAdd)) {
-    //         $fields = [
-    //             'status' => 0, // Assuming you want it enabled by default
-    //             'customint1' => $cohortsToAdd, // Cohort IDs
-    //             'roleid' => 5, // Static role ID
-    //             'customint2' => -1, // Default value for "Add to group" option (Create new group)
-    //             'courseid' => $courseid,
-    //             'type' => 'cohort'
-    //         ];
-    //         if(api::is_hod()) {
-    //             if ($enrol_manual = enrol_get_plugin('manual')) {
-    //                 $instance = $DB->get_record('enrol', array('courseid' => $courseid, 'enrol' => 'manual'), '*', MUST_EXIST);
-    //                 $enrol_manual->enrol_user($instance, $USER->id, api::get_hodcourse_roleid());
-    //                 $enrollgroups = api::enrollgroups($course, $fields);
-    //             }   
-    //         } else {
-    //             $enrollgroups = api::enrollgroups($course, $fields);
-    //         }
-            
-            
-    //     }
+   
 
 
     public static function groupenrollmentrequest_returns() {
