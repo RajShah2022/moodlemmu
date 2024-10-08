@@ -1245,7 +1245,7 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
                 foreach($course->open_department as $departmentval){
                     // Fetch the department names as an associative array (id => fullname)
 
-                    if (api::is_hod()) {
+                    if (!is_siteadmin()) {
                         $condition = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'path');
 
                         $departmentrecords = $DB->get_records_sql_menu('SELECT id,fullname
@@ -1273,7 +1273,7 @@ function get_listof_courses($stable, $filterdata, $options = array()) {
                     //     WHERE id IN(' . str_replace(',', '',$course->open_department) . ')');
                     // Fetch the department names for non-array values of open_department
 
-                    if (api::is_hod()) {
+                    if (!is_siteadmin()) {
                         $condition = (new \local_users\lib\accesslib())::get_costcenter_path_field_concatsql($columnname = 'path');
                         $departmentrecords = $DB->get_records_sql_menu('SELECT id,fullname
                                                                           FROM {local_costcenter}
