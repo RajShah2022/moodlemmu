@@ -154,7 +154,6 @@ class course_user_state_store implements course_state_store,
      * @param int $amount The amount.
      */
     public function increase($id, $amount) {
-        global $USER;
         $prexp = 0;
         $postxp = $amount;
 
@@ -170,7 +169,6 @@ class course_user_state_store implements course_state_store,
                 'xp' => $amount,
                 'courseid' => $this->courseid,
                 'userid' => $id,
-                'schoolid' => $USER->id,
             ];
             $this->db->execute($sql, $params);
         } else {
@@ -199,12 +197,10 @@ class course_user_state_store implements course_state_store,
      * @param int $amount The amount.
      */
     protected function insert($id, $amount) {
-        global $USER;
         $record = new stdClass();
         $record->courseid = $this->courseid;
         $record->userid = $id;
         $record->xp = $amount;
-        $record->schoolid = $USER->open_path;
         $this->db->insert_record($this->table, $record);
     }
 
