@@ -127,8 +127,11 @@ abstract class grouped_leaderboard implements
         $this->where = "x.courseid = :courseid";
 
         //Added for team leaderboard bby schoolwise.
-        $this->where .= " AND FIND_IN_SET('{$USER->open_path}', c.open_path) AND e.status = 0 AND e.enrol = 'cohort'
-        AND g.open_path = '{$USER->open_path}'";
+        $context = (new \local_assignroles\lib\accesslib())::get_module_context();
+        if (!(is_siteadmin() || has_capability('local/costcenter:manage_multiorganizations', $context))) {
+            $this->where .= " AND FIND_IN_SET('{$USER->open_path}', c.open_path) AND e.status = 0 AND e.enrol = 'cohort'
+            AND g.open_path = '{$USER->open_path}'";
+        }
         if (!empty($teamjoin->wheres)) {
             $this->where .= " AND ({$teamjoin->wheres})";
         }
