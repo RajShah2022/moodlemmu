@@ -115,10 +115,20 @@ abstract class grouped_leaderboard implements
      * @return void
      */
     protected function prepare_sql() {
+        global $USER;
         $teamjoin = $this->get_team_join();
 
         $this->from = "{{$this->table}} x " . $teamjoin->joins;
+        
+        //Added for team leaderboard bby schoolwise.
+        $this->from .= " JOIN {course} c ON c.id = x.courseid";
+        $this->from .= " JOIN {enrol} e ON e.customint2 = t.id
+            JOIN {local_groups} g ON g.id = e.customint1";
         $this->where = "x.courseid = :courseid";
+
+        //Added for team leaderboard bby schoolwise.
+        $this->where .= " AND FIND_IN_SET('{$USER->open_path}', c.open_path) AND e.status = 0 AND e.enrol = 'cohort'
+        AND g.open_path = '{$USER->open_path}'";
         if (!empty($teamjoin->wheres)) {
             $this->where .= " AND ({$teamjoin->wheres})";
         }
