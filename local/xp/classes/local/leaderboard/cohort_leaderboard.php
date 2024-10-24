@@ -91,7 +91,9 @@ class cohort_leaderboard extends grouped_leaderboard {
         $joins = "JOIN {cohort_members} tm
                     ON tm.userid = x.userid
                   JOIN {cohort} t
-                    ON t.id = tm.cohortid";
+                    ON t.id = tm.cohortid
+                  JOIN {enrol} e ON e.customint1 = t.id
+                  JOIN {local_groups} g ON g.id = e.customint1";
         return new \local_xp\local\sql\join($joins, 't.visible = 1');
     }
 

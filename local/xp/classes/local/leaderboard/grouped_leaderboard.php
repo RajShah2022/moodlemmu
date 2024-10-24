@@ -122,8 +122,7 @@ abstract class grouped_leaderboard implements
         
         //Added for team leaderboard by schoolwise.
         $this->from .= " JOIN {course} c ON c.id = x.courseid";
-        $this->from .= " JOIN {enrol} e ON e.customint2 = t.id
-            JOIN {local_groups} g ON g.id = e.customint1";
+        
         $this->where = "x.courseid = :courseid";
 
         //Added for team leaderboard by schoolwise.

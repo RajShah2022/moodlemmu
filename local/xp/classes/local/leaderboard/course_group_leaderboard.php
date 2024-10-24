@@ -130,7 +130,9 @@ class course_group_leaderboard extends grouped_leaderboard {
                     ON t.courseid = x.courseid
                   JOIN {groups_members} tm
                     ON tm.userid = x.userid
-                   AND tm.groupid = t.id";
+                   AND tm.groupid = t.id
+                  JOIN {enrol} e ON e.customint2 = t.id
+                  JOIN {local_groups} g ON g.id = e.customint1";
         return new \local_xp\local\sql\join($joins);
     }
 
