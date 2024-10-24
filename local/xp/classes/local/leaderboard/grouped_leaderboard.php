@@ -120,18 +120,19 @@ abstract class grouped_leaderboard implements
 
         $this->from = "{{$this->table}} x " . $teamjoin->joins;
         
-        //Added for team leaderboard bby schoolwise.
+        //Added for team leaderboard by schoolwise.
         $this->from .= " JOIN {course} c ON c.id = x.courseid";
         $this->from .= " JOIN {enrol} e ON e.customint2 = t.id
             JOIN {local_groups} g ON g.id = e.customint1";
         $this->where = "x.courseid = :courseid";
 
-        //Added for team leaderboard bby schoolwise.
+        //Added for team leaderboard by schoolwise.
+        $this->where .= " AND e.courseid = c.id AND e.status = 0 AND e.enrol = 'cohort'";
         $context = (new \local_assignroles\lib\accesslib())::get_module_context();
         if (!(is_siteadmin() || has_capability('local/costcenter:manage_multiorganizations', $context))) {
-            $this->where .= " AND FIND_IN_SET('{$USER->open_path}', c.open_path) AND e.status = 0 AND e.enrol = 'cohort'
-            AND g.open_path = '{$USER->open_path}'";
+            $this->where .= " AND FIND_IN_SET('{$USER->open_path}', c.open_path) AND g.open_path = '{$USER->open_path}'";
         }
+
         if (!empty($teamjoin->wheres)) {
             $this->where .= " AND ({$teamjoin->wheres})";
         }
