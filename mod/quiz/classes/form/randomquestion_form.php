@@ -57,7 +57,9 @@ class randomquestion_form extends \moodleform {
         $tops = question_get_top_categories_for_contexts(array_column($contexts->all(), 'id'));
         $mform->hideIf('includesubcategories', 'category', 'in', $tops);
 
-        $tags = \core_tag_tag::get_tags_by_area_in_contexts('core_question', 'question', $usablecontexts);
+        
+	// $tags = \core_tag_tag::get_tags_by_area_in_contexts('core_question', 'question', $usablecontexts);
+        $tags = \core_tag_tag::new_get_tags_by_area_in_contexts_v2('core_question', 'question', $usablecontexts);
         $tagstrings = [];
         foreach ($tags as $tag) {
             $tagstrings["{$tag->id},{$tag->name}"] = $tag->name;

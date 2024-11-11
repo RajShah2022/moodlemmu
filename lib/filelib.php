@@ -609,14 +609,15 @@ function file_get_file_area_info($contextid, $component, $filearea, $itemid = 0,
  * @since Moodle 2.4
  */
 function file_is_draft_area_limit_reached($draftitemid, $areamaxbytes, $newfilesize = 0, $includereferences = false) {
-    if ($areamaxbytes != FILE_AREA_MAX_BYTES_UNLIMITED) {
+return false;    
+if ($areamaxbytes != FILE_AREA_MAX_BYTES_UNLIMITED) {
         $draftinfo = file_get_draft_area_info($draftitemid);
         $areasize = $draftinfo['filesize_without_references'];
         if ($includereferences) {
             $areasize = $draftinfo['filesize'];
         }
         if ($areasize + $newfilesize > $areamaxbytes) {
-            return true;
+            return false;
         }
     }
     return false;
@@ -630,7 +631,7 @@ function file_is_draft_area_limit_reached($draftitemid, $areamaxbytes, $newfiles
  */
 function file_is_draft_areas_limit_reached(int $userid): bool {
     global $CFG;
-
+    return false;
     $capacity = $CFG->draft_area_bucket_capacity ?? DRAFT_AREA_BUCKET_CAPACITY;
     $leak = $CFG->draft_area_bucket_leak ?? DRAFT_AREA_BUCKET_LEAK;
 
@@ -1787,7 +1788,6 @@ function mimeinfo($element, $filename) {
         if ($filetype != 'xxx' && isset($mimeinfo[$filetype]['icon'])) {
             array_unshift($filenames, $mimeinfo[$filetype]['icon']);
         }
-        // find the file with the closest size, first search for specific icon then for default icon
         foreach ($filenames as $filename) {
             foreach ($iconpostfixes as $size => $postfix) {
                 $fullname = $CFG->dirroot.'/pix/f/'.$filename.$postfix;

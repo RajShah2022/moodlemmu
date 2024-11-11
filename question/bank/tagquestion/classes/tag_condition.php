@@ -75,8 +75,8 @@ class tag_condition extends condition {
      */
     public function display_options() {
         global $PAGE;
-
-        $tags = \core_tag_tag::get_tags_by_area_in_contexts('core_question', 'question', $this->contexts);
+        //$tags = \core_tag_tag::new_get_tags_by_area_in_contexts_v2('core_question', 'question', $this->contexts);
+        $tags = \core_tag_tag::new_get_tags_by_area_in_contexts_v2('core_question', 'question', $this->contexts);
         $tagoptions = array_map(function($tag) {
             return [
                 'id' => $tag->id,
@@ -154,7 +154,8 @@ class tag_condition extends condition {
     }
 
     public function get_initial_values() {
-        $tags = \core_tag_tag::get_tags_by_area_in_contexts('core_question', 'question', $this->contexts);
+        $tags = \core_tag_tag::new_get_tags_by_area_in_contexts_v2('core_question', 'question', $this->contexts);        
+//$tags = \core_tag_tag::get_tags_by_area_in_contexts('core_question', 'question', $this->contexts);
         $values = [];
         foreach ($tags as $tag) {
             $values[] = [

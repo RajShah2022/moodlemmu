@@ -1778,4 +1778,29 @@ class core_tag_tag {
             return new core_tag_tag($record);
         }, $DB->get_records_sql($sql, $params));
     }
+	public static function new_get_tags_by_area_in_contexts_v2($component, $itemtype, array $contexts) {
+        global $DB;
+
+        $params = [$component, $itemtype];
+        $contextids = array_map(function($context) {
+            return $context->id;
+        }, $contexts);
+        list($contextsql, $contextsqlparams) = $DB->get_in_or_equal([1]);
+        $params = array_merge($params, $contextsqlparams);
+
+        $subsql = "SELECT DISTINCT t.id
+                    FROM {tag} t
+                    JOIN {tag_instance} ti ON t.id = ti.tagid
+                   WHERE component = ?
+                   AND itemtype = ?
+                   AND contextid {$contextsql}";
+
+        $sql = "SELECT tt.*
+                FROM ($subsql) tv
+                JOIN {tag} tt ON tt.id = tv.id";
+
+        return array_map(function($record) {
+            return new core_tag_tag($record);
+        }, $DB->get_records_sql($sql, $params));
+    }
 }

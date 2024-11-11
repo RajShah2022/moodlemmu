@@ -71,8 +71,9 @@ class add_random_form extends moodleform {
 
         if ($CFG->usetags) {
             $tagstrings = [];
-            $tags = core_tag_tag::get_tags_by_area_in_contexts('core_question', 'question', $usablecontexts);
-            foreach ($tags as $tag) {
+//            $tags = core_tag_tag::get_tags_by_area_in_contexts('core_question', 'question', $usablecontexts);
+            $tags = core_tag_tag::new_get_tags_by_area_in_contexts_v2('core_question', 'question', $usablecontexts);  
+          foreach ($tags as $tag) {
                 $tagstrings["{$tag->id},{$tag->name}"] = $tag->name;
             }
             $options = [

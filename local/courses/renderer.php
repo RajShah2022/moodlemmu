@@ -168,7 +168,7 @@ class local_courses_renderer extends plugin_renderer_base {
             $records = $DB->get_records_sql($sql . $joinsql . $where . $groupby . $orderby, $params);
         }
 
-        $tagfeed = new local_tags\output\tagfeed(array(), 'local_courses');
+        $tagfeed = new core_tag\output\tagfeed(array(), 'local_courses');
         $img = $this->output->pix_icon('i/course', '');
         foreach ($records as $key => $value) {
             $url = $CFG->wwwroot . '/course/view.php?id=' . $value->id . '';
@@ -178,7 +178,7 @@ class local_courses_renderer extends plugin_renderer_base {
             $details = $this->render_from_template('local_courses/tagview', $coursedetails);
             $tagfeed->add($imgwithlink, $modulename, $details);
         }
-        return $this->output->render_from_template('local_tags/tagfeed', $tagfeed->export_for_template($this->output));
+        return $this->output->render_from_template('core_tag/tagfeed', $tagfeed->export_for_template($this->output));
     }
 
     function display_course_enrolledusers($courseid, $module = false) {
