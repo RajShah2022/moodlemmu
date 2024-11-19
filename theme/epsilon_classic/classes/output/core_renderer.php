@@ -533,12 +533,14 @@ class core_renderer extends \core_renderer {
         $logopath = "";
         if (!empty($USER->open_path)) {
             list($zero, $org, $ctr, $bu, $cu, $territory) = explode("/", $USER->open_path ?? "");
-            if (!empty($org)) {
+	    if (!empty($org)) {
                 $costcenterid = $DB->get_field('local_costcenter', 'costcenter_logo', array('id' => $org));
-            }
+	    }
+
             if (!empty($costcenterid)) {
-                $logopath = costcenter_logo($costcenterid);
-            }
+             //   $logopath = costcenter_logo($costcenterid);
+	    }
+
         }
         if (empty($logopath)) {
             $logopath = $this->get_compact_logo_url();
