@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="grade/report/ai/db" VERSION="2024112800" COMMENT="XMLDB file for AI Grade Report plugin">
+  <TABLES>
+    <TABLE NAME="user_ai_reports" COMMENT="Stores AI-generated user reports">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="contextid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="ai_report_data" TYPE="text" NOTNULL="true"/>
+        <FIELD NAME="tokens_usage" TYPE="text" NOTNULL="true"/>
+        <FIELD NAME="created_at" TYPE="datetime" NOTNULL="true"/>
+        <FIELD NAME="updated_at" TYPE="datetime" NOTNULL="true"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>

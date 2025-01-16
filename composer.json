@@ -11,7 +11,6 @@
         "friends-of-behat/mink-extension": "^2.7.2",
         "behat/mink-browserkit-driver": "^2.1.0",
         "symfony/process": "^4.4 || ^5.0 || ^6.0",
-        "symfony/http-client": "^4.4 || ^5.0 || ^6.0",
         "symfony/mime": "^4.4 || ^5.0 || ^6.0",
         "behat/behat": "3.13.*",
         "oleg-andreyev/mink-phpwebdriver": "1.2.*"
@@ -43,7 +42,11 @@
         "ext-json": "*",
         "ext-hash": "*",
         "ext-fileinfo": "*",
-        "ext-sodium": "*"
+        "ext-sodium": "*",
+        "openai/openai": "dev-main",
+        "openai-php/client": "^0.10.3",
+        "symfony/http-client": "^6.0",
+        "nyholm/psr7": "^1.8"
     },
     "suggest": {
         "ext-mysqli": "Needed when Moodle uses MySQL or MariaDB database.",
@@ -53,5 +56,10 @@
         "ext-tokenizer": "Enabling Tokenizer PHP extension is recommended, it improves Moodle Networking functionality.",
         "ext-soap": "Enabling SOAP PHP extension is useful for web services and some plugins.",
         "ext-exif": "Enabling Exif PHP extension is recommended, it is used by Moodle to parse image meta data."
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
     }
 }
