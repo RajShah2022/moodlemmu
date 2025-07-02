@@ -106,12 +106,38 @@ abstract class qtype_multichoice_renderer_base extends qtype_with_combined_feedb
 
             $choicenumber = '';
             if ($question->answernumbering !== 'none') {
+                $numberstyle = 'font-family: Cambria !important; font-size: 22px !important;';
                 $choicenumber = html_writer::span(
-                        $this->number_in_style($value, $question->answernumbering), 'answernumber');
+                        $this->number_in_style($value, $question->answernumbering), 
+                        'answernumber', 
+                        array('style' => $numberstyle));
             }
+            
+            // Define our consistent styling
+            $cambria_style = 'font-family: Cambria !important; font-size: 22px !important;';
+            
+            // Get the formatted answer choice text
             $choicetext = $question->format_text($ans->answer, $ans->answerformat, $qa, 'question', 'answer', $ansid);
-            $choice = html_writer::div($choicetext, 'flex-fill ml-1');
-
+            
+            // First, strip out all existing style attributes from p and span tags
+            $choicetext = preg_replace('/<(p|span)([^>]*)style="[^"]*"/', '<$1$2', $choicetext);
+            
+            // Add our styles to ALL p tags, regardless of nesting level
+            $choicetext = preg_replace('/<p([^>]*)>/', '<p$1 style="' . $cambria_style . '">', $choicetext);
+            
+            // Add styles to ALL span tags, regardless of nesting level
+            $choicetext = preg_replace('/<span([^>]*)>/', '<span$1 style="' . $cambria_style . '">', $choicetext);
+            
+            // If there are no p tags and no span tags at all, wrap the entire content in a styled span
+            if (strpos($choicetext, '<p') === false && strpos($choicetext, '<span') === false) {
+                $choicetext = '<span style="' . $cambria_style . '">' . $choicetext . '</span>';
+            }
+            
+            // Also apply styles to any div.column elements that might contain text directly
+            $choicetext = preg_replace('/<div([^>]*)class="column"([^>]*)>/', '<div$1class="column"$2 style="' . $cambria_style . '">', $choicetext);
+            
+            // Create a root div with the same styling
+            $choice = html_writer::div($choicetext, 'flex-fill ml-1', array('style' => $cambria_style));
             $radiobuttons[] = $hidden . html_writer::empty_tag('input', $inputattributes) .
                     html_writer::div($choicenumber . $choice, 'd-flex w-auto', [
                         'id' => $inputattributes['id'] . '_label',

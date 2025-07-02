@@ -1139,6 +1139,8 @@ if (has_capability('moodle/grade:viewall', $context)) {
         // echo '<script>console.log("This is filtered_course_structuree",' . json_encode($filtered_course_structuree) . ')</script>';
 
         $agg_report_data = generateDataForTeacherReport($allStudentQuizData, $filtered_course_structure, $students);
+                echo '<script>console.log("This is agg_report_data",' . json_encode($agg_report_data) . ')</script>';
+
         echo renderTeacherReport($agg_report_data);
 
         // First output the required CSS

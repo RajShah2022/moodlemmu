@@ -2384,6 +2384,7 @@ function renderTeacherReport($reportData)
                 const subtopicBarLabels = reportData.chart_data.subtopic_bar_chart.labels;
                 setChartWrapperWidth('subtopicBarChartWrapper', subtopicBarLabels);
                 const subtopicBarCtx = document.getElementById('subtopicBarChart').getContext('2d');
+                console.log('reportData.chart_data.subtopic_bar_chart.labels',reportData.chart_data.subtopic_bar_chart.labels)
                 new Chart(subtopicBarCtx, {
                     type: 'bar',
                     data: {
@@ -2960,6 +2961,9 @@ function getColorForPerformance($performance)
  */
 function generateDataForTeacherReport($allStudentQuizData, $filteredCourseStructure, $allStudentData)
 {
+    echo '<script>console.log("allStudentQuizData",' . json_encode($allStudentQuizData) . ')</script>';
+    echo '<script>console.log("filteredCourseStructure",' . json_encode($filteredCourseStructure) . ')</script>';
+    echo '<script>console.log("allStudentData",' . json_encode($allStudentData) . ')</script>';
 
     // Validate input parameters
     if (!is_array($allStudentQuizData)) {
@@ -3461,21 +3465,38 @@ function generateDataForTeacherReport($allStudentQuizData, $filteredCourseStruct
     $detailedSubtopicStats = flattenSubtopicsDetailed($hierarchy, 1);
     // --- NEW STEP: Prepare Bar Chart Data for Subtopics ---
     // This will be used to render a bar graph for all subtopics (level >=2)
-    $subtopicBarChart = [
-        'labels' => array_map(function ($stat) {
-            return $stat['subtopic_name'];
-        }, $subtopicChart),
-        'data' => array_map(function ($stat) {
-            return $stat['performance'];
-        }, $subtopicChart)
-    ];
+    // If no subtopics available, fallback to topic data
+    // Get course shortname from filteredCourseStructure
+    $courseShortname = $filteredCourseStructure['course']['shortname'] ?? '';
+
+    $subtopicBarChart = ($courseShortname === 'ICSEGr2' || $courseShortname === 'ICSEGr3') ? [
+            'labels' => array_map(function ($stat) {
+                return $stat['topic_name'];
+            }, $topicChart),
+            'data' => array_map(function ($stat) {
+                return $stat['performance'];
+            }, $topicChart)
+        ] : (!empty($subtopicChart) ? [
+            'labels' => array_map(function ($stat) {
+                return $stat['subtopic_name'];
+            }, $subtopicChart),
+            'data' => array_map(function ($stat) {
+                return $stat['performance'];
+            }, $subtopicChart)
+        ] : [
+            'labels' => array_map(function ($stat) {
+                return $stat['topic_name'];
+            }, $topicChart),
+            'data' => array_map(function ($stat) {
+                return $stat['performance'];
+            }, $topicChart)
+        ]);
 
     $chartData = [
-        'quiz_chart'     => $quizChart,
-        'topic_chart'    => $topicChart,
-        'subtopic_chart' => $subtopicChart,
+        'quiz_chart'         => $quizChart,
+        'topic_chart'        => $topicChart,
+        'subtopic_chart'     => !empty($subtopicChart) ? $subtopicChart : $topicChart,
         'subtopic_bar_chart' => $subtopicBarChart
-
     ];
 
     // ============================================================

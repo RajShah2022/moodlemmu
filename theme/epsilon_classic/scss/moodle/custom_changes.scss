@@ -3027,7 +3027,35 @@ body .que .info>div {
         font-weight: 600;
         font-size: 18px;
     } 
+    
+    
 }
+.courseheader .context-header-settings-menu,
+.courseheader .region-main-settings-menu {
+    width: auto !important;
+    height: auto !important;
+    max-width: 100% !important;
+}
+
+// Mobile only: add padding of 10px
+@media only screen and (max-width: 767px) {
+    .courseheader .context-header-settings-menu,
+    .courseheader .region-main-settings-menu {
+        padding-top: 22px;
+    }
+}
+// Styles for mobile screens only
+@media only screen and (max-width: 767px) {
+    .usermenu .dropdown-menu-left {
+        right: 0px;
+        left: auto;
+    }
+
+    .navbar.fixed-top .usermenu .dropdown-menu {
+        max-width: 393px;
+    }
+}
+
 .course_drawer_header_container .overall_users .mytooltip .mytooltiptext{
     min-width: 200px ;
 }

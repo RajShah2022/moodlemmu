@@ -986,11 +986,12 @@ body#page-local-courses-userdashboard .card_list_view {
     font-size: 23px;  
 }
 /* Modify for tablet view */
-@media (max-width: 1024px) {
+@media (max-width: 1196px) {
     .courseheader .course_contextmenu_extended .course_extended_menu_list .icon {
-        color: #000 !important; /* Change color to black for tablet view */
+        color: #000 !important; /* Change color to black for devices up to 1196px */
     }
 }
+
 .course_contextmenu_extended .course_extended_menu_list .icon:hover {
     background-color: transparent !important;
 }

@@ -105,30 +105,60 @@ class qtype_numerical_question extends question_graded_automatically {
                 ($response['answer'] || $response['answer'] === '0' || $response['answer'] === 0);
     }
 
+    // public function is_complete_response(array $response) {
+    //     if (!$this->is_gradable_response($response)) {
+    //         return false;
+    //     }
+
+    //     list($value, $unit) = $this->ap->apply_units($response['answer']);
+    //     if (is_null($value)) {
+    //         return false;
+    //     }
+
+    //     if ($this->unitdisplay != qtype_numerical::UNITINPUT && $unit) {
+    //         return false;
+    //     }
+
+    //     if ($this->has_separate_unit_field() && empty($response['unit'])) {
+    //         return false;
+    //     }
+
+    //     if ($this->ap->contains_thousands_seaparator($response['answer'])) {
+    //         return false;
+    //     }
+
+    //     return true;
+    // }
     public function is_complete_response(array $response) {
         if (!$this->is_gradable_response($response)) {
             return false;
         }
-
+    
+        // ✅ Allow comma values to bypass standard numeric validation
+        if (strpos($response['answer'], ',') !== false) {
+            return true;
+        }
+    
         list($value, $unit) = $this->ap->apply_units($response['answer']);
         if (is_null($value)) {
-            return false;
+            return true;
         }
-
+    
         if ($this->unitdisplay != qtype_numerical::UNITINPUT && $unit) {
-            return false;
+            return true;
         }
-
+    
         if ($this->has_separate_unit_field() && empty($response['unit'])) {
             return false;
         }
-
+    
         if ($this->ap->contains_thousands_seaparator($response['answer'])) {
-            return false;
+            return true;
         }
-
+    
         return true;
     }
+    
 
     public function get_validation_error(array $response) {
         if (!$this->is_gradable_response($response)) {

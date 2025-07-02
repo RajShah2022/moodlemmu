@@ -457,10 +457,87 @@ abstract class question_definition {
         return question_utils::to_plain_text($text, $format);
     }
 
-    /** @return the result of applying {@link format_text()} to the question text. */
+    /** 
+     * @return the result of applying {@link format_text()} to the question text
+     * with consistent Cambria font styling applied. 
+     */
     public function format_questiontext($qa) {
-        return $this->format_text($this->questiontext, $this->questiontextformat,
+        // Get the formatted text using the original method
+        $formatted_text = $this->format_text($this->questiontext, $this->questiontextformat,
                 $qa, 'question', 'questiontext', $this->id);
+        
+        // Apply consistent styling using DOM manipulation
+        $dom = new DOMDocument();
+        
+        // Using @ to suppress warnings from potentially malformed HTML
+        @$dom->loadHTML('<?xml encoding="utf-8" ?><div class="qtext-wrapper">' . $formatted_text . '</div>', 
+                LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        
+        // Define the style we want to apply
+        $fontStyle = 'font-family: Cambria !important; font-size: 22px !important;';
+        
+        // Get all text-containing elements
+        $xpath = new DOMXPath($dom);
+        
+        // Array of element types that typically contain text
+        $textElements = ['p', 'span', 'div', 'li', 'td', 'th', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+        
+        foreach ($textElements as $tag) {
+            $elements = $xpath->query('//' . $tag);
+            foreach ($elements as $element) {
+                // If it contains text directly (not just through child elements)
+                if (trim($element->textContent) !== '' && $this->hasDirectTextChild($element)) {
+                    // Remove existing font-family and font-size styles
+                    if ($element->hasAttribute('style')) {
+                        $style = $element->getAttribute('style');
+                        $style = preg_replace('/(font-family|font-size)\s*:\s*[^;]*;?/i', '', $style);
+                        $element->setAttribute('style', $style);
+                    }
+                    
+                    // Add our style
+                    $element->setAttribute('style', 
+                        ($element->hasAttribute('style') ? $element->getAttribute('style') . '; ' : '') . $fontStyle);
+                }
+            }
+        }
+        
+        // Special handling for content without proper HTML structure
+        $textNodes = $xpath->query('//text()[normalize-space()]');
+        foreach ($textNodes as $textNode) {
+            $parent = $textNode->parentNode;
+            
+            // If the parent is the wrapper div we added, or the body, wrap text in a styled p
+            if (($parent->nodeName === 'div' && $parent->getAttribute('class') === 'qtext-wrapper') 
+                    || $parent->nodeName === 'body') {
+                $newP = $dom->createElement('p');
+                $newP->setAttribute('style', $fontStyle);
+                $newP->textContent = $textNode->nodeValue;
+                $parent->replaceChild($newP, $textNode);
+            }
+        }
+        
+        // Extract the content without the wrapper
+        $wrapper = $dom->getElementsByTagName('div')->item(0);
+        $result = '';
+        foreach ($wrapper->childNodes as $child) {
+            $result .= $dom->saveHTML($child);
+        }
+        
+        return $result;
+    }
+
+    /**
+     * Helper function to check if an element has direct text children
+     * (not just text in descendant elements)
+     */
+    private function hasDirectTextChild($element) {
+        for ($i = 0; $i < $element->childNodes->length; $i++) {
+            $child = $element->childNodes->item($i);
+            if ($child->nodeType === XML_TEXT_NODE && trim($child->nodeValue) !== '') {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** @return the result of applying {@link format_text()} to the general feedback. */

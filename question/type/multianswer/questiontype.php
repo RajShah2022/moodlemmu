@@ -651,7 +651,7 @@ function qtype_multianswer_validate_question(stdClass $question) : array {
                 if ($subquestion->qtype == 'multichoice' && $answercount < 2) {
                     $errors[$prefix.'answer[0]'] = get_string('notenoughanswers', 'qtype_multichoice', 2);
                 } else if ($answercount == 0) {
-                    $errors[$prefix.'answer[0]'] = get_string('notenoughanswers', 'question', 1);
+                    // $errors[$prefix.'answer[0]'] = get_string('notenoughanswers', 'question', 1);
                 }
                 if ($maxgrade == false) {
                     $errors[$prefix.'fraction[0]'] = get_string('fractionsnomax', 'question');

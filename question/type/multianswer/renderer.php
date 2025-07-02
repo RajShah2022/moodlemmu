@@ -467,9 +467,18 @@ class qtype_multianswer_multichoice_vertical_renderer extends qtype_multianswer_
 
             $result .= $this->choice_wrapper_start($class);
             $result .= html_writer::empty_tag('input', $inputattributes);
-            $result .= html_writer::tag('label', $subq->format_text($ans->answer,
-                    $ans->answerformat, $qa, 'question', 'answer', $ansid),
-                    array('for' => $inputattributes['id'], 'class' => 'form-check-label text-body'));
+            // Original code:
+            // $result .= html_writer::tag('label', $subq->format_text($ans->answer,
+            //                     $ans->answerformat, $qa, 'question', 'answer', $ansid),
+            //                     array('for' => $inputattributes['id'], 'class' => 'form-check-label text-body'));
+
+            // Modified to style p tags within answers:
+            $styledAnswer = $subq->format_text($ans->answer, $ans->answerformat, $qa, 'question', 'answer', $ansid);
+            // Add styling to all p tags within the answer
+            $styledAnswer = str_replace('<p>', '<p style="font-family: Cambria !important; font-size: 22px !important;">', $styledAnswer);
+
+            $result .= html_writer::tag('label', $styledAnswer,
+                                array('for' => $inputattributes['id'], 'class' => 'form-check-label text-body'));
             $result .= $feedbackimg;
 
             if ($options->feedback && $isselected && trim($ans->feedback)) {

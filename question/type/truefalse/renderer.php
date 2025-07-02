@@ -108,22 +108,34 @@ class qtype_truefalse_renderer extends qtype_renderer {
             $legendclass = 'sr-only';
             $questionnumber = $options->add_question_identifier_to_label(get_string('answer'), true, true);
         }
-        $result .= html_writer::tag('legend', $questionnumber,
-            array('class' => 'prompt h6 font-weight-normal ' . $legendclass));
+                // Define the font style once to maintain consistency
+        $fontStyle = 'font-family: Cambria !important; font-size: 22px !important;';
 
-        $result .= html_writer::start_tag('div', array('class' => 'answer'));
+        // Add the legend (question number) with styling
+        $result .= html_writer::tag('legend', $questionnumber,
+                array('class' => 'prompt h6 font-weight-normal ' . $legendclass, 
+                    'style' => $fontStyle));
+
+        // Start the answer div with styling
+        $result .= html_writer::start_tag('div', array('class' => 'answer', 'style' => $fontStyle));
+
+        // True option with styling
         $result .= html_writer::tag('div', $radiotrue . ' ' . $truefeedbackimg,
-                array('class' => 'r0' . $trueclass));
+                array('class' => 'r0' . $trueclass, 'style' => $fontStyle));
+
+        // False option with styling
         $result .= html_writer::tag('div', $radiofalse . ' ' . $falsefeedbackimg,
-                array('class' => 'r1' . $falseclass));
+                array('class' => 'r1' . $falseclass, 'style' => $fontStyle));
+
         $result .= html_writer::end_tag('div'); // Answer.
 
         $result .= html_writer::end_tag('fieldset'); // Ablock.
 
+        // Validation error message with styling
         if ($qa->get_state() == question_state::$invalid) {
             $result .= html_writer::nonempty_tag('div',
                     $question->get_validation_error($responsearray),
-                    array('class' => 'validationerror'));
+                    array('class' => 'validationerror', 'style' => $fontStyle));
         }
 
         return $result;
