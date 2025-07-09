@@ -7131,56 +7131,61 @@ function renderHierarchyStudentReport($reportData)
             }
         }
         // Create quiz dropdown container for a node
-        function hierarchyCreateQuizDropdown(node, level) {
-            const container = document.createElement('div');
-            container.className = 'quiz-dropdown-container';
-
-            // Header for quiz table
-            const headerRow = document.createElement('div');
-            headerRow.className = 'hierarchy-table-header';
-            headerRow.style.paddingLeft = ((level + 1) * 20) + 'px';
-            const quizHeaders = ['Quiz Name', 'Percentage'];
-            const quizFlexValues = [2, 1, 1, 1, 1, 1];
-            quizHeaders.forEach((text, index) => {
-                const cell = document.createElement('div');
-                cell.textContent = text;
-                cell.style.flex = quizFlexValues[index];
-                headerRow.appendChild(cell);
-            });
-            container.appendChild(headerRow);
-
-            // Quiz rows
-            node.quizzes.forEach(quiz => {
-                const quizRow = document.createElement('div');
-                quizRow.className = 'hierarchy-quiz-row';
-                quizRow.style.paddingLeft = ((level + 1) * 20) + 'px';
-
-                // Quiz Name
-                const nameCell = document.createElement('div');
-                nameCell.textContent = quiz.name || 'Quiz';
-                nameCell.style.flex = '2';
-                quizRow.appendChild(nameCell);
-
-                // Average Performance: using a colored chip
-                const avgCell = document.createElement('div');
-                avgCell.style.flex = '1';
-
-                const avgChip = document.createElement('span');
-                // If you used "green1" for "green", convert it here:
-                // New code: determine color based solely on quiz.average_performance
-                const quizStatus = hierarchyDetermineStatus(quiz.average_performance);
-                const chipColorClass = quizStatus.color; // 'success', 'warning', or 'error'
-                avgChip.className = 'chip ' + chipColorClass;
-                avgChip.textContent = quiz.average_performance + '%';
-
-                avgCell.appendChild(avgChip);
-                quizRow.appendChild(avgCell);
-
-                container.appendChild(quizRow);
-            });
-
-            return container;
+        function decodeHtml(html) {
+            const txt = document.createElement('textarea');
+            txt.innerHTML = html;
+            return txt.value;
         }
+
+        function hierarchyCreateQuizDropdown(node, level) {
+        const container = document.createElement('div');
+        container.className = 'quiz-dropdown-container';
+
+        // Header for quiz table
+        const headerRow = document.createElement('div');
+        headerRow.className = 'hierarchy-table-header';
+        headerRow.style.paddingLeft = ((level + 1) * 20) + 'px';
+        const quizHeaders = ['Quiz Name', 'Percentage'];
+        const quizFlexValues = [2, 1];
+        quizHeaders.forEach((text, index) => {
+            const cell = document.createElement('div');
+            cell.textContent = text;
+            cell.style.flex = quizFlexValues[index];
+            headerRow.appendChild(cell);
+        });
+        container.appendChild(headerRow);
+
+        // Quiz rows
+        node.quizzes.forEach(quiz => {
+            const quizRow = document.createElement('div');
+            quizRow.className = 'hierarchy-quiz-row';
+            quizRow.style.paddingLeft = ((level + 1) * 20) + 'px';
+
+            // Quiz Name (decoded)
+            const nameCell = document.createElement('div');
+            nameCell.style.flex = '2';
+            // Decode any entities (so "HCF &amp; LCM" → "HCF & LCM")
+            nameCell.textContent = decodeHtml(quiz.name || 'Quiz');
+            quizRow.appendChild(nameCell);
+
+            // Average Performance: colored chip
+            const avgCell = document.createElement('div');
+            avgCell.style.flex = '1';
+
+            const avgChip = document.createElement('span');
+            const quizStatus = hierarchyDetermineStatus(quiz.average_performance);
+            avgChip.className = 'chip ' + quizStatus.color; // e.g. 'chip success'
+            avgChip.textContent = quiz.average_performance + '%';
+
+            avgCell.appendChild(avgChip);
+            quizRow.appendChild(avgCell);
+
+            container.appendChild(quizRow);
+        });
+
+        return container;
+        }
+
         // Add a container for the section charts below the hierarchy table
         function addSectionChartContainer() {
             const hierarchySection = document.querySelector('.hierarchy-section');
