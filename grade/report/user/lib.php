@@ -3992,6 +3992,16 @@ function generateStudentReport($jsonContent, $courseid, $studentid)
 
     $studentRankings = calculateEnhancedStudentRanks($allStudentQuizData, $filtered_course_structure, $students);
 
+    $skipRankCard = false;
+
+    if (!empty($cohorts)) {
+        foreach ($cohorts as $cohort) {
+            if (stripos($cohort->idnumber, 'school b') !== false) { // object ->property
+                $skipRankCard = true;
+                break;
+            }
+        }
+    }
     ob_start();
 ?>
     <div class="performance-dashboard">
@@ -4035,7 +4045,7 @@ function generateStudentReport($jsonContent, $courseid, $studentid)
                 </div>
             </div>
         </div>
-        <?php echo renderStudentRankCard($studentRankings, $studentId); ?>
+        <?php if ($cohorts && !$skipRankCard) {echo renderStudentRankCard($studentRankings, $studentId);} ?>
 
         <!-- Charts -->
         <div class="charts-container card slide-in">
