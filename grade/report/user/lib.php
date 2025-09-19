@@ -3527,6 +3527,250 @@ function generateDataForTeacherReport($allStudentQuizData, $filteredCourseStruct
     return json_encode($report);
 }
 
+function generateAdaptiveLearningRecommendations($reportData, $studentId, $weaknessThreshold = 60.0) {
+    $recommendations = [
+        'weak_sections' => [],
+        'focus_areas' => [],
+        'strengths' => [],
+        'overall_status' => '',
+        'priority_level' => 'medium'
+    ];
+    
+    if (!isset($reportData['hierarchy']) || empty($reportData['hierarchy'])) {
+        return $recommendations;
+    }
+    
+    // Function to recursively analyze performance
+    $analyzePerformance = function($sections, $level = 1) use (&$analyzePerformance, $weaknessThreshold, $studentId) {
+        $analysis = ['weak' => [], 'strong' => [], 'moderate' => []];
+        
+        foreach ($sections as $section) {
+            $performance = $section['average_performance'] ?? 0;
+            $sectionData = [
+                'id' => $section['id'],
+                'name' => $section['name'],
+                'performance' => $performance,
+                'level' => $level,
+                'quiz_count' => count($section['quizzes'] ?? []),
+                'has_attempts' => false
+            ];
+            
+            // Check if student has attempts in this section
+            if (!empty($section['quizzes'])) {
+                foreach ($section['quizzes'] as $quiz) {
+                    if (!empty($quiz['attempted_students'])) {
+                        foreach ($quiz['attempted_students'] as $student) {
+                            if ($student['studentid'] == $studentId) {
+                                $sectionData['has_attempts'] = true;
+                                break 2;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Categorize based on performance
+            if ($performance < $weaknessThreshold) {
+                $analysis['weak'][] = $sectionData;
+            } elseif ($performance >= 80) {
+                $analysis['strong'][] = $sectionData;
+            } else {
+                $analysis['moderate'][] = $sectionData;
+            }
+            
+            // Recursively analyze children
+            if (!empty($section['children'])) {
+                $childAnalysis = $analyzePerformance($section['children'], $level + 1);
+                $analysis['weak'] = array_merge($analysis['weak'], $childAnalysis['weak']);
+                $analysis['strong'] = array_merge($analysis['strong'], $childAnalysis['strong']);
+                $analysis['moderate'] = array_merge($analysis['moderate'], $childAnalysis['moderate']);
+            }
+        }
+        
+        return $analysis;
+    };
+    
+    $analysis = $analyzePerformance($reportData['hierarchy']);
+    
+    // Sort weak areas by performance (lowest first) and prioritize those with attempts
+    usort($analysis['weak'], function($a, $b) {
+        if ($a['has_attempts'] !== $b['has_attempts']) {
+            return $b['has_attempts'] <=> $a['has_attempts'];
+        }
+        return $a['performance'] <=> $b['performance'];
+    });
+    
+    // Sort strong areas by performance (highest first)
+    usort($analysis['strong'], function($a, $b) {
+        return $b['performance'] <=> $a['performance'];
+    });
+    
+    $recommendations['weak_sections'] = array_slice($analysis['weak'], 0, 5);
+    $recommendations['strengths'] = array_slice($analysis['strong'], 0, 3);
+    
+    // Generate focus areas
+    $focusAreas = array_filter($analysis['weak'], function($section) {
+        return $section['level'] <= 2 && ($section['has_attempts'] || $section['quiz_count'] > 0);
+    });
+    $recommendations['focus_areas'] = array_slice($focusAreas, 0, 3);
+    
+    // Determine overall status
+    $weakCount = count($analysis['weak']);
+    $totalSections = $weakCount + count($analysis['moderate']) + count($analysis['strong']);
+    $weakPercentage = $totalSections > 0 ? ($weakCount / $totalSections) * 100 : 0;
+    
+    if ($weakPercentage > 50) {
+        $recommendations['overall_status'] = 'Needs Significant Improvement';
+        $recommendations['priority_level'] = 'high';
+    } elseif ($weakPercentage > 25) {
+        $recommendations['overall_status'] = 'Room for Improvement';
+        $recommendations['priority_level'] = 'medium';
+    } else {
+        $recommendations['overall_status'] = 'Good Progress';
+        $recommendations['priority_level'] = 'low';
+    }
+    
+    return $recommendations;
+}
+function renderAdaptiveLearningSection($adaptiveRecommendations) {
+    if (empty($adaptiveRecommendations)) {
+        return '';
+    }
+    
+    $priorityColors = [
+        'high' => ['bg' => '#FEE2E2', 'text' => '#DC2626', 'icon' => 'fas fa-exclamation-triangle'],
+        'medium' => ['bg' => '#FEF3C7', 'text' => '#D97706', 'icon' => 'fas fa-exclamation-circle'],
+        'low' => ['bg' => '#DCFCE7', 'text' => '#16A34A', 'icon' => 'fas fa-check-circle']
+    ];
+    
+    $priority = $adaptiveRecommendations['priority_level'];
+    $colors = $priorityColors[$priority];
+    
+    ob_start();
+    ?>
+    <div class="adaptive-learning-section card slide-in" style="border-left: 4px solid <?php echo $colors['text']; ?>; background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);">
+        <h2 class="report_h2">
+            <i class="fas fa-brain"></i> 
+            Adaptive Learning Recommendations
+        </h2>
+        
+        <!-- Overall Status -->
+        <div class="status-overview" style="background-color: <?php echo $colors['bg']; ?>; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="<?php echo $colors['icon']; ?>" style="color: <?php echo $colors['text']; ?>; font-size: 1.2em;"></i>
+                <span style="font-weight: 600; color: <?php echo $colors['text']; ?>;">
+                    Status: <?php echo htmlspecialchars($adaptiveRecommendations['overall_status']); ?>
+                </span>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            
+            <!-- Focus Areas -->
+            <div class="focus-areas">
+                <h3 style="color: var(--primary-color); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-target" style="color: #EF4444;"></i>
+                    Priority Focus Areas
+                </h3>
+                
+                <?php if (!empty($adaptiveRecommendations['focus_areas'])): ?>
+                    <div class="focus-list">
+                        <?php foreach ($adaptiveRecommendations['focus_areas'] as $index => $area): ?>
+                            <div style="background-color: #FEF7F7; border-left: 3px solid #EF4444; padding: 12px; margin-bottom: 10px; border-radius: 6px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-weight: 600; color: #1F2937;">
+                                        <?php echo ($index + 1) . '. ' . htmlspecialchars($area['name']); ?>
+                                    </span>
+                                    <span style="background-color: #FEE2E2; color: #DC2626; padding: 4px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold;">
+                                        <?php echo number_format($area['performance'], 1); ?>%
+                                    </span>
+                                </div>
+                                <?php if (!$area['has_attempts'] && $area['quiz_count'] > 0): ?>
+                                    <div style="font-size: 0.8em; color: #6B7280; margin-top: 4px;">
+                                        <i class="fas fa-info-circle"></i> No attempts yet - Start here!
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <p style="color: #6B7280; font-style: italic;">Great job! No immediate focus areas identified.</p>
+                <?php endif; ?>
+            </div>
+            
+            <!-- Strengths -->
+            <div class="strengths-areas">
+                <h3 style="color: var(--primary-color); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-star" style="color: #16A34A;"></i>
+                    Your Strengths
+                </h3>
+                
+                <?php if (!empty($adaptiveRecommendations['strengths'])): ?>
+                    <div class="strengths-list">
+                        <?php foreach ($adaptiveRecommendations['strengths'] as $strength): ?>
+                            <div style="background-color: #F0FDF4; border-left: 3px solid #16A34A; padding: 12px; margin-bottom: 10px; border-radius: 6px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-weight: 600; color: #1F2937;">
+                                        <?php echo htmlspecialchars($strength['name']); ?>
+                                    </span>
+                                    <span style="background-color: #DCFCE7; color: #16A34A; padding: 4px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold;">
+                                        <?php echo number_format($strength['performance'], 1); ?>%
+                                    </span>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <p style="color: #6B7280; font-style: italic;">Keep working to build your strengths!</p>
+                <?php endif; ?>
+            </div>
+        </div>
+        
+        <!-- Action Items -->
+        <div style="background-color: #F8FAFC; border-radius: 8px; padding: 20px;">
+            <h3 style="color: var(--primary-color); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-tasks"></i>
+                Recommended Actions
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                <?php if (!empty($adaptiveRecommendations['focus_areas'])): ?>
+                    <div style="background: white; border-radius: 6px; padding: 15px; border-left: 4px solid #3B82F6;">
+                        <h4 style="margin: 0 0 8px 0; color: #1F2937; font-size: 0.9em;">
+                            <i class="fas fa-play-circle" style="color: #3B82F6;"></i>
+                            Start with Priority Areas
+                        </h4>
+                        <p style="margin: 0; font-size: 0.8em; color: #6B7280; line-height: 1.4;">
+                            Begin with the top <?php echo min(3, count($adaptiveRecommendations['focus_areas'])); ?> focus areas listed above.
+                        </p>
+                    </div>
+                <?php endif; ?>
+                
+                <div style="background: white; border-radius: 6px; padding: 15px; border-left: 4px solid #10B981;">
+                    <h4 style="margin: 0 0 8px 0; color: #1F2937; font-size: 0.9em;">
+                        <i class="fas fa-redo" style="color: #10B981;"></i>
+                        Review and Practice
+                    </h4>
+                    <p style="margin: 0; font-size: 0.8em; color: #6B7280; line-height: 1.4;">
+                        Revisit weak areas regularly and complete practice quizzes.
+                    </p>
+                </div>
+                
+                <div style="background: white; border-radius: 6px; padding: 15px; border-left: 4px solid #F59E0B;">
+                    <h4 style="margin: 0 0 8px 0; color: #1F2937; font-size: 0.9em;">
+                        <i class="fas fa-user-graduate" style="color: #F59E0B;"></i>
+                        Seek Help
+                    </h4>
+                    <p style="margin: 0; font-size: 0.8em; color: #6B7280; line-height: 1.4;">
+                        Ask your teacher for guidance on challenging topics.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
 /**
  * Generates a formatted HTML report for an individual student based on their quiz performance data.
  * 
@@ -3902,7 +4146,9 @@ function generateStudentReport($jsonContent, $courseid, $studentid)
         return $student['studentid'] == $current_student_id;
     });
     $agg_report_data = generateDataForStudentReport($studentQuizData, $filtered_course_structure, $filtered_students);
-
+    $agg_report_data_array = json_decode($agg_report_data, true);
+    $adaptiveRecommendations = generateAdaptiveLearningRecommendations($agg_report_data_array, $studentid);
+    
     $allStudentsId = array_map(function ($student) {
         return (int)$student['studentid'];
     }, $students);
@@ -3996,7 +4242,7 @@ function generateStudentReport($jsonContent, $courseid, $studentid)
 
     if (!empty($cohorts)) {
         foreach ($cohorts as $cohort) {
-            if (stripos($cohort->idnumber, 'school b') !== false) { // object ->property
+            if (stripos($cohort->idnumber, 'dsb') !== false) { // object ->property
                 $skipRankCard = true;
                 break;
             }
@@ -4021,6 +4267,41 @@ function generateStudentReport($jsonContent, $courseid, $studentid)
             </div>
         </div>
 
+        <!-- NEW: Adaptive Learning Section - Add this right after the course-info div -->
+        <?php echo renderAdaptiveLearningSection($adaptiveRecommendations); ?>
+
+        <!-- Your existing Performance Summary div continues here... -->
+<?php
+
+// ==================================================
+// SNIPPET 5: Add this CSS to your existing <style> section
+// ==================================================
+?>
+<style>
+/* Add this to your existing CSS */
+.adaptive-learning-section {
+    border: 1px solid #E2E8F0;
+}
+
+@media (max-width: 768px) {
+    .adaptive-learning-section > div:nth-child(3) {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+.adaptive-learning-section div[style*="background-color: #FEF7F7"],
+.adaptive-learning-section div[style*="background-color: #F0FDF4"] {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.adaptive-learning-section div[style*="background-color: #FEF7F7"]:hover,
+.adaptive-learning-section div[style*="background-color: #F0FDF4"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+</style>
+<?php
+?>
         <!-- Performance Summary -->
         <?php if (!empty($performanceSummary)): ?>
             <div class="performance-summary card slide-in">
