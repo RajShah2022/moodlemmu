@@ -127,5 +127,13 @@ $functions = array(
         'type'        => 'write',
         'ajax' => true,
     ),
+    'local_courses_bulk_enable_topics' => array(
+        'classname'   => 'local_courses_external',
+        'methodname'  => 'bulk_enable_topics',
+        'classpath'   => 'local/courses/classes/external.php',
+        'description' => 'Enable all topics and activities for a group',
+        'type'        => 'write',
+        'ajax'        => true,
+    ),
 );
 
