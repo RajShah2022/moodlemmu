@@ -1432,10 +1432,10 @@ class core_renderer extends \core_renderer {
                 $highest_roleid = $highest_roleinfo->roleid;
                 $contextid = $highest_roleinfo->contextid;
                 $this->role_switch_basedon_userroles($highest_roleid, false, $contextid);
-                redirect(new moodle_url('/'));
+                if (!$this->page->headerprinted) {
+                    redirect(new moodle_url('/'));
+                }
             }
-            // }elseif((isset($USER->access['rsw']) && $USER->access['rsw']) ){
-            //     $highest_roleid = current($USER->access['rsw']);
         }
 
         // Build a logout link.
