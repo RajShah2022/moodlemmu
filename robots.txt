@@ -1,0 +1,15 @@
+# This site is not meant to appear in search results.
+#
+# De-indexing is enforced by "noindex" (Moodle's allowindexing=2 meta tag on
+# every page + the X-Robots-Tag header from /etc/apache2/conf-available/noindex.conf).
+# Crawling is deliberately left open: Google must be able to fetch a page to
+# see its noindex and drop it from the index.
+#
+# Once Search Console reports 0 indexed pages, uncomment the block below to
+# stop the crawling too.
+#
+# User-agent: *
+# Disallow: /
+
+User-agent: *
+Disallow:
