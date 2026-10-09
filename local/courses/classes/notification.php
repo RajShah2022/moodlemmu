@@ -134,6 +134,87 @@ class notification {
             $this->log_email_notification($superuser, $fromuser, $datamailobj, $emailtype);
         }
     }
+    public function send_pending_work_email($user, $items, $notification) {
+        $emailtype = 'course_pending_work';
+        $datamailobj = new \stdclass();
+        $datamailobj->enroluser_fullname = $user->firstname . ' ' . $user->lastname;
+        $datamailobj->enroluser_email = $user->email;
+        $datamailobj->pending_count = count($items);
+        $datamailobj->pending_generateddate = \local_costcenter\lib::get_mail_userdate($user, "d/m/Y", time());
+
+        $bycourse = array();
+        foreach ($items as $item) {
+            $bycourse[$item->courseid]['coursefullname'] = $item->coursefullname;
+            $bycourse[$item->courseid]['count'] = ($bycourse[$item->courseid]['count'] ?? 0) + 1;
+        }
+        $datamailobj->pending_activities = $this->render_pending_activities($bycourse);
+
+        $datamailobj->notification_infoid = $notification->id;
+        $datamailobj->courseid = $items[0]->courseid;
+        $datamailobj->body = $notification->body;
+        $datamailobj->subject = $notification->subject;
+        $datamailobj->touserid = $user->id;
+
+        $fromuser = \core_user::get_user(2);
+        $datamailobj->fromuserid = $fromuser->id;
+        $datamailobj->teammemberid = 0;
+        if (!empty($notification->adminbody) && !empty($user->open_supervisorid)) {
+            $superuser = \core_user::get_user($user->open_supervisorid);
+            $datamailobj->supervisor_name = fullname($superuser);
+        } else {
+            $superuser = false;
+            $datamailobj->supervisor_name = '';
+        }
+
+        if ($user->suspended == 0 && $user->deleted == 0) {
+            $this->log_email_notification($user, $fromuser, $datamailobj, $emailtype);
+        }
+        if ($superuser && $superuser->suspended == 0 && $superuser->deleted == 0) {
+            $datamailobj->body = $notification->adminbody;
+            $datamailobj->touserid = $superuser->id;
+            $datamailobj->teammemberid = $user->id;
+            $this->log_email_notification($superuser, $fromuser, $datamailobj, $emailtype);
+        }
+    }
+    /**
+     * Renders the [pending_activities] placeholder as a stack of inline-styled cards,
+     * one per course, each with a count and a "Continue" link straight into the course.
+     * Inline styles only -- Gmail/Outlook strip <style> blocks in HTML email.
+     *
+     * @param array $bycourse [courseid => ['coursefullname' => string, 'count' => int]]
+     * @return string
+     */
+    private function render_pending_activities($bycourse) {
+        $rows = '';
+        $index = 1;
+        foreach ($bycourse as $courseid => $course) {
+            $courseurl = (new \moodle_url('/course/view.php', array('id' => $courseid)))->out(false);
+            $quizword = $course['count'] == 1 ? 'quiz' : 'quizzes';
+            $coursename = htmlspecialchars($course['coursefullname'], ENT_QUOTES);
+
+            $rows .= '
+            <tr>
+                <td style="padding:0 0 10px 0;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e2e8f0;border-radius:8px;background-color:#f8fafc;">
+                        <tr>
+                            <td style="padding:14px 16px;vertical-align:middle;">
+                                <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#1e293b;">'
+                                    . $index . '. ' . $coursename . '</div>
+                                <div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#64748b;margin-top:4px;">'
+                                    . $course['count'] . ' ' . $quizword . ' left to complete</div>
+                            </td>
+                            <td style="padding:14px 16px;vertical-align:middle;text-align:right;white-space:nowrap;">
+                                <a href="' . $courseurl . '" style="display:inline-block;padding:9px 18px;background-color:#2563eb;color:#ffffff;text-decoration:none;border-radius:6px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;">Continue</a>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>';
+            $index++;
+        }
+
+        return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:12px 0;">' . $rows . '</table>';
+    }
     public function log_email_notification($user, $fromuser, $datamailobj, $emailtype) {
         $dataobject = clone $datamailobj;
         $dataobject->subject = $this->replace_strings($datamailobj, $datamailobj->subject, $emailtype);
@@ -169,7 +250,7 @@ class notification {
 
         $sql =  " SELECT id FROM {local_emaillogs} WHERE to_userid = :userid AND notification_infoid = :infoid AND from_userid = :fromuserid
 					AND subject = :subject ";
-        if ($emailtype == 'course_completion_reminder') {
+        if (in_array($emailtype, array('course_completion_reminder', 'course_pending_work'))) {
             $sql .= " AND timecreated BETWEEN :starttime AND :endtime ";
         } else {
             $sql .= " AND status = 0 ";

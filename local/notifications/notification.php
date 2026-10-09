@@ -36,6 +36,12 @@ require_once($CFG->dirroot . '/local/notifications/lib.php');
  */
 class notification_triger
 {
+    /**
+     * A row that fails this many send attempts is marked permanently failed (status 2)
+     * instead of being retried forever, every run, if the underlying problem never clears
+     * (e.g. SMTP down) -- this is what let a stuck backlog hammer the mail server nonstop.
+     */
+    const MAX_SEND_ATTEMPTS = 5;
 
     /* type of notiifcation*/
     private $type;
@@ -118,6 +124,17 @@ class notification_triger
 
             if ($messageid) {
                 $DB->update_record('local_emaillogs', $record);
+            } else {
+                $attempts = (int) $email_log->attempts + 1;
+                $failedrecord = new stdClass();
+                $failedrecord->id = $email_log->id;
+                $failedrecord->attempts = $attempts;
+                if ($attempts >= self::MAX_SEND_ATTEMPTS) {
+                    // Give up on this row -- status 2 = permanently failed, excluded from
+                    // the status=0 query above so it stops being retried.
+                    $failedrecord->status = 2;
+                }
+                $DB->update_record('local_emaillogs', $failedrecord);
             }
         }
     }

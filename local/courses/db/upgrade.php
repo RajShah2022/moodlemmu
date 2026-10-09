@@ -457,5 +457,26 @@ function xmldb_local_courses_upgrade($oldversion)
         }
         upgrade_plugin_savepoint(true, 2023060600.22, 'local', 'courses');
     }
+
+    if ($oldversion < 2023060600.28) {
+        $time = time();
+        $initcontent = array('name' => 'Course', 'shortname' => 'course', 'parent_module' => '0', 'usercreated' => '2', 'timecreated' => $time, 'usermodified' => 2, 'timemodified' => NULL, 'pluginname' => 'courses');
+        $parentid = $DB->get_field('local_notification_type', 'id', array('shortname' => 'course'));
+        if (!$parentid) {
+            $parentid = $DB->insert_record('local_notification_type', $initcontent);
+        }
+
+        $notification_type_data = array(array('name' => 'Pending Activity Work Reminder', 'shortname' => 'course_pending_work', 'parent_module' => $parentid, 'usercreated' => '2', 'timecreated' => $time, 'usermodified' => 2, 'timemodified' => NULL, 'pluginname' => 'courses'));
+        foreach($notification_type_data as $notification_type){
+            unset($notification_type['timecreated']);
+            if(!$DB->record_exists('local_notification_type',  $notification_type)){
+                $notification_type['timecreated'] = $time;
+                $DB->insert_record('local_notification_type', $notification_type);
+            }
+        }
+
+        upgrade_plugin_savepoint(true, 2023060600.28, 'local', 'courses');
+    }
+
     return true;
 }

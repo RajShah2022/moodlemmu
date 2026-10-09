@@ -60,5 +60,14 @@ array(
         'month' => '*',
         'dayofweek' => '*'
     ),
+    array(
+        'classname' => 'local_courses\task\pending_work_reminder',
+        'blocking' => 0,
+        'minute' => '0',
+        'hour' => '8',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '1'
+    ),
 
 );

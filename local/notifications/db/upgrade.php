@@ -123,5 +123,38 @@ function xmldb_local_notifications_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2023060600.03, 'local', 'notifications');
     }
 
+    if ($oldversion < 2023060600.04) {
+        // Re-assert these fields exist: earlier savepoints (.01-.03) added them, but this
+        // environment's local_notification_info table was missing all three, so guard again.
+        $table = new xmldb_table('local_notification_info');
+
+        $field = new xmldb_field('frequencyflag', XMLDB_TYPE_INTEGER, '10', null, null, null, 0, null);
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $field = new xmldb_field('untildays', XMLDB_TYPE_INTEGER, '10', null, null, null, 0, null);
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $field = new xmldb_field('frequencydays', XMLDB_TYPE_INTEGER, '10', null, null, null, 0, null);
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2023060600.04, 'local', 'notifications');
+    }
+
+    if ($oldversion < 2023060600.05) {
+        // Retry cap for send_emaillog_notifications(): without this, a permanently-failing
+        // row (e.g. SMTP down) gets retried forever, every run, hammering the mail server
+        // indefinitely instead of giving up after a few tries.
+        $table = new xmldb_table('local_emaillogs');
+        $field = new xmldb_field('attempts', XMLDB_TYPE_INTEGER, '10', null, null, null, 0);
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_plugin_savepoint(true, 2023060600.05, 'local', 'notifications');
+    }
+
     return true;
 }
