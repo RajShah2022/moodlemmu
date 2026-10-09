@@ -34,6 +34,52 @@ define("GRADE_REPORT_USER_SHOW_HIDDEN", 2);
 define("GRADE_REPORT_USER_VIEW_SELF", 1);
 define("GRADE_REPORT_USER_VIEW_USER", 2);
 
+/**
+ * Builds the URL of a quiz activity.
+ *
+ * Prefers the course module id; falls back to the quiz instance id, which
+ * mod/quiz/view.php also accepts via its "q" parameter.
+ *
+ * @param int|null $cmid   Course module id of the quiz.
+ * @param int|null $quizid Quiz instance id.
+ * @return string|null The URL, or null when neither id is known.
+ */
+function gradereport_user_quiz_url($cmid = null, $quizid = null)
+{
+    global $CFG;
+
+    if (!empty($cmid)) {
+        return $CFG->wwwroot . '/mod/quiz/view.php?id=' . (int) $cmid;
+    }
+    if (!empty($quizid)) {
+        return $CFG->wwwroot . '/mod/quiz/view.php?q=' . (int) $quizid;
+    }
+    return null;
+}
+
+/**
+ * Renders a quiz name as a link through to the quiz activity.
+ *
+ * Degrades to plain escaped text when the quiz cannot be identified, so callers
+ * can use it as a drop-in replacement for htmlspecialchars($name).
+ *
+ * @param string   $name   Quiz name (raw, will be escaped).
+ * @param int|null $cmid   Course module id of the quiz.
+ * @param int|null $quizid Quiz instance id.
+ * @return string HTML.
+ */
+function gradereport_user_quiz_name_link($name, $cmid = null, $quizid = null)
+{
+    $escaped = htmlspecialchars($name);
+    $url = gradereport_user_quiz_url($cmid, $quizid);
+
+    if ($url === null) {
+        return $escaped;
+    }
+
+    return '<a class="quiz-name-link" href="' . $url . '" title="Open this quiz">' . $escaped . '</a>';
+}
+
 function grade_report_user_settings_definition(&$mform)
 {
     global $CFG;
@@ -392,8 +438,11 @@ function calculateEnhancedStudentRanks($allStudentQuizData, $filteredCourseStruc
 
     // Calculate average performance for each student
     foreach ($studentPerformances as &$student) {
-        // Calculate average across all quizzes (including zeros for non-attempts)
-        $student['average_performance'] = round($student['total_performance'] / $student['quiz_count'], 2);
+        // Calculate average across all quizzes (including zeros for non-attempts).
+        // A course with no accessible quizzes leaves quiz_count at 0, so guard the division.
+        $student['average_performance'] = $student['quiz_count'] > 0
+            ? round($student['total_performance'] / $student['quiz_count'], 2)
+            : 0;
     }
 
     // Sort students by performance (descending)
@@ -524,7 +573,9 @@ function calculateSectionWiseStudentRanks($allStudentQuizData, $filteredCourseSt
 
         // Calculate the average performance for each student in this section.
         foreach ($studentPerformances as &$student) {
-            $student['average_performance'] = round($student['total_performance'] / $student['quiz_count'], 2);
+            $student['average_performance'] = $student['quiz_count'] > 0
+                ? round($student['total_performance'] / $student['quiz_count'], 2)
+                : 0;
         }
         unset($student); // clear reference
 
@@ -1428,6 +1479,18 @@ function renderTeacherReport($reportData)
             border-bottom: none;
         }
 
+        /* Quiz name rendered as a link through to the quiz activity */
+        .quiz-name-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .quiz-name-link:hover,
+        .quiz-name-link:focus {
+            text-decoration: underline;
+        }
+
         .quiz-info {
             display: flex;
             align-items: center;
@@ -1800,6 +1863,23 @@ function renderTeacherReport($reportData)
         // Parse the injected JSON data
         const reportData = <?php echo $reportJson; ?>;
 
+        // Base URL used to link a quiz name straight to the quiz activity.
+        const quizViewBaseUrl = <?php global $CFG; echo json_encode($CFG->wwwroot . '/mod/quiz/view.php'); ?>;
+
+        // Build the link to a quiz. Prefer the course module id, fall back to the quiz instance id.
+        function buildQuizViewUrl(quiz) {
+            if (!quiz) {
+                return null;
+            }
+            if (quiz.cmid) {
+                return quizViewBaseUrl + '?id=' + encodeURIComponent(quiz.cmid);
+            }
+            if (quiz.quiz_id) {
+                return quizViewBaseUrl + '?q=' + encodeURIComponent(quiz.quiz_id);
+            }
+            return null;
+        }
+
         // Animate numbers in widgets
         function animateNumber(element, target, duration = 1000) {
             const steps = 60;
@@ -2000,10 +2080,22 @@ function renderTeacherReport($reportData)
                 quizRow.className = 'quiz-row';
                 quizRow.style.paddingLeft = ((level + 1) * 20) + 'px';
 
-                // Quiz Name
+                // Quiz Name (linked to the quiz activity when we know which one it is)
                 const nameCell = document.createElement('div');
-                nameCell.textContent = quiz.name || 'Quiz';
                 nameCell.style.flex = '2';
+                const quizUrl = buildQuizViewUrl(quiz);
+                if (quizUrl) {
+                    const nameLink = document.createElement('a');
+                    nameLink.className = 'quiz-name-link';
+                    nameLink.href = quizUrl;
+                    nameLink.title = 'Open this quiz';
+                    nameLink.textContent = quiz.name || 'Quiz';
+                    // Don't let the click bubble up into the section row toggle.
+                    nameLink.onclick = (e) => e.stopPropagation();
+                    nameCell.appendChild(nameLink);
+                } else {
+                    nameCell.textContent = quiz.name || 'Quiz';
+                }
                 quizRow.appendChild(nameCell);
 
                 // Median Performance
@@ -2270,8 +2362,21 @@ function renderTeacherReport($reportData)
             const attemptedList = document.getElementById('attemptedStudentsList');
             const notAttemptedList = document.getElementById('notAttemptedStudentsList');
 
-            // Set the quiz name
-            modalTitle.textContent = `Quiz: ${quiz.name || 'Quiz'}`;
+            // Set the quiz name, linked to the quiz activity when we know which one it is
+            const modalQuizName = quiz.name || 'Quiz';
+            const modalQuizUrl = buildQuizViewUrl(quiz);
+            modalTitle.textContent = '';
+            modalTitle.append('Quiz: ');
+            if (modalQuizUrl) {
+                const modalLink = document.createElement('a');
+                modalLink.className = 'quiz-name-link';
+                modalLink.href = modalQuizUrl;
+                modalLink.title = 'Open this quiz';
+                modalLink.textContent = modalQuizName;
+                modalTitle.appendChild(modalLink);
+            } else {
+                modalTitle.append(modalQuizName);
+            }
 
             // Clear existing data
             attemptedList.innerHTML = '';
@@ -7089,6 +7194,18 @@ function renderHierarchyStudentReport($reportData)
             border-bottom: none;
         }
 
+        /* Quiz name rendered as a link through to the quiz activity */
+        .quiz-name-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .quiz-name-link:hover,
+        .quiz-name-link:focus {
+            text-decoration: underline;
+        }
+
         .quiz-info {
             display: flex;
             align-items: center;
@@ -7403,6 +7520,23 @@ function renderHierarchyStudentReport($reportData)
         // Parse the injected JSON data
         const hierarchyReportData = <?php echo $reportJson; ?>;
 
+        // Base URL used to link a quiz name straight to the quiz activity.
+        const hierarchyQuizViewBaseUrl = <?php global $CFG; echo json_encode($CFG->wwwroot . '/mod/quiz/view.php'); ?>;
+
+        // Build the link to a quiz. Prefer the course module id, fall back to the quiz instance id.
+        function hierarchyBuildQuizViewUrl(quiz) {
+            if (!quiz) {
+                return null;
+            }
+            if (quiz.cmid) {
+                return hierarchyQuizViewBaseUrl + '?id=' + encodeURIComponent(quiz.cmid);
+            }
+            if (quiz.quiz_id) {
+                return hierarchyQuizViewBaseUrl + '?q=' + encodeURIComponent(quiz.quiz_id);
+            }
+            return null;
+        }
+
         function hierarchyDetermineStatus(performance) {
             if (performance >= 80) {
                 return {
@@ -7452,11 +7586,24 @@ function renderHierarchyStudentReport($reportData)
             quizRow.className = 'hierarchy-quiz-row';
             quizRow.style.paddingLeft = ((level + 1) * 20) + 'px';
 
-            // Quiz Name (decoded)
+            // Quiz Name (decoded, linked to the quiz activity when we know which one it is)
             const nameCell = document.createElement('div');
             nameCell.style.flex = '2';
             // Decode any entities (so "HCF &amp; LCM" → "HCF & LCM")
-            nameCell.textContent = decodeHtml(quiz.name || 'Quiz');
+            const quizDisplayName = decodeHtml(quiz.name || 'Quiz');
+            const quizUrl = hierarchyBuildQuizViewUrl(quiz);
+            if (quizUrl) {
+                const nameLink = document.createElement('a');
+                nameLink.className = 'quiz-name-link';
+                nameLink.href = quizUrl;
+                nameLink.title = 'Open this quiz';
+                nameLink.textContent = quizDisplayName;
+                // Don't let the click bubble up into the section row toggle.
+                nameLink.onclick = (e) => e.stopPropagation();
+                nameCell.appendChild(nameLink);
+            } else {
+                nameCell.textContent = quizDisplayName;
+            }
             quizRow.appendChild(nameCell);
 
             // Average Performance: colored chip

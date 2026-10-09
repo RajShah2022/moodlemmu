@@ -494,7 +494,57 @@ class quiz_attempt_data_processor {
         
         return $categories;
     }
-    
+
+    /**
+     * Group all questions directly by tag combinations (no category layer)
+     */
+    public function group_all_by_tags($questions) {
+        $tag_groups = [];
+
+        foreach ($questions as $question) {
+            $tag_key = !empty($question->tag_combination) ? $question->tag_combination : 'No Tags';
+
+            if (!isset($tag_groups[$tag_key])) {
+                $tag_groups[$tag_key] = [
+                    'name' => $tag_key,
+                    'total_questions' => 0,
+                    'correct_answers' => 0,
+                    'wrong_answers' => 0,
+                    'total_marks' => 0,
+                    'earned_marks' => 0,
+                    'percentage' => 0,
+                    'questions' => [],
+                ];
+            }
+
+            $tag_groups[$tag_key]['questions'][] = $question;
+            $tag_groups[$tag_key]['total_questions']++;
+            $tag_groups[$tag_key]['total_marks'] += $question->maxmark ?? 1;
+
+            $fraction = $question->fraction ?? 0;
+            $tag_groups[$tag_key]['earned_marks'] += $fraction * ($question->maxmark ?? 1);
+
+            if ($fraction >= 0.5) {
+                $tag_groups[$tag_key]['correct_answers']++;
+            } else {
+                $tag_groups[$tag_key]['wrong_answers']++;
+            }
+        }
+
+        // Calculate percentages
+        foreach ($tag_groups as &$group) {
+            if ($group['total_questions'] > 0) {
+                $group['percentage'] = round(
+                    ($group['correct_answers'] / $group['total_questions']) * 100,
+                    1
+                );
+            }
+        }
+        unset($group);
+
+        return $tag_groups;
+    }
+
     /**
      * Enhanced overall statistics calculation
      */

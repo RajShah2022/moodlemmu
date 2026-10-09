@@ -29,6 +29,7 @@ require_once $CFG->dirroot . '/grade/report/user/lib.php';
 require_once '../../../vendor/autoload.php'; // Ensure OpenAI SDK is loaded
 require_once($CFG->dirroot . '/grade/report/ai/locallib.php');
 require_once('randombagreport.php');
+require_once('randombagview.php');
 require_once('quizdataprocessor.php');
 
 $openai_api_key = $CFG->openai_api_key;
@@ -442,6 +443,30 @@ if (has_capability('moodle/grade:viewall', $context)) {
             }
         }
     }
+
+    // Random Bag Test report for one of the teacher's classes: the class average, or one student of the class.
+    if (optional_param('fetch', '', PARAM_ALPHANUMEXT) === 'random' && gradereport_user_random_bag_teacher_enabled($courseid)) {
+        $groupid = optional_param('class_id', 0, PARAM_INT);
+        if (!isset($classes[$groupid])) {
+            echo $OUTPUT->notification('Select one of your classes first.', 'notifyerror');
+            echo $OUTPUT->footer();
+            exit;
+        }
+        $class_students = gradereport_user_get_class_students($courseid, $groupid);
+        $rbstudentid = optional_param('rbstudent', 0, PARAM_INT);
+        if ($rbstudentid) {
+            if (!isset($class_students[$rbstudentid])) {
+                echo $OUTPUT->notification('This student is not in the selected class.', 'notifyerror');
+                echo $OUTPUT->footer();
+                exit;
+            }
+            gradereport_user_random_bag_page($courseid, [$rbstudentid => $class_students[$rbstudentid]]);
+        } else {
+            gradereport_user_random_bag_page($courseid, $class_students, $classes[$groupid]->groupname, ['class_id' => $groupid]);
+        }
+        exit;
+    }
+
     // Dropdown to select class
     if (!isset($_GET['class_id']) || empty($_GET['id'])): ?>
         <style>
@@ -735,6 +760,9 @@ if (has_capability('moodle/grade:viewall', $context)) {
             echo '<option value="' . $class->groupid . '" ' . $selected . '>' . $class->groupname . '</option>';
         }
         echo '</select>';
+        if (gradereport_user_random_bag_teacher_enabled($courseid)) {
+            echo '<button type="submit" name="fetch" value="random" class="btn btn-secondary" style="margin-left: 10px;">Generate Random Report</button>';
+        }
         echo '</form>';
         echo '</div>';
 
@@ -746,7 +774,9 @@ if (has_capability('moodle/grade:viewall', $context)) {
         }
 
         // Query to get all the students in the class.
-        $students_sql_query = "
+        $excluded_roles = "('teacher', 'editingteacher', 'hod_course', 'administrator', 'manager')";                                                 
+                                          
+        $students_sql_query = "                                                       
             SELECT DISTINCT
                 u.id AS studentid,
                 u.firstname,
@@ -760,14 +790,26 @@ if (has_capability('moodle/grade:viewall', $context)) {
             JOIN {context} ctx ON ctx.id = ra.contextid
             JOIN {role} r ON r.id = ra.roleid
             WHERE g.id = :groupid
-            AND g.courseid = :courseid
-            AND r.name = 'Student'
+            AND g.courseid = :courseid1
+            AND r.archetype = 'student'
             AND ctx.contextlevel = 50
+            AND ctx.instanceid = :courseid2
+            AND NOT EXISTS (
+                SELECT 1
+                FROM {role_assignments} ra2
+                JOIN {role} r2 ON r2.id = ra2.roleid
+                WHERE ra2.userid = u.id
+                AND ra2.contextid = ctx.id
+                AND r2.archetype != 'student'
+            )
+            ORDER BY u.id                                                           
         ";
 
         $params = [
             'groupid' => $_GET['class_id'],
-            'courseid' => $courseid
+            'courseid1' => $courseid,
+            'courseid2' => $courseid,                                                 
+            'courseid3' => $courseid,
         ];
 
         $recordset = $DB->get_records_sql($students_sql_query, $params);
@@ -1295,1139 +1337,6 @@ if (has_capability('moodle/grade:viewall', $context)) {
         echo '</div>';
     }
 
-    if (isset($_GET['fetch']) && $_GET['fetch'] === 'past-year-paper' && !empty($_GET['id'])) {
-        // Enhanced dummy data with topic-based structure
-        $dummyData = [
-            [
-                'Topic' => 'Integers',
-                'Total Questions' => 4,
-                'Right' => 2,
-                'Wrong' => 2,
-                'Percentage' => 50,
-                'questions' => [
-                    ['question' => 'Identify the value of A, B, C, and D in the given number line.', 'status' => 'correct', 'your_answer' => 'A = 2, B = -3, C = 5, D = -8', 'correct_answer' => 'A = 2, B = -3, C = 5, D = -8'],
-                    ['question' => 'Calculate the net effect of income and expenses: +100, -50, +30, -20.', 'status' => 'correct', 'your_answer' => 'Net Effect = 60', 'correct_answer' => 'Net Effect = 60'],
-                    ['question' => 'Points gained and lost are 50 and -30. What is the final score?', 'status' => 'wrong', 'your_answer' => 'Final Score = 80', 'correct_answer' => 'Final Score = 20'],
-                    ['question' => 'Water level change: +20m, -15m, +10m. What is the net change?', 'status' => 'wrong', 'your_answer' => 'Net Change = 5m', 'correct_answer' => 'Net Change = 15m'],
-                ]
-            ],
-            [
-                'Topic' => 'Fractions',
-                'Total Questions' => 3,
-                'Right' => 2,
-                'Wrong' => 1,
-                'Percentage' => 67,
-                'questions' => [
-                    ['question' => 'Arrange the following fractions in descending order: 3/5, 3/11, 3/2, 3/7', 'status' => 'correct', 'your_answer' => '3/2, 3/5, 3/7, 3/11', 'correct_answer' => '3/2, 3/5, 3/7, 3/11'],
-                    ['question' => 'Simplify the fraction: 12/16', 'status' => 'correct', 'your_answer' => '3/4', 'correct_answer' => '3/4'],
-                    ['question' => 'Add the fractions: 1/4 + 2/5', 'status' => 'wrong', 'your_answer' => '3/9', 'correct_answer' => '13/20'],
-                ]
-            ],
-            [
-                'Topic' => 'Decimals',
-                'Total Questions' => 3,
-                'Right' => 0,
-                'Wrong' => 3,
-                'Percentage' => 0,
-                'questions' => [
-                    ['question' => 'Round off 534.9475 to the nearest whole number.', 'status' => 'wrong', 'your_answer' => '534', 'correct_answer' => '535'],
-                    ['question' => 'Round off 1049.4993 to the nearest hundredth.', 'status' => 'wrong', 'your_answer' => '1049.49', 'correct_answer' => '1049.50'],
-                    ['question' => 'Arrange the following decimals in descending order: 5.931, 5.8592, 5.8299, 5.952, 5.7272', 'status' => 'wrong', 'your_answer' => '5.931, 5.952, 5.8592, 5.8299, 5.7272', 'correct_answer' => '5.952, 5.931, 5.8592, 5.8299, 5.7272'],
-                ]
-            ]
-        ];
-    
-        // Calculate overall statistics
-        $totalQuestions = array_sum(array_column($dummyData, 'Total Questions'));
-        $totalRight = array_sum(array_column($dummyData, 'Right'));
-        $totalWrong = array_sum(array_column($dummyData, 'Wrong'));
-        $overallPercentage = round(($totalRight / $totalQuestions) * 100, 1);
-        
-        echo '<!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Exam Report</title>
-            <style>
-                * {
-                    margin: 0;
-                    padding: 0;
-                    box-sizing: border-box;
-                }
-                
-                body {
-                    min-height: 100vh;
-                    padding: 20px;
-                }
-                
-                .container {
-                    max-width: 1200px;
-                    margin: 0 auto;
-                    background: rgba(255, 255, 255, 0.95);
-                    backdrop-filter: blur(10px);
-                    border-radius: 20px;
-                    padding: 40px;
-                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-                    animation: slideUp 0.6s ease-out;
-                }
-                
-                @keyframes slideUp {
-                    from {
-                        opacity: 0;
-                        transform: translateY(30px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-                
-                .header {
-                    text-align: center;
-                    margin-bottom: 40px;
-                }
-                
-                .title {
-                    font-size: 2.5rem;
-                    font-weight: 700;
-                    background: linear-gradient(135deg, #379488, #379488);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    background-clip: text;
-                    margin-bottom: 10px;
-                }
-                
-                .subtitle {
-                    color: #379488;
-                    font-size: 1.1rem;
-                    font-weight: 500;
-                }
-                
-                .stats-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                    gap: 20px;
-                    margin-bottom: 40px;
-                }
-                
-                .stat-card {
-                    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-                    border-radius: 16px;
-                    padding: 24px;
-                    text-align: center;
-                    border: 1px solid rgba(255, 255, 255, 0.2);
-                    transition: transform 0.3s ease, box-shadow 0.3s ease;
-                }
-                
-                .stat-card:hover {
-                    transform: translateY(-5px);
-                    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-                }
-                
-                .stat-number {
-                    font-size: 2rem;
-                    font-weight: 700;
-                    color: #1e293b;
-                    margin-bottom: 8px;
-                }
-                
-                .stat-label {
-                    color: #64748b;
-                    font-weight: 500;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                    font-size: 0.9rem;
-                }
-                
-                .table-container {
-                    background: white;
-                    border-radius: 16px;
-                    overflow: hidden;
-                    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-                    border: 1px solid #e5e7eb;
-                }
-                
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                }
-                
-                .table-header {
-                    background: linear-gradient(135deg, #4f46e5, #7c3aed);
-                    color: white;
-                }
-                
-                .table-header th {
-                    padding: 20px 24px;
-                    text-align: left;
-                    font-weight: 600;
-                    font-size: 0.95rem;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-                
-                .topic-row {
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    border-bottom: 1px solid #f1f5f9;
-                }
-                
-                .topic-row:hover {
-                    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-                    transform: translateX(4px);
-                }
-                
-                .topic-row.expanded {
-                    background: linear-gradient(135deg, #eff6ff, #dbeafe);
-                }
-                
-                .topic-row td {
-                    padding: 20px 24px;
-                    font-weight: 500;
-                    color: #374151;
-                    position: relative;
-                }
-                
-                .percentage-cell {
-                    font-weight: 700;
-                    font-size: 1.1rem;
-                }
-                
-                .percentage-excellent { color: #059669; }
-                .percentage-good { color: #0284c7; }
-                .percentage-average { color: #d97706; }
-                .percentage-poor { color: #dc2626; }
-                
-                .expand-indicator {
-                    float: right;
-                    transition: transform 0.3s ease;
-                    color: #9ca3af;
-                    font-weight: bold;
-                }
-                
-                .topic-row.expanded .expand-indicator {
-                    transform: rotate(90deg);
-                }
-                
-                .questions-container {
-                    display: none;
-                    background: #f8fafc;
-                    animation: expandDown 0.4s ease-out;
-                }
-                
-                .questions-container.show {
-                    display: block;
-                }
-                
-                @keyframes expandDown {
-                    from {
-                        opacity: 0;
-                        max-height: 0;
-                    }
-                    to {
-                        opacity: 1;
-                        max-height: 500px;
-                    }
-                }
-                
-                .questions-wrapper {
-                    padding: 30px;
-                    border-top: 2px solid #e2e8f0;
-                }
-                
-                .questions-title {
-                    font-size: 1.2rem;
-                    font-weight: 600;
-                    color: #1e293b;
-                    margin-bottom: 20px;
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                }
-                
-                .question-item {
-                    background: white;
-                    border-radius: 12px;
-                    padding: 20px;
-                    margin-bottom: 16px;
-                    border-left: 4px solid transparent;
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-                    transition: all 0.3s ease;
-                }
-                
-                .question-item:hover {
-                    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-                    transform: translateY(-2px);
-                }
-                
-                .question-item.correct {
-                    border-left-color: #10b981;
-                    background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
-                }
-                
-                .question-item.wrong {
-                    border-left-color: #ef4444;
-                    background: linear-gradient(135deg, #fef2f2, #fef7f7);
-                }
-                
-                .question-text {
-                    font-weight: 600;
-                    color: #1f2937;
-                    margin-bottom: 12px;
-                    font-size: 1rem;
-                }
-                
-                .answer-row {
-                    display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 8px;
-                    font-size: 0.9rem;
-                }
-                
-                .answer-label {
-                    font-weight: 500;
-                    color: #6b7280;
-                }
-                
-                .answer-value {
-                    font-weight: 600;
-                }
-                
-                .correct .answer-value {
-                    color: #059669;
-                }
-                
-                .wrong .answer-value {
-                    color: #dc2626;
-                }
-                
-                .status-badge {
-                    display: inline-block;
-                    padding: 4px 12px;
-                    border-radius: 20px;
-                    font-size: 0.8rem;
-                    font-weight: 600;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-                
-                .status-correct {
-                    background: #d1fae5;
-                    color: #065f46;
-                }
-                
-                .status-wrong {
-                    background: #fee2e2;
-                    color: #991b1b;
-                }
-                
-                .topic-icon {
-                    width: 12px;
-                    height: 12px;
-                    border-radius: 50%;
-                    display: inline-block;
-                    margin-right: 8px;
-                }
-                
-                .no-questions {
-                    text-align: center;
-                    color: #9ca3af;
-                    font-style: italic;
-                    padding: 20px;
-                }
-                
-                @media (max-width: 768px) {
-                    .container {
-                        padding: 20px;
-                        margin: 10px;
-                    }
-                    
-                    .title {
-                        font-size: 2rem;
-                    }
-                    
-                    .stats-grid {
-                        grid-template-columns: repeat(2, 1fr);
-                        gap: 15px;
-                    }
-                    
-                    .stat-card {
-                        padding: 16px;
-                    }
-                    
-                    .topic-row td,
-                    .table-header th {
-                        padding: 16px 12px;
-                        font-size: 0.9rem;
-                    }
-                    
-                    .question-item {
-                        padding: 16px;
-                    }
-                }
-            </style>
-        </head>
-        <body>';
-        
-        echo '<div class="container">';
-        echo '<div class="header">';
-        echo '<h1 class="title">Ramdom Bag Quiz Report</h1>';
-        echo '<p class="title">Test on Integers, Fractions and Decimals - Non Calculator</p>';
-
-        echo '<p class="subtitle">Detailed analysis of your random bag quiz performance</p>';
-        echo '</div>';
-        // Overall Statistics Cards
-        echo '<div class="stats-grid">';
-        echo '<div class="stat-card">';
-        echo '<div class="stat-number">' . $totalQuestions . '</div>';
-        echo '<div class="stat-label">Total Questions</div>';
-        echo '</div>';
-        echo '<div class="stat-card">';
-        echo '<div class="stat-number" style="color: #059669;">' . $totalRight . '</div>';
-        echo '<div class="stat-label">Correct Answers</div>';
-        echo '</div>';
-        echo '<div class="stat-card">';
-        echo '<div class="stat-number" style="color: #dc2626;">' . $totalWrong . '</div>';
-        echo '<div class="stat-label">Wrong Answers</div>';
-        echo '</div>';
-        echo '<div class="stat-card">';
-        echo '<div class="stat-number" style="color: #7c3aed;">' . $overallPercentage . '%</div>';
-        echo '<div class="stat-label">Overall Score</div>';
-        echo '</div>';
-        echo '</div>';
-        
-        echo '<div class="table-container">';
-        echo '<table>';
-        echo '<thead class="table-header">';
-        echo '<tr>';
-        echo '<th>Category Name</th>';
-        echo '<th>Total Questions</th>';
-        echo '<th>Right</th>';
-        echo '<th>Wrong</th>';
-        echo '<th>Percentage</th>';
-        echo '</tr>';
-        echo '</thead>';
-        echo '<tbody>';
-    
-        // Loop through the dummy data and display it in the table
-        foreach ($dummyData as $index => $row) {
-            $percentageClass = '';
-            if ($row['Percentage'] >= 90) $percentageClass = 'percentage-excellent';
-            elseif ($row['Percentage'] >= 75) $percentageClass = 'percentage-good';
-            elseif ($row['Percentage'] >= 60) $percentageClass = 'percentage-average';
-            else $percentageClass = 'percentage-poor';
-            
-            echo '<tr class="topic-row" onclick="toggleQuestions(' . $index . ')">';
-            echo '<td><span class="topic-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);"></span>' . $row['Topic'] . '<span class="expand-indicator">▶</span></td>';
-            echo '<td>' . $row['Total Questions'] . '</td>';
-            echo '<td style="color: #059669; font-weight: 600;">' . $row['Right'] . '</td>';
-            echo '<td style="color: #dc2626; font-weight: 600;">' . $row['Wrong'] . '</td>';
-            echo '<td class="percentage-cell ' . $percentageClass . '">' . $row['Percentage'] . '%</td>';
-            echo '</tr>';
-            
-            // Questions container (initially hidden)
-            echo '<tr class="questions-container" id="questions-' . $index . '">';
-            echo '<td colspan="5">';
-            echo '<div class="questions-wrapper">';
-            echo '<div class="questions-title">';
-            echo '<span class="topic-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);"></span>';
-            echo 'Questions in ' . $row['Topic'];
-            echo '</div>';
-            
-            if (!empty($row['questions'])) {
-                foreach ($row['questions'] as $question) {
-                    $statusClass = $question['status'] === 'correct' ? 'correct' : 'wrong';
-                    echo '<div class="question-item ' . $statusClass . '">';
-                    echo '<div class="question-text">' . $question['question'] . '</div>';
-                    echo '<div class="answer-row">';
-                    echo '<span class="answer-label">Your Answer:</span>';
-                    echo '<span class="answer-value">' . $question['your_answer'] . '</span>';
-                    echo '</div>';
-                    echo '<div class="answer-row">';
-                    echo '<span class="answer-label">Correct Answer:</span>';
-                    echo '<span class="answer-value">' . $question['correct_answer'] . '</span>';
-                    echo '</div>';
-                    echo '<div style="margin-top: 12px;">';
-                    echo '<span class="status-badge status-' . $question['status'] . '">' . ucfirst($question['status']) . '</span>';
-                    echo '</div>';
-                    echo '</div>';
-                }
-            } else {
-                echo '<div class="no-questions">No questions available for this topic.</div>';
-            }
-            
-            echo '</div>';
-            echo '</td>';
-            echo '</tr>';
-        }
-    
-        echo '</tbody>';
-        echo '</table>';
-        echo '</div>';
-        echo '</div>';
-        
-        echo '<script>
-             function toggleQuestionsV2(index) {
-        const questionsRow = document.getElementById("questions-v2-" + index);
-        const topicRow = questionsRow.previousElementSibling;
-        const expandIndicator = topicRow.querySelector(".expand-indicator");
-        
-        if (questionsRow.classList.contains("show")) {
-            questionsRow.classList.remove("show");
-            questionsRow.style.display = "none";
-            topicRow.classList.remove("expanded");
-            expandIndicator.style.transform = "rotate(0deg)";
-        } else {
-            // Close other open rows (only for this report)
-            document.querySelectorAll("#questions-v2-0, #questions-v2-1, #questions-v2-2, #questions-v2-3").forEach(row => {
-                if (row && row.classList.contains("show")) {
-                    row.classList.remove("show");
-                    row.style.display = "none";
-                    row.previousElementSibling.classList.remove("expanded");
-                    row.previousElementSibling.querySelector(".expand-indicator").style.transform = "rotate(0deg)";
-                }
-            });
-            
-            questionsRow.style.display = "table-row";
-            setTimeout(() => {
-                questionsRow.classList.add("show");
-            }, 10);
-            topicRow.classList.add("expanded");
-            expandIndicator.style.transform = "rotate(90deg)";
-        }
-    }
-            
-            // Add smooth scroll animations
-            document.addEventListener("DOMContentLoaded", function() {
-                const rows = document.querySelectorAll(".topic-row");
-                rows.forEach((row, index) => {
-                    row.style.animation = `slideUp 0.6s ease-out ${index * 0.1}s both`;
-                });
-            });
-        </script>';
-        
-        echo '</body></html>';
-
-
-        echo '<!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Exam Report</title>
-            <style>
-                * {
-                    margin: 0;
-                    padding: 0;
-                    box-sizing: border-box;
-                }
-                
-                body {
-                    min-height: 100vh;
-                    padding: 20px;
-                }
-                
-                .container {
-                    max-width: 1200px;
-                    margin: 0 auto;
-                    background: rgba(255, 255, 255, 0.95);
-                    backdrop-filter: blur(10px);
-                    border-radius: 20px;
-                    padding: 40px;
-                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-                    animation: slideUp 0.6s ease-out;
-                }
-                
-                @keyframes slideUp {
-                    from {
-                        opacity: 0;
-                        transform: translateY(30px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-                
-                .header {
-                    text-align: center;
-                    margin-bottom: 40px;
-                }
-                
-                .title {
-                    font-size: 2.5rem;
-                    font-weight: 700;
-                    background: linear-gradient(135deg, #379488, #379488);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    background-clip: text;
-                    margin-bottom: 10px;
-                }
-                
-                .subtitle {
-                    color: #379488;
-                    font-size: 1.1rem;
-                    font-weight: 500;
-                }
-                
-                .stats-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                    gap: 20px;
-                    margin-bottom: 40px;
-                }
-                
-                .stat-card {
-                    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-                    border-radius: 16px;
-                    padding: 24px;
-                    text-align: center;
-                    border: 1px solid rgba(255, 255, 255, 0.2);
-                    transition: transform 0.3s ease, box-shadow 0.3s ease;
-                }
-                
-                .stat-card:hover {
-                    transform: translateY(-5px);
-                    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-                }
-                
-                .stat-number {
-                    font-size: 2rem;
-                    font-weight: 700;
-                    color: #1e293b;
-                    margin-bottom: 8px;
-                }
-                
-                .stat-label {
-                    color: #64748b;
-                    font-weight: 500;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                    font-size: 0.9rem;
-                }
-                
-                .table-container {
-                    background: white;
-                    border-radius: 16px;
-                    overflow: hidden;
-                    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-                    border: 1px solid #e5e7eb;
-                }
-                
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                }
-                
-                .table-header {
-                    background: linear-gradient(135deg, #4f46e5, #7c3aed);
-                    color: white;
-                }
-                
-                .table-header th {
-                    padding: 20px 24px;
-                    text-align: left;
-                    font-weight: 600;
-                    font-size: 0.95rem;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-                
-                .topic-row {
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    border-bottom: 1px solid #f1f5f9;
-                }
-                
-                .topic-row:hover {
-                    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-                    transform: translateX(4px);
-                }
-                
-                .topic-row.expanded {
-                    background: linear-gradient(135deg, #eff6ff, #dbeafe);
-                }
-                
-                .topic-row td {
-                    padding: 20px 24px;
-                    font-weight: 500;
-                    color: #374151;
-                    position: relative;
-                }
-                
-                .percentage-cell {
-                    font-weight: 700;
-                    font-size: 1.1rem;
-                }
-                
-                .percentage-excellent { color: #059669; }
-                .percentage-good { color: #0284c7; }
-                .percentage-average { color: #d97706; }
-                .percentage-poor { color: #dc2626; }
-                
-                .expand-indicator {
-                    float: right;
-                    transition: transform 0.3s ease;
-                    color: #9ca3af;
-                    font-weight: bold;
-                }
-                
-                .topic-row.expanded .expand-indicator {
-                    transform: rotate(90deg);
-                }
-                
-                .questions-container {
-                    display: none;
-                    background: #f8fafc;
-                    animation: expandDown 0.4s ease-out;
-                }
-                
-                .questions-container.show {
-                    display: block;
-                }
-                
-                @keyframes expandDown {
-                    from {
-                        opacity: 0;
-                        max-height: 0;
-                    }
-                    to {
-                        opacity: 1;
-                        max-height: 500px;
-                    }
-                }
-                
-                .questions-wrapper {
-                    padding: 30px;
-                    border-top: 2px solid #e2e8f0;
-                }
-                
-                .questions-title {
-                    font-size: 1.2rem;
-                    font-weight: 600;
-                    color: #1e293b;
-                    margin-bottom: 20px;
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                }
-                
-                .question-item {
-                    background: white;
-                    border-radius: 12px;
-                    padding: 20px;
-                    margin-bottom: 16px;
-                    border-left: 4px solid transparent;
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-                    transition: all 0.3s ease;
-                }
-                
-                .question-item:hover {
-                    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-                    transform: translateY(-2px);
-                }
-                
-                .question-item.correct {
-                    border-left-color: #10b981;
-                    background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
-                }
-                
-                .question-item.wrong {
-                    border-left-color: #ef4444;
-                    background: linear-gradient(135deg, #fef2f2, #fef7f7);
-                }
-                
-                .question-text {
-                    font-weight: 600;
-                    color: #1f2937;
-                    margin-bottom: 12px;
-                    font-size: 1rem;
-                }
-                
-                .answer-row {
-                    display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 8px;
-                    font-size: 0.9rem;
-                }
-                
-                .answer-label {
-                    font-weight: 500;
-                    color: #6b7280;
-                }
-                
-                .answer-value {
-                    font-weight: 600;
-                }
-                
-                .correct .answer-value {
-                    color: #059669;
-                }
-                
-                .wrong .answer-value {
-                    color: #dc2626;
-                }
-                
-                .status-badge {
-                    display: inline-block;
-                    padding: 4px 12px;
-                    border-radius: 20px;
-                    font-size: 0.8rem;
-                    font-weight: 600;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-                
-                .status-correct {
-                    background: #d1fae5;
-                    color: #065f46;
-                }
-                
-                .status-wrong {
-                    background: #fee2e2;
-                    color: #991b1b;
-                }
-                
-                .topic-icon {
-                    width: 12px;
-                    height: 12px;
-                    border-radius: 50%;
-                    display: inline-block;
-                    margin-right: 8px;
-                }
-                
-                .no-questions {
-                    text-align: center;
-                    color: #9ca3af;
-                    font-style: italic;
-                    padding: 20px;
-                }
-                
-                @media (max-width: 768px) {
-                    .container {
-                        padding: 20px;
-                        margin: 10px;
-                    }
-                    
-                    .title {
-                        font-size: 2rem;
-                    }
-                    
-                    .stats-grid {
-                        grid-template-columns: repeat(2, 1fr);
-                        gap: 15px;
-                    }
-                    
-                    .stat-card {
-                        padding: 16px;
-                    }
-                    
-                    .topic-row td,
-                    .table-header th {
-                        padding: 16px 12px;
-                        font-size: 0.9rem;
-                    }
-                    
-                    .question-item {
-                        padding: 16px;
-                    }
-                         .topic-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        
-        .topic-main {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .topic-tag {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-        
-        .topic-tag.secondary {
-            background: linear-gradient(135deg, #a78bfa, #c084fc);
-        }
-        
-        .topic-tag.tertiary {
-            background: linear-gradient(135deg, #60a5fa, #3b82f6);
-        }
-
-                
-                    }
-                    
-            </style>
-        </head>
-        <body>';
-        $dummyData1 = [
-            [
-                'Topic' => ['Algebra', 'Linear Equations'],
-                'Total Questions' => 15,
-                'Right' => 12,
-                'Wrong' => 3,
-                'Percentage' => 80,
-                'questions' => [
-                    ['question' => 'Solve for x: 3x + 7 = 16', 'status' => 'correct', 'your_answer' => 'x = 3', 'correct_answer' => 'x = 3'],
-                    ['question' => 'Solve for y: 2y - 5 = 3y + 7', 'status' => 'correct', 'your_answer' => 'y = -12', 'correct_answer' => 'y = -12'],
-                    ['question' => 'Factorize: x² - 5x + 6', 'status' => 'wrong', 'your_answer' => '(x-3)(x-2)', 'correct_answer' => '(x-2)(x-3)'],
-                    ['question' => 'Solve for x: 5x - 3 = 2x + 9', 'status' => 'correct', 'your_answer' => 'x = 4', 'correct_answer' => 'x = 4'],
-                    ['question' => 'Simplify: 3(x + 2) - 2(x - 1)', 'status' => 'correct', 'your_answer' => 'x + 8', 'correct_answer' => 'x + 8'],
-                    ['question' => 'Solve for x: 4x + 1 = 3x - 5', 'status' => 'wrong', 'your_answer' => 'x = -6', 'correct_answer' => 'x = -6'],
-                    ['question' => 'Find x: 7x - 4 = 2x + 16', 'status' => 'correct', 'your_answer' => 'x = 4', 'correct_answer' => 'x = 4'],
-                    ['question' => 'Solve: 2(x - 3) = 4x + 2', 'status' => 'correct', 'your_answer' => 'x = -4', 'correct_answer' => 'x = -4'],
-                    ['question' => 'Expand: (x + 3)(x - 2)', 'status' => 'correct', 'your_answer' => 'x² + x - 6', 'correct_answer' => 'x² + x - 6'],
-                    ['question' => 'Solve for x: 6x + 5 = 4x - 3', 'status' => 'wrong', 'your_answer' => 'x = -4', 'correct_answer' => 'x = -4'],
-                    ['question' => 'Simplify: 2x + 3x - 5x', 'status' => 'correct', 'your_answer' => '0', 'correct_answer' => '0'],
-                    ['question' => 'Solve: 3x - 7 = 2x + 8', 'status' => 'correct', 'your_answer' => 'x = 15', 'correct_answer' => 'x = 15'],
-                    ['question' => 'Factor: x² - 9', 'status' => 'correct', 'your_answer' => '(x-3)(x+3)', 'correct_answer' => '(x-3)(x+3)'],
-                    ['question' => 'Solve: 5x + 2 = 3x - 4', 'status' => 'correct', 'your_answer' => 'x = -3', 'correct_answer' => 'x = -3'],
-                    ['question' => 'Simplify: (2x + 1)²', 'status' => 'correct', 'your_answer' => '4x² + 4x + 1', 'correct_answer' => '4x² + 4x + 1']
-                ]
-            ],
-            [
-                'Topic' => 'Geometry',
-                'Total Questions' => 10,
-                'Right' => 8,
-                'Wrong' => 2,
-                'Percentage' => 80,
-                'questions' => [
-                    ['question' => 'Find the area of a triangle with base 8 cm and height 6 cm.', 'status' => 'correct', 'your_answer' => '24 cm²', 'correct_answer' => '24 cm²'],
-                    ['question' => 'Find the volume of a cylinder with radius 3 cm and height 10 cm.', 'status' => 'correct', 'your_answer' => '282.74 cm³', 'correct_answer' => '282.74 cm³'],
-                    ['question' => 'Calculate the length of the hypotenuse in a right triangle with sides 5 cm and 12 cm.', 'status' => 'correct', 'your_answer' => '13 cm', 'correct_answer' => '13 cm'],
-                    ['question' => 'Find the area of a circle with radius 5 cm.', 'status' => 'correct', 'your_answer' => '78.54 cm²', 'correct_answer' => '78.54 cm²'],
-                    ['question' => 'What is the perimeter of a rectangle with length 12 cm and width 8 cm?', 'status' => 'correct', 'your_answer' => '40 cm', 'correct_answer' => '40 cm'],
-                    ['question' => 'Find the area of a parallelogram with base 10 cm and height 7 cm.', 'status' => 'wrong', 'your_answer' => '60 cm²', 'correct_answer' => '70 cm²'],
-                    ['question' => 'Calculate the surface area of a cube with side length 4 cm.', 'status' => 'correct', 'your_answer' => '96 cm²', 'correct_answer' => '96 cm²'],
-                    ['question' => 'Find the circumference of a circle with diameter 14 cm.', 'status' => 'correct', 'your_answer' => '43.96 cm', 'correct_answer' => '43.96 cm'],
-                    ['question' => 'What is the area of a square with side length 9 cm?', 'status' => 'wrong', 'your_answer' => '72 cm²', 'correct_answer' => '81 cm²'],
-                    ['question' => 'Find the volume of a rectangular prism with length 6 cm, width 4 cm, and height 3 cm.', 'status' => 'correct', 'your_answer' => '72 cm³', 'correct_answer' => '72 cm³']
-                ]
-            ],
-            [
-                'Topic' => 'Statistics',
-                'Total Questions' => 8,
-                'Right' => 6,
-                'Wrong' => 2,
-                'Percentage' => 75,
-                'questions' => [
-                    ['question' => 'The mean of 10, 20, 30, 40, 50 is?', 'status' => 'correct', 'your_answer' => '30', 'correct_answer' => '30'],
-                    ['question' => 'The standard deviation of the data 2, 4, 6, 8 is?', 'status' => 'wrong', 'your_answer' => '2', 'correct_answer' => '2.58'],
-                    ['question' => 'What is the median of 5, 10, 15, 20, 25?', 'status' => 'correct', 'your_answer' => '15', 'correct_answer' => '15'],
-                    ['question' => 'Find the mode of: 3, 7, 3, 9, 3, 5, 7', 'status' => 'correct', 'your_answer' => '3', 'correct_answer' => '3'],
-                    ['question' => 'What is the range of: 12, 8, 15, 6, 20?', 'status' => 'correct', 'your_answer' => '14', 'correct_answer' => '14'],
-                    ['question' => 'Calculate the mean of: 25, 30, 35, 40', 'status' => 'correct', 'your_answer' => '32.5', 'correct_answer' => '32.5'],
-                    ['question' => 'Find the median of: 4, 1, 7, 3, 9, 2', 'status' => 'wrong', 'your_answer' => '4', 'correct_answer' => '3.5'],
-                    ['question' => 'What is the variance of: 2, 4, 6?', 'status' => 'correct', 'your_answer' => '2.67', 'correct_answer' => '2.67']
-                ]
-            ],
-            [
-                'Topic' => ['Trigonometry', 'Angles'],
-                'Total Questions' => 12,
-                'Right' => 10,
-                'Wrong' => 2,
-                'Percentage' => 83,
-                'questions' => [
-                    ['question' => 'Find the sine of a 30° angle.', 'status' => 'correct', 'your_answer' => '0.5', 'correct_answer' => '0.5'],
-                    ['question' => 'The angle of elevation is 45°. What is the value of tan(45°)?', 'status' => 'correct', 'your_answer' => '1', 'correct_answer' => '1'],
-                    ['question' => 'Solve for x: cos(x) = 0.5', 'status' => 'wrong', 'your_answer' => 'x = 60°', 'correct_answer' => 'x = 60°'],
-                    ['question' => 'What is cos(60°)?', 'status' => 'correct', 'your_answer' => '0.5', 'correct_answer' => '0.5'],
-                    ['question' => 'Find tan(30°).', 'status' => 'correct', 'your_answer' => '0.577', 'correct_answer' => '0.577'],
-                    ['question' => 'What is sin(90°)?', 'status' => 'correct', 'your_answer' => '1', 'correct_answer' => '1'],
-                    ['question' => 'Find the value of sin²(45°) + cos²(45°).', 'status' => 'correct', 'your_answer' => '1', 'correct_answer' => '1'],
-                    ['question' => 'What is tan(60°)?', 'status' => 'correct', 'your_answer' => '1.732', 'correct_answer' => '1.732'],
-                    ['question' => 'Find cos(0°).', 'status' => 'correct', 'your_answer' => '1', 'correct_answer' => '1'],
-                    ['question' => 'What is sin(45°)?', 'status' => 'correct', 'your_answer' => '0.707', 'correct_answer' => '0.707'],
-                    ['question' => 'Solve: 2sin(x) = 1, where 0° ≤ x ≤ 90°', 'status' => 'wrong', 'your_answer' => 'x = 60°', 'correct_answer' => 'x = 30°'],
-                    ['question' => 'Find the value of cos(45°).', 'status' => 'correct', 'your_answer' => '0.707', 'correct_answer' => '0.707']
-                ]
-            ]
-        ];
-    
-        // Calculate overall statistics
-        $totalQuestions1 = array_sum(array_column($dummyData1, 'Total Questions'));
-        $totalRight1 = array_sum(array_column($dummyData1, 'Right'));
-        $totalWrong1 = array_sum(array_column($dummyData1, 'Wrong'));
-        $overallPercentage1 = round(($totalRight1 / $totalQuestions1) * 100, 1);
-        
-        echo '<div class="container">';
-        echo '<div class="header">';
-        echo '<h1 class="title">Past Year Paper Report</h1>';
-        echo '<p class="subtitle">Detailed analysis of your past year paper performance</p>';
-        echo '</div>';
-        
-        // Overall Statistics Cards
-        echo '<div class="stats-grid">';
-        echo '<div class="stat-card">';
-        echo '<div class="stat-number">' . $totalQuestions1 . '</div>';
-        echo '<div class="stat-label">Total Questions</div>';
-        echo '</div>';
-        echo '<div class="stat-card">';
-        echo '<div class="stat-number" style="color: #059669;">' . $totalRight1 . '</div>';
-        echo '<div class="stat-label">Correct Answers</div>';
-        echo '</div>';
-        echo '<div class="stat-card">';
-        echo '<div class="stat-number" style="color: #dc2626;">' . $totalWrong1. '</div>';
-        echo '<div class="stat-label">Wrong Answers</div>';
-        echo '</div>';
-        echo '<div class="stat-card">';
-        echo '<div class="stat-number" style="color: #7c3aed;">' . $overallPercentage1 . '%</div>';
-        echo '<div class="stat-label">Overall Score</div>';
-        echo '</div>';
-        echo '</div>';
-        
-        echo '<div class="table-container">';
-        echo '<table>';
-        echo '<thead class="table-header">';
-        echo '<tr>';
-        echo '<th>Topic</th>';
-        echo '<th>Total Questions</th>';
-        echo '<th>Right</th>';
-        echo '<th>Wrong</th>';
-        echo '<th>Percentage</th>';
-        echo '</tr>';
-        echo '</thead>';
-        echo '<tbody>';
-    
-        // Function to display topics as tags
-        function displayTopics($topics) {
-            $output = '<div class="topic-container">';
-            $output .= '<div class="topic-main">';
-            $output .= '<span class="topic-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);"></span>';
-            
-            if (is_array($topics)) {
-                foreach ($topics as $index => $topic) {
-                    $tagClass = '';
-                    if ($index == 1) $tagClass = ' secondary';
-                    elseif ($index == 2) $tagClass = ' tertiary';
-                    
-                    // Add separator before each tag except the first one
-                    if ($index > 0) {
-                        $output .= '<span class="topic-separator">-</span>';
-                    }
-                    
-                    $output .= '<span class="topic-tag' . $tagClass . '">' . $topic . '</span>';
-                }
-            } else {
-                $output .= '<span class="topic-tag">' . $topics . '</span>';
-            }
-            
-            $output .= '<span class="expand-indicator">▶</span>';
-            $output .= '</div>';
-            $output .= '</div>';
-            return $output;
-        }
-
-        // Loop through the dummy data and display it in the table
-        foreach ($dummyData1 as $index => $row) {
-            $percentageClass = '';
-            if ($row['Percentage'] >= 90) $percentageClass = 'percentage-excellent';
-            elseif ($row['Percentage'] >= 75) $percentageClass = 'percentage-good';
-            elseif ($row['Percentage'] >= 60) $percentageClass = 'percentage-average';
-            else $percentageClass = 'percentage-poor';
-            
-            echo '<tr class="topic-row" onclick="toggleQuestionsV2(' . $index . ')">';
-            echo '<td>' . displayTopics($row['Topic']) . '</td>';
-            echo '<td>' . $row['Total Questions'] . '</td>';
-            echo '<td style="color: #059669; font-weight: 600;">' . $row['Right'] . '</td>';
-            echo '<td style="color: #dc2626; font-weight: 600;">' . $row['Wrong'] . '</td>';
-            echo '<td class="percentage-cell ' . $percentageClass . '">' . $row['Percentage'] . '%</td>';
-            echo '</tr>';
-            
-            // Questions container (initially hidden)
-            echo '<tr class="questions-container" id="questions-v2-' . $index . '">';
-            echo '<td colspan="5">';
-            echo '<div class="questions-wrapper">';
-            echo '<div class="questions-title">';
-            echo '<span class="topic-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);"></span>';
-            $topicDisplay = is_array($row['Topic']) ? implode(', ', $row['Topic']) : $row['Topic'];
-            echo 'Questions in ' . $topicDisplay;
-            echo '</div>';
-            
-            if (!empty($row['questions'])) {
-                foreach ($row['questions'] as $question) {
-                    $statusClass = $question['status'] === 'correct' ? 'correct' : 'wrong';
-                    echo '<div class="question-item ' . $statusClass . '">';
-                    echo '<div class="question-text">' . $question['question'] . '</div>';
-                    echo '<div class="answer-row">';
-                    echo '<span class="answer-label">Your Answer:</span>';
-                    echo '<span class="answer-value">' . $question['your_answer'] . '</span>';
-                    echo '</div>';
-                    echo '<div class="answer-row">';
-                    echo '<span class="answer-label">Correct Answer:</span>';
-                    echo '<span class="answer-value">' . $question['correct_answer'] . '</span>';
-                    echo '</div>';
-                    echo '<div style="margin-top: 12px;">';
-                    echo '<span class="status-badge status-' . $question['status'] . '">' . ucfirst($question['status']) . '</span>';
-                    echo '</div>';
-                    echo '</div>';
-                }
-            } else {
-                echo '<div class="no-questions">No questions available for this topic.</div>';
-            }
-            
-            echo '</div>';
-            echo '</td>';
-            echo '</tr>';
-        }
-    
-        echo '</tbody>';
-        echo '</table>';
-        echo '</div>';
-        echo '</div>';
-        
-        echo '<script>
-            function toggleQuestions(index) {
-                const questionsRow = document.getElementById("questions-" + index);
-                const topicRow = questionsRow.previousElementSibling;
-                const expandIndicator = topicRow.querySelector(".expand-indicator");
-                
-                if (questionsRow.classList.contains("show")) {
-                    questionsRow.classList.remove("show");
-                    questionsRow.style.display = "none";
-                    topicRow.classList.remove("expanded");
-                    expandIndicator.style.transform = "rotate(0deg)";
-                } else {
-                    // Close other open rows
-                    document.querySelectorAll(".questions-container.show").forEach(row => {
-                        row.classList.remove("show");
-                        row.style.display = "none";
-                        row.previousElementSibling.classList.remove("expanded");
-                        row.previousElementSibling.querySelector(".expand-indicator").style.transform = "rotate(0deg)";
-                    });
-                    
-                    questionsRow.style.display = "table-row";
-                    setTimeout(() => {
-                        questionsRow.classList.add("show");
-                    }, 10);
-                    topicRow.classList.add("expanded");
-                    expandIndicator.style.transform = "rotate(90deg)";
-                }
-            }
-            
-            // Add smooth scroll animations
-            document.addEventListener("DOMContentLoaded", function() {
-                const rows = document.querySelectorAll(".topic-row");
-                rows.forEach((row, index) => {
-                    row.style.animation = `slideUp 0.6s ease-out ${index * 0.1}s both`;
-                });
-            });
-        </script>';
-        
-        echo '</body></html>';
-        exit;
-    }
-
-
     // Only call the API if the fetch parameter is explicitly set AI Insights
     if (isset($_GET['fetch']) && $_GET['fetch'] === '1' && !empty($_GET['id'])) {
         $student_id = $USER->id;
@@ -2777,1466 +1686,69 @@ if (has_capability('moodle/grade:viewall', $context)) {
     }
 
     if (isset($_GET['fetch']) && $_GET['fetch'] === 'random' && !empty($_GET['id'])) {
-        $student_id = $USER->id;
-        $courseid = $_GET['id'];
-        $course_structure = get_course_structure($courseid);
-        $mainSection = null;
-        foreach ($course_structure["sections"] as $section) {
-            if (strtolower($section["name"]) === strtolower("Random Bag Tests")) { ///change this
-                $mainSection = $section;
-                break;
-            }
-        }
-        if (!$mainSection) die("Random Bag Test not found.");
-        $children = $mainSection["children"];
-        
-        if(isset($_GET['fetch']) && $_GET['fetch'] === 'random' && !empty($_GET['id']) && $_GET['quiz_id']){
-            $student_id = $USER->id;
-            $quiz_cmid = $_GET['quiz_id'];
-            $courseid = $_GET['id'];
-            
-            // Initialize components with the enhanced renderer
-            require_once('integrated_quiz_renderer.php'); // Include the new integrated renderer
-            $renderer = new enhanced_quiz_question_renderer($PAGE, '');
-            $processor = new quiz_attempt_data_processor();
-            
-            // Get student information
-            $student = $DB->get_record('user', ['id' => $student_id]);
-            if (!$student) {
-                echo $OUTPUT->notification('Student not found.', 'notifyerror');
-                exit;
-            }
-            
-            // Get quiz information  
-            $quiz_sql = "
-                SELECT 
-                    q.id as quiz_id,
-                    q.name as quiz_name,
-                    q.intro,
-                    q.grade as max_grade,
-                    q.sumgrades,
-                    cm.id as cmid
-                FROM {quiz} q
-                JOIN {course_modules} cm ON cm.instance = q.id AND cm.module = (SELECT id FROM {modules} WHERE name = 'quiz')
-                WHERE cm.id = :quiz_cmid AND cm.course = :courseid
-            ";
-            
-            $quiz_info = $DB->get_record_sql($quiz_sql, [
-                'quiz_cmid' => $quiz_cmid,
-                'courseid' => $courseid
-            ]);
-            
-            if (!$quiz_info) {
-                echo $OUTPUT->notification('Quiz not found.', 'notifyerror');
-                exit;
-            }
-            
-            // Get student's latest quiz attempt
-            $latest_attempt = $DB->get_record_sql("
-                SELECT id as attempt_id, attempt, state, timestart, timefinish, sumgrades
-                FROM {quiz_attempts}
-                WHERE quiz = :quiz_id AND userid = :student_id AND preview = 0
-                ORDER BY attempt DESC
-                LIMIT 1
-            ", [
-                'quiz_id' => $quiz_info->quiz_id,
-                'student_id' => $student_id
-            ]);
-            
-            if (!$latest_attempt) {
-                echo '<div class="quiz-dashboard"><div class="no-data-message card">No quiz attempts found for this student.</div></div>';
-                exit;
-            }
-
-            // Use data processor to get comprehensive question data
-            $questions = $processor->get_attempt_questions($latest_attempt->attempt_id);
-
-            foreach ($questions as $question) {
-                if (empty($question->category_name)) {
-                    $question->category_name = 'Default Category';
-                }
-            }
-            
-            // Group questions by category
-            $categories = $processor->group_by_category($questions);
-            
-            // Calculate overall statistics
-            $overall_stats = $processor->calculate_overall_stats($categories);
-
-            // Determine color based on percentage
-            $percentage = $overall_stats['percentage'];
-            $score_color = '#EF4444'; // Default poor color
-
-            if ($percentage >= 80) {
-                $score_color = '#16A34A'; // Excellent (green)
-            } elseif ($percentage >= 40) {
-                $score_color = '#D97706'; // Average (orange)
-            }
-            // Calculate best and worst performing categories
-            $performance_highlights = [];
-
-            foreach ($categories as $category_name => $category_data) {
-                $performance_highlights[] = [
-                    'name' => $category_name,
-                    'percentage' => $category_data['percentage'],
-                    'correct_answers' => $category_data['correct_answers'],
-                    'total_questions' => $category_data['total_questions'],
-                    'wrong_answers' => $category_data['wrong_answers']
-                ];
-            }
-
-            // Sort by performance percentage
-            usort($performance_highlights, function($a, $b) {
-                return $b['percentage'] - $a['percentage'];
-            });
-
-            // Get top 3 best and bottom 3 worst (but only if we have enough data)
-            $best_categories = array_slice($performance_highlights, 0, 3);
-            $worst_categories = array_slice(array_reverse($performance_highlights), 0, 3);
-            ?>
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Quiz Performance Report - <?= htmlspecialchars($student->firstname . ' ' . $student->lastname) ?></title>
-                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-                <style>
-                    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap");
-
-                    :root {
-                        --primary-color: #0D9488;
-                        --secondary-color: #7b1fa2;
-                        --status-error: #FEE2E2;
-                        --status-error-text: #EF4444;
-                        --status-success: #DCFCE7;
-                        --status-success-text: #16A34A;
-                        --status-warning: #FEF3C7;
-                        --status-warning-text: #D97706;
-                        --text-color: #334155;
-                        --text-light: #64748B;
-                        --background-color: #F8FAFC;
-                        --border-color: #E2E8F0;
-                        --space-xs: 0.25rem;
-                        --space-sm: 0.5rem;
-                        --space-md: 1rem;
-                        --space-lg: 1.5rem;
-                        --space-xl: 2rem;
-                        --font-primary: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                    }
-
-                    * {
-                        margin: 0;
-                        padding: 0;
-                        box-sizing: border-box;
-                    }
-                    
-                    body {
-                        background-color: var(--background-color);
-                        font-family: var(--font-primary);
-                        color: var(--text-color);
-                        line-height: 1.5;
-                        min-height: 100vh;
-                    }
-                    
-                    .quiz-dashboard {
-                        max-width: 1200px;
-                        margin: 0 auto;
-                        padding: var(--space-xl);
-                    }
-
-                    /* Header */
-                    .header {
-                        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-                        color: white;
-                        padding: 30px 0;
-                        text-align: center;
-                        border-radius: 16px;
-                        margin-bottom: 10px;
-                        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-                    }
-
-                    .header h1 {
-                        font-size: 2.5rem;
-                        font-weight: 700;
-                        margin-bottom: 10px;
-                    }
-
-                    .header p {
-                        font-size: 1.1rem;
-                        opacity: 0.9;
-                        margin: 5px 0;
-                    }
-
-                    /* Cards */
-                    .card {
-                        background: white;
-                        border-radius: 16px;
-                        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 6px rgba(0, 0, 0, 0.02);
-                        padding: var(--space-xl);
-                        margin-bottom: var(--space-xl);
-                        transition: transform 0.2s ease, box-shadow 0.2s ease;
-                    }
-
-                    .card:hover {
-                        transform: translateY(-2px);
-                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.02);
-                    }
-
-                    /* Course Info Card */
-                    .course-info {
-                        border-top-left-radius: 0;
-                        border-top-right-radius: 0;
-                    }
-
-                    .report-h2 {
-                        display: flex;
-                        align-items: center;
-                        gap: var(--space-sm);
-                        color: var(--primary-color);
-                        border-bottom: 2px solid var(--border-color);
-                        padding-bottom: var(--space-md);
-                        margin-bottom: var(--space-lg);
-                        font-size: 1.5rem;
-                        font-weight: 600;
-                    }
-
-                    .info-grid {
-                        display: grid;
-                        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                        gap: 15px;
-                    }
-
-                    .info-item {
-                        background-color: #f0f4f8;
-                        padding: 12px;
-                        border-radius: 8px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: space-between;
-                        transition: all 0.3s ease;
-                        text-transform: capitalize;
-                    }
-
-                    .info-item:hover {
-                        background-color: #e6eaf0;
-                        transform: translateX(5px);
-                    }
-
-                    .info-item strong {
-                        color: var(--primary-color);
-                        font-weight: 600;
-                    }
-
-                    /* Performance Summary Card */
-                    .performance-summary .summary-content {
-                        background: white;
-                        border: 1px solid var(--border-color);
-                        border-left: 4px solid var(--primary-color);
-                        padding: var(--space-lg);
-                        border-radius: 8px;
-                        margin: var(--space-lg) 0;
-                    }
-
-                    .performance-summary .summary-content p {
-                        margin: 10px 0;
-                        line-height: 1.6;
-                        color: var(--text-light);
-                    }
-
-                    .performance-summary .summary-content strong {
-                        color: var(--text-color);
-                        font-weight: 600;
-                    }
-
-                    .text-large {
-                        font-size: 1rem;
-                        line-height: 1.6;
-                        color: var(--text-light);
-                    }
-
-                    /* Stats Grid */
-                    .stats-grid {
-                        display: grid;
-                        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                        gap: 20px;
-                        margin-bottom: 30px;
-                    }
-                    
-                    .stat-card {
-                        background: white;
-                        border-radius: 16px;
-                        padding: 24px;
-                        text-align: center;
-                        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-                        transition: transform 0.2s ease, box-shadow 0.2s ease;
-                    }
-
-                    .stat-card:hover {
-                        transform: translateY(-2px);
-                        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-                    }
-                    
-                    .stat-number {
-                        font-size: 2.5rem;
-                        font-weight: 700;
-                        margin-bottom: 8px;
-                    }
-                    
-                    .stat-label {
-                        color: var(--text-light);
-                        font-weight: 500;
-                        text-transform: uppercase;
-                        font-size: 0.85rem;
-                        letter-spacing: 0.5px;
-                    }
-
-                    /* Performance Color Guide */
-                    .performance-info .info-grid {
-                        grid-template-columns: repeat(3, 1fr);
-                        gap: 10px;
-                    }
-
-                    .performance-info .info-item {
-                        text-align: center;
-                        padding: 15px;
-                        border-radius: 8px;
-                        font-weight: bold;
-                        justify-content: center;
-                    }
-
-                    /* Categories Table */
-                    .categories-table {
-                        background: white;
-                        border-radius: 16px;
-                        overflow: hidden;
-                        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-                        margin-bottom: 20px;
-                    }
-
-                    .categories-table table {
-                        width: 100%;
-                        border-collapse: collapse;
-                    }
-
-                    .categories-table th {
-                        background: var(--primary-color);
-                        color: white;
-                        padding: 20px;
-                        text-align: left;
-                        font-weight: 600;
-                        font-size: 1rem;
-                    }
-
-                    .categories-table td {
-                        padding: 16px 20px;
-                        border-bottom: 1px solid var(--border-color);
-                        vertical-align: middle;
-                    }
-
-                    .category-row {
-                        cursor: pointer;
-                        transition: background-color 0.2s ease;
-                    }
-
-                    .category-row:hover {
-                        background-color: #f9fafb;
-                    }
-
-                    .category-name {
-                        font-weight: 600;
-                        color: var(--text-color);
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        width: 100%;
-                    }
-
-                    .stat-number-table {
-                        font-weight: 700;
-                        font-size: 1.1rem;
-                    }
-
-                    .percentage-cell {
-                        font-weight: 700;
-                        font-size: 1.1rem;
-                    }
-
-                    .percentage-excellent { color: var(--status-success-text); }
-                    .percentage-good { color: #0284c7; }
-                    .percentage-average { color: var(--status-warning-text); }
-                    .percentage-poor { color: var(--status-error-text); }
-
-                    .expand-icon {
-                        transition: transform 0.3s ease;
-                        font-size: 1.2rem;
-                        color: var(--text-light);
-                    }
-
-                    .category-row.expanded .expand-icon {
-                        transform: rotate(90deg);
-                    }
-
-                    /* Questions Container */
-                    .questions-container {
-                        display: none;
-                        background: var(--background-color);
-                        border-top: 1px solid var(--border-color);
-                    }
-
-                    .questions-container.show {
-                        display: block;
-                    }
-
-                    .questions-content {
-                        padding: 20px;
-                    }
-        
-                    /* Enhanced Question Items */
-                    .enhanced-question {
-                        background: white;
-                        border-radius: 12px;
-                        padding: 20px;
-                        margin-bottom: 16px;
-                        border-left: 4px solid transparent;
-                        transition: all 0.3s ease;
-                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-                    }
-                    
-                    .enhanced-question.correct {
-                        border-left-color: var(--status-success-text);
-                        background: linear-gradient(135deg, var(--status-success), #f0fdf4);
-                    }
-                    
-                    .enhanced-question.wrong {
-                        border-left-color: var(--status-error-text);
-                        background: linear-gradient(135deg, var(--status-error), #fef7f7);
-                    }
-        
-                    /* Question metadata styles */
-                    .question-metadata {
-                        background: rgba(0,0,0,0.03);
-                        padding: 8px 12px;
-                        border-radius: 6px;
-                        margin-bottom: 12px;
-                        font-size: 0.85rem;
-                        color: var(--text-light);
-                    }
-        
-                    .question-type, .question-category {
-                        font-weight: 500;
-                    }
-        
-                    /* Core question content wrapper */
-                    .core-question-content {
-                        margin: 15px 0;
-                    }
-        
-                    /* Score analysis */
-                    .score-analysis {
-                        background: rgba(13, 148, 136, 0.1);
-                        padding: 8px 12px;
-                        border-radius: 6px;
-                        margin: 10px 0;
-                        font-size: 0.9rem;
-                    }
-        
-                    .score-details {
-                        font-weight: 600;
-                        color: var(--primary-color);
-                    }
-                    
-                    .status-badge {
-                        display: inline-block;
-                        padding: 6px 12px;
-                        border-radius: 20px;
-                        font-size: 0.75rem;
-                        font-weight: 600;
-                        text-transform: uppercase;
-                        letter-spacing: 0.5px;
-                        margin-top: 12px;
-                    }
-                    
-                    .status-correct {
-                        background: var(--status-success);
-                        color: var(--status-success-text);
-                    }
-                    
-                    .status-wrong {
-                        background: var(--status-error);
-                        color: var(--status-error-text);
-                    }
-
-                    /* Charts Container */
-                    .charts-container {
-                        background: white;
-                        border-radius: 16px;
-                        padding: 30px;
-                        margin-bottom: 20px;
-                        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-                        text-align: center;
-                    }
-
-                    .charts-container canvas {
-                        max-width: 400px;
-                        max-height: 400px;
-                        margin: 0 auto;
-                        display: block;
-                    }
-
-                    /* Animation */
-                    .slide-in {
-                        opacity: 0;
-                        transform: translateY(20px);
-                        transition: all 0.8s ease;
-                    }
-                    
-                    .slide-in.visible {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-
-                    /* No Data Message */
-                    .no-data-message {
-                        text-align: center;
-                        padding: 40px;
-                        color: var(--text-light);
-                        font-size: 1.1rem;
-                    }
-        
-                    /* Table Responsive Wrapper */
-                    .table-responsive {
-                        overflow-x: auto;
-                        margin: var(--space-lg) 0;
-                        border-radius: 12px;
-                    }
-
-                    /* Section Row Styles (matching Performance Dashboard) */
-                    .section-row {
-                        background-color: #f8fafc !important;
-                        cursor: pointer;
-                        border-left: 3px solid transparent;
-                        transition: background-color 0.2s ease, border-left 0.2s ease;
-                    }
-
-                    .section-row:hover {
-                        background-color: #f1f5f9 !important;
-                    }
-
-                    .section-row.active {
-                        background-color: #f1f5f9 !important;
-                        border-left: 3px solid var(--primary-color);
-                    }
-
-                    .section-name {
-                        font-weight: 600;
-                        display: flex;
-                        align-items: center;
-                        gap: 0.75rem;
-                        padding: 0.5rem 0;
-                    }
-
-                    .section-icon {
-                        color: var(--primary-color);
-                        transition: transform 0.3s ease;
-                    }
-
-                    .section-row.active .section-icon {
-                        transform: rotate(90deg);
-                    }
-
-                    /* Performance Chip */
-                    .chip {
-                        padding: 0.5rem 1rem;
-                        border-radius: 999px;
-                        display: inline-flex;
-                        align-items: center;
-                        justify-content: center;
-                        font-weight: 600;
-                        width: 100%;
-                        text-align: center;
-                        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-                        transition: transform 0.2s ease;
-                    }
-
-                    .chip:hover {
-                        transform: translateY(-1px);
-                    }
-        
-                    /* Responsive Design */
-                    @media (max-width: 768px) {
-                        .quiz-dashboard {
-                            margin: 15px;
-                            padding: 20px;
-                        }
-                        
-                        .header h1 {
-                            font-size: 1.8rem;
-                        }
-                        
-                        .info-grid {
-                            grid-template-columns: 1fr;
-                        }
-                        
-                        .stats-grid {
-                            grid-template-columns: repeat(2, 1fr);
-                        }
-                        
-                        .categories-table th,
-                        .categories-table td {
-                            padding: 12px 15px;
-                        }
-                    }
-        
-                    @media (max-width: 480px) {
-                        .stats-grid {
-                            grid-template-columns: 1fr;
-                        }
-                        
-                        .performance-info .info-grid {
-                            grid-template-columns: 1fr;
-                        }
-                    }
-                    .enhanced-question.partial-correct {
-                        border-left-color: #F59E0B;
-                        background: linear-gradient(135deg, var(--status-warning), #fefce8);
-                    }
-
-                    .status-partial {
-                        background: var(--status-warning);
-                        color: var(--status-warning-text);
-                    }
-                    @media (max-width: 768px) {
-                        .performance-highlights div[style*="grid-template-columns: 1fr 1fr"] {
-                            display: grid !important;
-                            grid-template-columns: 1fr !important;
-                            gap: 20px !important;
-                        }
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="quiz-dashboard">
-                    <!-- Header -->
-                    <div class="header slide-in">
-                        <h1>Quiz Performance Report</h1>
-                        <p><?= htmlspecialchars($quiz_info->quiz_name) ?></p>
-                        <p>Student: <?= htmlspecialchars($student->firstname . ' ' . $student->lastname) ?></p>
-                    </div>
-                    
-                    <!-- Course and Student Information -->
-                    <div class="course-info card slide-in">
-                        <h2 class="report-h2"><i class="fas fa-graduation-cap"></i> Course Details</h2>
-                        <div class="info-grid">
-                            <div class="info-item"><strong>Quiz:</strong> <?= htmlspecialchars($quiz_info->quiz_name) ?></div>
-                            <div class="info-item"><strong>Student ID:</strong> <?= htmlspecialchars($student_id) ?></div>
-                            <div class="info-item"><strong>Course ID:</strong> <?= htmlspecialchars($courseid) ?></div>
-                            <div class="info-item "><strong>Status:</strong> <?= htmlspecialchars($latest_attempt->state) ?></div>
-                        </div>
-                    </div>
-
-                   <!-- Performance Color Guide -->
-                    <div class="performance-info card slide-in">
-                        <h2 class="report-h2"><i class="fas fa-info-circle"></i> Performance Color Code</h2>
-                        <div class="info-grid">
-                            <div class="info-item" style="background-color: #FEE2E2; color: #EF4444;">
-                                0-39% Poor
-                            </div>
-                            <div class="info-item" style="background-color: #FEF3C7; color: #D97706;">
-                                40-79% Average
-                            </div>
-                            <div class="info-item" style="background-color: #DCFCE7; color: #16A34A;">
-                                80-100% Excellent
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Overall Statistics -->
-                    <div class="stats-grid slide-in">
-                        <div class="stat-card">
-                            <div class="stat-number"><?= $overall_stats['total_questions'] ?></div>
-                            <div class="stat-label">Total Questions</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number" style="color: var(--status-success-text);"><?= $overall_stats['total_correct'] ?></div>
-                            <div class="stat-label">Correct</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number" style="color: var(--status-error-text);"><?= $overall_stats['total_wrong'] ?></div>
-                            <div class="stat-label">Wrong</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number" style="color: <?= $score_color ?>;"><?= $overall_stats['percentage'] ?>%</div>
-                            <div class="stat-label">Score</div>
-                        </div>
-                    </div>
-                    <!-- Performance Highlights -->
-                    <div class="performance-highlights card slide-in">
-                        <h2 class="report-h2">
-                            <i class="fas fa-chart-line"></i> 
-                            Performance Highlights
-                        </h2>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
-                            
-                            <!-- Best Performing Categories -->
-                            <div class="best-categories">
-                                <h3 style="color: #059669; margin-bottom: 15px; display: flex; align-items: center; gap: var(--space-sm); font-size: 1.2rem; font-weight: 600;">
-                                    <i class="fas fa-trophy" style="color: #059669;"></i>
-                                    Top Performing Categories
-                                </h3>
-                                
-                                <?php if (!empty($best_categories)): ?>
-                                    <div class="categories-list">
-                                        <?php foreach ($best_categories as $index => $category): ?>
-                                            <div class="info-item" style="background-color: #F0FDF4; border-left: 4px solid #059669; display: block; margin-bottom: var(--space-md);">
-                                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm);">
-                                                    <div style="display: flex; align-items: center; gap: var(--space-sm);">
-                                                        <span style="background: #059669; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9em; font-weight: 700;">
-                                                            <?php echo ($index + 1); ?>
-                                                        </span>
-                                                        <span style="font-weight: 600; color: var(--text-color);">
-                                                            <?php echo htmlspecialchars($category['name']); ?>
-                                                        </span>
-                                                    </div>
-                                                    <span style="background-color: #D1FAE5; color: #065F46; padding: 6px 12px; border-radius: 16px; font-size: 0.9em; font-weight: 600;">
-                                                        <?php echo number_format($category['percentage'], 1); ?>%
-                                                    </span>
-                                                </div>
-                                                <div style="font-size: 0.85rem; color: var(--text-light); display: flex; gap: var(--space-lg); margin-left: 36px;">
-                                                    <span><i class="fas fa-check-circle" style="color: #059669;"></i> <?php echo $category['correct_answers']; ?> correct</span>
-                                                    <span><i class="fas fa-question-circle"></i> <?php echo $category['total_questions']; ?> total</span>
-                                                </div>
-                                            </div>
-                                        <?php endforeach; ?>
-                                    </div>
-                                <?php else: ?>
-                                    <div class="info-item" style="background-color: var(--background-color); border: 1px solid var(--border-color); color: var(--text-light); font-style: italic; justify-content: center;">
-                                        <i class="fas fa-info-circle"></i> Not enough data to show top categories yet.
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                            
-                            <!-- Worst Performing Categories -->
-                            <div class="worst-categories">
-                                <h3 style="color: #DC2626; margin-bottom: 15px; display: flex; align-items: center; gap: var(--space-sm); font-size: 1.2rem; font-weight: 600;">
-                                    <i class="fas fa-exclamation-triangle" style="color: #DC2626;"></i>
-                                    Areas Needing Improvement
-                                </h3>
-                                
-                                <?php if (!empty($worst_categories)): ?>
-                                    <div class="categories-list">
-                                        <?php foreach ($worst_categories as $index => $category): ?>
-                                            <div class="info-item" style="background-color: #FEF2F2; border-left: 4px solid #DC2626; display: block; margin-bottom: var(--space-md);">
-                                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm);">
-                                                    <div style="display: flex; align-items: center; gap: var(--space-sm);">
-                                                        <span style="background: #DC2626; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9em; font-weight: 700;">
-                                                            <?php echo ($index + 1); ?>
-                                                        </span>
-                                                        <span style="font-weight: 600; color: var(--text-color);">
-                                                            <?php echo htmlspecialchars($category['name']); ?>
-                                                        </span>
-                                                    </div>
-                                                    <span style="background-color: #FECACA; color: #991B1B; padding: 6px 12px; border-radius: 16px; font-size: 0.9em; font-weight: 600;">
-                                                        <?php echo number_format($category['percentage'], 1); ?>%
-                                                    </span>
-                                                </div>
-                                                <div style="font-size: 0.85rem; color: var(--text-light); display: flex; gap: var(--space-lg); margin-left: 36px;">
-                                                    <span><i class="fas fa-times-circle" style="color: #DC2626;"></i> <?php echo $category['wrong_answers']; ?> incorrect</span>
-                                                    <span><i class="fas fa-question-circle"></i> <?php echo $category['total_questions']; ?> total</span>
-                                                </div>
-                                            </div>
-                                        <?php endforeach; ?>
-                                    </div>
-                                <?php else: ?>
-                                    <div class="info-item" style="background-color: var(--background-color); border: 1px solid var(--border-color); color: var(--text-light); font-style: italic; justify-content: center;">
-                                        <i class="fas fa-info-circle"></i> Not enough data to show improvement areas yet.
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                        
-                        <!-- Action Items -->
-                        <div style="background-color: var(--background-color); border-radius: 8px; padding: var(--space-xl); margin-top: var(--space-xl); border: 1px solid var(--border-color);">
-                            <h3 style="color: var(--primary-color); margin-bottom: var(--space-lg); display: flex; align-items: center; gap: var(--space-sm); font-size: 1.2rem; font-weight: 600;">
-                                <i class="fas fa-lightbulb"></i>
-                                Quick Action Items
-                            </h3>
-                            
-                            <div class="info-grid">
-                                <?php if (!empty($best_categories)): ?>
-                                    <div class="info-item" style="background: white; border-left: 4px solid #059669; display: block;">
-                                        <h4 style="margin: 0 0 var(--space-sm) 0; color: var(--text-color); font-size: 0.95rem; font-weight: 600;">
-                                            <i class="fas fa-star" style="color: #059669;"></i>
-                                            Build on Strengths
-                                        </h4>
-                                        <p style="margin: 0; font-size: 0.85rem; color: var(--text-light); line-height: 1.4;">
-                                            Continue practicing your strong categories to maintain high performance.
-                                        </p>
-                                    </div>
-                                <?php endif; ?>
-                                
-                                <?php if (!empty($worst_categories)): ?>
-                                    <div class="info-item" style="background: white; border-left: 4px solid #DC2626; display: block;">
-                                        <h4 style="margin: 0 0 var(--space-sm) 0; color: var(--text-color); font-size: 0.95rem; font-weight: 600;">
-                                            <i class="fas fa-target" style="color: #DC2626;"></i>
-                                            Focus on Weak Areas
-                                        </h4>
-                                        <p style="margin: 0; font-size: 0.85rem; color: var(--text-light); line-height: 1.4;">
-                                            Dedicate extra study time to your lowest performing categories.
-                                        </p>
-                                    </div>
-                                <?php endif; ?>
-                                
-                                <div class="info-item" style="background: white; border-left: 4px solid var(--primary-color); display: block;">
-                                    <h4 style="margin: 0 0 var(--space-sm) 0; color: var(--text-color); font-size: 0.95rem; font-weight: 600;">
-                                        <i class="fas fa-redo" style="color: var(--primary-color);"></i>
-                                        Regular Practice
-                                    </h4>
-                                    <p style="margin: 0; font-size: 0.85rem; color: var(--text-light); line-height: 1.4;">
-                                        Take practice quizzes regularly to improve consistently.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Performance Chart -->
-                    <div class="charts-container card slide-in">
-                        <h2 class="report-h2"><i class="fas fa-chart-pie"></i> Overall Performance Graph</h2>
-                        <div style="width: 400px; height: 400px; display: flex; justify-content: center; align-items: center; margin: 0 auto;">
-                            <canvas id="overallPerformanceChart"></canvas>
-                        </div>
-                    </div>
-                    
-                    <!-- Categories Table -->
-                    <div class="categories-table card slide-in">
-                        <h2 class="report-h2" style="margin: 0 0 20px 0; padding: 20px 20px 0 20px;"><i class="fas fa-layer-group"></i> Category Performance Breakdown</h2>
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Category Name</th>
-                                        <th>Total Questions</th>
-                                        <th>Correct Answers</th>
-                                        <th>Incorrect Answers</th>
-                                        <th>Performance (%)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($categories as $category_name => $category_data): ?>
-                                        <?php 
-                                        $category_id = 'cat_' . md5($category_name);
-                                        $performancePercentage = $category_data['percentage'];
-                                        $color = '#FEE2E2'; // Default color (red background)
-                                        $textColor = '#EF4444'; // Default text color for red background
-
-                                        if ($performancePercentage >= 80) {
-                                            $color = '#DCFCE7';
-                                            $textColor = '#16A34A';
-                                        } elseif ($performancePercentage >= 40) {
-                                            $color = '#FEF3C7';
-                                            $textColor = '#D97706';
-                                        }
-                                        ?>
-                                        <tr class="section-row" data-section="<?= htmlspecialchars($category_name) ?>" onclick="toggleCategoryRow('<?= $category_id ?>')" id="row-<?= $category_id ?>">
-                                            <td>
-                                                <div class="section-name">
-                                                    <i class="fas fa-chevron-right section-icon"></i>
-                                                    <?= htmlspecialchars($category_name) ?>
-                                                </div>
-                                            </td>
-                                            <td><?= $category_data['total_questions'] ?></td>
-                                            <td><?= $category_data['correct_answers'] ?></td>
-                                            <td><?= $category_data['wrong_answers'] ?></td>
-                                            <td>
-                                                <span class="chip" style="background-color: <?php echo $color; ?>; color: <?php echo $textColor; ?>; padding: 5px 10px; border-radius: 12px; display: inline-block; font-weight: bold; width:100%; text-align: center;">
-                                                    <?= $performancePercentage ?>%
-                                                </span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="5" style="padding: 0;">
-                                                <div class="questions-container" id="<?= $category_id ?>">
-                                                    <div class="questions-content">
-                                                        <?php foreach ($category_data['questions'] as $question): ?>
-                                                            <?php
-                                                            // Prepare attempt data for enhanced renderer
-                                                            $attempt_data = (object)[
-                                                                'fraction' => $question->fraction,
-                                                                'stepdata_value' => $processor->extract_primary_answer($question),
-                                                                'state' => $question->state
-                                                            ];
-                                                            
-                                                            // Render question using enhanced renderer
-                                                            echo $renderer->render_question_report($question, $attempt_data, true);
-                                                            ?>
-                                                        <?php endforeach; ?>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Include Chart.js -->
-                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                <script>
-                    document.addEventListener("DOMContentLoaded", function() {
-                        // Overall Performance Chart
-                        const overallCtx = document.getElementById("overallPerformanceChart").getContext("2d");
-                        new Chart(overallCtx, {
-                            type: "pie",
-                            data: {
-                                labels: ["Correct", "Incorrect"],
-                                datasets: [{
-                                    data: [<?= $overall_stats['total_correct'] ?>, <?= $overall_stats['total_wrong'] ?>],
-                                    backgroundColor: ['#BAE1FF', '#FF8B94'],
-                                    borderWidth: 2,
-                                    borderColor: "#ffffff"
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                plugins: {
-                                    legend: {
-                                        position: "top",
-                                        labels: {
-                                            font: {
-                                                size: 14,
-                                                weight: "bold"
-                                            }
-                                        }
-                                    },
-                                    title: {
-                                        display: true,
-                                        text: "Overall Performance",
-                                        font: {
-                                            size: 18,
-                                            weight: "bold"
-                                        }
-                                    }
-                                }
-                            }
-                        });
-
-                        // Category toggle functionality
-                        function toggleCategoryRow(categoryId) {
-                            const row = document.getElementById('row-' + categoryId);
-                            const container = document.getElementById(categoryId);
-                            
-                            if (container.classList.contains('show')) {
-                                container.classList.remove('show');
-                                container.style.display = 'none';
-                                row.classList.remove('expanded');
-                            } else {
-                                // Close other open categories
-                                document.querySelectorAll('.questions-container.show').forEach(el => {
-                                    el.classList.remove('show');
-                                    el.style.display = 'none';
-                                });
-                                document.querySelectorAll('.section-row.active').forEach(el => {
-                                    el.classList.remove('active');
-                                });
-                                
-                                container.style.display = 'block';
-                                setTimeout(() => {
-                                    container.classList.add('show');
-                                }, 10);
-                                row.classList.add('active');
-                            }
-                        }
-
-                        // Make function globally available
-                        window.toggleCategoryRow = toggleCategoryRow;
-
-                        // Scroll animations
-                        const observer = new IntersectionObserver((entries) => {
-                            entries.forEach(entry => {
-                                if (entry.isIntersecting) {
-                                    entry.target.classList.add("visible");
-                                }
-                            });
-                        }, {
-                            threshold: 0.1
-                        });
-
-                        document.querySelectorAll(".slide-in").forEach(elem => {
-                            observer.observe(elem);
-                        });
-                    });
-                </script>
-            </body>
-            </html>
-            
-            <?php
-            exit;
-        }
-        
-        
-        if($children): ?>
-            <style>
-                @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap");
-
-                :root {
-                    --primary-color: #0D9488;
-                    --secondary-color: #7b1fa2;
-                    --status-error: #FEE2E2;
-                    --status-error-text: #EF4444;
-                    --status-success: #DCFCE7;
-                    --status-success-text: #16A34A;
-                    --status-warning: #FEF3C7;
-                    --status-warning-text: #D97706;
-                    --text-color: #334155;
-                    --text-light: #64748B;
-                    --background-color: #F8FAFC;
-                    --border-color: #E2E8F0;
-                    --space-xs: 0.25rem;
-                    --space-sm: 0.5rem;
-                    --space-md: 1rem;
-                    --space-lg: 1.5rem;
-                    --space-xl: 2rem;
-                    --font-primary: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                }
-
-                * {
-                    margin: 0;
-                    padding: 0;
-                    box-sizing: border-box;
-                }
-
-                body {
-                    background-color: var(--background-color);
-                    font-family: var(--font-primary);
-                    color: var(--text-color);
-                    line-height: 1.5;
-                    min-height: 100vh;
-                }
-
-                @keyframes slideDown {
-                    from {
-                        opacity: 0;
-                        transform: translateY(-20px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-    
-                @keyframes fadeIn {
-                    from {
-                        opacity: 0;
-                    }
-                    to {
-                        opacity: 1;
-                    }
-                }
-    
-                .quiz-dashboard {
-                    max-width: 1200px;
-                    margin: 0 auto;
-                    padding: var(--space-xl);
-                }
-
-                .class-selection-container {
-                    max-width: 800px;
-                    margin: 2rem auto;
-                    padding: 2rem;
-                    animation: slideDown 0.6s ease-out;
-                }
-
-                /* Header */
-                .header {
-                    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-                    color: white;
-                    padding: 30px 0;
-                    text-align: center;
-                    border-radius: 16px;
-                    margin-bottom: 10px;
-                    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-                }
-
-                .header h1 {
-                    font-size: 2.5rem;
-                    font-weight: 700;
-                    margin-bottom: 10px;
-                }
-
-                .header p {
-                    font-size: 1.1rem;
-                    opacity: 0.9;
-                    margin: 5px 0;
-                }
-
-                /* Cards */
-                .card {
-                    background: white;
-                    border-radius: 16px;
-                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 6px rgba(0, 0, 0, 0.02);
-                    padding: var(--space-xl);
-                    margin-bottom: var(--space-xl);
-                    transition: transform 0.2s ease, box-shadow 0.2s ease;
-                }
-
-                .card:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.02);
-                }
-
-                .class-selection-form {
-                    background: white;
-                    padding: 2rem;
-                    border-radius: 16px;
-                    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-                    animation: fadeIn 0.8s ease-out 0.6s both;
-                    transition: all 0.3s ease;
-                }
-
-                .class-selection-form:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-                }
-
-                .report-h2 {
-                    display: flex;
-                    align-items: center;
-                    gap: var(--space-sm);
-                    color: var(--primary-color);
-                    border-bottom: 2px solid var(--border-color);
-                    padding-bottom: var(--space-md);
-                    margin-bottom: var(--space-lg);
-                    font-size: 1.5rem;
-                    font-weight: 600;
-                }
-
-                .form-group {
-                    display: flex;
-                    align-items: center;
-                    gap: 1.5rem;
-                    flex-wrap: wrap;
-                    margin-bottom: 1.5rem;
-                }
-
-                .form-label {
-                    font-weight: 600;
-                    color: var(--text-color);
-                    min-width: 120px;
-                    font-size: 1.1rem;
-                }
-
-                .form-select {
-                    flex: 1;
-                    min-width: 250px;
-                    padding: 0.75rem 1rem;
-                    border: 2px solid var(--border-color);
-                    border-radius: 8px;
-                    background-color: white;
-                    color: var(--text-color);
-                    font-size: 1rem;
-                    transition: all 0.3s ease;
-                    cursor: pointer;
-                    font-family: var(--font-primary);
-                }
-
-                .form-select:hover {
-                    border-color: var(--primary-color);
-                }
-
-                .form-select:focus {
-                    outline: none;
-                    border-color: var(--primary-color);
-                    box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1);
-                }
-
-                .form-select option {
-                    padding: 0.75rem;
-                }
-
-                .output-box {
-                    margin-top: 2rem;
-                    padding: 1.5rem;
-                    background: var(--status-success);
-                    border-radius: 12px;
-                    border: 2px solid var(--status-success-text);
-                    color: var(--text-color);
-                    font-weight: 500;
-                    font-size: 1rem;
-                    display: none;
-                    animation: fadeIn 0.8s ease-out;
-                    transition: transform 0.3s ease;
-                }
-
-                .output-box:hover {
-                    transform: translateY(-2px);
-                }
-
-                .section-title {
-                    color: var(--text-color);
-                    font-size: 1.5rem;
-                    font-weight: 600;
-                    margin-bottom: 2rem;
-                    text-align: center;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 0.75rem;
-                }
-
-                .submit-button {
-                    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-                    color: white;
-                    border: none;
-                    padding: 0.875rem 2rem;
-                    border-radius: 8px;
-                    font-size: 1rem;
-                    font-weight: 600;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 0.5rem;
-                    min-width: 200px;
-                    margin: 0 auto;
-                    font-family: var(--font-primary);
-                }
-
-                .submit-button:hover:not(:disabled) {
-                    transform: translateY(-2px);
-                    box-shadow: 0 8px 15px rgba(13, 148, 136, 0.3);
-                }
-
-                .submit-button:disabled {
-                    background: var(--text-light);
-                    cursor: not-allowed;
-                    transform: none;
-                    box-shadow: none;
-                }
-
-                .submit-button:active:not(:disabled) {
-                    transform: translateY(0);
-                }
-
-                /* Animation */
-                .slide-in {
-                    opacity: 0;
-                    transform: translateY(20px);
-                    transition: all 0.8s ease;
-                }
-                
-                .slide-in.visible {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-
-                @media (max-width: 768px) {
-                    .quiz-dashboard {
-                        margin: 15px;
-                        padding: 20px;
-                    }
-                    
-                    .class-selection-container {
-                        margin: 1rem;
-                        padding: 1.5rem;
-                    }
-
-                    .form-group {
-                        flex-direction: column;
-                        align-items: stretch;
-                        gap: 0.75rem;
-                    }
-
-                    .form-label {
-                        min-width: auto;
-                    }
-
-                    .form-select {
-                        min-width: auto;
-                    }
-
-                    .section-title {
-                        font-size: 1.25rem;
-                    }
-
-                    .header h1 {
-                        font-size: 1.8rem;
-                    }
-                }
-            </style>
-
-            <div class="quiz-dashboard">
-                <!-- Header -->
-                <div class="header slide-in">
-                    <h1>Quiz Performance Report</h1>
-                    <p>Select a section and quiz to view detailed performance analytics</p>
-                </div>
-
-                <div class="class-selection-container">
-                    <!-- Main Form Container -->
-                    <form method="get" action="" id="randomBagForm" class="class-selection-form card slide-in">
-                        <input type="hidden" name="id" value="<?php echo htmlspecialchars($courseid); ?>">
-                        <input type="hidden" name="fetch" value="random">
-                        
-                        <h2 class="report-h2">
-                            <i class="fas fa-chart-line"></i>
-                            Generate Quiz Report
-                        </h2>
-
-                        <!-- Section Selection -->
-                        <div class="form-group">
-                            <label for="childSection" class="form-label">Choose Section:</label>
-                            <select id="childSection" class="form-select">
-                                <option value="">-- Select Section --</option>
-                                <?php foreach ($children as $child): ?>
-                                    <option value="<?= htmlspecialchars($child['id']) ?>">
-                                        <?= htmlspecialchars($child['name']) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-
-                        <!-- Quiz Selection -->
-                        <div class="form-group">
-                            <label for="quizSelect" class="form-label">Choose Quiz:</label>
-                            <select name="quiz_id" id="quizSelect" class="form-select">
-                                <option value="">-- Select Quiz --</option>
-                            </select>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <div class="form-group">
-                            <button type="submit" id="submitBtn" class="submit-button" disabled>
-                                <i class="fas fa-chart-bar"></i>
-                                Generate Quiz Report
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Add Font Awesome if not already included -->
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
-            <script>
-                const childrenData = <?= json_encode($children) ?>;
-                const childSelect = document.getElementById("childSection");
-                const quizSelect = document.getElementById("quizSelect");
-                const submitBtn = document.getElementById("submitBtn");
-                const form = document.getElementById("randomBagForm");
-
-                childSelect.addEventListener("change", function() {
-                    quizSelect.innerHTML = '<option value="">-- Select Quiz --</option>';
-                    if (submitBtn) submitBtn.disabled = true;
-                    
-                    const selectedChild = childrenData.find(c => c.id === this.value);
-                    if (!selectedChild) return;
-                    
-                    // Get quizzes from the activities array and filter only visible quizzes
-                    let quizzes = [];
-                    
-                    if (selectedChild.activities && Array.isArray(selectedChild.activities)) {
-                        quizzes = selectedChild.activities.filter(a => 
-                            a.modname === 'quiz' && a.visible === '1'
-                        );
-                    }
-                    
-                    if (quizzes.length === 0) {
-                        const noQuizOption = document.createElement("option");
-                        noQuizOption.value = "";
-                        noQuizOption.textContent = "No quizzes available in this section";
-                        quizSelect.appendChild(noQuizOption);
-                        return;
-                    }
-                    
-                    // Add quiz options to dropdown
-                    quizzes.forEach(quiz => {
-                        const opt = document.createElement("option");
-                        opt.value = quiz.id;
-                        opt.textContent = quiz.name;
-                        quizSelect.appendChild(opt);
-                    });
-                });
-
-                quizSelect.addEventListener("change", function() {
-                    if (!this.value) {
-                        if (submitBtn) submitBtn.disabled = true;
-                        return;
-                    }
-                    if (submitBtn) submitBtn.disabled = false;
-                });
-
-                // Handle form submission
-                if (form) {
-                    form.addEventListener("submit", function(e) {
-                        e.preventDefault();
-                        
-                        const quizId = quizSelect.value;
-                        
-                        if (!quizId) {
-                            alert("Please select a quiz before submitting.");
-                            return;
-                        }
-                        
-                        // Create URL with only quiz_id
-                        const currentUrl = new URL(window.location.href);
-                        currentUrl.searchParams.set('id', '<?php echo htmlspecialchars($courseid); ?>');
-                        currentUrl.searchParams.set('fetch', 'random');
-                        currentUrl.searchParams.set('quiz_id', quizId);
-                        
-                        // Redirect to the new URL
-                        window.location.href = currentUrl.toString();
-                    });
-                }
-
-                // Scroll animations
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            entry.target.classList.add("visible");
-                        }
-                    });
-                }, {
-                    threshold: 0.1
-                });
-
-                document.querySelectorAll(".slide-in").forEach(elem => {
-                    observer.observe(elem);
-                });
-            </script>
-        <?php endif;
-
-        exit;
+        gradereport_user_random_bag_page($courseid, [$USER->id => $USER]);
     }
     
+    // Recursively gather every quiz activity under a section, at any depth, regardless of
+    // whether the section holds quizzes directly, only inside subsections, or both. Dedupes
+    // by activity id so a section that appears twice in its own "children" (a pre-existing
+    // quirk of build_nested_children() in lib.php) doesn't produce duplicate papers.
+    function collect_quiz_activities_recursive($node, &$seenids) {
+        $found = array();
+        foreach ($node['activities'] as $activity) {
+            if ($activity['modname'] !== 'quiz') continue;
+            if (isset($seenids[$activity['id']])) continue;
+            $seenids[$activity['id']] = true;
+            $found[] = $activity;
+        }
+        $children = $node['children'];
+        if (!empty($children)) {
+            foreach ((is_array($children) && array_key_exists(0, $children) ? $children : array($children)) as $child) {
+                $found = array_merge($found, collect_quiz_activities_recursive($child, $seenids));
+            }
+        }
+        return $found;
+    }
+
     if (isset($_GET['fetch']) && $_GET['fetch'] === 'past-year' && !empty($_GET['id'])) {
         $student_id = $USER->id;
         $courseid = $_GET['id'];
         $course_structure = get_course_structure($courseid);
-        
-        // Find Past Year Papers section
-        $pastYearSection = null;
+
+        // Find all top-level sections whose name starts with "Past Paper" (e.g. "Past Papers",
+        // "Past Paper - Physics"), so multiple such sections can coexist in one course.
+        $pastYearSections = array();
         foreach ($course_structure["sections"] as $section) {
-            if (strtolower($section["name"]) === strtolower("Past Papers")) {
-                $pastYearSection = $section;
-                break;
+            if (stripos($section["name"], "Past Paper") === 0) {
+                $pastYearSections[] = $section;
             }
         }
-        if (!$pastYearSection) die("Past Year Papers section not found.");
-        
-        // Get all children (subsections) under Past Year Papers
-        $pastYearChildren = $pastYearSection["children"];
-        
+        if (empty($pastYearSections)) die("Past Year Papers section not found.");
+
+        // Build one flat group per matched section, containing every quiz found anywhere in
+        // its subtree (its own activities and, recursively, every level of subsections) -
+        // this works uniformly whether the section holds quizzes directly, only through
+        // subsections, or both.
+        $pastYearChildren = array();
+        foreach ($pastYearSections as $pastYearSection) {
+            $seenids = array();
+            $quizzes = collect_quiz_activities_recursive($pastYearSection, $seenids);
+            if (empty($quizzes)) continue;
+            $pastYearChildren[] = array(
+                'id' => $pastYearSection['id'],
+                'name' => $pastYearSection['name'],
+                'activities' => $quizzes,
+                'children' => array(),
+            );
+        }
+
         // Check if we need to process quiz data
         if (isset($_GET['selected_quizzes']) && !empty($_GET['selected_quizzes'])) {
             $selected_quiz_ids = explode(',', $_GET['selected_quizzes']);
             
             // Initialize components with the enhanced renderer
             require_once('integrated_quiz_renderer.php'); // Include the enhanced renderer
+            require_once('quizdataprocessor.php');
             $renderer = new enhanced_quiz_question_renderer($PAGE, '');
             $processor = new quiz_attempt_data_processor();
             
@@ -4250,6 +1762,8 @@ if (has_capability('moodle/grade:viewall', $context)) {
             // Collect all quiz attempts data with tag information
             $all_questions = [];
             $quiz_names = [];
+            // Full quiz records (name + cmid + quiz_id), so paper names can link to the quiz.
+            $quiz_papers = [];
             
             foreach ($selected_quiz_ids as $quiz_cmid) {
                 // Get quiz information
@@ -4273,6 +1787,7 @@ if (has_capability('moodle/grade:viewall', $context)) {
                 
                 if ($quiz_info) {
                     $quiz_names[] = $quiz_info->quiz_name;
+                    $quiz_papers[] = $quiz_info;
                     
                     // Get student's latest quiz attempt
                     $latest_attempt = $DB->get_record_sql("
@@ -4294,6 +1809,7 @@ if (has_capability('moodle/grade:viewall', $context)) {
                             // Add quiz context to each question
                             $question->source_quiz_name = $quiz_info->quiz_name;
                             $question->source_quiz_id = $quiz_info->quiz_id;
+                            $question->source_quiz_cmid = $quiz_info->cmid;
                             $all_questions[] = $question;
                         }
                     }
@@ -4339,9 +1855,14 @@ if (has_capability('moodle/grade:viewall', $context)) {
                 return $b['percentage'] - $a['percentage'];
             });
 
-            // Get top 3 best and bottom 3 worst (but only if we have enough data)
-            $best_topics = array_slice($performance_highlights, 0, 3);
-            $worst_topics = array_slice(array_reverse($performance_highlights), 0, 3);
+            // Get top 3 best and bottom 3 worst (but only if we have enough data).
+            // A 0% topic can't be a "best" area and a 100% topic can't be a "worst" area.
+            $best_topics = array_slice(array_filter($performance_highlights, function($t) {
+                return $t['percentage'] > 0;
+            }), 0, 3);
+            $worst_topics = array_slice(array_reverse(array_filter($performance_highlights, function($t) {
+                return $t['percentage'] < 100;
+            })), 0, 3);
             ?>
             <!DOCTYPE html>
             <html lang="en">
@@ -4855,6 +2376,10 @@ if (has_capability('moodle/grade:viewall', $context)) {
                         background: var(--status-warning);
                         color: var(--status-warning-text);
                     }
+
+                    /* Quiz name rendered as a link through to the quiz activity */
+                    .quiz-name-link { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+                    .quiz-name-link:hover, .quiz-name-link:focus { opacity: 0.85; }
                 </style>
             </head>
             <body>
@@ -4865,7 +2390,7 @@ if (has_capability('moodle/grade:viewall', $context)) {
                         <p>Comprehensive Analysis from Past Year Papers</p>
                         <p>Student: <?= htmlspecialchars($student->firstname . ' ' . $student->lastname) ?></p>
                         <?php if (count($quiz_names) == 1): ?>
-                            <p>Paper Analyzed: <?= htmlspecialchars($quiz_names[0]) ?></p>
+                            <p>Paper Analyzed: <?= gradereport_user_quiz_name_link($quiz_papers[0]->quiz_name, $quiz_papers[0]->cmid, $quiz_papers[0]->quiz_id) ?></p>
                         <?php else: ?>
                             <p>Papers Analyzed: <?= count($quiz_names) ?> past papers</p>
                             <details style="margin-top: 15px; max-width: 900px; margin-left: auto; margin-right: auto;">
@@ -4874,7 +2399,9 @@ if (has_capability('moodle/grade:viewall', $context)) {
                                 </summary>
                                 <div style="margin-top: 10px; font-size: 0.9rem; opacity: 0.9; line-height: 1.4; text-align: left; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-top: 10px;">
                                     <?php 
-                                    $formatted_names = array_map('htmlspecialchars', $quiz_names);
+                                    $formatted_names = array_map(function ($paper) {
+                                        return gradereport_user_quiz_name_link($paper->quiz_name, $paper->cmid, $paper->quiz_id);
+                                    }, $quiz_papers);
                                     echo implode(' • ', $formatted_names);
                                     ?>
                                 </div>
@@ -5759,7 +3286,7 @@ if (has_capability('moodle/grade:viewall', $context)) {
                         alert("Please select at least one paper before submitting.");
                         return;
                     }
-                    
+
                     // Form will submit with the selected_quizzes parameter
                 });
 
@@ -5778,12 +3305,17 @@ if (has_capability('moodle/grade:viewall', $context)) {
                     observer.observe(elem);
                 });
             </script>
+        <?php else: ?>
+            <div style="max-width: 1200px; margin: 40px auto; padding: 0 20px; font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; text-align: center; color: #64748B;">
+                No past year papers are available for this course yet.
+            </div>
         <?php endif;
 
         exit;
     }
     
     if (isset($_GET['fetch']) && $_GET['fetch'] === 'olympiad' && !empty($_GET['id'])) {
+        require_once('quizdataprocessor.php');
         $student_id = $USER->id;
         $courseid = $_GET['id'];
         $course_structure = get_course_structure($courseid);
@@ -5912,36 +3444,12 @@ if (has_capability('moodle/grade:viewall', $context)) {
             // Use data processor to get comprehensive question data
             $questions = $processor->get_attempt_questions($latest_attempt->attempt_id);
 
-            foreach ($questions as $question) {
-                if (empty($question->category_name)) {
-                    $question->category_name = 'Default Category';
-                }
-            }
-            
-            // Group questions by category
-            $categories = $processor->group_by_category($questions);
+            // Group all questions directly by tags (no categories)
+            $tag_groups = $processor->group_all_by_tags($questions);
+            echo '<script>console.log("tag_groups:", ' . json_encode($tag_groups) . ')</script>';
+            // Calculate overall statistics from tag groups
+            $overall_stats = $processor->calculate_overall_stats_from_tags($tag_groups);
 
-            // For each category, group its questions by tag combinations
-            $categories_with_tags = [];
-            
-            foreach ($categories as $category_name => $category_data) {
-                $category_questions = $category_data['questions'];
-                $tag_groups = $processor->group_by_tag_combinations($category_questions);
-
-                $categories_with_tags[$category_name] = [
-                    'tag_groups' => $tag_groups,
-                    'total_questions' => $category_data['total_questions'],
-                    'correct_answers' => $category_data['correct_answers'],
-                    'wrong_answers' => $category_data['wrong_answers'],
-                    'percentage' => $category_data['percentage'],
-                ];
-            }
-            echo '<script>console.log("categories_with_tags:", ' . json_encode($categories_with_tags) . ')</script>';
-
-            // echo '<script>console.log("tag_groups:", ' . json_encode($tag_groups) . ')</script>';
-            
-            // Calculate overall statistics
-            $overall_stats = $processor->calculate_overall_stats($categories);
 
             // Determine color based on percentage
             $percentage = $overall_stats['percentage'];
@@ -5952,27 +3460,55 @@ if (has_capability('moodle/grade:viewall', $context)) {
             } elseif ($percentage >= 40) {
                 $score_color = '#D97706'; // Average (orange)
             }
-            // Calculate best and worst performing categories
-            $performance_highlights = [];
+            // Calculate best and worst performing tag groups
+            $tag_performance = [];
 
-            foreach ($categories as $category_name => $category_data) {
-                $performance_highlights[] = [
-                    'name' => $category_name,
-                    'percentage' => $category_data['percentage'],
-                    'correct_answers' => $category_data['correct_answers'],
-                    'total_questions' => $category_data['total_questions'],
-                    'wrong_answers' => $category_data['wrong_answers']
+            foreach ($tag_groups as $tag_name => $tag_data) {
+                if ($tag_name === 'No Tags') continue;
+                $tag_performance[] = [
+                    'name' => $tag_name,
+                    'percentage' => $tag_data['percentage'],
+                    'correct_answers' => $tag_data['correct_answers'],
+                    'total_questions' => $tag_data['total_questions'],
+                    'wrong_answers' => $tag_data['wrong_answers']
                 ];
             }
 
-            // Sort by performance percentage
-            usort($performance_highlights, function($a, $b) {
-                return $b['percentage'] - $a['percentage'];
+            usort($tag_performance, function($a, $b) {
+                return $b['percentage'] <=> $a['percentage'];
             });
 
-            // Get top 3 best and bottom 3 worst (but only if we have enough data)
-            $best_categories = array_slice($performance_highlights, 0, 3);
-            $worst_categories = array_slice(array_reverse($performance_highlights), 0, 3);
+            $total_tags = count($tag_performance);
+
+            if ($total_tags <= 1) {
+                if ($total_tags === 1) {
+                    if ($tag_performance[0]['percentage'] >= 40) {
+                        $best_categories = $tag_performance;
+                        $worst_categories = [];
+                    } else {
+                        $best_categories = [];
+                        $worst_categories = $tag_performance;
+                    }
+                } else {
+                    $best_categories = [];
+                    $worst_categories = [];
+                }
+            } elseif ($total_tags <= 4) {
+                $mid = ceil($total_tags / 2);
+                $best_categories = array_slice($tag_performance, 0, $mid);
+                $worst_categories = array_reverse(array_slice($tag_performance, $mid));
+            } else {
+                $best_categories = array_slice($tag_performance, 0, 3);
+                $worst_categories = array_slice(array_reverse($tag_performance), 0, 3);
+            }
+
+            // A 0% topic can't be a "best" area and a 100% topic can't be a "worst" area.
+            $best_categories = array_values(array_filter($best_categories, function($t) {
+                return $t['percentage'] > 0;
+            }));
+            $worst_categories = array_values(array_filter($worst_categories, function($t) {
+                return $t['percentage'] < 100;
+            }));
             ?>
             <!DOCTYPE html>
             <html lang="en">
@@ -6234,6 +3770,12 @@ if (has_capability('moodle/grade:viewall', $context)) {
                         padding: 16px 20px;
                         border-bottom: 1px solid var(--border-color);
                         vertical-align: middle;
+                    }
+                    .categories-table td:first-child {
+                        white-space: normal;
+                        overflow: visible;
+                    }
+                    .categories-table td:not(:first-child) {
                         overflow: hidden;
                         text-overflow: ellipsis;
                         white-space: nowrap;
@@ -6371,6 +3913,10 @@ if (has_capability('moodle/grade:viewall', $context)) {
                         .categories-table th, .categories-table td { font-size: 0.98em; }
                         .tag-group-row > td { padding-left: 14px !important; }
                     }
+
+                    /* Quiz name rendered as a link through to the quiz activity */
+                    .quiz-name-link { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+                    .quiz-name-link:hover, .quiz-name-link:focus { opacity: 0.85; }
                 </style>
             </head>
             <body>
@@ -6378,7 +3924,7 @@ if (has_capability('moodle/grade:viewall', $context)) {
                     <!-- Header -->
                     <div class="header slide-in">
                         <h1>Quiz Performance Report</h1>
-                        <p><?= htmlspecialchars($quiz_info->quiz_name) ?></p>
+                        <p><?= gradereport_user_quiz_name_link($quiz_info->quiz_name, $quiz_info->cmid, $quiz_info->quiz_id) ?></p>
                         <p>Student: <?= htmlspecialchars($student->firstname . ' ' . $student->lastname) ?></p>
                     </div>
                     
@@ -6386,7 +3932,7 @@ if (has_capability('moodle/grade:viewall', $context)) {
                     <div class="course-info card slide-in">
                         <h2 class="report-h2"><i class="fas fa-graduation-cap"></i> Course Details</h2>
                         <div class="info-grid">
-                            <div class="info-item"><strong>Quiz:</strong> <?= htmlspecialchars($quiz_info->quiz_name) ?></div>
+                            <div class="info-item"><strong>Quiz:</strong> <?= gradereport_user_quiz_name_link($quiz_info->quiz_name, $quiz_info->cmid, $quiz_info->quiz_id) ?></div>
                             <div class="info-item"><strong>Student ID:</strong> <?= htmlspecialchars($student_id) ?></div>
                             <div class="info-item"><strong>Course ID:</strong> <?= htmlspecialchars($courseid) ?></div>
                             <div class="info-item "><strong>Status:</strong> <?= htmlspecialchars($latest_attempt->state) ?></div>
@@ -6441,7 +3987,7 @@ if (has_capability('moodle/grade:viewall', $context)) {
                             <div class="best-categories">
                                 <h3 style="color: #059669; margin-bottom: 15px; display: flex; align-items: center; gap: var(--space-sm); font-size: 1.2rem; font-weight: 600;">
                                     <i class="fas fa-trophy" style="color: #059669;"></i>
-                                    Top Performing Categories
+                                    Top Performing Tags
                                 </h3>
                                 
                                 <?php if (!empty($best_categories)): ?>
@@ -6453,8 +3999,14 @@ if (has_capability('moodle/grade:viewall', $context)) {
                                                         <span style="background: #059669; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9em; font-weight: 700;">
                                                             <?php echo ($index + 1); ?>
                                                         </span>
-                                                        <span style="font-weight: 600; color: var(--text-color);">
-                                                            <?php echo htmlspecialchars($category['name']); ?>
+                                                        <span style="font-weight: 600; color: var(--text-color); display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
+                                                            <?php
+                                                                $tags = explode(' ; ', $category['name']);
+                                                                foreach ($tags as $tag) {
+                                                                    $clean_tag = trim($tag);
+                                                                    echo '<span class="tag-badge" style="margin-bottom: 2px;">' . htmlspecialchars($clean_tag) . '</span>';
+                                                                }
+                                                            ?>
                                                         </span>
                                                     </div>
                                                     <span style="background-color: #D1FAE5; color: #065F46; padding: 6px 12px; border-radius: 16px; font-size: 0.9em; font-weight: 600;">
@@ -6491,8 +4043,14 @@ if (has_capability('moodle/grade:viewall', $context)) {
                                                         <span style="background: #DC2626; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9em; font-weight: 700;">
                                                             <?php echo ($index + 1); ?>
                                                         </span>
-                                                        <span style="font-weight: 600; color: var(--text-color);">
-                                                            <?php echo htmlspecialchars($category['name']); ?>
+                                                        <span style="font-weight: 600; color: var(--text-color); display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
+                                                            <?php
+                                                                $tags = explode(' ; ', $category['name']);
+                                                                foreach ($tags as $tag) {
+                                                                    $clean_tag = trim($tag);
+                                                                    echo '<span class="tag-badge" style="margin-bottom: 2px;">' . htmlspecialchars($clean_tag) . '</span>';
+                                                                }
+                                                            ?>
                                                         </span>
                                                     </div>
                                                     <span style="background-color: #FECACA; color: #991B1B; padding: 6px 12px; border-radius: 16px; font-size: 0.9em; font-weight: 600;">
@@ -6570,7 +4128,7 @@ if (has_capability('moodle/grade:viewall', $context)) {
                     <!-- Categories Table -->
                     <div class="categories-table card slide-in">
                         <h2 class="report-h2" style="margin: 0 0 20px 0; padding: 20px 20px 0 20px;">
-                            <i class="fas fa-layer-group"></i> Category Performance Breakdown
+                            <i class="fas fa-tags"></i> Tag-wise Performance Breakdown
                         </h2>
                         <div class="table-responsive">
                             <table class="table">
@@ -6583,7 +4141,7 @@ if (has_capability('moodle/grade:viewall', $context)) {
                                 </colgroup>
                                 <thead>
                                     <tr>
-                                        <th>Category Name</th>
+                                        <th>Tag</th>
                                         <th>Total Questions</th>
                                         <th>Correct Answers</th>
                                         <th>Incorrect Answers</th>
@@ -6591,10 +4149,10 @@ if (has_capability('moodle/grade:viewall', $context)) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($categories_with_tags as $category_name => $category_data): ?>
+                                    <?php foreach ($tag_groups as $tag_name => $tag_data): ?>
                                         <?php
-                                            $category_id = 'cat_' . md5($category_name);
-                                            $performancePercentage = $category_data['percentage'];
+                                            $tag_id = 'tg_' . md5($tag_name);
+                                            $performancePercentage = $tag_data['percentage'];
                                             $color = '#FEE2E2';
                                             $textColor = '#EF4444';
                                             if ($performancePercentage >= 80) {
@@ -6605,99 +4163,48 @@ if (has_capability('moodle/grade:viewall', $context)) {
                                                 $textColor = '#D97706';
                                             }
                                         ?>
-                                        <tr class="expandable-row category-row" data-section="<?= htmlspecialchars($category_name) ?>" onclick="toggleCategoryRow('<?= $category_id ?>')" id="row-<?= $category_id ?>">
+                                        <tr class="expandable-row tag-group-row" onclick="toggleTagGroupRow('<?= $tag_id ?>')" id="row-<?= $tag_id ?>">
                                             <td>
                                                 <div class="section-name">
                                                     <span class="expand-arrow"><i class="fas fa-chevron-right"></i></span>
-                                                    <?= htmlspecialchars($category_name) ?>
+                                                    <div class="tag-combination" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                                        <?php if (empty($tag_name) || $tag_name === 'No Tags'): ?>
+                                                            <span class="no-tags">Untagged Questions</span>
+                                                        <?php else: ?>
+                                                            <?php 
+                                                            $tags = explode(' ; ', $tag_name);
+                                                            foreach ($tags as $tag): 
+                                                                $clean_tag = trim($tag);
+                                                            ?>
+                                                                <span class="tag-badge" style="margin-bottom: 4px;"><?= htmlspecialchars($clean_tag) ?></span>
+                                                            <?php endforeach; ?>
+                                                        <?php endif; ?>
+                                                    </div>
                                                 </div>
                                             </td>
-                                            <td style="text-align:right;"><?= $category_data['total_questions'] ?></td>
-                                            <td style="text-align:right;"><?= $category_data['correct_answers'] ?></td>
-                                            <td style="text-align:right;"><?= $category_data['wrong_answers'] ?></td>
+                                            <td style="text-align:right;"><?= $tag_data['total_questions'] ?></td>
+                                            <td style="text-align:right;"><?= $tag_data['correct_answers'] ?></td>
+                                            <td style="text-align:right;"><?= $tag_data['wrong_answers'] ?></td>
                                             <td style="text-align:right;">
                                                 <span class="chip" style="background-color: <?= $color ?>; color: <?= $textColor ?>;">
                                                     <?= $performancePercentage ?>%
                                                 </span>
                                             </td>
                                         </tr>
-                                        <tr class="category-nested" id="nested-<?= $category_id ?>" style="background:none;">
+                                        <tr class="tag-group-nested" id="nested-<?= $tag_id ?>">
                                             <td colspan="5" style="padding:0;">
-                                                <div class="questions-container" id="<?= $category_id ?>">
-                                                    <div class="questions-content" style="padding: 0;">
-                                                        <table class="table" style="background:transparent; table-layout:fixed;">
-                                                            <colgroup>
-                                                                <col style="width: 30%; min-width:180px; max-width:350px;">
-                                                                <col style="width: 15%; min-width:90px;">
-                                                                <col style="width: 15%; min-width:90px;">
-                                                                <col style="width: 15%; min-width:90px;">
-                                                                <col style="width: 15%; min-width:90px;">
-                                                            </colgroup>
-                                                            <tbody>
-                                                                <?php foreach ($category_data['tag_groups'] as $tag_group_name => $tag_group): ?>
-                                                                    <?php
-                                                                        $tag_group_id = 'tg_' . md5($category_name . '||' . $tag_group_name);
-                                                                        $group_total_questions = $tag_group['total_questions'] ?? '';
-                                                                        $group_correct = $tag_group['correct_answers'] ?? '';
-                                                                        $group_wrong = $tag_group['wrong_answers'] ?? '';
-                                                                        $group_perc = $tag_group['percentage'] ?? '';
-                                                                        $groupColor = '#FEE2E2'; $groupTextColor = '#EF4444';
-                                                                        if ($group_perc >= 80) {$groupColor='#DCFCE7'; $groupTextColor='#16A34A';}
-                                                                        elseif ($group_perc >= 40) {$groupColor='#FEF3C7'; $groupTextColor='#D97706';}
-                                                                    ?>
-                                                                    <tr class="expandable-row tag-group-row" onclick="event.stopPropagation();toggleTagGroupRow('<?= $tag_group_id ?>')" id="row-<?= $tag_group_id ?>">
-                                                                        <td>
-                                                                            <div class="section-name">
-                                                                                <span class="expand-arrow"><i class="fas fa-chevron-right"></i></span>
-                                                                                <div class="tag-combination" style="display: flex; flex-wrap: wrap; gap: 6px;">
-                                                                                    <?php if (empty($tag_group_name) || $tag_group_name === 'No Tags'): ?>
-                                                                                        <span class="no-tags">Untagged Questions</span>
-                                                                                    <?php else: ?>
-                                                                                        <?php 
-                                                                                        $tags = explode(' ; ', $tag_group_name);
-                                                                                        foreach ($tags as $tag): 
-                                                                                            // Remove last 4 characters from the tag, if present
-                                                                                            $clean_tag = mb_substr($tag, 0, max(0, mb_strlen($tag)-4));
-                                                                                        ?>
-                                                                                            <span class="tag-badge" style="margin-bottom: 4px;"><?= htmlspecialchars($clean_tag) ?></span>
-                                                                                        <?php endforeach; ?>
-                                                                                    <?php endif; ?>
-                                                                                </div>
-                                                                                <!-- <span style="font-weight:600;">
-                                                                                    <?= $tag_group_name === "" || $tag_group_name === "No Tag Group" ? '<span class="no-tags">No Tag Group</span>' : htmlspecialchars($tag_group_name) ?>
-                                                                                </span> -->
-                                                                            </div>
-                                                                        </td>
-                                                                        <td style="text-align:right;"><?= $group_total_questions ?></td>
-                                                                        <td style="text-align:right;"><?= $group_correct ?></td>
-                                                                        <td style="text-align:right;"><?= $group_wrong ?></td>
-                                                                        <td style="text-align:right;">
-                                                                            <span class="chip" style="background-color: <?= $groupColor ?>; color: <?= $groupTextColor ?>;">
-                                                                                <?= $group_perc ?>%
-                                                                            </span>
-                                                                        </td>
-                                                                    </tr>
-                                                                    <tr class="tag-group-nested" id="nested-<?= $tag_group_id ?>">
-                                                                        <td colspan="5" style="padding:0;">
-                                                                            <div class="questions-container" id="<?= $tag_group_id ?>">
-                                                                                <div class="questions-content" style="padding:40px 40px 10px 40px;">
-                                                                                    <?php foreach ($tag_group['questions'] as $question): ?>
-                                                                                        <?php
-                                                                                            $attempt_data = (object)[
-                                                                                                'fraction' => $question->fraction,
-                                                                                                'stepdata_value' => $processor->extract_primary_answer($question),
-                                                                                                'state' => $question->state
-                                                                                            ];
-                                                                                            echo $renderer->render_question_report($question, $attempt_data, true);
-                                                                                        ?>
-                                                                                    <?php endforeach; ?>
-                                                                                </div>
-                                                                            </div>
-                                                                        </td>
-                                                                    </tr>
-                                                                <?php endforeach; ?>
-                                                            </tbody>
-                                                        </table>
+                                                <div class="questions-container" id="<?= $tag_id ?>">
+                                                    <div class="questions-content" style="padding:40px 40px 10px 40px;">
+                                                        <?php foreach ($tag_data['questions'] as $question): ?>
+                                                            <?php
+                                                                $attempt_data = (object)[
+                                                                    'fraction' => $question->fraction,
+                                                                    'stepdata_value' => $processor->extract_primary_answer($question),
+                                                                    'state' => $question->state
+                                                                ];
+                                                                echo $renderer->render_question_report($question, $attempt_data, true);
+                                                            ?>
+                                                        <?php endforeach; ?>
                                                     </div>
                                                 </div>
                                             </td>
@@ -6709,63 +4216,30 @@ if (has_capability('moodle/grade:viewall', $context)) {
                 
                 <!-- Include Chart.js -->
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                    <script>
-
-                function toggleCategoryRow(categoryId) {
-                            const row = document.getElementById('row-' + categoryId);
-                            const container = document.getElementById(categoryId);
-                            const nestedRow = document.getElementById('nested-' + categoryId);
-                            if (!container) return;
-                            const isOpen = container.classList.contains('show');
-                            // Close all open siblings
-                            document.querySelectorAll('.expandable-row.category-row.expanded').forEach(r=>{
-                              if(r!==row) r.classList.remove('expanded');
-                            });
-                            document.querySelectorAll('.questions-container').forEach(c=>{
-                              if(c!==container) c.classList.remove('show');
-                            });
-                            if (isOpen) {
-                                container.classList.remove('show');
-                                row.classList.remove('expanded');
-                            } else {
-                                container.classList.add('show');
-                                row.classList.add('expanded');
-                            }
-                            // Also close all tag group expanded rows inside this category when collapsed
-                            if (!container.classList.contains('show')){
-                                if (nestedRow) {
-                                    nestedRow.querySelectorAll('.expandable-row.tag-group-row.expanded').forEach(function(r){
-                                      r.classList.remove('expanded');
-                                    });
-                                    nestedRow.querySelectorAll('.questions-container.show').forEach(function(c){
-                                      c.classList.remove('show');
-                                    });
-                                }
-                            }
+                <script>
+                    function toggleTagGroupRow(tagGroupId) {
+                        const row = document.getElementById('row-' + tagGroupId);
+                        const container = document.getElementById(tagGroupId);
+                        const nestedRow = document.getElementById('nested-' + tagGroupId);
+                        if (!container) return;
+                        const isOpen = container.classList.contains('show');
+                        // Close open siblings (other tag_groups at this level)
+                        let siblingRows = row.parentElement.querySelectorAll('.expandable-row.tag-group-row');
+                        siblingRows.forEach(function(tr){
+                            if(tr.id !== row.id){ tr.classList.remove('expanded');}
+                        });
+                        let siblingContainers = container.parentElement.querySelectorAll('.questions-container');
+                        siblingContainers.forEach(function(div){
+                            if(div.id !== tagGroupId){ div.classList.remove('show'); }
+                        });
+                        if (isOpen) {
+                            container.classList.remove('show');
+                            row.classList.remove('expanded');
+                        } else {
+                            container.classList.add('show');
+                            row.classList.add('expanded');
                         }
-                        function toggleTagGroupRow(tagGroupId) {
-                            const row = document.getElementById('row-' + tagGroupId);
-                            const container = document.getElementById(tagGroupId);
-                            const nestedRow = document.getElementById('nested-' + tagGroupId);
-                            if (!container) return;
-                            const isOpen = container.classList.contains('show');
-                            // Close open siblings (other tag_groups at this level)
-                            let siblingRows = row.parentElement.querySelectorAll('.expandable-row.tag-group-row');
-                            siblingRows.forEach(function(tr){
-                                if(tr.id !== row.id){ tr.classList.remove('expanded');}
-                            });
-                            let siblingContainers = container.parentElement.querySelectorAll('.questions-container');
-                            siblingContainers.forEach(function(div){
-                                if(div.id !== tagGroupId){ div.classList.remove('show'); }
-                            });
-                            if (isOpen) {
-                                container.classList.remove('show');
-                                row.classList.remove('expanded');
-                            } else {
-                                container.classList.add('show');
-                                row.classList.add('expanded');
-                            }
-                        }
+                    }
                     document.addEventListener("DOMContentLoaded", function() {
                         // Overall Performance Chart
                         const overallCtx = document.getElementById("overallPerformanceChart").getContext("2d");
@@ -6849,7 +4323,7 @@ if (has_capability('moodle/grade:viewall', $context)) {
                             observer.observe(elem);
                         });
                     });
-                    </script>
+                </script>
                 </div>
             </body>
             </html>

@@ -159,7 +159,12 @@ class enhanced_quiz_question_renderer extends \mod_quiz\output\renderer {
         
         // Source quiz (for past year papers)
         if (!empty($question_data->source_quiz_name)) {
-            $metadata_items[] = '<span class="question-source">Source: <span class="question-source-badge">' . htmlspecialchars($question_data->source_quiz_name) . '</span></span>';
+            $sourcelabel = gradereport_user_quiz_name_link(
+                $question_data->source_quiz_name,
+                $question_data->source_quiz_cmid ?? null,
+                $question_data->source_quiz_id ?? null
+            );
+            $metadata_items[] = '<span class="question-source">Source: <span class="question-source-badge">' . $sourcelabel . '</span></span>';
         }
         
         // Tags (if available)
