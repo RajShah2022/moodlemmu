@@ -72,6 +72,16 @@ class groupcontentconfiguration extends dynamic_form {
             // Build the checkbox options.
             $checkboxes = $this->build_section_paths($allsections);
 
+            if ($user_can_edit) {
+                $btnhtml = '<div class="form-group row mb-3"><div class="col-md-12 text-right">'
+                    . '<button type="button" class="btn btn-primary local-courses-enable-all" '
+                    . 'data-action="enable-all-toggles" '
+                    . 'data-courseid="' . $courseid . '" data-groupid="' . $groupid . '">'
+                    . get_string('enable_all_topics', 'local_courses')
+                    . '</button></div></div>';
+                $mform->addElement('html', $btnhtml);
+            }
+
             // Add checkboxes to the form.
             foreach ($checkboxes as $value => $label) {
                 $parent = $this->get_parent_id($allsections, $value);
@@ -203,15 +213,18 @@ class groupcontentconfiguration extends dynamic_form {
             $data = new stdClass();
             foreach ($existingtopics as $topic => $record) {
                 $data->{'section_' . $topic} = 1;
-                if($DB->record_exists('local_coursegroupmodules', array('topicid' => $topic))){
-                    // Load existing activities for this section.
-                    $params['topicid'] = $topic;
-                    $existingmodules = $DB->get_records('local_coursegroupmodules', $params, '', 'moduleid');
-                    foreach ($existingmodules as $moduleid => $record) {
-                        $data->{'activity_' . $moduleid} = 1;
-                    }
-                }
             }
+
+            // Load the class's activities in one go rather than per enabled topic. The
+            // old per-topic lookup keyed on topicid, so a row filed under a section that
+            // was not itself enabled never loaded: the toggle read off while the activity
+            // stayed available to students. Keying on the class alone means the toggle
+            // reflects what is actually stored, whatever the topicid says.
+            $existingmodules = $DB->get_records('local_coursegroupmodules', $params, '', 'moduleid');
+            foreach ($existingmodules as $moduleid => $record) {
+                $data->{'activity_' . $moduleid} = 1;
+            }
+
             $this->set_data($data);
         }
     }
