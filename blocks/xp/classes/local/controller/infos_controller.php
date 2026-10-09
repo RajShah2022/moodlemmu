@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Infos controller.
@@ -76,8 +78,6 @@ class infos_controller extends page_controller {
     }
 
     protected function page_content() {
-        global $PAGE;
-
         $output = $this->get_renderer();
         $levelsinfo = $this->world->get_levels_info();
         $canmanage = $this->world->get_access_permissions()->can_manage();
@@ -87,7 +87,6 @@ class infos_controller extends page_controller {
         $instructionsformat = $config->get('instructions_format');
         $cleanedinstructions = trim(strip_tags($instructions));
         $hasinstructions = !empty($cleanedinstructions);
-        $isediting = $this->get_param('edit') && $canmanage;
 
         if ($canmanage) {
             echo $output->advanced_heading(get_string('infos', 'block_xp'), [
@@ -97,7 +96,7 @@ class infos_controller extends page_controller {
                 'menu' => [
                     [
                         'label' => get_string('pagesettings', 'block_xp'),
-                        'data-action' => 'open-form',
+                        'data-xp-action' => 'open-form',
                         'data-form-class' => 'block_xp\form\info',
                         'data-form-args__contextid' => $this->world->get_context()->id,
                         'href' => '#',
@@ -108,11 +107,9 @@ class infos_controller extends page_controller {
                     ],
                 ],
             ]);
-            $PAGE->requires->js_call_amd('block_xp/modal-form', 'registerOpen', ['[data-action="open-form"]']);
         }
 
         if ($hasinstructions) {
-            // Display the instructions when not editing.
             echo html_writer::div(format_text($instructions, $instructionsformat), 'block_xp-instructions');
         }
 

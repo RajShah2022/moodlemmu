@@ -17,46 +17,44 @@
 /**
  * Access file
  *
- * @package    mod_supervideo
- * @copyright  2023 Eduardo kraus (http://eduardokraus.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   mod_supervideo
+ * @copyright 2024 Eduardo Kraus {@link https://eduardokraus.com}
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
 // Modify capabilities as needed and remove this comment.
-$capabilities = array(
-    'mod/supervideo:addinstance' => array(
+$capabilities = [
+    'mod/supervideo:addinstance' => [
         'riskbitmask' => RISK_XSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => array(
+        'archetypes' => [
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        ),
-        'clonepermissionsfrom' => 'moodle/course:manageactivities'
-    ),
-
-    'mod/supervideo:view' => array(
+            'manager' => CAP_ALLOW,
+        ],
+        'clonepermissionsfrom' => 'moodle/course:manageactivities',
+    ],
+    'mod/supervideo:view' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
-        'legacy' => array(
+        'legacy' => [
             'guest' => CAP_ALLOW,
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
-
-    'mod/supervideo:view_report' => array(
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+    'mod/supervideo:view_report' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
-        'legacy' => array(
+        'legacy' => [
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    )
-);
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+];

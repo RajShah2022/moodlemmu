@@ -17,25 +17,25 @@
 /**
  * index file
  *
- * @package    mod_supervideo
- * @copyright  2023 Eduardo kraus (http://eduardokraus.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   mod_supervideo
+ * @copyright 2024 Eduardo Kraus {@link https://eduardokraus.com}
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once("../../config.php");
 
-$id = required_param('id', PARAM_INT);
-$userid = optional_param('userid', null, PARAM_INT);
+$id = required_param("id", PARAM_INT);
+$userid = optional_param("userid", null, PARAM_INT);
 
-$cm = get_coursemodule_from_id('supervideo', $id, 0, false, MUST_EXIST);
-$course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
+$cm = get_coursemodule_from_id("supervideo", $id, 0, false, MUST_EXIST);
+$course = $DB->get_record("course", ["id" => $cm->course], "*", MUST_EXIST);
 
 require_login($course, false, $cm);
 
-$PAGE->set_url('/mod/supervideo/grade.php', ['id' => $cm->id]);
+$PAGE->set_url("/mod/supervideo/grade.php", ["id" => $cm->id]);
 
 if ($userid) {
-    redirect(new moodle_url('/mod/supervideo/report.php', ['id' => $cm->id]));
+    redirect(new moodle_url("/mod/supervideo/report.php", ["id" => $cm->id]));
 } else {
-    redirect(new moodle_url('/mod/supervideo/view.php', ['id' => $cm->id]));
+    redirect(new moodle_url("/mod/supervideo/view.php", ["id" => $cm->id]));
 }

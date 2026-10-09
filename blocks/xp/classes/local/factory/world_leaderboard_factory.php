@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Leaderboard factory.
@@ -73,7 +75,7 @@ class world_leaderboard_factory implements leaderboard_factory {
      * @param world $world The world.
      * @param config|null $configoverride The configure override.
      */
-    public function __construct(moodle_database $db, world $world, config $configoverride = null) {
+    public function __construct(moodle_database $db, world $world, ?config $configoverride = null) {
         $this->db = $db;
         $this->world = $world;
         $this->config = new immutable_config(new config_stack([
@@ -115,7 +117,7 @@ class world_leaderboard_factory implements leaderboard_factory {
      * @param user_filter|null $userfilter The user filter.
      * @return leaderboard
      */
-    protected function assemble_leaderboard(int $targetuserid, user_filter $userfilter = null): leaderboard {
+    protected function assemble_leaderboard(int $targetuserid, ?user_filter $userfilter = null): leaderboard {
 
         // How is the rank computed?
         $ranker = $this->get_ranker($targetuserid);
@@ -215,7 +217,7 @@ class world_leaderboard_factory implements leaderboard_factory {
      * @param ranker|null $ranker The ranker.
      * @return leaderboard
      */
-    protected function get_leaderboard_instance(array $columns, ranker $ranker = null): leaderboard {
+    protected function get_leaderboard_instance(array $columns, ?ranker $ranker = null): leaderboard {
         if (!$this->world instanceof course_world) {
             throw new \coding_exception('This factory only supports course_world instances.');
         }
@@ -257,8 +259,11 @@ class world_leaderboard_factory implements leaderboard_factory {
         // Do we only display the neighbours?
         $config = $this->config;
         if ($config->get('neighbours')) {
-            $leaderboard = new neighboured_leaderboard($leaderboard, $targetuserid, $config->get('neighbours'),
-                $this->world->get_access_permissions()->can_manage($targetuserid));
+            $leaderboard = new neighboured_leaderboard($leaderboard,
+                $targetuserid,
+                $config->get('neighbours'),
+                $this->world->get_access_permissions()->can_manage($targetuserid)
+            );
         }
 
         return $leaderboard;

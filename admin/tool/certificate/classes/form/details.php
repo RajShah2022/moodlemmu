@@ -27,7 +27,6 @@ namespace tool_certificate\form;
 use tool_certificate\permission;
 use tool_certificate\template;
 use core_form\dynamic_form;
-require_once($CFG->dirroot . '/local/costcenter/lib.php');
 
 /**
  * Class details
@@ -45,7 +44,7 @@ class details extends dynamic_form {
      * Template getter
      * @return template
      */
-    protected function get_template() : template {
+    protected function get_template(): template {
         $id = $this->optional_param('id', 0, PARAM_INT);
         if ($this->template === null) {
             $obj = null;
@@ -72,34 +71,26 @@ class details extends dynamic_form {
      * Form definition
      */
     public function definition() {
-        global $USER;
         $mform = $this->_form;
         $mform->setDisableShortforms();
-        $template = $this->get_template();
-
         // Add empty header for consistency.
         $mform->addElement('header', 'hdr', '');
 
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
-        $context=\local_costcenter\lib\accesslib::get_module_context();
-        local_costcenter_get_hierarchy_fields($mform, $this->_ajaxformdata, $this->_customdata,range(1,1),false, 'tool_certificate', $context, $multiple = false, $prefix = '', $this->template->get_open_path());
+
         $mform->addElement('text', 'name', get_string('name', 'tool_certificate'), 'maxlength="255"');
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required');
 
         if ($categoryoptions = $this->get_category_options()) {
-                $mform->addElement('hidden', 'categoryid', get_string('coursecategory'), $categoryoptions);
-                $mform->setType('categoryid', PARAM_INT);
-            if(has_capability('tool/certificate:manage', $context) && !is_siteadmin())
-            {
-                $mform->addElement('hidden', 'open_costcenterid', explode('/', $USER->open_path)[1]);
-            }
+            $mform->addElement('select', 'categoryid', get_string('coursecategory'), $categoryoptions);
+            $mform->setType('categoryid', PARAM_INT);
         } else {
             $mform->addElement('hidden', 'contextid');
         }
 
-        // $mform->addElement('advcheckbox', 'shared', get_string('availableincourses', 'tool_certificate'));
+        $mform->addElement('advcheckbox', 'shared', get_string('availableincourses', 'tool_certificate'));
         $mform->addHelpButton('shared', 'availableincourses', 'tool_certificate');
         $mform->setDefault('shared', 1);
 
@@ -196,8 +187,7 @@ class details extends dynamic_form {
                 'id' => $this->template->get_id(),
                 'name' => $this->template->get_name(),
                 'shared' => $this->template->get_shared(),
-                'open_path' => $this->template->get_open_path(),
-                'categoryid' => $this->template->get_category_id()]);
+                'categoryid' => $this->template->get_category_id(), ]);
         } else {
             $data = template::instance()->new_page()->to_record();
             unset($data->id, $data->templateid);

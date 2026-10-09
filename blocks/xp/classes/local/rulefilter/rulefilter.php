@@ -1,30 +1,24 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- * Filter.
- *
- * @package    block_xp
- * @copyright  2024 Frédéric Massart
- * @author     Frédéric Massart <fred@branchup.tech>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 namespace block_xp\local\rulefilter;
 
+use action_tester;
 use context;
 use lang_string;
 
@@ -41,11 +35,18 @@ interface rulefilter {
     /**
      * Get action tester.
      *
+     * The return type of this method was block_xp\local\rulefilter\action_tester in XP 19,
+     * and it should have become block_xp\local\action\action_tester in XP 20, but as XP+
+     * already implemented this interface, fixing the return type would break implementations.
+     *
+     * And even if we could, the objects implementing action_tester would have to implement
+     * the now deprecated one, which would not work either. So, the return type was removed.
+     *
      * @param context $effectivecontext The effective context.
      * @param object $config The config.
      * @return action_tester
      */
-    public function get_action_tester(context $effectivecontext, object $config): action_tester;
+    public function get_action_tester(context $effectivecontext, object $config);
 
     /**
      * Get compatible context levels.
@@ -68,7 +69,7 @@ interface rulefilter {
      * @param context|null $effectivecontext The effective context, if not in admin.
      * @return string
      */
-    public function get_label_for_config(object $config, context $effectivecontext = null): string;
+    public function get_label_for_config(object $config, ?context $effectivecontext = null): string;
 
     /**
      * Get short description.

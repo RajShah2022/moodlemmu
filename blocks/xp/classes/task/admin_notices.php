@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 namespace block_xp\task;
 
@@ -83,9 +85,7 @@ class admin_notices extends \core\task\scheduled_task {
         }
 
         // Only send once per major version pair.
-        $xpversion = (string) floor((int) $blockxp->versiondb / 100);
-        $xppversion = (string) floor((int) $localxp->versiondb / 100);
-        $key = "{$xpversion}:{$xppversion}";
+        $key = static::get_version_pair_key($blockxp, $localxp);
         if ($config->get('lastoutofsyncnoticekey') === $key) {
             return;
         }
@@ -118,6 +118,19 @@ class admin_notices extends \core\task\scheduled_task {
         }
 
         $config->set('lastoutofsyncnoticekey', $key);
+    }
+
+    /**
+     * Get a version pair key.
+     *
+     * @param \core\plugininfo\base $blockxp The info.
+     * @param \core\plugininfo\base $localxp The info.
+     * @return string
+     */
+    public static function get_version_pair_key($blockxp, $localxp) {
+        $xpversion = (string) floor((int) $blockxp->versiondb / 100);
+        $xppversion = (string) floor((int) $localxp->versiondb / 100);
+        return "{$xpversion}:{$xppversion}";
     }
 
     /**

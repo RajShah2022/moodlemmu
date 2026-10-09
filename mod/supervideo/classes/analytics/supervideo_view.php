@@ -16,23 +16,31 @@
 
 /**
  * Supervideo View implementation for mod_supervideo.
+ *
+ * @package   mod_supervideo
+ * @copyright 2024 Eduardo Kraus {@link https://eduardokraus.com}
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace mod_supervideo\analytics;
 
+use coding_exception;
+use dml_exception;
 use mod_supervideo\grade\grades_util;
+use moodle_exception;
 
 /**
- * @package   mod_supervideo
- * @copyright 2023 Eduardo Kraus {@link http://eduardokraus.com}
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * Supervideo View implementation for mod_supervideo.
  */
 class supervideo_view {
     /**
+     * Create function.
+     *
      * @param $cmid
      *
      * @return object
-     * @throws \dml_exception
+     *
+     * @throws dml_exception
      */
     public static function create($cmid) {
         global $USER, $DB;
@@ -42,17 +50,24 @@ class supervideo_view {
 
         if ($supervideoview) {
             if ($supervideoview->currenttime > ($supervideoview->duration - 3)) {
-                return self::_create($cmid);
+                return self::internal_create($cmid);
             }
             if ($supervideoview->percent < 90) {
                 return $supervideoview;
             }
         }
 
-        return self::_create($cmid);
+        return self::internal_create($cmid);
     }
 
-    private static function _create($cmid) {
+    /**
+     * Function internal_create
+     *
+     * @param $cmid
+     *
+     * @return object
+     */
+    private static function internal_create($cmid) {
         global $USER, $DB;
 
         $supervideoview = (object)[
@@ -76,16 +91,18 @@ class supervideo_view {
     }
 
     /**
-     * @param int $viewid
-     * @param int $currenttime
-     * @param int $duration
-     * @param int $percent
-     * @param int $mapa
+     * Function update
+     *
+     * @param $viewid
+     * @param $currenttime
+     * @param $duration
+     * @param $percent
+     * @param $mapa
      *
      * @return bool
-     * @throws \coding_exception
-     * @throws \dml_exception
-     * @throws \moodle_exception
+     * @throws coding_exception
+     * @throws dml_exception
+     * @throws moodle_exception
      */
     public static function update($viewid, $currenttime, $duration, $percent, $mapa) {
         global $DB, $USER, $CFG;

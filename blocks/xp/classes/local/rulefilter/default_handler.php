@@ -1,27 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- * Handler.
- *
- * @package    block_xp
- * @copyright  2024 Frédéric Massart
- * @author     Frédéric Massart <fred@branchup.tech>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 namespace block_xp\local\rulefilter;
 
@@ -103,11 +96,32 @@ class default_handler implements handler {
      */
     public function get_filters(): array {
         return array_filter(
-            array_reduce($this->filternames, function($carry, $name) {
+            array_reduce($this->filternames, function ($carry, $name) {
                 $carry[$name] = $this->get_filter($name);
                 return $carry;
             }, []),
         );
+    }
+
+    /**
+     * Whether the class is a rulefiltere.
+     *
+     * @param string $classname The class name.
+     * @return bool
+     */
+    protected function is_rulefilter_class($classname) {
+        try {
+            $reflector = new \ReflectionClass($classname);
+        } catch (\ReflectionException $e) {
+            return false;
+        }
+
+        if (!$reflector->isInstantiable()) {
+            return false;
+        } else if (!$reflector->implementsInterface(rulefilter::class)) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -119,11 +133,8 @@ class default_handler implements handler {
     protected function load_filter($name) {
         $class = "block_xp\\local\\rulefilter\\$name";
         $instance = null;
-        if (class_exists($class)) {
+        if ($this->is_rulefilter_class($class)) {
             $instance = new $class();
-            if (!$instance instanceof rulefilter) {
-                $instance = null;
-            }
         }
         return $instance;
     }
@@ -134,7 +145,24 @@ class default_handler implements handler {
      * @return array
      */
     protected function make_filters_list_with_priority(): array {
-        return ['any' => 0];
+        return [
+            // Course modules.
+            'cm' => 9000,
+            'cmname' => 2000,
+            'cmtag' => 1000,
+
+            // Sections.
+            'section' => 1000,
+
+            // Course.
+            'thiscourse' => 100,
+
+            // Any.
+            'anycm' => 9,
+            'anysection' => 6,
+            'anycourse' => 3,
+            'any' => 0,
+        ];
     }
 
 }

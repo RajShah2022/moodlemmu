@@ -46,8 +46,17 @@ class template extends base {
      */
     protected function get_default_table_aliases(): array {
         return [
-            'tool_certificate_templates' => 'tct'
+            'tool_certificate_templates' => 'tct',
         ];
+    }
+
+    /**
+     * Database tables that this entity uses
+     *
+     * @return string[]
+     */
+    protected function get_default_tables(): array {
+        return array_keys($this->get_default_table_aliases());
     }
 
     /**

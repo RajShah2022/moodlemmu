@@ -57,7 +57,7 @@ abstract class element {
      * @return element
      * @throws \moodle_exception
      */
-    public static function instance(int $id = 0, ?\stdClass $obj = null) : element {
+    public static function instance(int $id = 0, ?\stdClass $obj = null): element {
         $element = self::instance_from_persistent(new \tool_certificate\persistent\element($id, $obj));
         if (!$element) {
             throw new \moodle_exception('not found'); // TODO string.
@@ -71,9 +71,8 @@ abstract class element {
      * @param \tool_certificate\persistent\element $persistent
      * @return element
      */
-    protected static function instance_from_persistent(\tool_certificate\persistent\element $persistent) :? element {
+    protected static function instance_from_persistent(\tool_certificate\persistent\element $persistent): ?element {
         // Get the class name.
-        /** @var element $classname */
         $classname = '\\certificateelement_' . $persistent->get('element') . '\\element';
 
         // Ensure the necessary class exists.
@@ -200,7 +199,7 @@ abstract class element {
      *
      * @return int
      */
-    public function get_sequence() : int {
+    public function get_sequence(): int {
         return $this->persistent->get('sequence');
     }
 
@@ -208,7 +207,7 @@ abstract class element {
      * Converts to stdClass
      * @return \stdClass
      */
-    public function to_record() : \stdClass {
+    public function to_record(): \stdClass {
         return $this->persistent->to_record();
     }
 
@@ -303,7 +302,7 @@ abstract class element {
      * @param page $page target page
      * @return element new element
      */
-    public function duplicate(page $page) : element {
+    public function duplicate(page $page): element {
         $id = $this->get_id();
         $record = $this->persistent->to_record();
         unset($record->id, $record->timemodified, $record->timecreated);
@@ -403,7 +402,7 @@ abstract class element {
      * Get page
      * @return page
      */
-    public function get_page() : page {
+    public function get_page(): page {
         if ($this->page === null) {
             $this->page = page::instance($this->persistent->get('pageid'));
         }
@@ -414,7 +413,7 @@ abstract class element {
      * Get template
      * @return template
      */
-    public function get_template() : template {
+    public function get_template(): template {
         return $this->get_page()->get_template();
     }
 
@@ -423,7 +422,7 @@ abstract class element {
      *
      * @return output\element
      */
-    public function get_exporter() : \tool_certificate\output\element {
+    public function get_exporter(): \tool_certificate\output\element {
         return new \tool_certificate\output\element($this->persistent, ['element' => $this]);
     }
 
@@ -432,7 +431,7 @@ abstract class element {
      *
      * @return string
      */
-    public function get_display_name() : string {
+    public function get_display_name(): string {
         $name = $this->persistent->get('name');
         if (strlen($name)) {
             return format_string($this->get_name(), true, ['escape' => false]);
@@ -445,7 +444,7 @@ abstract class element {
      * Inplace editable name
      * @return inplace_editable
      */
-    public function get_inplace_editable() : inplace_editable {
+    public function get_inplace_editable(): inplace_editable {
         $formattedname = $this->get_display_name();
         return new \core\output\inplace_editable('tool_certificate', 'elementname',
             $this->get_id(), true,
@@ -468,7 +467,7 @@ abstract class element {
      * @param bool $withtitle
      * @return \pix_icon
      */
-    public static function get_element_type_image(bool $withtitle = false) : \pix_icon {
+    public static function get_element_type_image(bool $withtitle = false): \pix_icon {
         global $PAGE;
         $parts = preg_split('/\\\\/', static::class);
         $pluginname = $parts[0];
@@ -484,7 +483,7 @@ abstract class element {
      * Can element be dragged?
      * @return bool
      */
-    public function is_draggable() : bool {
+    public function is_draggable(): bool {
         return true;
     }
 }

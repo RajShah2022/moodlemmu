@@ -22,6 +22,8 @@ use tool_certificate_generator;
 /**
  * Unit tests for the webservices.
  *
+ * @runTestsInSeparateProcesses
+ *
  * @package    tool_certificate
  * @group      tool_certificate
  * @category   test
@@ -29,7 +31,7 @@ use tool_certificate_generator;
  * @copyright  2018 Mark Nelson <markn@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class external_test extends advanced_testcase {
+final class external_test extends advanced_testcase {
 
     /** @var tool_certificate_generator */
     protected $certgenerator;
@@ -38,6 +40,7 @@ class external_test extends advanced_testcase {
      * Test set up.
      */
     public function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest();
         $this->certgenerator = self::getDataGenerator()->get_plugin_generator('tool_certificate');
     }
@@ -45,7 +48,7 @@ class external_test extends advanced_testcase {
     /**
      * Test the delete_issue web service.
      */
-    public function test_delete_issue() {
+    public function test_delete_issue(): void {
         global $DB;
 
         $this->setAdminUser();
@@ -82,7 +85,7 @@ class external_test extends advanced_testcase {
     /**
      * Test the delete_issue web service.
      */
-    public function test_delete_issue_no_login() {
+    public function test_delete_issue_no_login(): void {
         global $DB;
 
         // Create a course.
@@ -113,7 +116,7 @@ class external_test extends advanced_testcase {
     /**
      * Test the delete_issue web service.
      */
-    public function test_delete_issue_no_capability() {
+    public function test_delete_issue_no_capability(): void {
         global $DB;
 
         // Create a course.
@@ -146,8 +149,9 @@ class external_test extends advanced_testcase {
     /**
      * Test regenerate_issue_file
      */
-    public function test_regenerate_issue_file() {
-        global $DB;
+    public function test_regenerate_issue_file(): void {
+        global $DB, $CFG;
+        require_once($CFG->libdir . '/externallib.php');
 
         $this->setAdminUser();
 
@@ -171,8 +175,24 @@ class external_test extends advanced_testcase {
         // Change user name.
         $DB->update_record('user', (object) ['id' => $user->id, 'lastname' => '02']);
 
+        // Trigger and capture the event.
+        $sink = $this->redirectEvents();
+
         // Regenerate issue file.
         \tool_certificate\external\issues::regenerate_issue_file($issue->id);
+
+        // Checking that the event was triggered.
+        $events = $sink->get_events();
+        $this->assertCount(1, $events);
+        $event = array_pop($events);
+
+        // Checking that the event contains the expected values.
+        $this->assertInstanceOf('\tool_certificate\event\certificate_regenerated', $event);
+        $this->assertEquals(\context_system::instance(), $event->get_context());
+        $this->assertEventContextNotUsed($event);
+        $this->assertNotEmpty($event->get_name());
+        $this->assertNotEmpty($event->get_description());
+        $sink->close();
 
         // Check new file was created for issue.
         $newfile = $fs->get_file(\context_system::instance()->id, 'tool_certificate', 'issues',

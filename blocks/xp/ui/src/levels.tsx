@@ -1,10 +1,10 @@
 import { Menu } from "@headlessui/react";
 import React, { useEffect, useMemo, useReducer } from "react";
-import ReactDOM from "react-dom";
-import { QueryClientProvider, useMutation } from "react-query";
+import { createRoot } from "react-dom/client";
+import { QueryClientProvider, useMutation } from "@tanstack/react-query";
 import { AddonRequired, IfAddonActivatedOrPromoEnabled } from "./components/Addon";
 import { BulkEditPointsModal, BulkEditPointsState } from "./components/BulkEditPoints";
-import { AnchorButton, Button, SaveButton } from "./components/Button";
+import { AnchorButton, Button, ExpandCollapseButton, SaveButton } from "./components/Button";
 import Expandable from "./components/Expandable";
 import { Bars3BottomLeftIcon, CheckBadgeIconSolid, LanguageIcon, PaperAirplaneIconSolid } from "./components/Icons";
 import Input, { Select, Textarea } from "./components/Input";
@@ -193,11 +193,16 @@ const reducer = (state: State, [action, payload]: [string, any]): State => {
   return state;
 };
 
-const OptionField: React.FC<{ label: React.ReactNode; note?: React.ReactNode; xpPlusRequired?: boolean }> = ({
+const OptionField = ({
   label,
   children,
   note,
   xpPlusRequired,
+}: {
+  children: React.ReactNode;
+  label: React.ReactNode;
+  note?: React.ReactNode;
+  xpPlusRequired?: boolean;
 }) => {
   return (
     <div>
@@ -354,7 +359,7 @@ export const App = ({ courseId, levelsInfo, resetToDefaultsUrl, defaultBadgeUrls
           <Menu as="div" className="xp-relative xp-inline-block xp-text-left">
             <div>
               <Menu.Button className="xp-text-inherit xp-bg-transparent xp-border-0 xp-p-2 xp-flex xp-items-center xp-rounded-full hover:xp-bg-gray-100">
-                <span className="sr-only">
+                <span className="xp-sr-only">
                   <Str id="options" component="core" />
                 </span>
                 <svg
@@ -395,7 +400,7 @@ export const App = ({ courseId, levelsInfo, resetToDefaultsUrl, defaultBadgeUrls
                     <a
                       href={HELP_URL_LEVELS}
                       target="_blank"
-                      rel="noopener"
+                      rel="noopener noreferrer"
                       className={classNames(
                         active ? "xp-bg-gray-100" : null,
                         "xp-text-inherit xp-block xp-px-6 xp-py-1 xp-no-underline"
@@ -435,6 +440,7 @@ export const App = ({ courseId, levelsInfo, resetToDefaultsUrl, defaultBadgeUrls
           const nextLevel = levels[idx + 1];
           const pointsInLevel = nextLevel ? nextLevel.xprequired - level.xprequired : 0;
           const isExpanded = expanded.includes(level.level);
+          const expandableId = `xp-level-${level.level}-options`;
 
           let optionStates: ((typeof optionsStates)[0] | null)[] =
             level.level <= 1
@@ -456,7 +462,10 @@ export const App = ({ courseId, levelsInfo, resetToDefaultsUrl, defaultBadgeUrls
 
           return (
             <React.Fragment key={`l${level.level}`}>
-              <div className="xp-relative xp-min-h-28 xp-rounded-lg xp-border xp-border-solid xp-border-gray-200 xp-p-3 xp-overflow-hidden">
+              <fieldset className="xp-relative xp-min-h-28 xp-rounded-lg xp-border xp-border-solid xp-border-gray-200 xp-p-3 xp-overflow-hidden">
+                <legend className="xp-sr-only">
+                  <Str id="levelx" a={level.level} />
+                </legend>
                 <div className="xp-absolute xp--top-4 xp--left-8 xp-text-[10rem] xp-text-gray-50 xp-leading-none xp-pointer-events-none">
                   {level.level}
                 </div>
@@ -527,36 +536,18 @@ export const App = ({ courseId, levelsInfo, resetToDefaultsUrl, defaultBadgeUrls
                     })}
                   </div>
                   <div className="xp-flex-0 sm:xp--mr-3">
-                    <AnchorButton
-                      aria-expanded={isExpanded}
-                      aria-controls={`xp-level-${level.level}-options`}
-                      onClick={() => {
+                    <ExpandCollapseButton
+                      expanded={isExpanded}
+                      ariaControlsId={expandableId}
+                      onToggle={() => {
                         setExpanded(isExpanded ? expanded.filter((e) => e != level.level) : [level.level, ...expanded]);
                       }}
-                      className="xp-p-2 xp-inline-block sm:xp-mr-1"
-                    >
-                      <span className="xp-sr-only">
-                        {isExpanded ? <Str id="collapse" component="core" /> : <Str id="expand" component="core" />}
-                      </span>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className={classNames(
-                          "xp-w-6 xp-h-6 xp-transition-transform xp-duration-300",
-                          isExpanded ? "xp-rotate-90" : null
-                        )}
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                      </svg>
-                    </AnchorButton>
+                    />
                   </div>
                 </div>
 
                 {/** Expanded */}
-                <Expandable expanded={isExpanded} id={`xp-level-${level.level}-options`}>
+                <Expandable expanded={isExpanded} id={expandableId}>
                   <div className={classNames("sm:xp-ml-[100px] sm:xp-pl-8 xp-space-y-4")}>
                     <div className="xp-flex xp-items-end xp-gap-4">
                       <div className="xp-flex-1">
@@ -583,6 +574,7 @@ export const App = ({ courseId, levelsInfo, resetToDefaultsUrl, defaultBadgeUrls
                                   strokeWidth={1.5}
                                   stroke="currentColor"
                                   className="xp-w-6 xp-h-6"
+                                  aria-hidden="true"
                                 >
                                   <path
                                     strokeLinecap="round"
@@ -677,7 +669,7 @@ export const App = ({ courseId, levelsInfo, resetToDefaultsUrl, defaultBadgeUrls
                     </IfAddonActivatedOrPromoEnabled>
                   </div>
                 </Expandable>
-              </div>
+              </fieldset>
             </React.Fragment>
           );
         })}
@@ -712,13 +704,13 @@ type AppProps = {
 };
 
 function startApp(node: HTMLElement, props: any) {
-  ReactDOM.render(
+  const root = createRoot(node);
+  root.render(
     <AddonContext.Provider value={makeAddonContextValueFromAppProps(props)}>
       <QueryClientProvider client={queryClient}>
         <App {...props} />
       </QueryClientProvider>
-    </AddonContext.Provider>,
-    node
+    </AddonContext.Provider>
   );
 }
 

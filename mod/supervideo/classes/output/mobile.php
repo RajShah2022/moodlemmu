@@ -16,83 +16,62 @@
 
 namespace mod_supervideo\output;
 
-use mod_supervideo;
+use core_external\util;
+use Exception;
+use moodle_url;
 
+/**
+ * Output Mobile for mod_supervideo.
+ *
+ * @package   mod_supervideo
+ * @copyright 2024 Eduardo Kraus {@link https://eduardokraus.com}
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class mobile {
 
     /**
+     * Function mobile_course_view
+     *
      * @param $args
+     *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public static function mobile_course_view($args) {
-        global $CFG, $OUTPUT, $USER;
+        global $OUTPUT;
 
-        $cmid = $args['cmid'];
-        $token = self::create_embed_token($USER->id);
-
+        $url = new moodle_url("/mod/supervideo/view-mobile.php", [
+            "id" => $args["cmid"],
+            "token" => self::get_token(),
+        ]);
         $data = [
-            'cmid' => $cmid,
-            'wwwroot' => $CFG->wwwroot,
-            'user_id' => $USER->id,
-            'secret' => $token,
-            't' => time()
+            "cmid" => $args["cmid"],
+            "iframe_url" => $url->out(false),
         ];
 
         return [
-            'templates' => [[
-                'id' => 'main',
-                'html' => $OUTPUT->render_from_template('mod_supervideo/mobile_view_page', $data),
-            ]]
+            "templates" => [
+                [
+                    "id" => "main",
+                    "html" => $OUTPUT->render_from_template("mod_supervideo/mobile", $data),
+                ],
+            ],
+            "javascript" => "",
+            "otherdata" => [],
+            "files" => [],
         ];
     }
 
     /**
-     * @param $userid
-     * @return string
-     * @throws \Exception
+     * Get Token from access
+     *
+     * @return int returns token id.
+     * @throws Exception
      */
-    private static function create_embed_token($userid) {
+    private static function get_token() {
         global $DB;
 
-        $secret = md5(uniqid(0)) . md5(uniqid(1));
-        $token = substr($secret, 0, rand(54, 64));
-
-        $data = (object)[
-            'user_id' => $userid,
-            'secret' => $token,
-            'created_at' => time()
-        ];
-        $DB->insert_record('supervideo_auth', $data);
-
-        return $token;
-    }
-
-    /**
-     * @param $userid
-     * @param $secret
-     * @return bool
-     * @throws \Exception
-     */
-    public static function valid_token($userid, $secret) {
-        global $DB;
-
-        // Delete expired.
-        $where = ['threshold' => time() - 60];
-        $DB->delete_records_select('supervideo_auth', 'created_at < :threshold', $where);
-
-        $auth = $DB->get_record('supervideo_auth', array(
-            'user_id' => $userid,
-            'secret' => $secret,
-        ));
-
-        if ($auth) {
-            $user = get_complete_user_data('id', $userid);
-            complete_user_login($user);
-
-            return true;
-        }
-
-        return false;
+        $service = $DB->get_record("external_services", ["shortname" => MOODLE_OFFICIAL_MOBILE_SERVICE], "*", MUST_EXIST);
+        return util::generate_token_for_current_user($service)->token;
     }
 }

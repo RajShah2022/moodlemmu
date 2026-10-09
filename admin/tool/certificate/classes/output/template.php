@@ -62,7 +62,7 @@ class template extends persistent_exporter {
      *
      * @return \tool_certificate\template
      */
-    protected function get_template() : \tool_certificate\template {
+    protected function get_template(): \tool_certificate\template {
         return $this->related['template'];
     }
 
@@ -124,7 +124,7 @@ class template extends persistent_exporter {
     protected function get_format_parameters_for_name() {
         return [
             'context' => $this->get_template()->get_context(),
-            'escape' => false
+            'escape' => false,
         ];
     }
 }

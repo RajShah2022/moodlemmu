@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Log controller.
@@ -80,8 +82,9 @@ class log_controller extends page_controller {
     }
 
     protected function get_table() {
-        $table = new \block_xp\output\log_table(
+        $table = new \block_xp\output\logs_table(
             $this->world,
+            di::get('reason_from_log_entry_factory'),
             $this->get_groupid(),
             $this->get_user_id()
         );
@@ -130,6 +133,23 @@ class log_controller extends page_controller {
         return $this->userid;
     }
 
+    protected function get_dismissable_filters() {
+        $userid = $this->get_user_id();
+        if (!$userid) {
+            return;
+        }
+
+        $allusers = new url($this->pageurl);
+        $allusers->remove_params('userid');
+        $user = core_user::get_user($userid, '*', MUST_EXIST);
+        return [
+            [
+                'label' => get_string('resultsfilteredforn', 'block_xp', fullname($user)),
+                'removeurl' => $allusers,
+            ],
+        ];
+    }
+
     protected function page_advanced_heading() {
         $output = $this->get_renderer();
         echo $output->advanced_heading(get_string('courselog', 'block_xp'), [
@@ -148,23 +168,32 @@ class log_controller extends page_controller {
 
         if (!$singleuser) {
             $this->print_group_menu();
-        } else {
-            $user = core_user::get_user($userid, '*', MUST_EXIST);
-            $allusers = new url($this->pageurl);
-            $allusers->remove_params('userid');
-            echo html_writer::tag('p', get_string('resultsfilteredforn', 'block_xp', fullname($user))
-                . ' ' . html_writer::link($allusers, get_string('removefilter', 'block_xp')));
         }
 
         // Display the user filter.
         $this->page_user_filter();
 
+        // Display the active dismissable filters.
+        $this->page_dismissable_filters();
+
         // Displaying the report.
         echo html_writer::start_div('xp-cancel-overflow');
         echo $this->get_table()->out(50, !$singleuser && $this->isusingoldxpp);
         echo html_writer::end_div();
+    }
 
-        $PAGE->requires->js_call_amd('block_xp/modal-form', 'registerOpen', ['[data-action="open-form"]']);
+    protected function page_dismissable_filters() {
+        $dismissablefilters = $this->get_dismissable_filters();
+        if (!$dismissablefilters) {
+            return;
+        }
+
+        echo html_writer::start_tag('p');
+        echo implode('<br>', array_map(function ($filter) {
+            return s($filter['label'])
+                . ' ' . html_writer::link($filter['removeurl'], get_string('removefilter', 'block_xp'));
+        }, $dismissablefilters));
+        echo html_writer::end_tag('p');
     }
 
     protected function page_user_filter() {

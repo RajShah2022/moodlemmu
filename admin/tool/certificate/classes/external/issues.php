@@ -44,9 +44,9 @@ class issues extends \external_api {
      */
     public static function revoke_issue_parameters() {
         return new \external_function_parameters(
-            array(
+            [
                 'id' => new \external_value(PARAM_INT, 'The issue id'),
-            )
+            ]
         );
     }
 
@@ -78,7 +78,7 @@ class issues extends \external_api {
     /**
      * Returns the revoke_issue result value.
      *
-     * @return \external_value
+     * @return null
      */
     public static function revoke_issue_returns() {
         return null;
@@ -91,9 +91,9 @@ class issues extends \external_api {
      */
     public static function regenerate_issue_file_parameters() {
         return new \external_function_parameters(
-            array(
+            [
                 'id' => new \external_value(PARAM_INT, 'The issue id'),
-            )
+            ]
         );
     }
 
@@ -126,12 +126,15 @@ class issues extends \external_api {
             $issue->data = json_encode($issuedata);
             $DB->update_record('tool_certificate_issues', $issue);
         }
+
+        // Trigger event.
+        \tool_certificate\event\certificate_regenerated::create_from_issue($issue)->trigger();
     }
 
     /**
      * Returns the regenerate_issue_file result value.
      *
-     * @return \external_value
+     * @return null
      */
     public static function regenerate_issue_file_returns() {
         return null;
@@ -177,7 +180,6 @@ class issues extends \external_api {
         }
 
         $join = ' LEFT JOIN {tool_certificate_issues} ci ON u.id = ci.userid AND ci.templateid = :templateid';
-        $path = $DB->get_field('tool_certificate_templates', 'open_path', array('id'=>$itemid));
 
         $params = [];
         $params['templateid'] = $itemid;
@@ -206,7 +208,7 @@ class issues extends \external_api {
         list($wheresql, $whereparams) = users_search_sql($search, 'u', true, $extrasearchfields);
         $query = "SELECT u.id, $fields
             FROM {user} u $join
-            WHERE ($where) AND $wheresql AND u.open_path LIKE '%".$path."/%' OR u.open_path LIKE '%".$path."'";
+            WHERE ($where) AND $wheresql";
         $params += $whereparams;
 
         list($sortsql, $sortparams) = users_order_by_sql('u', $search, $context);

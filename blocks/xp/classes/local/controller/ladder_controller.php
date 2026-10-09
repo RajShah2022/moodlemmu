@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Ladder controller.
@@ -28,7 +30,9 @@ namespace block_xp\local\controller;
 use block_xp\di;
 use block_xp\local\division\division;
 use block_xp\local\division\group_division;
-use moodle_exception;
+use block_xp\local\shortcode\handler;
+use block_xp\local\utils\text_utils;
+use html_writer;
 
 /**
  * Ladder controller class.
@@ -82,7 +86,8 @@ class ladder_controller extends page_controller {
      * @return division|null
      */
     protected function get_division(): ?division {
-        if ($this->get_groupid()) {
+        $groupid = $this->get_groupid();
+        if ($groupid || $groupid === 0) {
             return new group_division($this->get_groupid());
         }
         return null;
@@ -114,8 +119,7 @@ class ladder_controller extends page_controller {
             $this->get_renderer(),
             [
                 'context' => $this->world->get_context(),
-                'identitymode' => $this->world->get_config()->get('identitymode'),
-                'rankmode' => $this->world->get_config()->get('rankmode'),
+                'config' => $this->world->get_config(),
             ],
             $USER->id
         );
@@ -174,6 +178,7 @@ class ladder_controller extends page_controller {
     protected function page_content() {
         global $PAGE;
         $output = $this->get_renderer();
+        $PAGE->requires->js_call_amd('block_xp/modal', 'registerSimpleOpenModalActionObserver');
 
         $canmanage = $this->world->get_access_permissions()->can_manage();
         if ($canmanage) {
@@ -183,11 +188,20 @@ class ladder_controller extends page_controller {
                 'visible' => $this->is_visible_to_viewers(),
                 'menu' => $this->get_page_menu_items(),
             ]);
-            $PAGE->requires->js_call_amd('block_xp/modal-form', 'registerOpen', ['[data-action="open-form"]']);
         }
 
+        $this->page_ranking();
+    }
+
+    /**
+     * Page ranking.
+     */
+    protected function page_ranking() {
         $this->print_group_menu();
+
+        echo html_writer::start_div('xp-cancel-overflow');
         echo $this->get_table()->out($this->get_page_size(), false);
+        echo html_writer::end_div();
     }
 
     /**
@@ -198,12 +212,34 @@ class ladder_controller extends page_controller {
     protected function get_page_menu_items() {
         $config = di::get('config');
         $hasaddon = di::get('addon')->is_activated();
+
+        $randomid = \html_writer::random_id();
+        $plugman = \core_plugin_manager::instance();
+        $shortcodes = $plugman->get_plugin_info('filter_shortcodes');
+        $context = $this->world->get_context();
+        $embeddata = [
+            'isavailable' => (bool) $shortcodes && ($shortcodes->is_enabled() ?? true),
+            'isenabled' => (bool) $this->world->get_config()->get('enableladder'),
+            'introformatted' => text_utils::markdown_light(get_string('shortcodexpladderembedintro', 'block_xp')),
+            'pluginrequiredformatted' => text_utils::markdown_light(get_string('pluginshortcodesrequiredtousefeature', 'block_xp')),
+            'snippet' => "[xpladder ctx={$context->id} secret=" . handler::get_xpladder_secret($context) . "]",
+        ];
+        echo $this->get_renderer()->json_script($embeddata, $randomid);
+
         return array_filter([
             [
                 'label' => get_string('pagesettings', 'block_xp'),
-                'data-action' => 'open-form',
+                'data-xp-action' => 'open-form',
                 'data-form-class' => di::get('leaderboard_form_class'),
                 'data-form-args__contextid' => $this->world->get_context()->id,
+                'href' => '#',
+            ],
+            [
+                'label' => get_string('embedleaderboard', 'block_xp'),
+                'data-xp-action' => 'open-modal',
+                'data-template' => 'block_xp/shortcode-xpladder-embed',
+                'data-template-data' => $randomid,
+                'data-modal-title' => get_string('embedleaderboard', 'block_xp'),
                 'href' => '#',
             ],
             $config->get('enablepromoincourses') && !$hasaddon ? [

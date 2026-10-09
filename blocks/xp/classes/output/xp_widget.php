@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Main widget.
@@ -88,17 +90,22 @@ class xp_widget implements renderable, templatable {
      * @param array $actions The actions.
      * @param moodle_url|null $recentactivityurl The URL to see more.
      */
-    public function __construct(state $state, array $recentactivity, renderable $intro = null, array $actions,
-            moodle_url $recentactivityurl = null) {
+    public function __construct(
+        state $state,
+        array $recentactivity,
+        ?renderable $intro = null,
+        array $actions = [],
+        ?moodle_url $recentactivityurl = null
+    ) {
 
         $this->state = $state;
         $this->intro = $intro;
         $this->recentactivityurl = $recentactivityurl;
 
-        $this->recentactivity = array_filter($recentactivity, function($activity) {
+        $this->recentactivity = array_filter($recentactivity, function ($activity) {
             return $activity instanceof activity;
         });
-        $this->actions = array_filter($actions, function($action) {
+        $this->actions = array_filter($actions, function ($action) {
             return $action instanceof action_link;
         });
     }
@@ -136,7 +143,7 @@ class xp_widget implements renderable, templatable {
      *
      * @param level $nextlevel The next level.
      */
-    public function set_next_level(level $nextlevel = null) {
+    public function set_next_level(?level $nextlevel = null) {
         $this->nextlevel = $nextlevel;
     }
 
@@ -154,7 +161,7 @@ class xp_widget implements renderable, templatable {
      *
      * @param rank $rank The rank.
      */
-    public function set_rank(rank $rank = null) {
+    public function set_rank(?rank $rank = null) {
         $this->rank = $rank;
     }
 
@@ -244,7 +251,7 @@ class xp_widget implements renderable, templatable {
             'showranksinrankingsnapshot' => !$this->rankisrel,
             'showdiffsinrankingsnapshot' => $this->showdiffsinrankingsnapshot,
 
-            'rankingsnapshot' => array_values(array_map(function($rank, $idx) use ($fallbackpic, $renderer) {
+            'rankingsnapshot' => array_values(array_map(function ($rank, $idx) use ($fallbackpic, $renderer) {
                 if (!$rank) {
                     return [
                         'idx' => $idx,
@@ -296,7 +303,7 @@ class xp_widget implements renderable, templatable {
 
             // Manager notices.
             'hasmanagernotices' => !empty($this->managernotices),
-            'managernotices' => array_values(array_map(function($notice) use ($renderer) {
+            'managernotices' => array_values(array_map(function ($notice) use ($renderer) {
                 return $renderer->notification_without_close($notice, 'warning');
             }, $this->managernotices)),
         ];

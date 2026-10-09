@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Course World.
@@ -25,6 +27,8 @@
 
 namespace block_xp\local;
 
+use block_xp\di;
+use block_xp\local\activity\user_recent_activity_repository;
 use context;
 use context_course;
 use context_system;
@@ -33,6 +37,7 @@ use block_xp\local\config\config;
 use block_xp\local\config\course_world_config;
 use block_xp\local\factory\badge_url_resolver_course_world_factory;
 use block_xp\local\factory\levels_info_factory;
+use block_xp\local\logger\collection_logger;
 
 /**
  * Course World.
@@ -80,9 +85,13 @@ class course_world implements world {
      * @param badge_url_resolver_course_world_factory $urlresolverfactory The badge URL resolver factory.
      * @param levels_info_factory|null $levelsinfofactory The levels info factory.
      */
-    public function __construct(config $config, moodle_database $db, $courseid,
-            badge_url_resolver_course_world_factory $urlresolverfactory,
-            levels_info_factory $levelsinfofactory = null) {
+    public function __construct(
+        config $config,
+        moodle_database $db,
+        $courseid,
+        badge_url_resolver_course_world_factory $urlresolverfactory,
+        ?levels_info_factory $levelsinfofactory = null
+    ) {
         $this->config = $config;
         $this->courseid = $courseid;
         $this->db = $db;
@@ -117,6 +126,16 @@ class course_world implements world {
                 $this->get_collection_logger(),
                 $this->get_level_up_notification_service()
             );
+            $actionstrategy = new strategy\world_action_collection_strategy(
+                $this,
+                $this->get_collection_logger(),
+                null,
+                di::get('rule_type_resolver'),
+                di::get('rule_filter_handler')
+            );
+            $actionstrategy->set_world_rule_manager(di::get('world_rule_manager_factory')->get_rule_manager($this));
+            $actionstrategy->set_rule_sorter(di::get('rule_sorter'));
+            $this->strategy->set_action_collection_strategy($actionstrategy);
         }
         return $this->strategy;
     }
@@ -226,8 +245,10 @@ class course_world implements world {
      */
     protected function get_state_store_observer() {
         if (!$this->statestoreobserver) {
-            $this->statestoreobserver = new \block_xp\local\observer\default_state_store_observer($this->context, $this->config,
-                $this->get_level_up_notification_service());
+            $this->statestoreobserver = new \block_xp\local\observer\default_state_store_observer($this->context,
+                $this->config,
+                $this->get_level_up_notification_service()
+            );
         }
         return $this->statestoreobserver;
     }
@@ -249,10 +270,11 @@ class course_world implements world {
     /**
      * Get logger.
      *
-     * @return logger\course_user_event_collection_logger
+     * @return logger\collection_logger
      */
     private function get_collection_logger() {
         if (!$this->logger) {
+            debugging('The collection logger was not set, call set_collection_logger.', DEBUG_DEVELOPER);
             $this->logger = new \block_xp\local\logger\course_user_event_collection_logger($this->db, $this->courseid);
         }
         return $this->logger;
@@ -264,7 +286,12 @@ class course_world implements world {
      * @return user_recent_activity_repository
      */
     public function get_user_recent_activity_repository() {
-        return new \block_xp\local\activity\course_log_recent_activity_repository($this->db, $this->courseid);
+        $logger = $this->get_collection_logger();
+        if (!$logger instanceof user_recent_activity_repository) {
+            debugging('The collection logger is expected to implement user_recent_activity_repository.', DEBUG_DEVELOPER);
+            return new \block_xp\local\activity\course_log_recent_activity_repository($this->db, $this->courseid);
+        }
+        return $logger;
     }
 
     /**
@@ -296,6 +323,15 @@ class course_world implements world {
         // Reset the filters for the given category.
         $filtermanager->purge($category);
         $filtermanager->import_default_filters($category);
+    }
+
+    /**
+     * Set the collection logger.
+     *
+     * @param collection_logger $logger The logger.
+     */
+    public function set_collection_logger(collection_logger $logger) {
+        $this->logger = $logger;
     }
 
 }

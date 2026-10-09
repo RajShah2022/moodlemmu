@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Block XP backup steplib.
@@ -53,7 +55,8 @@ class backup_xp_block_structure_step extends backup_block_structure_step {
         $xplevels = new backup_nested_element('xps');
         $xplevel = new backup_nested_element('xp', ['courseid'], ['userid', 'xp']);
         $xplogs = new backup_nested_element('logs');
-        $xplog = new backup_nested_element('log', ['courseid'], ['userid', 'eventname', 'xp', 'time']);
+        $xplog = new backup_nested_element('log', ['contextid'], ['userid', 'points', 'reason', 'subtype', 'envid',
+            'parentid', 'objectid', 'ruleid', 'reasontypehash', 'timerecorded']);
 
         // Prepare the structure.
         $xp = $this->prepare_block_structure($xpconfig);
@@ -76,7 +79,7 @@ class backup_xp_block_structure_step extends backup_block_structure_step {
         $xpfilter->set_source_table('block_xp_filters', ['courseid' => backup::VAR_COURSEID]);
         $xplevel->set_source_table('block_xp', ['courseid' => backup::VAR_COURSEID]);
         $xprule->set_source_sql('SELECT * FROM {block_xp_rule} WHERE contextid = ?', [['sqlparam' => $coursecontextid]]);
-        $xplog->set_source_table('block_xp_log', ['courseid' => backup::VAR_COURSEID]);
+        $xplog->set_source_sql('SELECT * FROM {block_xp_logs} WHERE contextid = ?', [['sqlparam' => $coursecontextid]]);
 
         // Annotations.
         $xplevel->annotate_ids('user', 'userid');

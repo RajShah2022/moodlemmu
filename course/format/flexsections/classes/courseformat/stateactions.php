@@ -29,7 +29,7 @@ use moodle_exception;
  * @copyright 2022 Marina Glancy
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class stateactions extends  \core_courseformat\stateactions {
+class stateactions extends \core_courseformat\stateactions {
     /**
      * Moving a section
      *
@@ -43,8 +43,13 @@ class stateactions extends  \core_courseformat\stateactions {
      * @param int|null $targetcmid
      * @return void
      */
-    public function section_move(stateupdates $updates, stdClass $course, array $ids,
-                                 ?int $targetsectionid = null, ?int $targetcmid = null): void {
+    public function section_move(
+        stateupdates $updates,
+        stdClass $course,
+        array $ids,
+        ?int $targetsectionid = null,
+        ?int $targetcmid = null
+    ): void {
         $this->validate_sections($course, $ids, __FUNCTION__);
 
         $coursecontext = context_course::instance($course->id);
@@ -96,7 +101,7 @@ class stateactions extends  \core_courseformat\stateactions {
      */
     protected function find_next_section(\course_modinfo $modinfo, \section_info $thissection): ?\section_info {
         // Build array of same parent sections starting from next to $thissection.
-        $sections = array_filter($modinfo->get_section_info_all(), function($s) use ($thissection) {
+        $sections = array_filter($modinfo->get_section_info_all(), function ($s) use ($thissection) {
             return ($s->parent == $thissection->parent) && ($s->section > $thissection->section);
         });
 
@@ -269,8 +274,13 @@ class stateactions extends  \core_courseformat\stateactions {
      * @param int|null $targetcmid not used
      * @return void
      */
-    public function section_add_subsection(\core_courseformat\stateupdates $updates, stdClass $course, array $ids,
-                            ?int $targetsectionid = null, ?int $targetcmid = null): void {
+    public function section_add_subsection(
+        \core_courseformat\stateupdates $updates,
+        stdClass $course,
+        array $ids,
+        ?int $targetsectionid = null,
+        ?int $targetcmid = null
+    ): void {
         require_capability('moodle/course:update', context_course::instance($course->id));
         /** @var \format_flexsections $format */
         $format = course_get_format($course);
@@ -294,8 +304,13 @@ class stateactions extends  \core_courseformat\stateactions {
      * @param int|null $targetcmid not used
      * @return void
      */
-    public function section_insert_subsection(stateupdates $updates, stdClass $course, array $ids,
-                            ?int $targetsectionid = null, ?int $targetcmid = null): void {
+    public function section_insert_subsection(
+        stateupdates $updates,
+        stdClass $course,
+        array $ids,
+        ?int $targetsectionid = null,
+        ?int $targetcmid = null
+    ): void {
         require_capability('moodle/course:update', context_course::instance($course->id));
         /** @var \format_flexsections $format */
         $format = course_get_format($course);
@@ -357,6 +372,38 @@ class stateactions extends  \core_courseformat\stateactions {
     }
 
     /**
+     * Show or hide course sections recursively.
+     *
+     * @param stateupdates $updates the affected course elements track
+     * @param stdClass $course the course object
+     * @param int[] $ids section ids
+     * @param int $visible the new visible value
+     */
+    protected function set_section_visibility(
+        stateupdates $updates,
+        stdClass $course,
+        array $ids,
+        int $visible
+    ) {
+        global $DB;
+        $format  = course_get_format($course);
+        if (!$format instanceof \format_flexsections) {
+            return;
+        }
+        foreach ($ids as $id) {
+            $sectionnum = $DB->get_field('course_sections', 'section', ['id' => $id]);
+            $section = $format->get_section($sectionnum);
+            // Set visiblity to all child sections.
+            if ($subsections = $format->get_subsections($section)) {
+                foreach ($subsections as $subsection) {
+                    $this->set_section_visibility($updates, $course, [$subsection->id], $visible);
+                }
+            }
+        }
+        parent::set_section_visibility($updates, $course, $ids, $visible);
+    }
+
+    /**
      * Switch collapsed state (display as link/ display on the same page)
      *
      * @param \core_courseformat\stateupdates $updates
@@ -366,8 +413,13 @@ class stateactions extends  \core_courseformat\stateactions {
      * @param int|null $targetcmid not used
      * @return void
      */
-    public function section_switch_collapsed(\core_courseformat\stateupdates $updates, stdClass $course, array $ids,
-                                           ?int $targetsectionid = null, ?int $targetcmid = null): void {
+    public function section_switch_collapsed(
+        \core_courseformat\stateupdates $updates,
+        stdClass $course,
+        array $ids,
+        ?int $targetsectionid = null,
+        ?int $targetcmid = null
+    ): void {
         $this->validate_sections($course, $ids, __FUNCTION__);
         require_capability('moodle/course:update', context_course::instance($course->id));
         /** @var \format_flexsections $format */
@@ -392,5 +444,4 @@ class stateactions extends  \core_courseformat\stateactions {
         // The section order is at a course level.
         $updates->add_course_put();
     }
-
 }

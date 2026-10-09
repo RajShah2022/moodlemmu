@@ -81,14 +81,20 @@ class certificate_verified extends \core\event\base {
      * @return certificate_issued
      */
     public static function create_from_issue(\stdClass $issue) {
-        $data = array(
-            'context' => \context_system::instance(),
+        global $DB;
+
+        $context = \context_system::instance();
+        if ($DB->record_exists('course', ['id' => $issue->courseid])) {
+            $context = \context_course::instance($issue->courseid);
+        }
+        $data = [
+            'context' => $context,
             'objectid' => $issue->id,
             'relateduserid' => $issue->userid,
             'other' => [
-                'code' => $issue->code
-            ]
-        );
+                'code' => $issue->code,
+            ],
+        ];
         $event = self::create($data);
         $event->add_record_snapshot('tool_certificate_issues', $issue);
         return $event;

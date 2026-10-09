@@ -45,20 +45,17 @@ class template extends persistent {
      * @return array
      */
     protected static function define_properties() {
-        return array(
-            'name' => array(
-                'type' => PARAM_TEXT
-            ),
-            'contextid' => array(
-                'type' => PARAM_INT
-            ),
-            'shared' => array(
-                'type' => PARAM_BOOL
-            ),
-            'open_path' => array(
-                'type' => PARAM_RAW
-            ),
-        );
+        return [
+            'name' => [
+                'type' => PARAM_TEXT,
+            ],
+            'contextid' => [
+                'type' => PARAM_INT,
+            ],
+            'shared' => [
+                'type' => PARAM_BOOL,
+            ],
+        ];
     }
 
     /**
@@ -69,9 +66,7 @@ class template extends persistent {
     public function get_formatted_name() {
         return format_string($this->get('name'), true, ['escape' => false, 'context' => $this->get_context()]);
     }
-    // protected function get_open_path() {
-    //     return format_string($this->get('open_path'), true,);
-    // }
+
     /**
      * The URL to edit certificate template
      *
@@ -122,7 +117,7 @@ class template extends persistent {
      * @param \context|null $context
      * @return bool
      */
-    public function can_issue_to_anybody(\context $context = null): bool {
+    public function can_issue_to_anybody(?\context $context = null): bool {
         return $this->get('id') && permission::can_issue_to_anybody($context ?? $this->get_context());
     }
 }

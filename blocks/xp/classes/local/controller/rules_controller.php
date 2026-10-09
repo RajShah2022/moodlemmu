@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Rules controller.
@@ -206,7 +208,7 @@ class rules_controller extends page_controller {
             'menu' => [
                 [
                     'label' => get_string('cheatguard', 'block_xp'),
-                    'data-action' => 'open-form',
+                    'data-xp-action' => 'open-form',
                     'data-form-class' => di::get('cheatguard_form_class'),
                     'data-form-args__contextid' => $this->world->get_context()->id,
                     'href' => '#',
@@ -219,7 +221,6 @@ class rules_controller extends page_controller {
                 ],
             ],
         ]);
-        $PAGE->requires->js_call_amd('block_xp/modal-form', 'registerOpen', ['[data-action="open-form"]']);
     }
 
     protected function page_rules_content() {

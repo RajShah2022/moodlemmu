@@ -8,7 +8,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:12
+        image: postgres:13
         env:
           POSTGRES_USER: 'postgres'
           POSTGRES_HOST_AUTH_METHOD: 'trust'
@@ -16,7 +16,7 @@ jobs:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
       mariadb:
-        image: mariadb:10.5
+        image: mariadb:10
         env:
           MYSQL_USER: 'root'
           MYSQL_ALLOW_EMPTY_PASSWORD: "true"
@@ -28,10 +28,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - php: '7.3'
-            moodle-branch: 'MOODLE_400_STABLE'
-            database: pgsql
-            extensions:
           - php: '8.0'
             moodle-branch: 'MOODLE_400_STABLE'
             database: mariadb
@@ -39,6 +35,26 @@ jobs:
           - php: '7.4'
             moodle-branch: 'MOODLE_401_STABLE'
             database: pgsql
+          - php: '8.1'
+            moodle-branch: 'MOODLE_401_STABLE'
+            database: mariadb
+          - php: '8.0'
+            moodle-branch: 'MOODLE_402_STABLE'
+            database: mariadb
+          - php: '8.1'
+            moodle-branch: 'MOODLE_402_STABLE'
+            database: pgsql
+          - php: '8.2'
+            moodle-branch: 'MOODLE_403_STABLE'
+            database: pgsql
+          - php: '8.3'
+            moodle-branch: 'MOODLE_404_STABLE'
+            database: pgsql
+            extensions: xmlrpc-beta
+          - php: '8.3'
+            moodle-branch: 'MOODLE_405_STABLE'
+            database: pgsql
+            extensions: xmlrpc-beta
 
     steps:
       - name: Check out repository code
@@ -56,7 +72,7 @@ jobs:
 
       - name: Initialise moodle-plugin-ci
         run: |
-          composer create-project -n --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci ^3
+          composer create-project -n --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci ^4
           echo $(cd ci/bin; pwd) >> $GITHUB_PATH
           echo $(cd ci/vendor/bin; pwd) >> $GITHUB_PATH
           sudo locale-gen en_AU.UTF-8
@@ -88,7 +104,7 @@ jobs:
 
       - name: Moodle PHPDoc Checker
         if: ${{ always() }}
-        run: moodle-plugin-ci phpdoc
+        run: moodle-plugin-ci phpdoc --max-warnings 0
 
       - name: Validating
         if: ${{ always() }}
@@ -112,7 +128,7 @@ jobs:
           moodle-plugin-ci phpunit
           cd moodle
           vendor/bin/phpunit --fail-on-risky --disallow-test-output --testsuite tool_dataprivacy_testsuite --filter metadata_registry_test
-          vendor/bin/phpunit --fail-on-risky --disallow-test-output --testsuite core_testsuite --filter test_all_external_info
+          vendor/bin/phpunit --fail-on-risky --disallow-test-output --filter "test_all_external_info@tool_certificate.*"
           vendor/bin/phpunit --fail-on-risky --disallow-test-output --testsuite core_privacy_testsuite --filter provider_test
 
       - name: Behat features

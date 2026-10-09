@@ -14,14 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Privacy Subsystem implementation for mod_supervideo.
- */
-
 namespace mod_supervideo\privacy;
 
 use context;
 use context_module;
+use Exception;
 use moodle_recordset;
 use core_privacy\local\metadata\collection;
 use core_privacy\local\request\approved_contextlist;
@@ -33,10 +30,12 @@ use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
 
 /**
- * The mod_supervideo module does not store any data.
+ * phpcs:disable Universal.OOStructures.AlphabeticExtendsImplements.ImplementsWrongOrder
+ *
+ * Privacy Subsystem implementation for mod_supervideo.
  *
  * @package   mod_supervideo
- * @copyright 2023 Eduardo Kraus {@link http://eduardokraus.com}
+ * @copyright 2024 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements
@@ -73,7 +72,7 @@ class provider implements
      * @param int $userid The user to search.
      *
      * @return contextlist $contextlist The contextlist containing the list of contexts used in this plugin.
-     * @throws \Exception
+     * @throws Exception
      */
     public static function get_contexts_for_userid(int $userid): \core_privacy\local\request\contextlist {
         $contextlist = new \core_privacy\local\request\contextlist();
@@ -117,7 +116,7 @@ class provider implements
 
         $sql = "SELECT svv.user_id
                   FROM {course_modules} cm
-                  JOIN {modules} m ON m.id = cm.module AND
+                  JOIN {modules} m ON m.id = cm.module
                   JOIN {supervideo_view} svv ON svv.cm_id = cm.id
                  WHERE cm.id = :instanceid
                    AND m.name = 'supervideo'";
@@ -134,7 +133,7 @@ class provider implements
      *
      * @param approved_contextlist $contextlist The approved contexts to export information for.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public static function export_user_data(approved_contextlist $contextlist) {
         global $DB;
@@ -155,7 +154,7 @@ class provider implements
         $cmids = array_keys($cmidstocmids);
 
         // Export the messages.
-        list($insql, $inparams) = $DB->get_in_or_equal($cmids, SQL_PARAMS_NAMED);
+        [$insql, $inparams] = $DB->get_in_or_equal($cmids, SQL_PARAMS_NAMED);
         $params = array_merge($inparams, ['user_id' => $userid]);
         $recordset = $DB->get_recordset_select('supervideo_view', "cm_id $insql AND user_id = :user_id", $params, 'timestamp, id');
         static::recordset_loop_and_export($recordset, 'cm_id', [], function ($carry, $record) use ($user, $cmidstocmids) {
@@ -169,7 +168,6 @@ class provider implements
                 'is_system_generated' => transform::yesno($record->issystem),
             ];
             return $carry;
-
         }, function ($cmid, $data) use ($user, $cmidstocmids) {
             $context = context_module::instance($cmidstocmids[$cmid]);
             $contextdata = helper::get_context_data($context, $user);
@@ -184,7 +182,7 @@ class provider implements
      *
      * @param context $context The specific context to delete data for.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public static function delete_data_for_all_users_in_context(context $context) {
         global $DB;
@@ -206,7 +204,7 @@ class provider implements
      *
      * @param approved_contextlist $contextlist The approved contexts and user information to delete information for.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public static function delete_data_for_user(approved_contextlist $contextlist) {
         global $DB;
@@ -225,20 +223,19 @@ class provider implements
         $cmidstocmids = static::get_supervideo_ids_to_cmids_from_cmids($cmids);
         $cmids = array_keys($cmidstocmids);
 
-        list($insql, $inparams) = $DB->get_in_or_equal($cmids, SQL_PARAMS_NAMED);
+        [$insql, $inparams] = $DB->get_in_or_equal($cmids, SQL_PARAMS_NAMED);
         $sql = "cm_id {$insql} AND user_id = :user_id";
         $params = array_merge($inparams, ['user_id' => $userid]);
 
         $DB->delete_records_select('supervideo_view', $sql, $params);
     }
 
-
     /**
      * Delete multiple users within a single context.
      *
      * @param approved_userlist $userlist The approved context and user information to delete information for.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public static function delete_data_for_users(approved_userlist $userlist) {
         global $DB;
@@ -247,7 +244,7 @@ class provider implements
         $cm = $DB->get_record('course_modules', ['id' => $context->instanceid]);
         $supervideo = $DB->get_record('supervideo', ['id' => $cm->instance]);
 
-        list($userinsql, $userinparams) = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
+        [$userinsql, $userinparams] = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
         $params = array_merge(['cm_id' => $cm->id], $userinparams);
         $sql = "cm_id = :cm_id AND user_id {$userinsql}";
 
@@ -260,11 +257,12 @@ class provider implements
      * @param array $cmids The course module IDs.
      *
      * @return array
-     * @throws \Exception
+     *
+     * @throws Exception
      */
     protected static function get_supervideo_ids_to_cmids_from_cmids(array $cmids) {
         global $DB;
-        list($insql, $inparams) = $DB->get_in_or_equal($cmids, SQL_PARAMS_NAMED);
+        [$insql, $inparams] = $DB->get_in_or_equal($cmids, SQL_PARAMS_NAMED);
         $sql = "
             SELECT c.id, cm.id AS cmid
               FROM {supervideo} c
@@ -282,15 +280,16 @@ class provider implements
      * Loop and export from a recordset.
      *
      * @param moodle_recordset $recordset The recordset.
-     * @param string           $splitkey  The record key to determine when to export.
-     * @param mixed            $initial   The initial data to reduce from.
-     * @param callable         $reducer   The function to return the dataset, receives current dataset, and the current
+     * @param string $splitkey            The record key to determine when to export.
+     * @param mixed $initial              The initial data to reduce from.
+     * @param callable $reducer           The function to return the dataset, receives current dataset, and the current
      *                                    record.
-     * @param callable         $export    The function to export the dataset, receives the last value from $splitkey
+     * @param callable $export            The function to export the dataset, receives the last value from $splitkey
      *                                    and the dataset.
      *
      * @return void
-     * @throws \Exception
+     *
+     * @throws Exception
      */
     protected static function recordset_loop_and_export(moodle_recordset $recordset, $splitkey, $initial,
                                                         callable $reducer, callable $export) {

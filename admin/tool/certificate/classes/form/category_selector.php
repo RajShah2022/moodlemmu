@@ -46,7 +46,7 @@ class category_selector extends dynamic_form {
      *
      * @return template
      */
-    protected function get_template() : template {
+    protected function get_template(): template {
         if ($this->template === null) {
             $this->template = template::instance($this->_ajaxformdata['id']);
         }
@@ -66,7 +66,7 @@ class category_selector extends dynamic_form {
                 $this->get_template()->get_formatted_name()));
 
         if ($categoryoptions = $this->get_category_options()) {
-            $mform->addElement('hidden', 'categoryid', get_string('coursecategory'), $categoryoptions);
+            $mform->addElement('select', 'categoryid', get_string('coursecategory'), $categoryoptions);
             $mform->setType('categoryid', PARAM_INT);
         }
 

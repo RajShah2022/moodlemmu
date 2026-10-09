@@ -1,5 +1,105 @@
 # Changelog
 
+## 4.5.7 - 2025-10-07
+### Changed
+- Only changes to automatic testing scripts
+
+## 4.5.6 - 2025-08-12
+### Fixed
+- Fixed issue where bulk PDF generation could fill up local temporary directory
+
+## 4.5.5 - 2025-06-10
+### Fixed
+- Fixed an issue where course navigation was not working correctly when viewing a certificate
+
+## 4.5.4 - 2025-05-15
+### Changed
+- Only changes to automatic testing scripts
+
+## 4.5.3 - 2025-03-18
+### Fixed
+- behat tests checking that certificate opens in a new window failing with selenium/standalone-chrome:4
+
+## 4.5.1 - 2024-12-10
+### Fixed
+- issuing scheduled task throws exception on already created file under a race condition
+
+## 4.5 - 2024-11-05
+### Fixed
+- Replaced icons that are no longer correct in Moodle 4.5 leaving compatibility with previous versions
+
+## 4.4.4 - 2024-10-08
+### Added
+- Compatibility with Moodle 4.5; Updates to version testing matrices
+### Fixed
+- Fixed memory leak when generating a lot of certificates
+
+## 4.4.3 - 2024-09-03
+### Changed
+- Only changes to automatic testing scripts
+
+## 4.4.2 - 2024-08-13
+### Fixed
+- Failing behat tests because of incorrect table headers
+
+## 4.4.1 - 2024-06-11
+### Fixed
+- fixed implicit nullable parameter declaration deprecated in PHP 8.4
+  (new coding style check)
+
+## 4.4 - 2024-05-21
+### Added
+- Add cohort entity to issued certificates datasource
+
+## 4.3.4 - 2024-04-23
+### Added
+- Added a new issued certificate regenerated event.
+- Compatibility with Moodle 4.4, added to the testing matrix
+### Fixed
+- Coding style fixes to comply with moodle-plugin-ci 4.4.0
+
+## 4.3.2 - 2023-12-28
+### Added
+- When creating a link for LinkedIn allow to choose whether it's a link to
+  the certificate verification page or the certificate PDF itself.
+
+## 4.3 - 2023-11-09
+### Added
+- Testing on Workplace 4.3
+- Added missing SVG icons
+### Changed
+- Coding style fixes
+
+## 4.2.3 - 2023-10-10
+### Changed
+- Coding style fixes
+- Included LMS 4.3 and PHP 8.2 in the GHA testing matrix
+
+## 4.2.2 - 2023-08-22
+### Changed
+- Reportbuilder source "Certificate issues" no longer automatically checks
+  current user permission to access the certificate templates. The similar
+  manual condition was added in the upgrade script to all existing reports
+  to prevent change in behaviour. New reports will not have this condition.
+
+  This allows to create reports such as "My certificates" visible to any
+  users including those who can not view or edit the templates.
+
+## 4.2 - 2023-05-30
+### Changed
+- Removed strings: entitycertificateissues, errornopermissionissuecertificate, expires,
+  issuedon, issuenewcertificates, mappingerrorcertificateheader, mappingerrorcertificatelog,
+  nopermissionform, outcomecertificate, outcomecertificatedescription, point, receiveddate,
+  selectcertificate, toomanycertificatestoshow, type
+- Deprecated strings: editcertificate, issuenewcertificate, nopermissionform
+
+## 4.1.3 - 2023-04-25
+### Added
+- Compatibility with Moodle LMS 4.2
+- Compatibility with PHP 8.1 for Moodle LMS 4.1 and 4.2
+### Fixed
+- Prevent debugging messages about missing leftmargin and rightmargin field types
+
 ## 4.1.2 - 2023-03-14
 ### Added
 - Setting to skip some text filters when generating PDFs
@@ -72,7 +172,7 @@
 
 ## 3.11.1 (2021072000)
 ### Changed
-- Shared image types are now limited to "web_image". Non "web_image" images previously uploaded 
+- Shared image types are now limited to "web_image". Non "web_image" images previously uploaded
   did not work properly.
 
 ## 3.11 (2021060800)

@@ -26,7 +26,6 @@ use stdClass;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class section extends \core_courseformat\output\local\content\section {
-
     /** @var \format_flexsections the course format */
     protected $format;
 
@@ -50,10 +49,16 @@ class section extends \core_courseformat\output\local\content\section {
      * @return stdClass
      */
     public function export_for_template(\renderer_base $output): stdClass {
+        global $CFG;
         $format = $this->format;
         $course = $format->get_course();
 
         $data = parent::export_for_template($output);
+
+        if ((int)$CFG->branch == 404) {
+            // Fixed in MDL-81766 in 4.5 but not in 4.4.
+            $data->displayonesection = $this->format->get_sectionid() == $this->section->id;
+        }
 
         // For sections that are displayed as a link do not print list of cms or controls.
         $showaslink = $this->section->collapsed == FORMAT_FLEXSECTIONS_COLLAPSED
@@ -71,8 +76,10 @@ class section extends \core_courseformat\output\local\content\section {
             $data->level = $this->level;
         }
 
-        if ((!$course->showsection0title && $this->section->section === 0) ||
-                ($this->section->section !== 0 && $this->section->section === $this->format->get_viewed_section())) {
+        if (
+            (!$course->showsection0title && $this->section->section === 0) ||
+                ($this->section->section !== 0 && $this->section->section === $this->format->get_viewed_section())
+        ) {
             // Never collapse content of top section in single section view or
             // when showing title of the top section is not shown.
             $data->contentcollapsed = false;
@@ -87,8 +94,10 @@ class section extends \core_courseformat\output\local\content\section {
 
         $data->addsectionafter = false;
         $data->insertsubsection = false;
-        if ($this->format->should_display_add_sub_section_link($this->section->parent)
-                && ($this->section->section != $this->format->get_viewed_section() || $this->section->section === 0)) {
+        if (
+            $this->format->should_display_add_sub_section_link($this->section->parent)
+                && ($this->section->section != $this->format->get_viewed_section() || $this->section->section === 0)
+        ) {
             // Display 'Add section' button after to insert after this section.
             $data->addsectionafter = $this->export_add_section($output);
         }

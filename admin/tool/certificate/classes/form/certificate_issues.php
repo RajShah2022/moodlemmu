@@ -47,7 +47,7 @@ class certificate_issues extends dynamic_form {
      *
      * @return template
      */
-    protected function get_template() : template {
+    protected function get_template(): template {
         if ($this->template === null) {
             $this->template = template::instance($this->_ajaxformdata['tid']);
         }
@@ -67,13 +67,13 @@ class certificate_issues extends dynamic_form {
         $mform->setType('tid', PARAM_INT);
 
         // Users.
-        $options = array(
+        $options = [
             'ajax' => 'tool_certificate/form-potential-user-selector',
             'multiple' => true,
-            'data-itemid' => $this->get_template()->get_id()
-        );
+            'data-itemid' => $this->get_template()->get_id(),
+        ];
         $selectstr = get_string('selectuserstoissuecertificatefor', 'tool_certificate');
-        $mform->addElement('autocomplete', 'users', $selectstr, array(), $options);
+        $mform->addElement('autocomplete', 'users', $selectstr, [], $options);
 
         // Expiry date.
         certificate_manager::add_expirydate_to_form($mform);

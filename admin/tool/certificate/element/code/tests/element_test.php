@@ -39,12 +39,13 @@ use core_text;
  * @copyright  2018 Daniel Neis Araujo <daniel@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class element_test extends advanced_testcase {
+final class element_test extends advanced_testcase {
 
     /**
      * Test set up.
      */
     public function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest();
     }
 
@@ -52,14 +53,14 @@ class element_test extends advanced_testcase {
      * Get certificate generator
      * @return tool_certificate_generator
      */
-    protected function get_generator() : tool_certificate_generator {
+    protected function get_generator(): tool_certificate_generator {
         return $this->getDataGenerator()->get_plugin_generator('tool_certificate');
     }
 
     /**
      * Test render_html
      */
-    public function test_render_html_content() {
+    public function test_render_html_content(): void {
         $certificate1 = $this->get_generator()->create_template((object)['name' => 'Certificate 1']);
         $pageid = $this->get_generator()->create_page($certificate1)->get_id();
         $e1 = $this->get_generator()->create_element($pageid, 'code',
@@ -93,20 +94,18 @@ class element_test extends advanced_testcase {
 
         // Generate PDF for preview.
         $filecontents = $this->get_generator()->generate_pdf($certificate1, true);
-        $filesize = core_text::strlen($filecontents);
-        $this->assertTrue($filesize > 30000 && $filesize < 90000);
+        $this->assertGreaterThan(30000, core_text::strlen($filecontents, '8bit'));
 
         // Generate PDF for issue.
         $issue = $this->get_generator()->issue($certificate1, $this->getDataGenerator()->create_user());
         $filecontents = $this->get_generator()->generate_pdf($certificate1, false, $issue);
-        $filesize = core_text::strlen($filecontents);
-        $this->assertTrue($filesize > 30000 && $filesize < 90000);
+        $this->assertGreaterThan(30000, core_text::strlen($filecontents, '8bit'));
     }
 
     /**
      * Test save_unique_data
      */
-    public function test_save_unique_data() {
+    public function test_save_unique_data(): void {
         global $DB;
         $certificate1 = $this->get_generator()->create_template((object)['name' => 'Certificate 1']);
         $pageid = $this->get_generator()->create_page($certificate1)->get_id();
@@ -121,7 +120,7 @@ class element_test extends advanced_testcase {
     /**
      * Tests that the edit element form can be initiated without any errors
      */
-    public function test_edit_element_form() {
+    public function test_edit_element_form(): void {
         $this->setAdminUser();
 
         preg_match('|^certificateelement_(\w*)\\\\|', get_class($this), $matches);

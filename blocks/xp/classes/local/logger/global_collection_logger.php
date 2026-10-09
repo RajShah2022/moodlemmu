@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Global collection logger.
@@ -44,7 +46,10 @@ use moodle_database;
  */
 class global_collection_logger implements collection_logger {
 
-    /** The table name. */
+    /**
+     * The table name.
+     * @deprecated Since XP 20
+     */
     const TABLE = 'block_xp_log';
 
     /** @var moodle_database The DB. */
@@ -66,13 +71,8 @@ class global_collection_logger implements collection_logger {
      * @return void
      */
     public function delete_older_than(DateTime $dt) {
-        $this->db->delete_records_select(
-            static::TABLE,
-            'time < :time',
-            [
-                'time' => $dt->getTimestamp(),
-            ]
-        );
+        $this->db->delete_records_select('block_xp_log', 'time < ?', [$dt->getTimestamp()]);
+        $this->db->delete_records_select('block_xp_logs', 'timerecorded < ?', [$dt->getTimestamp()]);
     }
 
     /**
@@ -84,7 +84,7 @@ class global_collection_logger implements collection_logger {
      * @param DateTime|null $time When that happened.
      * @return void
      */
-    public function log($id, $points, $signature, DateTime $time = null) {
+    public function log($id, $points, $signature, ?DateTime $time = null) {
         // Do nothing. We should not be using this to log.
     }
 

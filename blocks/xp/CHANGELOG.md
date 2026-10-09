@@ -1,6 +1,124 @@
 Changelog
 =========
 
+v20.0
+-----
+
+New features
+
+- Action rules: A simpler, easier, and flexible way to award points!
+- Admins can set default values for the action rules
+
+Quality of life
+
+- The new default rules for new courses are explicit and easy to understand
+
+Bug fixes
+
+- Improved accessibility of some dropdown menus
+
+Technical changes
+
+- Compatibility with Moodle 5.2
+- Logs migration to a new table will take place after the upgrade
+- Default event rules could apply alongside default action rules
+- Please read the [upgrade notes](https://docs.levelup.plus/xp/docs/upgrade-notes/upgrading-to-v20) for technical details
+
+Read our [release blog post](https://www.levelup.plus/blog/xp-release-20/) to learn more.
+
+v19.1
+-----
+
+Bug fixes
+
+- Removed table borders from the recent activity in Moodle 5.1
+- The report raised an exception with 65,000+ enrolled users
+
+v19.0
+-----
+
+New features
+
+- Admins can reset all courses to the default admin settings
+- The leaderboard shortcode can display the ranking in any context
+
+Quality of life
+
+- The course selector remembers recently selected entries
+- The leaderboard shortcode is available from the leaderboard page
+
+Bug fixes
+
+- Some buttons were not accessible using the keyboard
+
+Technical changes
+
+- Compatibility with Moodle 5.1
+- Expansion of automated tests
+
+Read our [release blog post](https://www.levelup.plus/blog/xp-quest-release-oct-2025/) to learn more.
+
+v18.3
+-----
+
+Bug fixes
+
+- Addon compatibility check caused a PHP error in admin system status report
+
+v18.2
+-----
+
+Bug fixes
+
+- The title of some modals could be cropped after a certain length
+
+v18.1
+-----
+
+Bug fixes
+
+- The promo page accessed via the admin settings was not accessible
+
+v18.0
+-----
+
+We dropped the `v3.` prefix of our version number, XP `v18` is the version following `v3.17`.
+
+New features
+
+- Admins can automatically pre-populate the leaderboards with XP participants
+
+Quality of life
+
+- Improved the column sizes of the report table
+- Improved accessibility of the levels management page
+- Improved accessibility of rule to match activities by name
+- Admins are warned before an upgrade if XP+ will be disabled
+- Admins will receive an notification if XP+ becomes disabled
+
+Bug fixes
+
+- Filtering logs by group had no effect
+- Viewing the leaderboard of "All participants" was showing the user's group leaderboard
+
+Technical changes
+
+- The addon XP+ will be disabled when its version is older than XP
+- Great expansion of our automated tests
+- Compatibility with Moodle 5.0
+
+v3.17.1
+-------
+
+Quality of life
+
+- Suspended users are marked as such in the report and logs
+
+Bug fixes
+
+- Deleted and suspended users are excluded from leaderboards
+- Deleted users are now excluded from the report and logs
+
 v3.17.0
 -------
 

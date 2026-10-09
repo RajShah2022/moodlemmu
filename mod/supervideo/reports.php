@@ -17,27 +17,26 @@
 /**
  * Report for supervideo.
  *
- * @package    mod_supervideo
- * @copyright  2023 Eduardo kraus (http://eduardokraus.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   mod_supervideo
+ * @copyright 2024 Eduardo Kraus {@link https://eduardokraus.com}
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once('../../config.php');
-require_once($CFG->libdir . '/tablelib.php');
+require_once("../../config.php");
+require_once("{$CFG->libdir}/tablelib.php");
 
-$courseid = optional_param('course', 0, PARAM_INT);
-$course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
+$courseid = optional_param("course", 0, PARAM_INT);
+$course = $DB->get_record("course", ["id" => $courseid], "*", MUST_EXIST);
 
 require_course_login($course);
 
-$PAGE->set_url('/mod/supervideo/reports.php', array('course' => $courseid));
-$PAGE->set_title("{$course->shortname}: " . get_string('reports'));
-$PAGE->set_heading($course->fullname . ": " . get_string('modulename', 'mod_supervideo'));
+$PAGE->set_url("/mod/supervideo/reports.php", ["course" => $courseid]);
+$PAGE->set_title("{$course->shortname}: " . get_string("reports"));
+$PAGE->set_heading($course->fullname . ": " . get_string("modulename", "mod_supervideo"));
 echo $OUTPUT->header();
 
-$title = get_string('reports') . ": " . get_string('modulename', 'mod_supervideo');
-echo $OUTPUT->heading($title, 2, 'main', 'supervideoheading');
-
+$title = get_string("reports") . ": " . get_string("modulename", "mod_supervideo");
+echo $OUTPUT->heading($title, 2, "main", "supervideoheading");
 
 $sql = "SELECT cm.*, sv.name
           FROM {course_modules} cm
@@ -48,15 +47,14 @@ $sql = "SELECT cm.*, sv.name
 $supervideos = $DB->get_records_sql($sql, ["course" => $courseid]);
 $reportnode = ["children" => []];
 foreach ($supervideos as $supervideo) {
+    $videoname = format_string($supervideo->name);
     $reportnode["children"][] = [
         "display" => true,
         "action" => "{$CFG->wwwroot}/mod/supervideo/report.php?id={$supervideo->id}",
-        "text" => "{$supervideo->name}",
+        "text" => "{$videoname}",
     ];
 }
 
-
-echo $OUTPUT->render_from_template('core/report_link_page', ['node' => $reportnode]);
-
+echo $OUTPUT->render_from_template("core/report_link_page", ["node" => $reportnode]);
 
 echo $OUTPUT->footer();

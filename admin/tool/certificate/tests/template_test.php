@@ -29,7 +29,7 @@ use context_system;
  * @copyright  2018 Daniel Neis Araujo <daniel@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class template_test extends advanced_testcase {
+final class template_test extends advanced_testcase {
 
     /** @var tool_certificate_generator */
     protected $certgenerator;
@@ -38,6 +38,7 @@ class template_test extends advanced_testcase {
      * Test set up.
      */
     public function setUp(): void {
+        parent::setUp();
         $this->resetAfterTest();
         $this->certgenerator = self::getDataGenerator()->get_plugin_generator('tool_certificate');
     }
@@ -46,14 +47,14 @@ class template_test extends advanced_testcase {
      * Get certificate generator
      * @return tool_certificate_generator
      */
-    protected function get_generator() : tool_certificate_generator {
+    protected function get_generator(): tool_certificate_generator {
         return $this->getDataGenerator()->get_plugin_generator('tool_certificate');
     }
 
     /**
      * Test create
      */
-    public function test_create() {
+    public function test_create(): void {
         global $DB;
 
         // There are no certificate templates in the beginning.
@@ -103,7 +104,7 @@ class template_test extends advanced_testcase {
     /**
      * Test save
      */
-    public function test_save() {
+    public function test_save(): void {
         // Create new certificate.
         $certname1 = 'Certificate 1';
         $certname2 = 'Certificate Updated';
@@ -133,7 +134,7 @@ class template_test extends advanced_testcase {
     /**
      * Test find_by_name
      */
-    public function test_find_by_name() {
+    public function test_find_by_name(): void {
         $certname = 'Certificate 1';
         $certificate1 = $this->get_generator()->create_template((object)['name' => $certname]);
         $this->assertEquals($certname, \tool_certificate\template::find_by_name($certname)->get_name());
@@ -142,7 +143,7 @@ class template_test extends advanced_testcase {
     /**
      * Test find_by_id
      */
-    public function test_find_by_id() {
+    public function test_find_by_id(): void {
         $certname = 'Certificate 1';
         $certificate1 = $this->get_generator()->create_template((object)['name' => $certname]);
         $this->assertEquals($certname, \tool_certificate\template::instance($certificate1->get_id())->get_name());
@@ -151,7 +152,7 @@ class template_test extends advanced_testcase {
     /**
      * Test duplicate
      */
-    public function test_duplicate() {
+    public function test_duplicate(): void {
         $certname = 'Certificate 1';
         $certificate1 = $this->get_generator()->create_template((object)['name' => $certname]);
         $certificate2 = $certificate1->duplicate();
@@ -163,7 +164,7 @@ class template_test extends advanced_testcase {
     /**
      * Test delete
      */
-    public function test_delete() {
+    public function test_delete(): void {
         global $DB;
 
         // Fist certificate without pages.
@@ -221,7 +222,7 @@ class template_test extends advanced_testcase {
     /**
      * Test add_page
      */
-    public function test_add_page() {
+    public function test_add_page(): void {
         global $DB;
         $certname = 'Certificate 1';
         $certificate1 = $this->get_generator()->create_template((object)['name' => $certname]);
@@ -232,7 +233,7 @@ class template_test extends advanced_testcase {
     /**
      * Test delete_page
      */
-    public function test_delete_page() {
+    public function test_delete_page(): void {
         global $DB;
         $certname = 'Certificate 1';
         $certificate1 = $this->get_generator()->create_template((object)['name' => $certname]);
@@ -249,23 +250,23 @@ class template_test extends advanced_testcase {
     /**
      * Test save_page
      */
-    public function test_save_page() {
+    public function test_save_page(): void {
         global $DB;
         $certname = 'Certificate 1';
         $certificate1 = $this->get_generator()->create_template((object)['name' => $certname]);
         $pageid = $this->get_generator()->create_page($certificate1)->get_id();
         $pagedata = (object)['tid' => $certificate1->get_id(),
                              'pagewidth_'.$pageid => 333, 'pageheight_'.$pageid => 444,
-                             'pageleftmargin_'.$pageid => 333, 'pagerightmargin_'.$pageid => 444];
+                             'pageleftmargin_'.$pageid => 333, 'pagerightmargin_'.$pageid => 444, ];
         $certificate1->save_page($pagedata);
         $this->assertTrue($DB->record_exists('tool_certificate_pages', ['templateid' => $certificate1->get_id(),
-            'width' => 333, 'height' => 444]));
+            'width' => 333, 'height' => 444, ]));
     }
 
     /**
      * Test generate_pdf with multilang text and 'issuelang' setting.
      */
-    public function test_generate_pdf() {
+    public function test_generate_pdf(): void {
         // Enable multilang filter.
         filter_set_global_state('multilang', TEXTFILTER_ON);
         filter_set_applies_to_strings('multilang', true);
@@ -306,7 +307,7 @@ class template_test extends advanced_testcase {
     /**
      * Test issue_certificate
      */
-    public function test_issue_certificate() {
+    public function test_issue_certificate(): void {
         global $DB;
 
         $certificate1 = $this->get_generator()->create_template((object)['name' => 'Certificate 1']);
@@ -359,19 +360,19 @@ class template_test extends advanced_testcase {
         $this->assertEquals(2, $DB->count_records('tool_certificate_issues', ['templateid' => $certificate1->get_id()]));
 
         $this->assertEquals(1, $DB->count_records('tool_certificate_issues', ['templateid' => $certificate1->get_id(),
-            'userid' => $user1->id]));
+            'userid' => $user1->id, ]));
         $this->assertEquals(1, $DB->count_records('tool_certificate_issues', ['templateid' => $certificate1->get_id(),
-            'userid' => $user2->id]));
+            'userid' => $user2->id, ]));
 
         $certificate1->issue_certificate($user1->id);
         $this->assertEquals(2, $DB->count_records('tool_certificate_issues', ['templateid' => $certificate1->get_id(),
-            'userid' => $user1->id]));
+            'userid' => $user1->id, ]));
 
         $certificate1->issue_certificate($user2->id);
         $certificate1->issue_certificate($user2->id);
 
         $this->assertEquals(3, $DB->count_records('tool_certificate_issues', ['templateid' => $certificate1->get_id(),
-            'userid' => $user2->id]));
+            'userid' => $user2->id, ]));
 
         // Test issue_certificate with courseid.
         $course = $this->getDataGenerator()->create_course();
@@ -383,13 +384,13 @@ class template_test extends advanced_testcase {
         $this->assertEquals($course->id, $issue->courseid);
 
         $this->assertEquals(4, $DB->count_records('tool_certificate_issues', ['templateid' => $certificate1->get_id(),
-            'userid' => $user2->id]));
+            'userid' => $user2->id, ]));
     }
 
     /**
      * Test revoke_issue
      */
-    public function test_revoke_issue() {
+    public function test_revoke_issue(): void {
         global $DB;
 
         $certificate1 = $this->get_generator()->create_template((object)['name' => 'Certificate 1']);
@@ -427,7 +428,7 @@ class template_test extends advanced_testcase {
     /**
      * Test create_issue_file
      */
-    public function test_create_issue_file() {
+    public function test_create_issue_file(): void {
         // Create the certificate.
         $certificate = $this->get_generator()->create_template((object)['name' => 'Certificate 1']);
 
@@ -456,15 +457,15 @@ class template_test extends advanced_testcase {
         $this->assertEquals($issue->id, $file2->get_itemid());
         $this->assertEquals($issuefile->get_id(), $file2->get_id());
 
-        // Try to create an existing issue file.
-        $this->expectException('stored_file_creation_exception');
-        $certificate->create_issue_file($issue);
+        // Check that when creating a file that already exists, it returns the file.
+        $existingfile = $certificate->create_issue_file($issue);
+        $this->assertEquals($file2->get_id(), $existingfile->get_id());
     }
 
     /**
      * Test get_issue_file
      */
-    public function test_get_issue_file() {
+    public function test_get_issue_file(): void {
         // Create the certificate.
         $certificate = $this->get_generator()->create_template((object)['name' => 'Certificate 1']);
 
@@ -491,18 +492,18 @@ class template_test extends advanced_testcase {
     /**
      * Test get_visible_categories_contexts_sql
      */
-    public function test_get_visible_categories_contexts_sql() {
+    public function test_get_visible_categories_contexts_sql(): void {
         $this->setAdminUser();
         $cat1 = $this->getDataGenerator()->create_category();
         $cat2 = $this->getDataGenerator()->create_category();
         $cat3 = $this->getDataGenerator()->create_category();
 
         $this->get_generator()->create_template((object)['name' => 'Template 1',
-            'contextid' => context_coursecat::instance($cat1->id)->id]);
+            'contextid' => context_coursecat::instance($cat1->id)->id, ]);
         $this->get_generator()->create_template((object)['name' => 'Template 2',
-            'contextid' => context_coursecat::instance($cat2->id)->id]);
+            'contextid' => context_coursecat::instance($cat2->id)->id, ]);
         $this->get_generator()->create_template((object)['name' => 'Template 2',
-            'contextid' => context_system::instance()->id]);
+            'contextid' => context_system::instance()->id, ]);
 
         [$sql, $params] = \tool_certificate\template::get_visible_categories_contexts_sql();
 
@@ -518,13 +519,13 @@ class template_test extends advanced_testcase {
     /**
      * Test move_files_to_new_context
      */
-    public function test_move_files_to_new_context() {
+    public function test_move_files_to_new_context(): void {
         $this->setAdminUser();
 
         $cat1 = $this->getDataGenerator()->create_category();
         $cat1context = context_coursecat::instance($cat1->id);
         $template1 = $this->get_generator()->create_template((object)['name' => 'Template 1',
-            'contextid' => context_coursecat::instance($cat1->id)->id]);
+            'contextid' => context_coursecat::instance($cat1->id)->id, ]);
         $page1 = $this->get_generator()->create_page($template1);
         $imageelement = $this->get_generator()->create_element($page1->get_id(), 'image');
 
@@ -536,7 +537,7 @@ class template_test extends advanced_testcase {
             'filearea' => 'element',
             'itemid' => $imageelement->get_id(),
             'filepath' => '/',
-            'filename' => 'image.png'
+            'filename' => 'image.png',
         ];
         $file = $fs->create_file_from_string($filerecord, 'Awesome photography');
         $filecontent = $file->get_content();

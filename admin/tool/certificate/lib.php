@@ -108,7 +108,7 @@ function tool_certificate_pluginfile($course, $cm, $context, $filearea, $args, $
  * @param stdClass $user user object
  * @param bool $iscurrentuser
  * @param stdClass $course Course object
- * @return bool
+ * @return void
  */
 function tool_certificate_myprofile_navigation(core_user\output\myprofile\tree $tree, $user, $iscurrentuser, $course) {
     global $USER;
@@ -133,6 +133,9 @@ function tool_certificate_myprofile_navigation(core_user\output\myprofile\tree $
  * @return \core\output\inplace_editable
  */
 function tool_certificate_inplace_editable($itemtype, $itemid, $newvalue) {
+    global $CFG;
+    require_once($CFG->libdir . '/externallib.php');
+
     $newvalue = clean_param($newvalue, PARAM_TEXT);
     external_api::validate_context(context_system::instance());
 
@@ -159,7 +162,7 @@ function tool_certificate_inplace_editable($itemtype, $itemid, $newvalue) {
 function tool_certificate_get_fontawesome_icon_map() {
     return [
         'tool_certificate:download' => 'fa-download',
-        'tool_certificate:linkedin' => 'fa-linkedin-square'
+        'tool_certificate:linkedin' => 'fa-linkedin-square',
     ];
 }
 
@@ -274,26 +277,8 @@ function tool_certificate_theme_workplace_menu_items(): array {
             'url' => new moodle_url("/admin/tool/certificate/manage_templates.php"),
             'name' => get_string('certificates', 'tool_certificate'),
             'imageurl' => $OUTPUT->image_url('icon', 'tool_certificate')->out(false),
-            'isglobal' => component_class_callback('\tool_tenant\permission', 'can_switch_tenant', [], false)
+            'isglobal' => component_class_callback('\tool_tenant\permission', 'can_switch_tenant', [], false),
         ];
     }
     return $menuitems;
-}
-/*
-* Displays a node in left side menu
-* @return  [type] string  link for the leftmenu
-* Added by sachin 
-*/
-function tool_certificate_leftmenunode(){
-
-    $systemcontext = \local_costcenter\lib\accesslib::get_module_context();
-    $certificatenode = '';
-    if(has_capability('tool/certificate:manage', $systemcontext) || is_siteadmin() ) {
-        $certificatenode .= html_writer::start_tag('li', array('class' => 'pull-left user_nav_div browsecertifications'));
-            $certification_url = new moodle_url('/admin/tool/certificate/manage_templates.php');
-            $certification = html_writer::link($certification_url, '<i class="fa fa-certificate"></i><span class="user_navigation_link_text">'.get_string('manage_certificates','tool_certificate').'</span>',array('class'=>'user_navigation_link'));
-            $certificatenode .= $certification;
-        $certificatenode .= html_writer::end_tag('li');
-    }
-    return array('15' => $certificatenode);
 }

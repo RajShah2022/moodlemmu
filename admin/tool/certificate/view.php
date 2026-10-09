@@ -26,6 +26,7 @@ require_once('../../../config.php');
 
 $issuecode = required_param('code', PARAM_TEXT);
 $preview = optional_param('preview', false, PARAM_BOOL);
+
 $PAGE->set_context(context_system::instance());
 $PAGE->set_url(new moodle_url('/admin/tool/certificate/view.php', ['code' => $issuecode]));
 

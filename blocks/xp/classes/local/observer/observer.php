@@ -1,18 +1,20 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
+// This file is part of Level Up XP.
 //
-// Moodle is free software: you can redistribute it and/or modify
+// Level Up XP is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Moodle is distributed in the hope that it will be useful,
+// Level Up XP is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
+//
+// https://levelup.plus
 
 /**
  * Block XP observer.
@@ -50,6 +52,9 @@ class observer {
         $DB->delete_records('block_xp_config', $conditions);
         $DB->delete_records('block_xp_filters', $conditions);
         $DB->delete_records('block_xp_log', $conditions);
+        $DB->delete_records('block_xp_logs', ['contextid' => $event->contextid]);
+        $DB->delete_records('block_xp_rule', ['contextid' => $event->contextid]);
+        $DB->delete_records('block_xp_rule', ['childcontextid' => $event->contextid]);
 
         // Flags. Note that this is based on the actually implementation.
         $sql = $DB->sql_like('name', ':name');

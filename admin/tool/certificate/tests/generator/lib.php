@@ -32,7 +32,6 @@ class tool_certificate_generator extends component_generator_base {
      */
     public function create_template($record = null): \tool_certificate\template {
         $record = (object)$record;
-
         if (isset($record->tenantid)) {
             debugging('Tenantid is no longer supported', DEBUG_DEVELOPER);
         }
@@ -71,7 +70,7 @@ class tool_certificate_generator extends component_generator_base {
      * @param array|stdClass $record
      * @return \tool_certificate\page
      */
-    public function create_page($template, $record = null) : \tool_certificate\page {
+    public function create_page($template, $record = null): \tool_certificate\page {
         if (!$template instanceof \tool_certificate\template) {
             $template = \tool_certificate\template::instance($template);
         }

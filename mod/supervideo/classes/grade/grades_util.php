@@ -14,21 +14,31 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Grades implementation for mod_supervideo.
- */
-
 namespace mod_supervideo\grade;
 
+use coding_exception;
+use completion_info;
+use dml_exception;
+use moodle_exception;
+
+/**
+ * Grades implementation for mod_supervideo.
+ *
+ * @package   mod_supervideo
+ * @copyright 2024 Eduardo Kraus {@link https://eduardokraus.com}
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class grades_util {
 
     /**
-     * @param int $cmid
-     * @param int $percent
+     * Function update
      *
-     * @throws \coding_exception
-     * @throws \dml_exception
-     * @throws \moodle_exception
+     * @param $cmid
+     * @param $percent
+     *
+     * @throws coding_exception
+     * @throws dml_exception
+     * @throws moodle_exception
      */
     public static function update($cmid, $percent) {
         global $DB, $CFG, $USER;
@@ -39,7 +49,7 @@ class grades_util {
         $course = get_course($cm->course);
         $supervideo = $DB->get_record('supervideo', ['id' => $cm->instance], '*', MUST_EXIST);
 
-        $completion = new \completion_info($course);
+        $completion = new completion_info($course);
         if ($completion->is_enabled($cm)) {
             if ($percent >= $supervideo->completionpercent) {
                 $completion->update_state($cm, COMPLETION_COMPLETE);
@@ -49,7 +59,7 @@ class grades_util {
         if ($supervideo->grade_approval == 1) {
             $grade = [
                 "userid" => $USER->id,
-                "rawgrade" => $percent
+                "rawgrade" => $percent,
             ];
 
             require_once("{$CFG->libdir}/gradelib.php");
@@ -66,17 +76,27 @@ class grades_util {
     }
 
     /**
-     * @param \stdClass $supervideo
-     * @param \stdClass $grades
+     * Function grade_item_update
+     *
+     * @param $supervideo
+     * @param null $grades
      *
      * @return int
      */
     public static function grade_item_update($supervideo, $grades = null) {
+        global $CFG;
+
+        require_once("{$CFG->dirroot}/lib/gradelib.php");
+
+        if (!defined('GRADE_TYPE_VALUE')) {
+            define('GRADE_TYPE_VALUE', 1);
+        }
+
         $params = [
             'itemname' => $supervideo->name,
             'gradetype' => GRADE_TYPE_VALUE,
             'grademax' => 100,
-            'grademin' => 0
+            'grademin' => 0,
         ];
 
         if (isset($supervideo->cmidnumber)) {

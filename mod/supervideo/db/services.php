@@ -17,15 +17,15 @@
 /**
  * services file
  *
- * @package    mod_supervideo
- * @copyright  2023 Eduardo kraus (http://eduardokraus.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   mod_supervideo
+ * @copyright 2024 Eduardo Kraus {@link https://eduardokraus.com}
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
 $functions = [
-    'mod_supervideo_services_progress_save' => [
+    'mod_supervideo_progress_save' => [
         'classpath' => 'mod/supervideo/classes/service/progress.php',
         'classname' => 'mod_supervideo\service\progress',
         'methodname' => 'save',
@@ -33,12 +33,29 @@ $functions = [
         'type' => 'write',
         'ajax' => true,
     ],
-    'mod_supervideo_services_opengraph_getinfo' => [
+    'mod_supervideo_progress_save_mobile' => [
+        'classpath' => 'mod/supervideo/classes/service/progress.php',
+        'classname' => 'mod_supervideo\service\progress',
+        'methodname' => 'save',
+        'description' => 'Save progress video.',
+        'type' => 'write',
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
+    ],
+    'mod_supervideo_opengraph_getinfo' => [
         'classpath' => 'mod/supervideo/classes/service/opengraph.php',
         'classname' => 'mod_supervideo\service\opengraph',
         'methodname' => 'getinfo',
         'description' => 'Save progress video.',
         'type' => 'write',
         'ajax' => true,
-    ]
+    ],
+    'mod_supervideo_view_supervideo' => [
+        'classpath' => 'mod/supervideo/classes/service/view.php',
+        'classname' => 'mod_supervideo\service\view',
+        'methodname' => 'view_supervideo',
+        'description' => 'Trigger the course module viewed event and update the module completion status.',
+        'type' => 'write',
+        'capabilities' => 'mod/supervideo:view',
+        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
+    ],
 ];
