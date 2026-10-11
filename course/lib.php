@@ -5230,3 +5230,86 @@ function course_update_communication_instance_data(stdClass $data): void {
     $data->id = $data->instanceid; // For correct use in update_course.
     update_course($data);
 }
+/**
+ * Get total count of quizzes and supervideos in a course
+ * 
+ * @param int $courseid Course ID
+ * @return array ['quizzes' => int, 'supervideos' => int, 'total' => int]
+ */
+function get_course_module_counts($courseid) {
+    global $DB;
+
+    $sql = "
+        SELECT m.name AS modname, COUNT(*) AS count
+        FROM {course_modules} cm
+        JOIN {modules} m ON m.id = cm.module
+        WHERE cm.course = :courseid
+        AND cm.deletioninprogress = 0
+        AND m.name IN ('quiz', 'supervideo')
+        GROUP BY m.name
+    ";
+
+// new
+$results = $DB->get_records_sql($sql, ['courseid' => $courseid]);
+
+$course = $DB->get_record('course', ['id' => $courseid], 'id, fullname, shortname', MUST_EXIST);
+
+$counts = [
+    'course' => [
+        'id' => $course->id,
+        'fullname' => $course->fullname,
+        'shortname' => $course->shortname,
+    ],
+    'quizzes' => 0,
+    'supervideos' => 0,
+    'total' => 0
+];
+
+    foreach ($results as $row) {
+        if ($row->modname === 'quiz') {
+            $counts['quizzes'] = (int) $row->count;
+        } elseif ($row->modname === 'supervideo') {
+            $counts['supervideos'] = (int) $row->count;
+        }
+    }
+
+    // new
+    $counts['total'] = $counts['quizzes'] + $counts['supervideos'];
+
+// new
+    // XP calculation for "Increasing" method
+    $total_xp = ($counts['quizzes'] * 5) + ($counts['supervideos'] * 2);
+    $num_levels = 10;
+    $n = $num_levels;
+
+    // Increasing method formula:
+    // total_xp = (n-1) * base + point_increase * (n-2) * (n-1) / 2
+    //
+    // For n=10: total_xp = 9 * base + 36 * point_increase
+    //
+    // We set base ≈ point_increase for a balanced progression
+    // total_xp = 9*b + 36*b = 45*b  →  b = total_xp / 45
+
+    $level_ups = $n - 1;                          // 9
+    $sum_factor = ($n - 2) * ($n - 1) / 2;        // 36
+
+    // base ≈ point_increase → total = (level_ups + sum_factor) * base
+    $combined = $level_ups + $sum_factor;           // 45
+    $base_points = $total_xp > 0 ? max(1, round($total_xp / $combined)) : 0;
+    $point_increase = $base_points;
+
+    // Verify: recalculate actual total from these values
+    $actual_total = ($level_ups * $base_points) + ($sum_factor * $point_increase);
+
+    $counts['xp'] = [
+        'per_quiz' => 5,
+        'per_video' => 2,
+        'total_xp' => $total_xp,
+        'num_levels' => $num_levels,
+        'base_points' => $base_points,
+        'point_increase' => $point_increase,
+        'actual_total' => $actual_total,
+    ];
+
+    return $counts;
+}
