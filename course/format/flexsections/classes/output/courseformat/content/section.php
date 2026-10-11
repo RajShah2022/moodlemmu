@@ -55,6 +55,16 @@ class section extends \core_courseformat\output\local\content\section {
 
         $data = parent::export_for_template($output);
 
+        // Cohort-aware "Hidden from students": a section can be visible-flagged (enabled
+        // for some other cohort) yet unavailable to any of this teacher's own cohorts.
+        // The core badge only reflects the global `visible` flag, so add it here.
+        if (empty($data->hiddenfromstudents)
+                && has_capability('moodle/course:viewhiddensections', \context_course::instance($course->id))
+                && \format_flexsections\local\visibilityhelper::hidden_from_my_students(
+                    $this->section->availability, $course->id)) {
+            $data->hiddenfromstudents = true;
+        }
+
         // For sections that are displayed as a link do not print list of cms or controls.
         $showaslink = $this->section->collapsed == FORMAT_FLEXSECTIONS_COLLAPSED
             && $this->format->get_viewed_section() != $this->section->section;
