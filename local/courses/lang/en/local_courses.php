@@ -447,6 +447,7 @@ $string['coderequired'] = 'Please enter code';
 $string['add_selected_users'] = 'Add Selected Users'; */
 $string['taskcoursecompletionreminder'] = 'Course Completion Reminder';
 $string['taskcoursecompletionfrequency'] = 'Course Completion Frequency Reminder';
+$string['taskpendingworkreminder'] = 'Pending Activity Work Reminder';
 $string['courseautoenrol'] = 'Auto enrollment';
 $string['user_fullname'] = 'Employee Name';
 $string['idnumber'] = 'Employee ID';
@@ -478,3 +479,4 @@ $string['childcheckboxhelp_help'] = 'Enable it\'s parent option to enable this o
 $string['topicsselected'] = 'The Topics has been successfully selected for the course <b>{$a}</b>';
 $string['classesselected'] = 'The Classes has been successfully selected for the course <b>{$a}</b>';
 $string['class'] = 'Class';
+

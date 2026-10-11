@@ -51,7 +51,7 @@ $tasks = array(
         'month' => '*',
         'dayofweek' => '*'
     ),
-array(
+    array(
         'classname' => 'local_courses\task\autoenrol_newuser',
         'blocking' => 0,
         'minute' => '*',
@@ -59,6 +59,15 @@ array(
         'day' => '*',
         'month' => '*',
         'dayofweek' => '*'
+    ),
+    array(
+        'classname' => 'local_courses\task\pending_work_reminder',
+        'blocking' => 0,
+        'minute' => '0',
+        'hour' => '9',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '4'
     ),
 
 );

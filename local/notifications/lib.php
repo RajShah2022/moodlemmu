@@ -142,11 +142,15 @@ class notifications
                             [course_description],  [course_url],
                             [enroluser_fullname], [enroluser_email]";
                 break;
-  		case 'course_completion_reminder':
-                $strings = "[course_title], [course_enrolstartdate],
-                            [course_enrolenddate], [course_department],
-                            [course_description],  [course_url],
-                            [enroluser_fullname], [enroluser_email]";
+            case 'course_completion_reminder':
+                    $strings = "[course_title], [course_enrolstartdate],
+                                [course_enrolenddate], [course_department],
+                                [course_description],  [course_url],
+                                [enroluser_fullname], [enroluser_email]";
+                break;
+            case 'course_pending_work':
+                $strings = "[enroluser_fullname], [enroluser_email],
+                            [pending_count], [pending_activities], [pending_generateddate]";
                 break;
             case 'classroom_enrol':
                 $strings = "[classroom_name], [classroom_course], [classroom_startdate],

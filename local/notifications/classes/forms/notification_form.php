@@ -65,7 +65,7 @@ class notification_form extends moodleform {
 					// $module_category->shortname = ($module_category->shortname == 'course') ? 'courses' : $module_category->shortname;
 					$module_category->shortname = ($module_category->shortname == 'onlineexam') ? 'onlineexams' : $module_category->shortname;
 					$module_category->shortname = ($module_category->shortname == 'feedback') ? 'evaluation' : $module_category->shortname;
-					$plugin_exists = \core_component::get_plugin_directory('local', $module_category->shortname); 
+					$plugin_exists = \core_component::get_plugin_directory('local', $module_category->pluginname); 
 					if($plugin_exists){					
                    		$notifications = $DB->get_records_sql_menu("SELECT * FROM {local_notification_type} WHERE parent_module = {$module_category->id} AND parent_module <> 0 AND shortname NOT IN ('course_notification','course_reminder','classroom_invitation', 'program_invitation','forum','forum_subscription','forum_unsubscription','forum_reply','forum_post','lep_reminder')");// and shortname!='classroom_invitation'and shortname!='program_invitation' and shortname NOT LIKE '%forum%'AND (shortname NOT LIKE 'course_reminder') 
                     	$notification_type[$module_category->name] = $notifications;
@@ -137,9 +137,9 @@ class notification_form extends moodleform {
     		}
 
 			if(strtolower($notifyid->moduletype)!='request'){			
-				// $courseselect = $mform->addElement('autocomplete', 'moduleid',$datamodule_label,$datamoduleids,array('class' => 'module_label'));
-				// $mform->setType('moduleid', PARAM_RAW);
-				// $courseselect->setMultiple(true);
+				$courseselect = $mform->addElement('autocomplete', 'moduleid',$datamodule_label,$datamoduleids,array('class' => 'module_label'));
+				$mform->setType('moduleid', PARAM_RAW);
+				$courseselect->setMultiple(true);
 
 				$notifsql = "SELECT id FROM {local_notification_type} WHERE shortname IN ('certificate_uploaded','certificate_approved','certificate_declined')";
 				$notiftypeids = $DB->get_fieldset_sql($notifsql, array()); 
