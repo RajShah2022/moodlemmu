@@ -487,9 +487,9 @@ if (has_capability('moodle/grade:viewall', $context)) {
                 echo $OUTPUT->footer();
                 exit;
             }
-            gradereport_user_random_bag_page($courseid, [$rbstudentid => $class_students[$rbstudentid]]);
+            gradereport_user_random_bag_page($courseid, [$rbstudentid => $class_students[$rbstudentid]], null, [], true);
         } else {
-            gradereport_user_random_bag_page($courseid, $class_students, $classes[$groupid]->groupname, ['class_id' => $groupid]);
+            gradereport_user_random_bag_page($courseid, $class_students, $classes[$groupid]->groupname, ['class_id' => $groupid], true);
         }
         exit;
     }

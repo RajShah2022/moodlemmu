@@ -11,7 +11,7 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Course IDs where teachers get the class-average Random Bag report. Add a course ID here to enable it.
  */
-const GRADEREPORT_USER_RANDOM_BAG_TEACHER_COURSES = [];
+const GRADEREPORT_USER_RANDOM_BAG_TEACHER_COURSES = [380];
 
 /**
  * Whether teachers can generate the class-average Random Bag report in this course.
@@ -584,7 +584,8 @@ function gradereport_user_random_bag_styles(): void {
 }
 
 /**
- * Best (top 3, above 0%) and worst (bottom 3, below 100%) categories of a report.
+ * Best (top 3, above 0%) and worst (bottom 3, below 100%) categories of a report, without repeating a
+ * category in both: a shared one is a strength above 50%, otherwise a weakness.
  *
  * @param array $categories category name => ['percentage', 'correct_answers', 'total_questions', 'wrong_answers', ...]
  * @return array [best, worst]
@@ -609,6 +610,16 @@ function gradereport_user_random_bag_highlights(array $categories): array {
     $worst = array_slice(array_reverse(array_filter($performance_highlights, function($t) {
         return $t['percentage'] < 100;
     })), 0, 3);
+    // A category in both lists goes under strengths above 50%, otherwise under weaknesses.
+    $best_names = array_column($best, 'name');
+    $worst_names = array_column($worst, 'name');
+    $both = array_intersect($best_names, $worst_names);
+    $best = array_values(array_filter($best, function($t) use ($both) {
+        return !in_array($t['name'], $both, true) || $t['percentage'] > 50;
+    }));
+    $worst = array_values(array_filter($worst, function($t) use ($both) {
+        return !in_array($t['name'], $both, true) || $t['percentage'] <= 50;
+    }));
     return [$best, $worst];
 }
 
@@ -632,20 +643,41 @@ function gradereport_user_random_bag_score_color($percentage): string {
  * @param array $students user records (id, firstname, lastname) keyed by id
  * @param string|null $classname null for one student's report, the class name for the class average
  * @param array $urlparams extra params kept on report links (e.g. class_id)
+ * @param bool $teacherview true to let the picker choose a quiz from any section, false for Random Bag Tests only
  */
-function gradereport_user_random_bag_page(int $courseid, array $students, ?string $classname = null, array $urlparams = []): void {
-    global $DB, $PAGE, $OUTPUT;
+function gradereport_user_random_bag_page(int $courseid, array $students, ?string $classname = null, array $urlparams = [],
+        bool $teacherview = false): void {
+    global $CFG, $DB, $PAGE, $OUTPUT;
 
     $course_structure = get_course_structure($courseid);
-    $mainSection = null;
-    foreach ($course_structure["sections"] as $section) {
-        if (strtolower($section["name"]) === strtolower("Random Bag Tests")) { ///change this
-            $mainSection = $section;
-            break;
+    $children = [];
+    if ($teacherview) {
+        // Teachers: flatten every section and subsection (in course order) so a quiz can be picked from anywhere.
+        $flatten = function (array $sections, int $depth) use (&$flatten, &$children) {
+            foreach ($sections as $section) {
+                $section['depth'] = $depth;
+                $subsections = $section['children'];
+                unset($section['children']);
+                $children[] = $section;
+                $flatten($subsections, $depth + 1);
+            }
+        };
+        $flatten($course_structure["sections"], 0);
+    } else {
+        // Students: only the sections inside "Random Bag Tests".
+        $mainSection = null;
+        foreach ($course_structure["sections"] as $section) {
+            if (strtolower($section["name"]) === strtolower("Random Bag Tests")) { ///change this
+                $mainSection = $section;
+                break;
+            }
+        }
+        if (!$mainSection) die("Random Bag Test not found.");
+        foreach ($mainSection["children"] as $child) {
+            $child['depth'] = 0;
+            $children[] = $child;
         }
     }
-    if (!$mainSection) die("Random Bag Test not found.");
-    $children = $mainSection["children"];
 
     $quiz_cmid = optional_param('quiz_id', 0, PARAM_INT);
     if ($quiz_cmid) {
@@ -977,7 +1009,7 @@ function gradereport_user_random_bag_page(int $courseid, array $students, ?strin
                                 <option value="">-- Select Section --</option>
                                 <?php foreach ($children as $child): ?>
                                     <option value="<?= htmlspecialchars($child['id']) ?>">
-                                        <?= htmlspecialchars($child['name']) ?>
+                                        <?= str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $child['depth']) . ($child['depth'] ? '&#8627; ' : '') . htmlspecialchars($child['name']) ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
@@ -1181,32 +1213,8 @@ function gradereport_user_random_bag_student_report(int $courseid, int $student_
             } elseif ($percentage >= 40) {
                 $score_color = '#D97706'; // Average (orange)
             }
-            // Calculate best and worst performing categories
-            $performance_highlights = [];
-
-            foreach ($categories as $category_name => $category_data) {
-                $performance_highlights[] = [
-                    'name' => $category_name,
-                    'percentage' => $category_data['percentage'],
-                    'correct_answers' => $category_data['correct_answers'],
-                    'total_questions' => $category_data['total_questions'],
-                    'wrong_answers' => $category_data['wrong_answers']
-                ];
-            }
-
-            // Sort by performance percentage
-            usort($performance_highlights, function($a, $b) {
-                return $b['percentage'] - $a['percentage'];
-            });
-
-            // Get top 3 best and bottom 3 worst (but only if we have enough data).
-            // A 0% topic can't be a "best" area and a 100% topic can't be a "worst" area.
-            $best_categories = array_slice(array_filter($performance_highlights, function($t) {
-                return $t['percentage'] > 0;
-            }), 0, 3);
-            $worst_categories = array_slice(array_reverse(array_filter($performance_highlights, function($t) {
-                return $t['percentage'] < 100;
-            })), 0, 3);
+            // Best and worst performing categories
+            [$best_categories, $worst_categories] = gradereport_user_random_bag_highlights($categories);
             ?>
             <!DOCTYPE html>
             <html lang="en">
