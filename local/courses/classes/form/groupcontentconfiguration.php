@@ -203,15 +203,18 @@ class groupcontentconfiguration extends dynamic_form {
             $data = new stdClass();
             foreach ($existingtopics as $topic => $record) {
                 $data->{'section_' . $topic} = 1;
-                if($DB->record_exists('local_coursegroupmodules', array('topicid' => $topic))){
-                    // Load existing activities for this section.
-                    $params['topicid'] = $topic;
-                    $existingmodules = $DB->get_records('local_coursegroupmodules', $params, '', 'moduleid');
-                    foreach ($existingmodules as $moduleid => $record) {
-                        $data->{'activity_' . $moduleid} = 1;
-                    }
-                }
             }
+
+            // Load the class's activities in one go rather than per enabled topic. The
+            // old per-topic lookup keyed on topicid, so a row filed under a section that
+            // was not itself enabled never loaded: the toggle read off while the activity
+            // stayed available to students. Keying on the class alone means the toggle
+            // reflects what is actually stored, whatever the topicid says.
+            $existingmodules = $DB->get_records('local_coursegroupmodules', $params, '', 'moduleid');
+            foreach ($existingmodules as $moduleid => $record) {
+                $data->{'activity_' . $moduleid} = 1;
+            }
+
             $this->set_data($data);
         }
     }

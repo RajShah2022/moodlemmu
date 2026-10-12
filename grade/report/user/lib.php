@@ -481,7 +481,8 @@ function calculateEnhancedStudentRanks($allStudentQuizData, $filteredCourseStruc
 
     // Calculate average performance for each student
     foreach ($studentPerformances as &$student) {
-        // Calculate average across all quizzes (including zeros for non-attempts)
+        // Calculate average across all quizzes (including zeros for non-attempts).
+        // A course with no accessible quizzes leaves quiz_count at 0, so guard the division.
         $student['average_performance'] = $student['quiz_count'] > 0
             ? round($student['total_performance'] / $student['quiz_count'], 2)
             : 0;

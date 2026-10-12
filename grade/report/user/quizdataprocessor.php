@@ -485,18 +485,18 @@ class quiz_attempt_data_processor {
                     ($category['correct_answers'] / $category['total_questions']) * 100, 
                     1
                 );
-	     }
+            }
             if ($category['total_marks'] > 0) {
                 $category['marks_percentage'] = round(
                     ($category['earned_marks'] / $category['total_marks']) * 100,
                     1
                 );
             }
-	}	    
+        }
         
         return $categories;
     }
-    
+
     /**
      * Group all questions directly by tag combinations (no category layer)
      */

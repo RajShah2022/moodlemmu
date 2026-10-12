@@ -1,3 +1,35 @@
+# PROJECT_CONTEXT.md
+> Living context document — read before touching any code.
+> Last updated: 2026-10-12
+
+---
+
+## 1. Project
+
+| Field        | Value |
+|---|---|
+| **Name**     | openLMS (Skryptech Moodle customisation) |
+| **Summary**  | Moodle 4.3.2+ install with custom per-class ("cohort") content gating, custom grade reports, org-hierarchy scoping via `open_path` |
+| **Status**   | Active — mid-incident remediation |
+| **Repo**     | `/var/www/html` (branches: `pk-dev` = dev work, `prod` = production; main branch `master`) |
+| **Entry point** | Moodle core `index.php`; custom work lives in `local/courses`, `blocks/course_config`, `grade/report/user` |
+
+---
+
+## 2. Stack
+
+| Layer       | Technology |
+|---|---|
+| Language    | PHP (Moodle 4.3.2+, `$branch = '403'`) |
+| Framework   | Moodle core, plugin types `local`, `block`, `gradereport` |
+| UI          | Moodle Boost/Mustache + AMD modules (`amd/src` → `amd/build`), jQuery, Font Awesome |
+| Database    | MySQL/MariaDB (`mysqli`), db `skryptech`, prefix `mdl_` |
+| ORM/Query   | Moodle `$DB` (`moodle_database`) — no external ORM |
+| Auth        | Moodle core + cohort sync enrolment |
+| Course format| **flexsections** — nested sections, hierarchy in `course_format_options` |
+| Key libs    | `tool_certificate`, custom `local_notification`, `supervideo` activity module |
+
+---
 
 ## 3. Architecture Overview
 
@@ -110,68 +142,183 @@ enabled content is videos reports "no content" by design.
 | `local/cli/rebuild_groupcontentconfig.php` | **NEW** repair: rebuild B rows from module availability | Dry-run default. Candidates = pairs with **zero** module rows only. `--clean-stale-sections` second pass *removes* stale section conditions — never creates rows |
 | `local/cli/fix_missing_section_toggles.php` | **NEW** repair: switch on section chain above enabled activities | Dry-run default. Works on any pair incl. already-rebuilt. Writes `local_coursegrouptopics` only — never availability. `--from-rows` when no cohort enrol instance exists |
 | `local/cli/audit_groupcontentconfig.php` | **NEW** read-only detector: pairs where students reach modules with no toggle row | Exit 1 if any broken, so cron-able. Runbook: `RUNBOOK_content_config_disconnect.md` |
+| `local/courses/cli/{rebuild_groupcontentconfig,fix_missing_section_toggles}.php` | Older duplicates of `local/cli/` scripts, came in from `pk-dev` | `rebuild` copy lacks flexsections parent handling. Use `local/cli/`; delete these once confirmed unused |
 | `blocks/course_config/templates/course_config.mustache` | Launches toggle form | `:21` passes `data-groupid={{cohortid}}` — confirms Store B `groupid` = cohort id |
 | `grade/report/user/index.php` | Custom per-class performance report | `:432-442` resolves class→cohort by **name match** (fragile, see §9). `:665` filters `m.name='quiz'`. `:743` emits "No content has been enabled for this class." |
 | `grade/report/user/lib.php` | Report helpers | `filter_course_structure()`, `get_course_structure()` |
 | `RUNBOOK_content_config_disconnect.md` | Detect → backup → dry-run → execute → verify for toggle/access disconnect | Step 5: PARTIAL pairs not covered by rebuild (zero-row pairs only) |
+| `grade/report/user/lib.php` (UNCOMMITTED part) | `gradereport_user_quiz_url()`, `gradereport_user_quiz_name_link()` | Pre-session uncommitted work. Random Bag + Past Year reports call `gradereport_user_quiz_name_link()` — deploy with them or page fatals |
+| `grade/report/user/randombagview.php` | **NEW** (UNCOMMITTED, untracked) shared Random Bag Test report | `GRADEREPORT_USER_RANDOM_BAG_TEACHER_COURSES` const = course-ID allowlist for teacher button (empty = off everywhere). `gradereport_user_random_bag_page()` always exits. Student view = original code moved verbatim; class view = `gradereport_user_random_bag_class_report()` |
+| `grade/report/user/index.php` (Random Bag) | Wires Random Bag for both roles | Student branch: one call `gradereport_user_random_bag_page($courseid, [$USER->id => $USER])`. Teacher branch: hook after `$classes` built (~`:446`), button in class dropdown form. Params: `class_id`, `quiz_id`, `rbstudent`. Report sections located by name `"Random Bag Tests"` |
+| `grade/report/user/quizdataprocessor.php` | Attempt → question data | `get_attempt_questions()` runs per-question queries — slow for big classes. `group_by_category()` correct = fraction ≥ 0.5 |
+| `grade/report/user/integrated_quiz_renderer.php` | Renders question from real attempt usage | Needs one student's attempt → can't render class-wide view |
+| `admin/cli/course_sync.php` | **NEW** (untracked) prod→target course copy, all user data | Source run (no `--target`) = backup + `extras.json` (cohorts, cohort enrols, `supervideo_view`). `--target` = delete-and-restore into existing course + re-import extras. Refuses if export `wwwroot` == this site. Export test: course 91 → 3.1 GB, ~10 min |
 
 ---
 
+## 6. Active Goals
+
+- [x] Diagnose "students see content, teacher toggles off, report empty"
+- [x] Fix unscoped deletes + availability clean-up in `api.php`
+- [x] Build repair scripts
+- [x] Rebuild module rows for cohort 19 courses 87/89/95/98/99/100/112 (2026-10-06/07, re-audit 0 zero-row pairs)
+- [ ] Prod: run `fix_missing_section_toggles.php` for all 8 cohort-19 pairs (119 section rows pending)
+- [ ] Prod: sweep remaining casualty cohorts (39 / ICSE_2 confirmed; ~17 more candidates)
+- [ ] Fix `grade/report/user` class→cohort name-match resolution
+- [ ] Decide on `external.php:1377` / enable-all button vs removed `bulk_enable_for_group()`
+- [x] Teacher class-average Random Bag report (dev, UNCOMMITTED)
+- [ ] Fill `GRADEREPORT_USER_RANDOM_BAG_TEACHER_COURSES` with **prod** course IDs (user to supply)
+- [ ] Commit + deploy Random Bag set: `randombagview.php`, `index.php`, `lib.php`, `integrated_quiz_renderer.php`, `quizdataprocessor.php`
+- [ ] Browser-test Random Bag as student + teacher (only CLI-rendered so far)
+- [ ] Run `course_sync.php --target` for real (target side never executed)
+- [ ] Finish `pk-dev` → `prod` merge commit (conflicts resolved 2026-10-12, NOT committed)
+- [x] Strip `pk-dev` enable-all button from `prod` merge (2026-10-12)
+
 ---
 
-## 6. Decisions Log
+## 7. Decisions Log
+
+> Settled choices — do not re-debate without a stated reason.
 
 | Date | Decision | Rationale |
 |---|---|---|
-| 2026-10-07 | Every delete on `local_coursegrouptopics`/`local_coursegroupmodules` scoped by `courseid` (+ `open_path` for non-admins) in `api.php` | Unscoped `['groupid'=>$groupid]` wiped cohort config in all courses |
-| 2026-10-07 | Removing a class calls `revoke_class_availability()` after B delete | Keep A and B in step; B-only delete left students with access + toggles off |
+| 2026-10-06 | Scope all 4 plugin-table deletes by `courseid` (+ `open_path` in non-admin branches) | Unscoped `['groupid' => $groupid]` wiped a cohort's config in **every** course site-wide |
+| 2026-10-06 | Deletes must revoke the availability they caused | Row delete alone = the incident. `class_content_ids()`/`topic_content_by_class()` capture before, `revoke_class_availability()` cleans after |
+| 2026-10-06 | `revoke_class_availability()` checks surviving rows before clearing | Availability has no `open_path`; a module still enabled under another path must keep its condition |
+| 2026-10-06 | Look module up by `id` alone in `update_deleted_module_availability()` | Old lookup joined on unreliable `topicid` → `false` → silent no-op → the 375 orphans |
+| 2026-10-06 | Remove only the departing class's block; clear+hide only when nothing remains | Old code blanked whole field, revoking every other class |
+| 2026-10-06 | Section loses last class → clear availability **and** `visible = 0` | Clearing alone exposes a group-restricted section to everyone. Cascades to its activities via `course_update_section()`, recorded in `visibleold` |
+| 2026-10-06 | Derive `topicid` from `$modulesections[$activityid]` (real `cm.section`) | Old code reused leftover `$topicid` loop variable → rows filed under foreign sections |
+| 2026-10-06 | Form reads activities by class, not per topic | Rows under non-enabled sections never loaded → toggle off while students had access |
+| 2026-10-06 | Repair reconstructs B from **module** availability only | Section availability is unreliable: 41 of 47 conditions stale |
+| 2026-10-06 | No version bump for these changes | No schema change, no new class file, no new strings/services/tasks. Purge caches after deploy |
+| 2026-10-06 | Final prod `api.php` = 3-way merge (base dev snapshot, theirs prod, mine), **excluding** `bulk_enable_for_group()` | Prod never had the method; user confirmed it stays out |
+| 2026-10-07 | Ancestor repair lives in a **separate** script, not folded into `rebuild_groupcontentconfig.php` | User reverted the in-place version; rebuild script's candidate query excludes already-rebuilt pairs anyway |
+| 2026-10-07 | Course refresh prod→dev = backup with users + restore "delete contents, then restore" into existing course | Merge duplicates activities + splits user data. Course id kept; cm/quiz ids change |
+| 2026-10-07 | `course_sync.php` forces backup/restore settings by unlocking (`set_status(NOT_LOCKED)`) | Site backup defaults may lock users/logs off; `set_value()` throws on locked settings |
+| 2026-10-07 | Restore with `enrolments = ENROL_WITHUSERS`, then re-create cohort enrol instances from `extras.json` + `enrol_cohort_sync()` | Cross-site restore maps cohort enrol to 0 (`enrol/cohort/lib.php:237`) → cohort-enrolled users silently lose enrolment |
+| 2026-10-07 | Cohort import adds members only, never removes | Cohorts site-wide; target may have members prod lacks |
+| 2026-10-07 | Supervideo views matched by `<activity name>#<nth same-name in course order>` + username | cmids change on restore; names stable |
+| 2026-10-08 | Random Bag moved to shared `randombagview.php`, student code verbatim | One code path for both roles; verbatim keeps student behaviour identical |
+| 2026-10-08 | Teacher average = mean of per-student %; category avg over students who got that category | Random bag → students get different question mix |
+| 2026-10-08 | Teacher averages use latest **finished** attempt; "View report" shows latest attempt (student rule) | Re-attempt in progress shouldn't drop completed student from average |
+| 2026-10-08 | Teacher drill-down = per-question stats table, not rendered questions | Integrated renderer needs one student's attempt |
+| 2026-10-09 | Teacher button limited by code-level const allowlist, gates button **and** handler | User rejected admin setting; handler gate blocks URL access |
+| 2026-10-09 | Allowlist applies to teacher button only; student button unchanged in all courses | Scope of request; user can extend |
 | 2026-10-07 | Repair = `rebuild_groupcontentconfig.php` (A → B), dry run first, back up rows before `--execute` | A is only faithful record of what was enabled |
 | 2026-10-07 | Audit counts only `quiz`+`supervideo`; B-only rows ignored | B-only mismatch = module types outside filter, not real breaks (spot-checked 4 pairs) |
+| 2026-10-12 | Merge resolution: `local_courses` version = prod `2023060600.30` | Never lower a version prod DB already has |
+| 2026-10-12 | Third-party plugin upgrades (pk-dev `627bfea23`: `tool_certificate`, `tool_tcpdffonts`, `availability_role`, `report_benchmark`, `block_xp`, `format_flexsections`, `filter_multilang2`, `mod_supervideo`) + composer `openai-php/client` bump kept **out of** `prod` merge | User won't ship plugin upgrades with this merge. Paths reset to prod `HEAD`; backup in session scratchpad |
+| 2026-10-12 | `local/trialsignup` (pk-dev `6ad55041e`) kept out of `prod` merge | Not needed on prod |
+| 2026-10-12 | Enable-all button + `local_courses_bulk_enable_topics` service removed from `prod` merge | `api::bulk_enable_for_group()` doesn't exist; button would fatal. Form keeps pk-dev's read-activities-by-class fix |
+| 2026-10-12 | Merge resolution: Random Bag student code stays in `randombagview.php`; prod-only Chart.js AMD guard ported into it | Prod inline block = pk-dev pre-move code + filter/link/guard; filter + link already in `randombagview.php` |
 
 ---
 
-## 7. Rejected Approaches ⛔
+## 8. Rejected Approaches ⛔
+
+> Hard blocklist — do not re-suggest anything in this table.
 
 | Approach | Reason rejected |
 |---|---|
-| `LIKE '%"id":296%'` to match groups | Collides with group 2960; walk decoded tree |
+| `api::bulk_enable_for_group()` for repair | Enables every topic + activity in the course → over-grants, and writes new availability for content students couldn't see |
+| Section `availability` as repair source | 41 of 47 sections carried stale conditions; restoring would re-enable deliberately-disabled topics |
+| `LIKE '%"type":"group","id":296%'` for matching | Matches group 2960. Walk the decoded JSON tree instead |
+| `--clean-stale-sections` to repair parent sections | It only *removes* conditions; it never creates topic rows |
+| Blanking whole `availability` field on class removal | Revokes every other class's access to the same module |
+| Trusting topic rows alone to protect sections in the stale pass | Pairs not yet rebuilt have none → would clear load-bearing ancestors. (Hardening written then reverted — re-add before using that flag) |
+| `SET @var` in SQL handed to the user | phpMyAdmin runs each statement in its own session; inline the literals |
+| Admin setting (`settings.php` + lang strings) for Random Bag teacher course list | User wants it in code, not admin settings |
+| Restore "Merge into existing course" for prod refresh | Duplicates every activity; user data split across copies |
+| `admin/cli/restore_backup.php` for existing course | Only takes `--categoryid`, always creates new course |
 | Run rebuild on PARTIAL pairs | Only zero-row pairs are candidates; inspect first |
+| Deploy only files touched this session for Random Bag | Depends on pre-session uncommitted `lib.php` (`gradereport_user_quiz_name_link()`) → fatal |
 
 ---
 
-## 8. Known Issues
+## 9. Known Issues
 
 | Issue | Status | Notes |
 |---|---|---|
+| Unscoped `delete_records` wiped cohort config site-wide | Fixed (UNCOMMITTED) | `api.php` admin + non-admin branches of both insert functions |
+| `update_deleted_module_availability()` silent no-op on wrong `topicid` | Fixed (UNCOMMITTED) | Root cause of 375 orphaned restrictions on course 89 |
+| `update_deleted_section_availability()` skipped write when last condition removed | Fixed (UNCOMMITTED) | Caused the 39/47 stale section conditions |
+| `topicid` from leftover loop variable | Fixed (UNCOMMITTED) | Now self-heals existing wrong rows on save |
 | Cohort 19 toggles wiped (courses 87, 89, 95, 98, 99, 100, 112) | Fixed | Rebuilt 2026-10-06/07: 89 earlier, 95 = 37 rows, 87/98/99/100/112 = 1410 rows. Backups in session scratchpad. Re-audit: 0 zero-row pairs |
 | Course 346 cohort 71 (group 337): 15 of 141 reachable modules lack B rows | Open | PARTIAL, cause unknown, not repaired |
 | 109 stale section conditions on cohort 19 (87:16, 98:13, 99:25, 100:14, 112:41) | Open | Left alone; `--clean-stale-sections` changes student availability — dry run + review ids first |
 | Exact trigger (course/user/date) of wipe | Unknown | No log of raw `delete_records`; only old code + data pattern |
-| Fix is `UNCOMMITTED` | Open | `api.php` dirty; HEAD still has bug — redeploy of HEAD reintroduces it |
 | Course 91 cohort 19 has `local_coursegroups` row, absent from audit | Open | Likely unconfigured, not confirmed |
+| Prod: 119 ancestor section rows missing across 7 pairs | Open | `fix_missing_section_toggles.php` dry run confirmed |
+| ~19 cohorts have `local_coursegroups` rows but 0 module rows | Open | Cohort 19 (8 courses) + 39 confirmed casualties; trial/test classes likely never configured |
+| `grade/report/user` resolves class→cohort by stripping `" cohort"` and name-matching teacher's own cohorts | Open | Fails on groups named `… cohort (2)`; groups spanning cohorts resolve arbitrarily (`get_records_sql` keys by `groupid`, dupes collapse). Dev course 345 group 276 → cohort 57 for one teacher, 59 for another |
+| Report counts `quiz` only | Open (by design?) | Video-only class reports "no content" |
+| `external.php:1377` calls missing `bulk_enable_for_group()` | Open | Enable-all button still fatals on `pk-dev` (`groupcontentconfiguration.php:78`, `local_courses_bulk_enable_topics` service). Removed from `prod` merge 2026-10-12 |
+| No unique index on plugin tables | Open | `(courseid, groupid, moduleid, open_path)` would prevent dupes; needs version bump + upgrade step |
+| Course backup omits `supervideo_view` (watch progress) | Open (worked around) | `mod/supervideo/backup/moodle2/backup_supervideo_stepslib.php` backs up settings only. `course_sync.php` copies it via `extras.json` |
+| Random Bag class report slow on big classes | Open | `get_attempt_questions()` per student + per-question queries |
+| Random Bag `quiz_id` not checked against "Random Bag Tests" section | Open (low risk) | Teacher can load any course quiz via URL; student path same as before |
+| Random Bag drill-down blank/raw for image/TeX-only questions | Open | Preview = `strip_tags` + `shorten_text` of `questiontext` |
+| Teachers without `teacher` role + group + cohort get no classes | Open (pre-existing) | Same `$classes` query as rest of teacher report |
+| Pre-session uncommitted work in `grade/report/user/` (`index.php`, `lib.php`, `integrated_quiz_renderer.php`, `quizdataprocessor.php` staged) | Open | Must ship together with Random Bag change |
+| Chart.js loaded without AMD guard in `grade/report/user/index.php` (2 spots) + `lib.php` (3 spots) | Open | Guarded copies use `window.define` swap; unguarded ones may register Chart as anonymous AMD module |
 
 ---
 
-## 9. Open Questions
+## 10. Open Questions
 
+- [ ] Does prod `external.php` / `db/services.php` reference `bulk_enable_for_group` / `bulk_enable_topics`? If yes, pasting final `api.php` breaks the enable-all button
+- [ ] Does prod have the enable-all button block in `groupcontentconfiguration.php`? (Button is in HEAD on dev — prod unknown)
+- [ ] Which cohorts beyond 19 and 39 are real casualties vs never-configured? (corrected casualty query answers it)
+- [ ] Which course's class-config uncheck triggered the original site-wide wipe? (`local_coursegroups` row 168 recreated 2026-03-10 by user 853, `timemodified=0`)
+- [ ] Add the unique index?
+- [ ] Should `grade/report/user` count non-quiz modules?
+- [ ] Which **prod** course IDs get teacher Random Bag button?
+- [ ] Limit student Random Report button to same courses too?
+- [ ] Does prod have its own edits to `grade/report/user/*` files? (diff before overwrite)
+- [ ] "Classes" data in custom `local/*` tables — needs adding to `course_sync.php`? Which table?
+- [ ] Do Olympiad / Past Year / Random Bag reports hardcode quiz/cm IDs? (breaks after delete-and-restore)
 - [ ] Why course 346 cohort 71 partial? Different cause from full wipe?
 - [ ] Hidden-content model: `visible=0` vs availability-only. Pick one.
-- [ ] Schedule `audit_groupcontentconfig.php` in cron, alert on exit 1?
+- [ ] Schedule `local/cli/audit_groupcontentconfig.php` in cron, alert on exit 1?
 
 ---
 
-## 10. Conventions
+## 11. Conventions
 
 | Topic | Convention |
 |---|---|
-| Repair scripts | `local/cli/`, dry-run default, `--execute` to write, `--cohortid`/`--courseid` filters |
-| Cohort vs group id | Plugin tables = cohort id in `groupid`; availability = group id. Map per course via `mdl_enrol` `enrol='cohort'`, `customint1`→`customint2` |
-| DB access ad hoc | PHP CLI via `config.php`, never print creds |
+| DB access | Moodle `$DB` only. `{tablename}` placeholders in SQL, `mdl_` prefix in raw/phpMyAdmin queries |
+| `get_records` gotcha | Keys by first selected column — `get_records($t, $c, '', 'topic')` keys by `topic`. Duplicate first-column values **silently collapse rows** |
+| Plugin table naming | Column `groupid` in `local_coursegroup*` means **cohort id**, not group id |
+| `open_path` | Always filter plugin-table reads/writes by it for non-admins; never for availability |
+| Visibility writes | `set_coursemodule_visible()`, never raw `set_field('visible')` — only the core API keeps `visibleold` in sync |
+| Repair scripts | Live in `local/cli/`. Dry-run by default, `--execute` to write; idempotent; `--courseid`/`--cohortid` filters; never write `course_modules`/`course_sections` |
+| Branching | `pk-dev` working branch, `prod` = production branch (merge `pk-dev` into it), `master` = main |
+| Deploy to prod | Manual file paste. No schema change → no version bump; run `php admin/cli/purge_caches.php` |
+| Testing on dev | Wrap mutations in `$DB->start_delegated_transaction()` + `rollback()`. Prefer read-only replay harnesses |
+| Prod DB | **Never** query prod from this environment — user runs SQL on prod themselves |
+| Report feature gating | Code-level const allowlist of course IDs, not admin settings. Gate button + request handler |
+| CLI as www-data | Scratchpad not traversable by `www-data` — use `/var/www/moodledata/temp/...` for CLI output tests, clean up after |
+| Committing | Commit only named files — working tree has big unrelated dirty changes (e.g. `admin/tool/certificate`) |
 
 ---
 
-## 12. Changelog
+## 12. External Services
+
+| Service | Config location |
+|---|---|
+| MySQL/MariaDB | `$CFG->dbname/dbuser/dbpass` in `/var/www/html/config.php` |
+| Moodle dataroot | `$CFG->dataroot` in `config.php` |
+| Font Awesome CDN | Hardcoded in `grade/report/user/index.php` |
+
+---
+
+## 13. Changelog
 
 | Date | Summary |
 |---|---|
-| 2026-10-11 | Session: investigated course 89 vs 95 + all-course audit; root cause = unscoped cohort-id deletes; rebuilt cohort 19 in 6 courses; added `local/cli/audit_groupcontentconfig.php` + runbook; fixed `local/cli/` paths in §5. Status: `api.php` fix, `local/cli/*`, `RUNBOOK_content_config_disconnect.md`, `PROJECT_CONTEXT.md` all `UNCOMMITTED` |
+| 2026-10-07 | Initial export. Diagnosed content-config incident: unscoped `delete_records(['groupid'=>$groupid])` in `insert_groupsconfig_instance()` wiped cohort 19's config across 8 courses while leaving 375 group availability conditions intact → students kept access, teacher toggles read off, grade report reported no content. Fixed 6 defects in `api.php` + form read path (all UNCOMMITTED). Added 2 CLI repair scripts (untracked). Merged final prod `api.php` excluding `bulk_enable_for_group()`. Documented §4 availability↔toggle model incl. flexsections ancestor requirement |
+| 2026-10-09 | Added `admin/cli/course_sync.php` (prod→dev course copy incl. users, attempts, cohorts, cohort enrols, supervideo progress; export tested, target untested). Built teacher class-average Random Bag report: moved student code verbatim to new `grade/report/user/randombagview.php`, added class view + student drill-in, self-review fixes (latest finished attempt, status labels, entity decode). Gated teacher button by code const allowlist (empty). All UNCOMMITTED; depends on pre-session uncommitted `grade/report/user` work |
+| 2026-10-11 | Session: investigated course 89 vs 95 + all-course audit; root cause = unscoped cohort-id deletes; rebuilt cohort 19 in 6 courses; added `local/cli/audit_groupcontentconfig.php` + runbook; moved scripts to `local/cli/`. Status: `api.php` fix, `local/cli/*`, `RUNBOOK_content_config_disconnect.md`, `PROJECT_CONTEXT.md` all `UNCOMMITTED` |
+| 2026-10-12 | Resolved `pk-dev` → `prod` merge conflicts (9 files, not committed): plugin upgrades (`627bfea23`) + composer bump reset to prod; enable-all button + `local/trialsignup` removed; `local_courses` version per §7; `quizdataprocessor.php` kept prod div-by-zero guard + `calculate_overall_stats_from_tags()`; `index.php` uses `randombagview.php` + keeps prod cohort attach and Chart.js AMD guard; merged this file |
