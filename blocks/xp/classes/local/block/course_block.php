@@ -1,20 +1,18 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Block.
@@ -96,10 +94,6 @@ class course_block extends block_base {
         // to 'addinstance' or 'myaddinstance' to be given to standard users!
         $world = $this->get_world($this->page->course->id);
         $world->get_config()->set('enabled', true);
-
-        // Reset the block cache.
-        \block_xp\di::get('block_count_cache')->purge();
-
         return true;
     }
 
@@ -109,37 +103,29 @@ class course_block extends block_base {
      * @return bool
      */
     public function instance_delete() {
+        $db = \block_xp\di::get('db');
         $adminconfig = \block_xp\di::get('config');
-        $shoulddisable = true;
-
-        // Reset the block cache before we use the block finder.
-        \block_xp\di::get('block_count_cache')->purge();
 
         if ($adminconfig->get('context') == CONTEXT_SYSTEM) {
             $context = context::instance_by_id($this->instance->parentcontextid);
             if ($context->contextlevel == CONTEXT_USER) {
                 // Someone is removing their block from their dashboard, do nothing.
-                $shoulddisable = false;
-            } else {
-                // If only disable if we're confident the instance deleted is the last one.
-                $bifinder = \block_xp\di::get('course_world_block_instance_checker');
-                $instances = $bifinder->count_instances_in_context('xp', context_system::instance());
-                $shoulddisable = $instances <= 1;
+                return;
             }
 
+            $bifinder = \block_xp\di::get('course_world_block_instances_finder_in_context');
+            $instances = $bifinder->get_instances_in_context('xp', context_system::instance());
+            if (count($instances) > 1) {
+                // We do not want to disable points gain when we find more than one instance.
+                return;
+            }
         }
 
         // If we got here that's because we are either removing the block from a course,
         // or from the front page, or from the default dashboard. It's not ideal but
         // in that case we disable points gain.
-        if ($shoulddisable) {
-            $world = $this->get_world($this->page->course->id);
-            $world->get_config()->set('enabled', false);
-        }
-
-        // Reset the block cache.
-        \block_xp\di::get('block_count_cache')->purge();
-
+        $world = $this->get_world($this->page->course->id);
+        $world->get_config()->set('enabled', false);
         return true;
     }
 
@@ -170,6 +156,9 @@ class course_block extends block_base {
         $renderer = \block_xp\di::get('renderer');
         $state = $world->get_store()->get_state($USER->id);
 
+        // Migrate the old config if needed.
+        $this->migrate_config_data_if_needed($world);
+
         // Render the content.
         $widget = $this->get_widget($world, $state);
         $this->content->text = $renderer->render($widget);
@@ -182,7 +171,7 @@ class course_block extends block_base {
         if ($service->should_be_notified($USER->id)) {
 
             // Get the levels, and remove 0 when the user's level is already in the list.
-            $levels = array_unique(array_map(function ($level) use ($state) {
+            $levels = array_unique(array_map(function($level) use ($state) {
                 if (!$level) {
                     return $state->get_level()->get_level();
                 }
@@ -204,9 +193,7 @@ class course_block extends block_base {
 
                 $propsid = html_writer::random_id();
                 $this->content->text .= $renderer->json_script(
-                    [$this->get_popup_notification_props($renderer, $world, $level, $prevlevel)],
-                    $propsid
-                );
+                    [$this->get_popup_notification_props($renderer, $world, $level, $prevlevel)], $propsid);
                 $PAGE->requires->js_call_amd('block_xp/popup-notification-queue', 'queueFromJson', ["#{$propsid}"]);
             }
         }
@@ -232,36 +219,28 @@ class course_block extends block_base {
         if ($config->get('enableinfos')) {
             $actions[] = new action_link(
                 $urlresolver->reverse('infos', ['courseid' => $courseid]),
-                get_string('navinfos', 'block_xp'),
-                null,
-                null,
+                get_string('navinfos', 'block_xp'), null, null,
                 new pix_icon('i/info', '', 'block_xp')
             );
         }
         if ($config->get('enableladder')) {
             $actions[] = new action_link(
                 $urlresolver->reverse('ladder', ['courseid' => $courseid]),
-                get_string('navladder', 'block_xp'),
-                null,
-                null,
+                get_string('navladder', 'block_xp'), null, null,
                 new pix_icon('i/ladder', '', 'block_xp')
             );
         }
         if ($canaccessreport) {
             $actions[] = new action_link(
                 $urlresolver->reverse('report', ['courseid' => $courseid]),
-                get_string('navreport', 'block_xp'),
-                null,
-                null,
+                get_string('navreport', 'block_xp'), null, null,
                 new pix_icon('i/report', '', 'block_xp')
             );
         }
         if ($canedit) {
             $actions[] = new action_link(
                 $urlresolver->reverse('config', ['courseid' => $courseid]),
-                get_string('navsettings', 'block_xp'),
-                null,
-                null,
+                get_string('navsettings', 'block_xp'), null, null,
                 new pix_icon('i/settings', '', 'block_xp')
             );
         }
@@ -405,7 +384,6 @@ class course_block extends block_base {
      * to using the configuration object of the world.
      *
      * @param \block_xp\local\course_world $world The world.
-     * @deprecated Since v20.0, we should no longer need to be migrating old data.
      */
     protected function migrate_config_data_if_needed($world) {
         $migrateflag = 'block_configdata_migrated_' . $world->get_courseid();

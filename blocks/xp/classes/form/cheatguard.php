@@ -1,20 +1,18 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Form.
@@ -43,6 +41,7 @@ require_once(__DIR__ . '/itemspertime.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class cheatguard extends dynamic_form {
+
     use dynamic_world_trait;
 
     /** @var string */
@@ -89,7 +88,7 @@ class cheatguard extends dynamic_form {
 
         $mform->addElement('block_xp_form_duration', 'timebetweensameactions', get_string('timebetweensameactions', 'block_xp'), [
             'maxunit' => 60,
-            'optional' => false, // We must set this...
+            'optional' => false,        // We must set this...
         ]);
         $mform->addHelpButton('timebetweensameactions', 'timebetweensameactions', 'block_xp');
         $mform->disabledIf('timebetweensameactions', 'enablecheatguard', 'eq', 0);
@@ -101,9 +100,8 @@ class cheatguard extends dynamic_form {
             $promourl = $urlresolver->reverse('promo', ['courseid' => $world->get_courseid()]);
             if ($timeframe > HOURSECS * 6) {
                 $mform->addElement('static', '', '', $renderer->notification_without_close(
-                    get_string('promocheatguard', 'block_xp', ['url' => $promourl->out()]),
-                    'warning'
-                ));
+                    get_string('promocheatguard', 'block_xp', ['url' => $promourl->out()]
+                ), 'warning'));
             }
         }
     }

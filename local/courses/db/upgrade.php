@@ -457,8 +457,7 @@ function xmldb_local_courses_upgrade($oldversion)
         }
         upgrade_plugin_savepoint(true, 2023060600.22, 'local', 'courses');
     }
-
-    if ($oldversion < 2023060600.28) {
+    if ($oldversion < 2023060600.29) {
         $time = time();
         $initcontent = array('name' => 'Course', 'shortname' => 'course', 'parent_module' => '0', 'usercreated' => '2', 'timecreated' => $time, 'usermodified' => 2, 'timemodified' => NULL, 'pluginname' => 'courses');
         $parentid = $DB->get_field('local_notification_type', 'id', array('shortname' => 'course'));
@@ -475,8 +474,7 @@ function xmldb_local_courses_upgrade($oldversion)
             }
         }
 
-        upgrade_plugin_savepoint(true, 2023060600.28, 'local', 'courses');
+        upgrade_plugin_savepoint(true, 2023060600.29, 'local', 'courses');
     }
-
     return true;
 }

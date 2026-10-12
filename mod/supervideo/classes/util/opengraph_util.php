@@ -14,30 +14,27 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * User: Eduardo Kraus
+ * Date: 09/08/2023
+ * Time: 17:42
+ */
+
 namespace mod_supervideo\util;
 
-/**
- * Util opengraph_util for mod_supervideo.
- *
- * @package   mod_supervideo
- * @copyright 2024 Eduardo Kraus {@link https://eduardokraus.com}
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
 class opengraph_util {
 
     /**
      * Holds all the Open Graph values we've parsed from a page
      *
-     * @var array
      */
-    private $values = [];
+    private $values = array();
 
     /**
      * Fetches a URI and parses it for Open Graph data, returns
      * false on error.
      *
      * @param String $uri URI to page to parse for Open Graph data
-     *
      * @return opengraph_util
      */
     public static function fetch($uri) {
@@ -68,7 +65,6 @@ class opengraph_util {
      * the document is at least well formed.
      *
      * @param String $html HTML to parse
-     *
      * @return opengraph_util
      */
     private static function parse($html) {
@@ -94,7 +90,6 @@ class opengraph_util {
      * $graph->title
      *
      * @param String $key Key to fetch from the lookup
-     *
      * @return int|mixed|string
      */
     public function get($key) {

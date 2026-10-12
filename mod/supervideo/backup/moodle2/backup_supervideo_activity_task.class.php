@@ -17,18 +17,23 @@
 /**
  * Backup files
  *
- * @package   mod_supervideo
- * @category  backup
- * @copyright 2024 Eduardo Kraus {@link https://eduardokraus.com}
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_supervideo
+ * @category   backup
+ * @copyright  2023 Eduardo kraus (http://eduardokraus.com)
+ * @license    https://www.eduardokraus.com/
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-require_once("{$CFG->dirroot}/mod/supervideo/backup/moodle2/backup_supervideo_stepslib.php");
+require_once($CFG->dirroot . '/mod/supervideo/backup/moodle2/backup_supervideo_stepslib.php');
 
 /**
  * Provides the steps to perform one complete backup of the supervideo instance
+ *
+ * @package    mod_supervideo
+ * @category   backup
+ * @copyright  2023 Eduardo kraus (http://eduardokraus.com)
+ * @license    https://www.eduardokraus.com/
  */
 class backup_supervideo_activity_task extends backup_activity_task {
 
@@ -40,9 +45,6 @@ class backup_supervideo_activity_task extends backup_activity_task {
 
     /**
      * Defines a backup step to store the instance data in the supervideo.xml file
-     *
-     * @throws backup_step_exception
-     * @throws base_task_exception
      */
     protected function define_my_steps() {
         $this->add_step(new backup_supervideo_activity_structure_step('supervideo_structure', 'supervideo.xml'));

@@ -1,24 +1,18 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
-
-namespace block_xp\local\rulefilter;
-
-use block_xp\local\action\tester\bool_tester;
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Filter.
@@ -27,17 +21,30 @@ use block_xp\local\action\tester\bool_tester;
  * @copyright  2024 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @deprecated Since XP 20, use block_xp\local\action\tester\bool_tester instead.
  */
-class any_tester extends bool_tester {
+
+namespace block_xp\local\rulefilter;
+
+use block_xp\local\action\action;
+
+/**
+ * Filter.
+ *
+ * @package    block_xp
+ * @copyright  2024 Frédéric Massart
+ * @author     Frédéric Massart <fred@branchup.tech>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class any_tester implements action_tester {
 
     /**
-     * Constructor.
+     * Whether the action is passing the constraints.
+     *
+     * @param action $action The action.
+     * @return bool
      */
-    public function __construct() {
-        debugging('The class rulefilter\any_tester is deprecated, '
-            . 'use block_xp\local\action\tester\bool_tester instead.', DEBUG_DEVELOPER);
-        parent::__construct(true);
+    public function is_action_passing_constraints(action $action): bool {
+        return true;
     }
 
 }

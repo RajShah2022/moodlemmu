@@ -55,7 +55,6 @@ class templates extends system_report {
         // Our main entity, it contains all of the column definitions that we need.
         $entitymain = new template();
         $entitymainalias = $entitymain->get_table_alias('tool_certificate_templates');
-
         $this->set_main_table('tool_certificate_templates', $entitymainalias);
         $this->add_entity($entitymain);
 
@@ -68,11 +67,9 @@ class templates extends system_report {
         }
         $coursecatentityalias = $coursecatentity->get_table_alias('course_categories');
         $contextalias = database::generate_alias();
-
         $this->add_join("JOIN {context} {$contextalias} ON {$contextalias}.id = {$entitymainalias}.contextid");
         $this->add_join("LEFT JOIN {course_categories} {$coursecatentityalias}
             ON {$coursecatentityalias}.id = {$contextalias}.instanceid");
-
         $this->add_entity($coursecatentity);
 
         // Any columns required by actions should be defined here to ensure they're always available.
@@ -85,7 +82,6 @@ class templates extends system_report {
 
         $targetcategories = \core_course_category::make_categories_list('tool/certificate:manage');
         $this->canchangecategory = count($targetcategories) > 1;
-
         $this->add_columns($entitymainalias);
         $this->add_filters();
         $this->add_actions();
@@ -131,9 +127,9 @@ class templates extends system_report {
         // Add link to category name column.
         if ($column = $this->get_column('course_category:name')) {
             $column
-                ->set_title(new lang_string('coursecategory'))
-                ->set_callback([certificateformatter::class, 'course_category_name'])
-                ->add_callback([$this, 'coursecategoryname']);
+                ->set_title(new lang_string('organizationcategory'))
+                ->set_callback([certificateformatter::class, 'course_category_name']);
+               // ->add_callback([$this, 'coursecategoryname']);
         }
     }
 
@@ -163,7 +159,7 @@ class templates extends system_report {
             new moodle_url('/admin/tool/certificate/view.php', ['templateid' => ':id', 'preview' => 1, 'code' => 'previewing']),
             new pix_icon('i/search', ''),
             [
-                'target' => '_blank',
+                'target' => '_blank'
             ],
             false,
             new lang_string('preview')
@@ -188,7 +184,7 @@ class templates extends system_report {
         // Duplicate.
         $this->add_action((new action(
             new moodle_url('#'),
-            new pix_icon('t/copy', ''),
+            new pix_icon('e/manage_files', ''),
             [
                 'data-action' => 'duplicate',
                 'data-id' => ':id',
@@ -202,19 +198,19 @@ class templates extends system_report {
         }));
 
         // Delete.
-        $this->add_action((new action(
-            new moodle_url('#'),
-            new pix_icon('i/trash', ''),
-            [
-                'data-action' => 'delete',
-                'data-id' => ':id',
-                'data-name' => ':name',
-            ],
-            false,
-            new lang_string('delete')
-        ))->add_callback(function() {
-            return $this->lasttemplate->can_manage();
-        }));
+        // $this->add_action((new action(
+        //     new moodle_url('#'),
+        //     new pix_icon('i/trash', ''),
+        //     [
+        //         'data-action' => 'delete',
+        //         'data-id' => ':id',
+        //         'data-name' => ':name',
+        //     ],
+        //     false,
+        //     new lang_string('delete')
+        // ))->add_callback(function() {
+        //     return $this->lasttemplate->can_manage();
+        // }));
     }
 
     /**

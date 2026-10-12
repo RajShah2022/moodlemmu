@@ -1,20 +1,18 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Block XP report table.
@@ -82,12 +80,12 @@ class report_table extends table_sql {
      * @param int $groupid The group ID.
      */
     public function __construct(
-        moodle_database $db,
-        course_world $world,
-        renderer_base $renderer,
-        course_user_state_store $store,
-        $groupid
-    ) {
+            moodle_database $db,
+            course_world $world,
+            renderer_base $renderer,
+            course_user_state_store $store,
+            $groupid
+        ) {
 
         parent::__construct('block_xp_report');
 
@@ -123,8 +121,6 @@ class report_table extends table_sql {
         $this->no_sorting('progress');
         $this->collapsible(false);
         $this->set_attribute('class', 'block_xp-report-table');
-        $this->column_class('userpic', 'col-userpic');
-        $this->column_class('actions', 'col-actions');
     }
 
     /**
@@ -138,29 +134,42 @@ class report_table extends table_sql {
         $groupid = $this->groupid;
 
         // Get all the users that are enrolled and can earn XP.
-        [$enrolledsql, $enrolledparams] = get_enrolled_sql($context, 'block/xp:earnxp', $groupid);
+        $ids = [];
+        $users = get_enrolled_users($context, 'block/xp:earnxp', $groupid);
+        foreach ($users as $user) {
+            $ids[$user->id] = $user->id;
+        }
+        unset($users);
 
         // Get the users which might not be enrolled or are revoked the permission, but still should
         // be displayed in the report for the teachers' benefit. We need to filter out the users which
         // are not a member of the group though.
-        $inxpsql = 'SELECT userid FROM {block_xp} WHERE courseid = :inxpcourseid';
-        $inxpparams = ['inxpcourseid' => $courseid];
-        if (!empty($groupid)) {
-            $inxpsql = 'SELECT b.userid
-                          FROM {block_xp} b
-                          JOIN {groups_members} gm
-                            ON b.userid = gm.userid
-                           AND gm.groupid = :inxpgroupid
-                         WHERE courseid = :inxpcourseid';
-            $inxpparams = ['inxpcourseid' => $courseid, 'inxpgroupid' => $groupid];
+        if (empty($groupid)) {
+            $sql = 'SELECT userid FROM {block_xp} WHERE courseid = :courseid';
+            $params = ['courseid' => $courseid];
+        } else {
+            $sql = 'SELECT b.userid
+                      FROM {block_xp} b
+                      JOIN {groups_members} gm
+                        ON b.userid = gm.userid
+                       AND gm.groupid = :groupid
+                     WHERE courseid = :courseid';
+            $params = ['courseid' => $courseid, 'groupid' => $groupid];
         }
+
+        $entries = $this->db->get_recordset_sql($sql, $params);
+        foreach ($entries as $entry) {
+            $ids[$entry->userid] = $entry->userid;
+        }
+        $entries->close();
+        list($insql, $inparams) = $this->db->get_in_or_equal($ids, SQL_PARAMS_NAMED, 'param', true, null);
 
         // User filter.
         [$usersql, $userparams] = $this->generate_user_filter_sql();
 
         // Define SQL.
         $this->sql = new stdClass();
-        $this->sql->fields = user_utils::picture_fields('u') . ', u.idnumber, u.email, u.username, u.suspended, x.xp, ' .
+        $this->sql->fields = user_utils::picture_fields('u') . ', u.idnumber, u.email, u.username, x.xp, ' .
             context_helper::get_preload_record_columns_sql('ctx');
         $this->sql->from = "{user} u
                        JOIN {context} ctx
@@ -168,10 +177,8 @@ class report_table extends table_sql {
                         AND ctx.contextlevel = :contextlevel
                   LEFT JOIN {block_xp} x
                          ON (x.userid = u.id AND x.courseid = :courseid)";
-        $this->sql->where = "u.deleted = 0
-                         AND u.id IN (($inxpsql) UNION ($enrolledsql))
-                         AND $usersql";
-        $this->sql->params = array_merge($enrolledparams, $inxpparams, $userparams, [
+        $this->sql->where = "u.id $insql AND $usersql";
+        $this->sql->params = array_merge($inparams, $userparams, [
             'courseid' => $courseid,
             'contextlevel' => CONTEXT_USER,
         ]);
@@ -283,7 +290,7 @@ class report_table extends table_sql {
      * @deprecated Since Level Up XP 3.12, please use self::get_columns_definition instead.
      */
     protected function get_headers() {
-        return array_map(function ($header) {
+        return array_map(function($header) {
             return (string) $header;
         }, array_values($this->get_columns_definition()));
     }
@@ -304,8 +311,7 @@ class report_table extends table_sql {
 
             $formattedrow = $this->format_row($row);
             $this->add_data_keyed($formattedrow,
-                $this->get_row_class($row)
-            );
+                $this->get_row_class($row));
         }
     }
 
@@ -324,7 +330,7 @@ class report_table extends table_sql {
             get_string('edit', 'core'),
             false,
             [
-                'data-xp-action' => 'open-form',
+                'data-action' => 'open-form',
                 'data-form-class' => 'block_xp\form\user_xp',
                 'data-form-args__contextid' => $this->world->get_context()->id,
                 'data-form-args__userid' => $row->id,
@@ -335,18 +341,14 @@ class report_table extends table_sql {
         if ($this->logaccessperms && $this->logaccessperms->can_access_logs()) {
             $url = $this->urlresolver->reverse('log', ['courseid' => $this->world->get_courseid()]);
             $url->param('userid', $row->id);
-            $actions[] = new action_menu_link($url,
-                new pix_icon('t/log', get_string('logs', 'core')),
-                get_string('viewlogs', 'block_xp')
-            );
+            $actions[] = new action_menu_link($url, new pix_icon('t/log', get_string('logs', 'core')),
+                get_string('viewlogs', 'block_xp'));
         }
 
         if (isset($row->xp)) {
             $url = new moodle_url($this->baseurl, ['action' => '', 'delete' => 1, 'userid' => $row->id]);
-            $action = new action_menu_link($url,
-                new pix_icon('t/delete', get_string('delete', 'core')),
-                get_string('delete', 'core')
-            );
+            $action = new action_menu_link($url, new pix_icon('t/delete', get_string('delete', 'core')),
+                get_string('delete', 'core'));
             $action->add_class('text-danger');
             $actions[] = $action;
         }
@@ -366,20 +368,6 @@ class report_table extends table_sql {
             return '';
         }
         return $this->renderer->control_menu($this->get_row_actions($row));
-    }
-
-    /**
-     * Formats the column.
-     *
-     * @param stdClass $row Table row.
-     * @return string Output produced.
-     */
-    public function col_fullname($row) {
-        $o = parent::col_fullname($row);
-        if ($row->suspended) {
-            $o .= ' (' . get_string('suspended', 'core') . ')';
-        }
-        return $o;
     }
 
     /**
@@ -542,6 +530,7 @@ class report_table extends table_sql {
             '',
             ['style' => 'margin: 1em 0']
         );
+
     }
 
 }

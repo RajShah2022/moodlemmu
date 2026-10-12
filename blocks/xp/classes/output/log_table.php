@@ -1,20 +1,18 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Block XP log table.
@@ -33,6 +31,7 @@ use stdClass;
 use table_sql;
 use block_xp\local\course_world;
 use block_xp\local\utils\user_utils;
+use html_writer;
 use moodle_url;
 use pix_icon;
 
@@ -42,7 +41,6 @@ use pix_icon;
  * @package    block_xp
  * @copyright  2014 Frédéric Massart
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @deprecated Since XP 20, use logs_table instead.
  */
 class log_table extends table_sql {
 
@@ -68,7 +66,6 @@ class log_table extends table_sql {
      */
     public function __construct(course_world $world, $groupid, $userid = null) {
         $userid = max(0, (int) $userid);
-        $this->groupid = $groupid;
         parent::__construct('block_xp_log_' . $userid);
 
         $this->world = $world;
@@ -122,9 +119,9 @@ class log_table extends table_sql {
 
         // Define SQL.
         $this->sql = new stdClass();
-        $this->sql->fields = 'x.*, ' . user_utils::name_fields('u') . ', u.suspended';
+        $this->sql->fields = 'x.*, ' . user_utils::name_fields('u');
         $this->sql->from = $sqlfrom;
-        $this->sql->where = "u.deleted = 0 AND x.courseid = :courseid AND $usersql";
+        $this->sql->where = "x.courseid = :courseid AND $usersql";
         $this->sql->params = array_merge(['courseid' => $courseid], $userparams, $sqlparams);
         if ($this->filterbyuserid) {
             $this->sql->where .= ' AND x.userid = :userid';
@@ -139,17 +136,14 @@ class log_table extends table_sql {
      * @return string Output produced.
      */
     public function col_fullname($row) {
-        $o = parent::col_fullname($row);
-        if ($row->suspended) {
-            $o .= ' (' . get_string('suspended', 'core') . ')';
-        }
+        $fullname = parent::col_fullname($row);
         if (!$this->filterbyuserid) {
-            $o .= ' ' . $this->renderer->action_icon(
+            $fullname .= ' ' . $this->renderer->action_icon(
                 new moodle_url($this->baseurl, ['userid' => $row->userid]),
                 new pix_icon('i/search', get_string('filterbyuser', 'block_xp'))
             );
         }
-        return $o;
+        return $fullname;
     }
 
     /**

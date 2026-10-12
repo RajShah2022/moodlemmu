@@ -147,7 +147,7 @@ class notifications
                                 [course_enrolenddate], [course_department],
                                 [course_description],  [course_url],
                                 [enroluser_fullname], [enroluser_email]";
-                    break;
+                break;
             case 'course_pending_work':
                 $strings = "[enroluser_fullname], [enroluser_email],
                             [pending_count], [pending_activities], [pending_generateddate]";

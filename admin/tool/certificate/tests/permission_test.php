@@ -28,7 +28,7 @@ use context_course;
  * @copyright   2020 Mikel Martín <mikel@moodle.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class permission_test extends advanced_testcase {
+class permission_test extends advanced_testcase {
     /**
      * @var \stdClass
      */
@@ -40,15 +40,7 @@ final class permission_test extends advanced_testcase {
     /**
      * @var \tool_certificate\template
      */
-    private $template2;
-    /**
-     * @var \tool_certificate\template
-     */
     private $template3;
-    /**
-     * @var \tool_certificate\template
-     */
-    private $template4;
     /**
      * @var \tool_certificate\template
      */
@@ -58,7 +50,7 @@ final class permission_test extends advanced_testcase {
      * Get certificate generator
      * @return tool_certificate_generator
      */
-    protected function get_generator(): tool_certificate_generator {
+    protected function get_generator() : tool_certificate_generator {
         return $this->getDataGenerator()->get_plugin_generator('tool_certificate');
     }
 
@@ -66,7 +58,6 @@ final class permission_test extends advanced_testcase {
      * Set up
      */
     public function setUp(): void {
-        parent::setUp();
         // Create category tree.
         $cat1 = $this->getDataGenerator()->create_category();
         $cat2 = $this->getDataGenerator()->create_category(['parent' => $cat1->id]);
@@ -104,7 +95,7 @@ final class permission_test extends advanced_testcase {
      * Test for get_visible_templates as admin user.
      * @covers \tool_certificate\permission::get_visible_categories_contexts
      */
-    public function test_get_visible_templates_as_admin(): void {
+    public function test_get_visible_templates_as_admin() {
         $this->setAdminUser();
 
         // Check admin user can see all the templates.
@@ -116,7 +107,7 @@ final class permission_test extends advanced_testcase {
      * Test for get_visible_templates as teacher user.
      * @covers \tool_certificate\permission::get_visible_categories_contexts
      */
-    public function test_get_visible_templates_as_teacher(): void {
+    public function test_get_visible_templates_as_teacher() {
         // Creater user with role 'editingteacher'.
         $user1 = $this->getDataGenerator()->create_and_enrol($this->course1, 'editingteacher');
         $this->setUser($user1);

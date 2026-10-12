@@ -15,78 +15,76 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Index file.
+ * index file
  *
- * @package   mod_supervideo
- * @copyright 2024 Eduardo Kraus {@link https://eduardokraus.com}
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_supervideo
+ * @copyright  2023 Eduardo kraus (http://eduardokraus.com)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use mod_supervideo\event\course_module_instance_list_viewed;
+require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
+require_once(dirname(__FILE__) . '/lib.php');
 
-require_once(dirname(dirname(dirname(__FILE__))) . "/config.php");
-require_once(dirname(__FILE__) . "/lib.php");
+$id = required_param('id', PARAM_INT); // Course.
 
-$id = required_param("id", PARAM_INT); // Course.
-
-$course = $DB->get_record("course", ["id" => $id], "*", MUST_EXIST);
+$course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
 
 require_course_login($course);
 
-$params = [
-    "context" => context_course::instance($course->id),
-];
-$event = course_module_instance_list_viewed::create($params);
-$event->add_record_snapshot("course", $course);
+$params = array(
+    'context' => context_course::instance($course->id)
+);
+$event = \mod_supervideo\event\course_module_instance_list_viewed::create($params);
+$event->add_record_snapshot('course', $course);
 $event->trigger();
 
-$strname = get_string("modulenameplural", "mod_supervideo");
-$PAGE->set_url("/mod/supervideo/index.php", ["id" => $id]);
+$strname = get_string('modulenameplural', 'mod_supervideo');
+$PAGE->set_url('/mod/supervideo/index.php', array('id' => $id));
 $PAGE->navbar->add($strname);
 $PAGE->set_title("$course->shortname: $strname");
 $PAGE->set_heading($course->fullname);
-$PAGE->set_pagelayout("incourse");
+$PAGE->set_pagelayout('incourse');
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading($strname);
 
-if (!$supervideos = get_all_instances_in_course("supervideo", $course)) {
-    notice(get_string("nosupervideos", "mod_supervideo"), new moodle_url("/course/view.php", ["id" => $course->id]));
+if (!$supervideos = get_all_instances_in_course('supervideo', $course)) {
+    notice(get_string('nosupervideos', 'mod_supervideo'), new moodle_url('/course/view.php', array('id' => $course->id)));
 }
 
 $usesections = course_format_uses_sections($course->format);
 
 $table = new html_table();
-$table->attributes["class"] = "generaltable mod_index";
+$table->attributes['class'] = 'generaltable mod_index';
 
 if ($usesections) {
-    $strsectionname = get_string("sectionname", "format_" . $course->format);
-    $table->head = [$strsectionname, $strname];
-    $table->align = ["center", "left"];
+    $strsectionname = get_string('sectionname', 'format_' . $course->format);
+    $table->head = array($strsectionname, $strname);
+    $table->align = array('center', 'left');
 } else {
-    $table->head = [$strname];
-    $table->align = ["left"];
+    $table->head = array($strname);
+    $table->align = array('left');
 }
 
 $modinfo = get_fast_modinfo($course);
-$currentsection = "";
-foreach ($modinfo->instances["supervideo"] as $cm) {
-    $row = [];
+$currentsection = '';
+foreach ($modinfo->instances['supervideo'] as $cm) {
+    $row = array();
     if ($usesections) {
         if ($cm->sectionnum !== $currentsection) {
             if ($cm->sectionnum) {
                 $row[] = get_section_name($course, $cm->sectionnum);
             }
-            if ($currentsection !== "") {
-                $table->data[] = "hr";
+            if ($currentsection !== '') {
+                $table->data[] = 'hr';
             }
             $currentsection = $cm->sectionnum;
         }
     }
 
-    $class = $cm->visible ? null : ["class" => "dimmed"];
+    $class = $cm->visible ? null : array('class' => 'dimmed');
 
-    $row[] = html_writer::link(new moodle_url("view.php", ["id" => $cm->id]),
+    $row[] = html_writer::link(new moodle_url('view.php', array('id' => $cm->id)),
         $cm->get_formatted_name(), $class);
     $table->data[] = $row;
 }

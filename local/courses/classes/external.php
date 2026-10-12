@@ -1353,36 +1353,4 @@ class local_courses_external extends external_api {
     public static function groupenrollmentrequest_returns() {
         return new external_value(PARAM_BOOL, 'return');
     }
-
-    public static function bulk_enable_topics_parameters() {
-        return new external_function_parameters([
-            'courseid' => new external_value(PARAM_INT, 'Course id'),
-            'groupid' => new external_value(PARAM_INT, 'Group id'),
-        ]);
-    }
-
-    public static function bulk_enable_topics($courseid, $groupid) {
-        global $CFG;
-        require_once($CFG->dirroot . '/local/courses/classes/api.php');
-
-        $params = self::validate_parameters(
-            self::bulk_enable_topics_parameters(),
-            ['courseid' => $courseid, 'groupid' => $groupid]
-        );
-
-        $categorycontext = (new \local_courses\lib\accesslib())::get_module_context();
-        self::validate_context(\context_system::instance());
-        require_capability('local/courses:canconfiguregroupcontent', $categorycontext);
-
-        api::bulk_enable_for_group($params['courseid'], $params['groupid']);
-
-        return ['success' => true];
-    }
-
-    public static function bulk_enable_topics_returns() {
-        return new external_single_structure([
-            'success' => new external_value(PARAM_BOOL, 'Whether it succeeded'),
-        ]);
-    }
-
 }

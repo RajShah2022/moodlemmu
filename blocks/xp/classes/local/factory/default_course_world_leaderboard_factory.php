@@ -1,20 +1,18 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Default course world leaderboard factory.
@@ -50,7 +48,6 @@ use block_xp\local\xp\state_anonymiser;
  * @copyright  2018 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @deprecated Since XP 3.17, use leaderboard_factory_maker instead.
  */
 class default_course_world_leaderboard_factory implements course_world_leaderboard_factory_with_config {
 
@@ -191,7 +188,7 @@ class default_course_world_leaderboard_factory implements course_world_leaderboa
      * @param ranker|null $ranker The ranker.
      * @return leaderboard
      */
-    protected function get_leaderboard_instance(course_world $world, $groupid, array $columns, ?ranker $ranker = null) {
+    protected function get_leaderboard_instance(course_world $world, $groupid, array $columns, ranker $ranker = null) {
         return $this->get_leaderboard_instance_with_config($world, $groupid, $columns, $world->get_config(), $ranker);
     }
 
@@ -205,13 +202,8 @@ class default_course_world_leaderboard_factory implements course_world_leaderboa
      * @param ranker|null $ranker The ranker.
      * @return leaderboard
      */
-    protected function get_leaderboard_instance_with_config(
-        course_world $world,
-        $groupid,
-        array $columns,
-        config $config,
-        ?ranker $ranker = null
-    ) {
+    protected function get_leaderboard_instance_with_config(course_world $world, $groupid, array $columns,
+            config $config, ranker $ranker = null) {
         return new course_user_leaderboard(
             $this->db,
             $world->get_levels_info(),
@@ -277,11 +269,8 @@ class default_course_world_leaderboard_factory implements course_world_leaderboa
 
         // Do we only display the neighbours?
         if ($config->get('neighbours')) {
-            $leaderboard = new neighboured_leaderboard($leaderboard,
-                $USER->id,
-                $config->get('neighbours'),
-                $world->get_access_permissions()->can_manage()
-            );
+            $leaderboard = new neighboured_leaderboard($leaderboard, $USER->id, $config->get('neighbours'),
+                $world->get_access_permissions()->can_manage());
         }
 
         return $leaderboard;

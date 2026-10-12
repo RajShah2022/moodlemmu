@@ -37,18 +37,15 @@ require_once("{$CFG->dirroot}/reportbuilder/tests/helpers.php");
  * @author     2022 Carlos Castillo <carlos.castillo@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class templates_test extends core_reportbuilder_testcase {
+class templates_test extends core_reportbuilder_testcase {
 
     /** @var core_reportbuilder_generator */
     protected $rbgenerator;
-    /** @var \tool_certificate_generator */
-    protected $certgenerator;
 
     /**
      * setUp.
      */
     public function setUp(): void {
-        parent::setUp();
         $this->rbgenerator = self::getDataGenerator()->get_plugin_generator('core_reportbuilder');
         $this->certgenerator = self::getDataGenerator()->get_plugin_generator('tool_certificate');
     }
@@ -87,7 +84,7 @@ final class templates_test extends core_reportbuilder_testcase {
         // Set all expected certificate template values.
         $contentcerts = [
             [$cert1['name'], $newcategory->name, 0],
-            [$cert2['name'], '', 0],
+            [$cert2['name'], '', 0]
         ];
         $this->assertEqualsCanonicalizing($contentcerts, $content);
 

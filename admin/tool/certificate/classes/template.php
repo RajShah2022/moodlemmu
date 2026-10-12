@@ -30,7 +30,7 @@ use core\output\inplace_editable;
 use core_user;
 use moodle_url;
 use tool_certificate\customfield\issue_handler;
-
+require_once($CFG->dirroot . '/local/costcenter/lib.php');
 /**
  * Class represents a certificate template.
  *
@@ -59,7 +59,7 @@ class template {
      * @param null|\stdClass $obj
      * @return template
      */
-    public static function instance(int $id = 0, ?\stdClass $obj = null): template {
+    public static function instance(int $id = 0, ?\stdClass $obj = null) : template {
         $data = new \stdClass();
         if ($obj !== null) {
             // Ignore fields that are not properties.
@@ -77,12 +77,16 @@ class template {
      */
     public function save($data) {
         global $DB;
+        local_costcenter_get_costcenter_path($data);
         $this->persistent->set('name', $data->name);
         if (isset($data->contextid)) {
             $this->persistent->set('contextid', $data->contextid);
         }
         if (isset($data->shared)) {
             $this->persistent->set('shared', $data->shared);
+        }
+        if (isset($data->open_path)) {
+            $this->persistent->set('open_path',$data->open_path);
         }
         $this->persistent->save();
         \tool_certificate\event\template_updated::create_from_template($this)->trigger();
@@ -133,7 +137,7 @@ class template {
         $time = time();
 
         // Get the existing pages and save the page data.
-        if ($pages = $DB->get_records('tool_certificate_pages', ['templateid' => $data->tid])) {
+        if ($pages = $DB->get_records('tool_certificate_pages', array('templateid' => $data->tid))) {
             // Loop through existing pages.
             foreach ($pages as $page) {
                 // Get the name of the fields we want from the form.
@@ -196,7 +200,7 @@ class template {
                    SET sequence = sequence - 1
                  WHERE templateid = :templateid
                    AND sequence > :sequence";
-        $DB->execute($sql, ['templateid' => $this->get_id(), 'sequence' => $sequence]);
+        $DB->execute($sql, array('templateid' => $this->get_id(), 'sequence' => $sequence));
         $this->pages = null;
     }
 
@@ -209,7 +213,7 @@ class template {
         global $DB;
 
         // Ensure element exists and delete it.
-        $element = $DB->get_record('tool_certificate_elements', ['id' => $elementid], '*', MUST_EXIST);
+        $element = $DB->get_record('tool_certificate_elements', array('id' => $elementid), '*', MUST_EXIST);
         if (!array_key_exists($element->pageid, $this->get_pages())) {
             return;
         }
@@ -219,7 +223,7 @@ class template {
             \tool_certificate\element::instance(0, $element)->delete();
         } catch (\moodle_exception $e) {
             // The plugin files are missing, so just remove the entry from the DB.
-            $DB->delete_records('tool_certificate_elements', ['id' => $elementid]);
+            $DB->delete_records('tool_certificate_elements', array('id' => $elementid));
         }
 
         // Now we want to decrease the sequence numbers of the elements
@@ -228,7 +232,7 @@ class template {
                    SET sequence = sequence - 1
                  WHERE pageid = :pageid
                    AND sequence > :sequence";
-        $DB->execute($sql, ['pageid' => $element->pageid, 'sequence' => $element->sequence]);
+        $DB->execute($sql, array('pageid' => $element->pageid, 'sequence' => $element->sequence));
     }
 
     /**
@@ -265,9 +269,6 @@ class template {
             $pdf->setPrintHeader(false);
             $pdf->setPrintFooter(false);
             $pdf->SetTitle($this->get_formatted_name());
-            $pdf->setViewerPreferences([
-                'DisplayDocTitle' => true,
-            ]);
             $pdf->SetAutoPageBreak(true, 0);
             // Remove full-stop at the end, if it exists, to avoid "..pdf" being created and being filtered by clean_filename.
             $filename = rtrim($this->get_formatted_name(), '.');
@@ -281,7 +282,7 @@ class template {
                 } else {
                     $orientation = 'P';
                 }
-                $pdf->AddPage($orientation, [$pagerecord->width, $pagerecord->height]);
+                $pdf->AddPage($orientation, array($pagerecord->width, $pagerecord->height));
                 $pdf->SetMargins($pagerecord->leftmargin, 0, $pagerecord->rightmargin);
                 // Get the elements for the page.
                 if ($elements = $page->get_elements()) {
@@ -295,10 +296,7 @@ class template {
             force_current_language($currentlang);
 
             if ($return) {
-                $output = $pdf->Output('', 'S');
-                // Destroys the created pdf object upon return to avoid memory exhaustion.
-                $pdf->_destroy(true);
-                return $output;
+                return $pdf->Output('', 'S');
             }
             if (defined('PHPUNIT_TEST') && PHPUNIT_TEST) {
                 // For some reason phpunit on travis-ci.com do not return 'cli' on php_sapi_name().
@@ -312,13 +310,14 @@ class template {
     /**
      * Duplicates the template into a new one
      *
-     * @param \context|null $context
+     * @param \context $context
      * @return template
      */
     public function duplicate(?\context $context = null) {
         $data = new \stdClass();
         $data->name = get_string('certificatecopy', 'tool_certificate', $this->get_name());
         $data->shared = $this->get_shared();
+        $data->open_path = $this->get_open_path();
         $data->contextid = $context ? $context->id : $this->get_context()->id;
         $newtemplate = self::create($data);
 
@@ -414,7 +413,10 @@ class template {
     public function get_id() {
         return $this->persistent->get('id');
     }
-
+    //sachin added
+    public function get_open_path() {
+        return $this->persistent->get('open_path');
+    }
     /**
      * Course category where this template is defined or 0 for system
      *
@@ -497,7 +499,8 @@ class template {
      * @throws \required_capability_exception if the user does not have the necessary capabilities (ie. Fred)
      */
     public function require_can_manage() {
-        permission::require_can_manage($this->get_context());
+      $systemcontext = (new \local_costcenter\lib\accesslib())::get_module_context();
+        permission::require_can_manage($systemcontext);
     }
 
     /**
@@ -544,7 +547,7 @@ class template {
      * @param int $id
      * @return template
      */
-    public static function find_by_element_id($id): template {
+    public static function find_by_element_id($id) : template {
         global $DB;
         $template = $DB->get_record_sql('SELECT t.* FROM {tool_certificate_templates} t
             JOIN {tool_certificate_pages} p ON p.templateid = t.id
@@ -588,7 +591,7 @@ class template {
      * @param \context|null $context
      * @return bool
      */
-    public function can_issue_to_anybody(?\context $context = null): bool {
+    public function can_issue_to_anybody(\context $context = null): bool {
         return $this->get_id() && permission::can_issue_to_anybody($context ?? $this->get_context());
     }
 
@@ -599,7 +602,7 @@ class template {
      * @param \context|null $context
      * @return bool
      */
-    public function can_issue(int $issuetouserid, ?\context $context = null): bool {
+    public function can_issue(int $issuetouserid, \context $context = null): bool {
         return $this->can_issue_to_anybody($context) && !permission::is_user_hidden_by_tenancy($issuetouserid);
     }
 
@@ -610,7 +613,7 @@ class template {
      * @param \context|null $context
      * @return bool
      */
-    public function can_revoke(int $userid, ?\context $context = null): bool {
+    public function can_revoke(int $userid, \context $context = null): bool {
         return $this->can_issue($userid, $context);
     }
 
@@ -620,7 +623,7 @@ class template {
      * @param \context|null $issuecontext
      * @return bool
      */
-    public function can_view_issues(?\context $issuecontext = null) {
+    public function can_view_issues(\context $issuecontext = null) {
         // The context is not always matching template context, e.g. when template is used in the course module.
         return permission::can_view_templates_in_context($issuecontext ?? $this->get_context());
     }
@@ -647,16 +650,36 @@ class template {
      * @return \tool_certificate\template the template object
      */
     public static function create($formdata) {
+        global $DB;
         $template = new \stdClass();
+        if(!empty($formdata->open_costcenterid)){
+            local_costcenter_get_costcenter_path($formdata);
+            $template->open_path = $formdata->open_path;
+        }
+        else{
+            $path=(new \local_costcenter\lib\accesslib())::get_user_role_switch_path();
+            $org_id=explode('/',$path[0])[1];
+            $template->open_path = '/'.$org_id;
+        }
         $template->name = $formdata->name;
         $template->shared = $formdata->shared ?? 0;
+        
         if (!isset($formdata->contextid)) {
             debugging('Context is missing', DEBUG_DEVELOPER);
             $template->contextid = \context_system::instance()->id;
         } else {
+            if($formdata->contextid != 1){
             $template->contextid = $formdata->contextid;
+            }else{
+                $costcenterid=$formdata->open_costcenterid;
+                $template->contextid=1;
+                if($costcenterid > 0){
+				$cat2=$DB->get_field('local_costcenter','category',array('id'=>$costcenterid));
+				$context=$DB->get_field('context','id',array('instanceid'=>$cat2, 'contextlevel'=>40));
+                $template->contextid=$context;
+                }
+            }
         }
-
         $t = new self();
         $t->persistent = new \tool_certificate\persistent\template(0, $template);
         $t->persistent->save();
@@ -690,7 +713,7 @@ class template {
      * @param int $expires The timestamp when the certificate will expiry. Null if do not expires.
      * @param array $data Additional data that will json_encode'd and stored with the issue.
      * @param string $component The component the certificate was issued by.
-     * @param int|null $courseid
+     * @param null $courseid
      * @param \core\lock\lock|null $lock optional lock to release after a record was inserted into the DB
      * @return int The ID of the issue
      */
@@ -736,10 +759,8 @@ class template {
 
         return $issue->id;
     }
-
     /**
-     * Creates stored file for an issue, if the file already exists and $regenerate is false,
-     * we return the existing file.
+     * Creates stored file for an issue.
      *
      * @param \stdClass $issue
      * @param bool $regenerate
@@ -755,7 +776,7 @@ class template {
             'filearea'  => 'issues',
             'itemid'    => $issue->id,
             'filepath'  => '/',
-            'filename'  => $issue->code . '.pdf',
+            'filename'  => $issue->code . '.pdf'
         ];
         $fs = get_file_storage();
 
@@ -764,8 +785,6 @@ class template {
             $file->filename);
         if ($storedfile && $regenerate) {
             $storedfile->delete();
-        } else if ($storedfile && !$regenerate) {
-            return $storedfile;
         }
 
         return $fs->create_file_from_string($file, $filecontents);
@@ -881,7 +900,7 @@ class template {
      *
      * @return output\template
      */
-    public function get_exporter(): \tool_certificate\output\template {
+    public function get_exporter() : \tool_certificate\output\template {
         return new \tool_certificate\output\template($this->persistent, ['template' => $this]);
     }
 
@@ -892,7 +911,6 @@ class template {
      */
     public static function get_visible_templates_list(): array {
         global $DB;
-
         list($sql, $params) = self::get_visible_categories_contexts_sql();
         $sql = "SELECT tct.id, tct.name, tct.contextid
                   FROM {tool_certificate_templates} tct

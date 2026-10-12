@@ -1,20 +1,18 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * External function.
@@ -122,8 +120,6 @@ class search_modules extends external_api {
                         'cmid' => $cm->id,
                         'contextid' => $cm->context->id,
                         'name' => $cm->get_formatted_name(),
-                        'modname' => $cm->modname,
-                        'completionenabled' => (bool) $completion->is_enabled($cm),
                     ];
                 }
             }
@@ -151,8 +147,6 @@ class search_modules extends external_api {
                 'cmid' => new external_value(PARAM_INT),
                 'contextid' => new external_value(PARAM_INT),
                 'name' => new external_value(PARAM_RAW),
-                'modname' => new external_value(PARAM_ALPHANUMEXT),
-                'completionenabled' => new external_value(PARAM_BOOL),
             ])),
         ]));
     }

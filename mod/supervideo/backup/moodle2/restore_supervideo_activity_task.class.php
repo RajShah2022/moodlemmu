@@ -17,20 +17,25 @@
 /**
  * Backup files
  *
- * @package   mod_supervideo
- * @category  backup
- * @copyright 2024 Eduardo Kraus {@link https://eduardokraus.com}
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_supervideo
+ * @category   backup
+ * @copyright  2023 Eduardo kraus (http://eduardokraus.com)
+ * @license    https://www.eduardokraus.com/
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-require_once("{$CFG->dirroot}/mod/supervideo/backup/moodle2/restore_supervideo_stepslib.php");
+require_once($CFG->dirroot . '/mod/supervideo/backup/moodle2/restore_supervideo_stepslib.php');
 
 /**
  * Restore task for the supervideo activity module
  *
  * Provides all the settings and steps to perform complete restore of the activity.
+ *
+ * @package    mod_supervideo
+ * @category   backup
+ * @copyright  2023 Eduardo kraus (http://eduardokraus.com)
+ * @license    https://www.eduardokraus.com/
  */
 class restore_supervideo_activity_task extends restore_activity_task {
 
@@ -43,9 +48,6 @@ class restore_supervideo_activity_task extends restore_activity_task {
 
     /**
      * Define (add) particular steps this activity can have
-     *
-     * @throws base_task_exception
-     * @throws restore_step_exception
      */
     protected function define_my_steps() {
         // We have just one structure step here.
@@ -57,9 +59,9 @@ class restore_supervideo_activity_task extends restore_activity_task {
      * processed by the link decoder
      */
     public static function define_decode_contents() {
-        $contents = [];
+        $contents = array();
 
-        $contents[] = new restore_decode_content('supervideo', ['intro'], 'supervideo');
+        $contents[] = new restore_decode_content('supervideo', array('intro'), 'supervideo');
 
         return $contents;
     }
@@ -69,12 +71,13 @@ class restore_supervideo_activity_task extends restore_activity_task {
      * to the activity to be executed by the link decoder
      */
     public static function define_decode_rules() {
-        $rules = [];
+        $rules = array();
 
         $rules[] = new restore_decode_rule('SUPERVIDEOVIEWBYID', '/mod/supervideo/view.php?id=$1', 'course_module');
         $rules[] = new restore_decode_rule('SUPERVIDEOINDEX', '/mod/supervideo/index.php?id=$1', 'course');
 
         return $rules;
+
     }
 
     /**
@@ -84,7 +87,7 @@ class restore_supervideo_activity_task extends restore_activity_task {
      * of {@link restore_log_rule} objects
      */
     public static function define_restore_log_rules() {
-        $rules = [];
+        $rules = array();
 
         $rules[] = new restore_log_rule('supervideo', 'add', 'view.php?id={course_module}', '{supervideo}');
         $rules[] = new restore_log_rule('supervideo', 'update', 'view.php?id={course_module}', '{supervideo}');
@@ -104,7 +107,7 @@ class restore_supervideo_activity_task extends restore_activity_task {
      * activity level. All them are rules not linked to any module instance (cmid = 0)
      */
     public static function define_restore_log_rules_for_course() {
-        $rules = [];
+        $rules = array();
 
         $rules[] = new restore_log_rule('supervideo', 'view all', 'index.php?id={course}', null);
 

@@ -24,6 +24,7 @@ namespace format_flexsections\local\hooks\output;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class before_footer_html_generation {
+
     /**
      * Callback allowing to add contetnt inside the region-main, in the very end
      *
@@ -32,8 +33,7 @@ class before_footer_html_generation {
      * @param \core\hook\output\before_footer_html_generation $hook
      */
     public static function callback(\core\hook\output\before_footer_html_generation $hook): void {
-        global $OUTPUT, $CFG;
-        require_once($CFG->dirroot . '/course/format/flexsections/lib.php');
+        global $OUTPUT;
 
         if (during_initial_install() || isset($CFG->upgraderunning)) {
             // Do nothing during installation or upgrade.

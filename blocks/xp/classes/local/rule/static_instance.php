@@ -1,20 +1,27 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Instance.
+ *
+ * @package    block_xp
+ * @copyright  2024 Frédéric Massart
+ * @author     Frédéric Massart <fred@branchup.tech>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 namespace block_xp\local\rule;
 
@@ -50,12 +57,7 @@ class static_instance implements instance {
 
     public function get_context(): \context {
         if (!isset($this->context)) {
-            // An empty context ID means a default rule, report it as the system context.
-            $this->context = \context::instance_by_id($this->record->contextid ?: SYSCONTEXTID, IGNORE_MISSING);
-            if (!$this->context) {
-                debugging("Context {$this->record->contextid} not found, falling back to system context", DEBUG_DEVELOPER);
-                $this->context = \context_system::instance();
-            }
+            $this->context = \context::instance_by_id($this->record->contextid);
         }
         return $this->context;
     }
@@ -65,12 +67,9 @@ class static_instance implements instance {
             return null;
         }
         if (!isset($this->childcontext)) {
-            $this->childcontext = \context::instance_by_id($this->record->childcontextid, IGNORE_MISSING);
-            if (!$this->childcontext) {
-                debugging("Child context {$this->record->childcontextid} not found, ignoring...", DEBUG_DEVELOPER);
-            }
+            $this->childcontext = \context::instance_by_id($this->record->childcontextid);
         }
-        return $this->childcontext ?: null;
+        return $this->childcontext;
     }
 
     public function get_points(): int {

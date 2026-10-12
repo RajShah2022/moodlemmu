@@ -1,20 +1,18 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Mapped config.
@@ -93,7 +91,7 @@ class mapped_config extends proxy_config {
     public function get_all() {
         $mappings = array_flip($this->mappings);
         $items = parent::get_all();
-        return array_reduce(array_keys($items), function ($carry, $key) use ($items, $mappings) {
+        return array_reduce(array_keys($items), function($carry, $key) use ($items, $mappings) {
             $newkey = isset($mappings[$key]) ? $mappings[$key] : $key;
             $carry[$newkey] = $items[$key];
             return $carry;
@@ -126,7 +124,7 @@ class mapped_config extends proxy_config {
      * @param array $values Keys are config names, and values are values.
      */
     public function set_many(array $values) {
-        $values = array_reduce(array_keys($values), function ($carry, $key) use ($values) {
+        $values = array_reduce(array_keys($values), function($carry, $key) use ($values) {
             $carry[$this->get_name($key)] = $values[$key];
             return $carry;
         }, []);

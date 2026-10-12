@@ -1,20 +1,18 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Levels info writer.
@@ -219,7 +217,7 @@ class levels_info_writer {
      * @param array $metadata The metadata before processing.
      * @param world|null $world The world, if any.
      */
-    protected function get_metadata_for_level($level, $metadata, ?world $world = null) {
+    protected function get_metadata_for_level($level, $metadata, world $world = null) {
 
         // We can only deal with this type of world at the moment.
         $world = $world instanceof course_world ? $world : null;
@@ -244,7 +242,7 @@ class levels_info_writer {
      * @param array $metadata The metadata before processing.
      * @param world|null $world The world, if any.
      */
-    protected function get_metadata_for_level_after_restore(restore_context $restore, $level, $metadata, ?world $world = null) {
+    protected function get_metadata_for_level_after_restore(restore_context $restore, $level, $metadata, world $world = null) {
         return $metadata;
     }
 
@@ -274,11 +272,11 @@ class levels_info_writer {
      * @param world|null $world The world, if any.
      * @return array Indexed by level.
      */
-    protected function process_metadata($data, ?world $world = null) {
+    protected function process_metadata($data, world $world = null) {
 
         // Reorganise metadata per level.
-        $rawmetadata = array_reduce($data['levels'], function ($carry, $level) {
-            $carry[$level['level']] = array_reduce($level['metadata'], function ($carry, $item) {
+        $rawmetadata = array_reduce($data['levels'], function($carry, $level) {
+            $carry[$level['level']] = array_reduce($level['metadata'], function($carry, $item) {
                 $carry[$item['name']] = $item['value'];
                 return $carry;
             }, []);
@@ -306,7 +304,7 @@ class levels_info_writer {
      * @param world|null $world The world, if any.
      * @return array Indexed by level.
      */
-    protected function process_metadata_after_restore(restore_context $restore, $metadata, ?world $world = null) {
+    protected function process_metadata_after_restore(restore_context $restore, $metadata, world $world = null) {
         $finalmetadata = [];
         foreach ($metadata as $level => $levelmetadata) {
             $tmp = $this->get_metadata_for_level_after_restore($restore, $level, $levelmetadata, $world);
@@ -326,12 +324,12 @@ class levels_info_writer {
         // Get the levels, and ensure order ascending.
         $levels = $data['levels'];
         core_collator::asort_array_of_arrays_by_key($levels, 'level', core_collator::SORT_NUMERIC);
-        $points = array_values(array_map(function ($level) {
+        $points = array_values(array_map(function($level) {
             return $level['xprequired'];
         }, $levels));
 
         // Ensure the points are increasing.
-        return array_reduce(array_keys($points), function ($carry, $idx) use ($points) {
+        return array_reduce(array_keys($points), function($carry, $idx) use ($points) {
             $xp = $points[$idx];
             $prevxp = array_key_exists($idx - 1, $carry) ? $carry[$idx - 1] : null;
 

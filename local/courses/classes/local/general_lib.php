@@ -132,7 +132,7 @@ class general_lib {
 
         $sql .= " AND course.id NOT IN(SELECT course FROM {course_completions} WHERE course = course.id AND userid = {$USER->id} AND timecompleted IS NOT NULL) ";
 
-        $sql .= ' order by ue.timecreated desc';
+        $sql .= ' GROUP BY course.id ORDER BY MAX(ue.timecreated) DESC'; 
 
         $inprogress_courses = $DB->get_records_sql($sqlquery . $sql, $params, $offset, $limit);
 
@@ -163,8 +163,8 @@ class general_lib {
     public static function completed_coursenames($filter_text = '', $offset = 0, $limit = 10, $source = '') {
         global $DB, $USER;
 
-        $sqlquery = "SELECT cc.id as completionid,c.*";
-        $sql = " FROM {course_completions} cc
+	$sqlquery = "SELECT MAX(cc.id) as completionid,c.*";
+	$sql = " FROM {course_completions} cc
                 JOIN {course} c ON c.id = cc.course AND cc.userid = $USER->id
                 JOIN {enrol} e ON c.id = e.courseid AND e.enrol NOT IN ('classroom', 'program', 'learningplan')
                 JOIN {user_enrolments} ue ON e.id = ue.enrolid
@@ -178,7 +178,7 @@ class general_lib {
             $sql .= "   AND " . $DB->sql_like('c.fullname', ':coursename', false);
             $params['coursename'] = '%' . $filter_text . '%';
         }
-        $sql .= " ORDER BY cc.timecompleted DESC ";
+	$sql .= " GROUP BY c.id ORDER BY MAX(cc.timecompleted) DESC ";
         $coursenames = $DB->get_records_sql($sqlquery . $sql, $params, $offset, $limit);
         return $coursenames;
     }
@@ -244,7 +244,7 @@ class general_lib {
             $params['coursename'] = '%' . $filter_text . '%';
         }
 
-        $sql .= ' order by ue.timecreated desc';
+        $sql .= ' GROUP BY course.id ORDER BY MAX(ue.timecreated) DESC'; 
         $enrolled_courses = $DB->get_records_sql($sqlquery . $sql, $params, $offset, $limit);
 
         return $enrolled_courses;

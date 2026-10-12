@@ -479,4 +479,3 @@ $string['childcheckboxhelp_help'] = 'Enable it\'s parent option to enable this o
 $string['topicsselected'] = 'The Topics has been successfully selected for the course <b>{$a}</b>';
 $string['classesselected'] = 'The Classes has been successfully selected for the course <b>{$a}</b>';
 $string['class'] = 'Class';
-$string['enable_all_topics'] = 'Enable all topics & activities';

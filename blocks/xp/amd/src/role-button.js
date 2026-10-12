@@ -1,19 +1,17 @@
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Role button.
@@ -35,7 +33,7 @@ define([], function() {
         const nodes = document.querySelectorAll(rootSelector);
 
         const handleHit = (e) => {
-            const node = e.target.closest('a,button,[role=button]');
+            const node = e.target.closest('[role=button]');
             if (node && node.matches(nodeSelector)) {
                 if (e.defaultPrevented) {
                     return;
@@ -48,7 +46,7 @@ define([], function() {
         nodes.forEach((node) => {
             node.addEventListener('click', handleHit);
 
-            node.addEventListener('keydown', (e) => {
+            node.addEventListener('mousedown', (e) => {
                 if (e.key !== ' ' && e.key !== 'Enter') {
                     return;
                 }
@@ -59,16 +57,7 @@ define([], function() {
                 if (!node.getAttribute('role')) {
                     node.setAttribute('role', 'button');
                 }
-                if (!node.hasAttribute('tabindex')) {
-                    node.setAttribute('tabindex', '0');
-                }
             });
-
-            // When there is a direct onclick function remove it.
-            // We use onclick="return false" to prevent clicks until the event is registered.
-            if (node.onclick) {
-                node.onclick = undefined;
-            }
         });
     }
 
@@ -91,7 +80,7 @@ define([], function() {
             };
 
             node.addEventListener('click', handleHit);
-            node.addEventListener('keydown', (e) => {
+            node.addEventListener('mousedown', (e) => {
                 if (e.key !== ' ' && e.key !== 'Enter') {
                     return;
                 }
@@ -100,15 +89,6 @@ define([], function() {
 
             if (!node.getAttribute('role')) {
                 node.setAttribute('role', 'button');
-            }
-            if (!node.hasAttribute('tabindex')) {
-                node.setAttribute('tabindex', '0');
-            }
-
-            // When there is a direct onclick function remove it.
-            // We use onclick="return false" to prevent clicks until the event is registered.
-            if (node.onclick) {
-                node.onclick = undefined;
             }
         });
     }

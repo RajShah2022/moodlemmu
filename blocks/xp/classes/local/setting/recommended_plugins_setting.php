@@ -1,20 +1,18 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Recommended plugins setting.
@@ -56,7 +54,7 @@ class recommended_plugins_setting extends static_setting {
     protected function get_html_content() {
         $pluginman = core_plugin_manager::instance();
 
-        $plugins = array_map(function ($plugin) use ($pluginman) {
+        $plugins = array_map(function($plugin) use ($pluginman) {
             $isinstalled = !empty($plugin['isinstalled']);
             if (!isset($plugin['isinstalled'])) {
                 $plugininfo = $pluginman->get_plugin_info($plugin['component']);

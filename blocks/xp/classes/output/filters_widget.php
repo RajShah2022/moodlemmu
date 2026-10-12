@@ -1,20 +1,18 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Filters widget.
@@ -64,13 +62,8 @@ class filters_widget implements renderable {
      * @param bool $editable Whether this is editable.
      * @param array $options Additional options.
      */
-    public function __construct(
-        ?block_xp_filter $filter = null,
-        array $rules = [],
-        array $filters = [],
-        $editable = true,
-        array $options = []
-    ) {
+    public function __construct(block_xp_filter $filter = null, array $rules = [], array $filters = [], $editable = true,
+            array $options = []) {
         $this->editable = $editable;
         $this->filter = $filter;
         $this->rules = $rules;

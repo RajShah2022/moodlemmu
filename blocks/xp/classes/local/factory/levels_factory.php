@@ -1,20 +1,18 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Levels factory.
@@ -60,11 +58,8 @@ class levels_factory implements levels_info_factory, level_factory {
      * @param badge_url_resolver $badgeurlresolver The admin badge URL resolver.
      * @param badge_url_resolver_course_world_factory $badgeurlresolverfactory The badge URL resolver factory.
      */
-    public function __construct(
-        config $config,
-        badge_url_resolver $badgeurlresolver,
-        badge_url_resolver_course_world_factory $badgeurlresolverfactory
-    ) {
+    public function __construct(config $config, badge_url_resolver $badgeurlresolver,
+            badge_url_resolver_course_world_factory $badgeurlresolverfactory) {
         $this->config = $config;
         $this->badgeurlresolver = $badgeurlresolver;
         $this->badgeurlresolverfactory = $badgeurlresolverfactory;
@@ -125,7 +120,7 @@ class levels_factory implements levels_info_factory, level_factory {
      * @param badge_url_resolver $badgeurlresolver The badge URL resolver.
      * @return \block_xp\local\xp\level
      */
-    public function make_level($level, $xp, array $metadata = [], ?badge_url_resolver $badgeurlresolver = null) {
+    public function make_level($level, $xp, array $metadata = [], badge_url_resolver $badgeurlresolver = null) {
         return new static_level($level, $xp, $badgeurlresolver, $metadata);
     }
 

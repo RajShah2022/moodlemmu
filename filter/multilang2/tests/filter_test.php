@@ -1,18 +1,18 @@
 <?php
-// This file is part of filter_multilang2 - https://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
-// filter_multilang2 is free software: you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation, either version 3 of the
-// License, or (at your option) any later version.
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
-// filter_multilang2 is distributed in the hope that it will be
-// useful, but WITHOUT ANY WARRANTY; without even the implied warranty
-// of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with filter_multilang2.  If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Tests for filter_multilang2.
@@ -41,7 +41,8 @@ use filter_multilang2;
  * @category   test
  * @covers     \filter_multilang2
  */
-final class filter_test extends \advanced_testcase {
+class filter_test extends \advanced_testcase {
+
     /**
      * Setup the test framework
      *
@@ -69,17 +70,12 @@ final class filter_test extends \advanced_testcase {
         check_dir_exists($langfolder);
         $langconfig = "<?php\n\$string['parentlanguage'] = '$parent';";
         file_put_contents($langfolder . '/langconfig.php', $langconfig);
-
-        $langfolder = $CFG->dataroot . '/lang/' . $parent;
-        check_dir_exists($langfolder);
-        $langconfig = "<?php\n\$string['parentlanguage'] = '';";
-        file_put_contents($langfolder . '/langconfig.php', $langconfig);
     }
 
     /**
      * Data provider for multi-language filtering tests.
      */
-    public static function multilang2_test_cases(): array {
+    public function multilang2_test_cases(): array {
         require_once(dirname(__FILE__) . '/actual_test_cases.php');
         return multilang2_actual_test_cases();
     }
@@ -93,15 +89,8 @@ final class filter_test extends \advanced_testcase {
      * @param string $input the input that is filtererd.
      * @param string $targetlang the laguage to set as the current languge .
      * @param array $parentlangs Array child lang => parent lang. E.g. ['es_co' => 'es', 'es_mx' => 'es'].
-     * @param string $parentlangbehaviour the parent languages behaviour to use.
      */
-    public function test_filtering(
-        $expectedoutput,
-        $input,
-        $targetlang,
-        $parentlangs = [],
-        $parentlangbehaviour = 'default'
-    ): void {
+    public function test_filtering($expectedoutput, $input, $targetlang, $parentlangs = []): void {
         global $SESSION;
         $SESSION->forcelang = $targetlang;
 
@@ -109,9 +98,7 @@ final class filter_test extends \advanced_testcase {
             $this->setup_parent_language($child, $parent);
         }
 
-        set_config('parentlangbehaviour', $parentlangbehaviour, 'filter_multilang2');
-        \filter_multilang2\text_filter::reset_parentcache();
-        $filtered = format_text($input, FORMAT_HTML, ['context' => \context_system::instance()]);
+        $filtered = format_text($input, FORMAT_HTML, array('context' => \context_system::instance()));
         $this->assertEquals($expectedoutput, $filtered);
     }
 

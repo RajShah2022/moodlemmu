@@ -1,13 +1,6 @@
-const { merge } = require('webpack-merge');
-const common = require('./webpack.common.js');
-const { RemoveEslintDisablePlugin } = require('./webpack.lib.js');
+const {merge} = require('webpack-merge');
+const config = require('./webpack.common.js');
 
-module.exports = merge(common, {
+module.exports = merge(config, {
     mode: 'development',
-    devtool: false,
-    plugins: [
-        new RemoveEslintDisablePlugin({
-            test: /-lazy\.js$/
-        }),
-    ],
 });

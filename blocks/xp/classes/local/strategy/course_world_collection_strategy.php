@@ -1,20 +1,18 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Course world collection strategy.
@@ -27,13 +25,11 @@
 
 namespace block_xp\local\strategy;
 
-use block_xp\local\action\action;
 use context;
 use block_xp\local\config\config;
-use block_xp\local\logger\collection_logger;
 use block_xp\local\logger\reason_collection_logger;
 use block_xp\local\notification\course_level_up_notification_service;
-use block_xp\local\reason\event_reason;
+use block_xp\local\reason\event_name_reason;
 use block_xp\local\xp\course_filter_manager;
 use block_xp\local\xp\course_user_state_store;
 
@@ -45,7 +41,7 @@ use block_xp\local\xp\course_user_state_store;
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class course_world_collection_strategy implements action_collection_strategy, event_collection_strategy {
+class course_world_collection_strategy implements event_collection_strategy {
 
     /** @var context The context. */
     protected $context;
@@ -55,12 +51,10 @@ class course_world_collection_strategy implements action_collection_strategy, ev
     protected $store;
     /** @var course_filter_manager The filter manager. */
     protected $filtermanager;
-    /** @var collection_logger The logger. */
+    /** @var reason_collection_logger The logger. */
     protected $logger;
     /** @var course_level_up_notification_service The notification service. */
     protected $levelupnotifificationservice;
-    /** @var action_collection_strategy The action collection strategy. */
-    protected $actioncollectionstrategy;
 
     /**
      * Constructor.
@@ -69,35 +63,23 @@ class course_world_collection_strategy implements action_collection_strategy, ev
      * @param config $config The config.
      * @param course_user_state_store $store The store.
      * @param course_filter_manager $filtermanager The filter manager.
-     * @param collection_logger $logger The logger.
+     * @param reason_collection_logger $logger The logger.
      * @param course_level_up_notification_service $levelupnotifificationservice The notification service.
      */
     public function __construct(
-        context $context,
-        config $config,
-        course_user_state_store $store,
-        course_filter_manager $filtermanager,
-        collection_logger $logger,
-        course_level_up_notification_service $levelupnotifificationservice
-    ) {
+            context $context,
+            config $config,
+            course_user_state_store $store,
+            course_filter_manager $filtermanager,
+            reason_collection_logger $logger,
+            course_level_up_notification_service $levelupnotifificationservice
+        ) {
         $this->context = $context;
         $this->config = $config;
         $this->store = $store;
         $this->filtermanager = $filtermanager;
         $this->logger = $logger;
         $this->levelupnotifificationservice = $levelupnotifificationservice;
-    }
-
-    /**
-     * Handle the action.
-     *
-     * @param action $action The action.
-     * @return void
-     */
-    public function collect_action(action $action) {
-        if ($this->actioncollectionstrategy instanceof action_collection_strategy) {
-            $this->actioncollectionstrategy->collect_action($action);
-        }
     }
 
     /**
@@ -128,7 +110,7 @@ class course_world_collection_strategy implements action_collection_strategy, ev
         }
 
         // Make up the reason.
-        $reason = event_reason::from_event($event);
+        $reason = new event_name_reason($event->eventname);
 
         // Collect.
         // No need to go through the following if the user did not gain XP.
@@ -136,9 +118,7 @@ class course_world_collection_strategy implements action_collection_strategy, ev
             $this->store->increase_with_reason($userid, $points, $reason);
         } else {
             // We still want to log the thing.
-            if ($this->logger instanceof reason_collection_logger) {
-                $this->logger->log_reason($userid, $points, $reason);
-            }
+            $this->logger->log_reason($userid, $points, $reason);
         }
     }
 
@@ -177,7 +157,7 @@ class course_world_collection_strategy implements action_collection_strategy, ev
             $SESSION->block_xp_cheatguard = [];
         } else {
             // Ensure that all entries are arrays, they may not be when we just upgraded the plugin.
-            $SESSION->block_xp_cheatguard = array_map(function ($entry) {
+            $SESSION->block_xp_cheatguard = array_map(function($entry) {
                 return is_array($entry) ? $entry : [$entry];
             }, $SESSION->block_xp_cheatguard);
         }
@@ -199,8 +179,8 @@ class course_world_collection_strategy implements action_collection_strategy, ev
         // the last 15min. We want to keep at least 15 min so that when teachers are testing changes,
         // they do not get confused because actions they had just performed no longer gets blocked.
         $timethreshold = $now - max([$maxtime, $actiontime, 900]);
-        $SESSION->block_xp_cheatguard = array_filter(array_map(function ($times) use ($maxcount, $timethreshold) {
-            return array_slice(array_filter($times, function ($time) use ($timethreshold) {
+        $SESSION->block_xp_cheatguard = array_filter(array_map(function($times) use ($maxcount, $timethreshold) {
+            return array_slice(array_filter($times, function($time) use ($timethreshold) {
                 return $time > $timethreshold;
             }), -$maxcount);
         }, $SESSION->block_xp_cheatguard));
@@ -226,8 +206,8 @@ class course_world_collection_strategy implements action_collection_strategy, ev
 
         if ($maxactions > 0 && $maxintime > 0) {
             $timethreshold = $now - $maxintime;
-            $actionsintimeframe = array_reduce($log, function ($carry, $times) use ($timethreshold) {
-                return $carry + array_reduce($times, function ($carry, $time) use ($timethreshold) {
+            $actionsintimeframe = array_reduce($log, function($carry, $times) use ($timethreshold) {
+                return $carry + array_reduce($times, function($carry, $time) use ($timethreshold) {
                     return $carry + ($time > $timethreshold ? 1 : 0);
                 });
             }, 0);
@@ -245,15 +225,6 @@ class course_world_collection_strategy implements action_collection_strategy, ev
         }
 
         return true;
-    }
-
-    /**
-     * Set the action collection strategy.
-     *
-     * @param action_collection_strategy $strategy The strategy.
-     */
-    public function set_action_collection_strategy(action_collection_strategy $strategy) {
-        $this->actioncollectionstrategy = $strategy;
     }
 
 }

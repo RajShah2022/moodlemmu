@@ -101,7 +101,7 @@ function($, ModalForm, Notification, Str, Ajax, {add: addToast}) {
             formClass: 'tool_certificate\\form\\category_selector',
             args: {id: templateId},
             modalConfig: {title: Str.get_string('confirm')},
-            saveButtonText: Str.get_string('duplicate', 'tool_certificate'),
+            saveButtonText: Str.get_string('confirm', 'tool_certificate'),
             returnFocus: target,
         });
         modal.addEventListener(modal.events.FORM_SUBMITTED, function() {

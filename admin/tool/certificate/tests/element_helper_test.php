@@ -27,24 +27,24 @@ use tool_certificate_generator;
  * @copyright   2023 Marina Glancy
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class element_helper_test extends advanced_testcase {
+class element_helper_test extends advanced_testcase {
 
     /**
      * Get certificate generator
      * @return tool_certificate_generator
      */
-    protected function get_generator(): tool_certificate_generator {
+    protected function get_generator() : tool_certificate_generator {
         return $this->getDataGenerator()->get_plugin_generator('tool_certificate');
     }
 
-    public function test_allowed_filters(): void {
+    public function test_allowed_filters() {
         $this->resetAfterTest();
         $this->assertEquals(['multilang'], element_helper::get_allowed_filters());
         set_config('allowfilters', "urltolink,emoticon", 'tool_certificate');
         $this->assertEquals(['urltolink', 'emoticon'], element_helper::get_allowed_filters());
     }
 
-    public function test_format_text(): void {
+    public function test_format_text() {
         $this->resetAfterTest();
         // Setup fixture.
         filter_set_global_state('multilang', TEXTFILTER_ON);
@@ -66,7 +66,7 @@ final class element_helper_test extends advanced_testcase {
         $this->assertEquals($text, element_helper::format_text($text));
     }
 
-    public function test_format_text_course(): void {
+    public function test_format_text_course() {
         $this->resetAfterTest();
         // Enable multilang filter in course context but not in system.
         filter_set_global_state('multilang', TEXTFILTER_OFF);

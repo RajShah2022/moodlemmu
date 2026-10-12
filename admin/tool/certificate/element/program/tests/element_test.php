@@ -39,13 +39,12 @@ use stdClass;
  * @copyright  2018 Daniel Neis Araujo <daniel@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class element_test extends advanced_testcase {
+class element_test extends advanced_testcase {
 
     /**
      * Test set up.
      */
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
         \tool_certificate\customfield\issue_handler::reset_caches();
     }
@@ -54,14 +53,14 @@ final class element_test extends advanced_testcase {
      * Get certificate generator
      * @return tool_certificate_generator
      */
-    protected function get_generator(): tool_certificate_generator {
+    protected function get_generator() : tool_certificate_generator {
         return $this->getDataGenerator()->get_plugin_generator('tool_certificate');
     }
 
     /**
      * Test format_preview_data
      */
-    public function test_format_preview_data(): void {
+    public function test_format_preview_data() {
         $certificate1 = $this->get_generator()->create_template((object)['name' => 'Certificate 1']);
         $pageid = $this->get_generator()->create_page($certificate1)->get_id();
         $element = new stdClass();
@@ -75,17 +74,14 @@ final class element_test extends advanced_testcase {
         \tool_certificate\customfield\issue_handler::create()->ensure_field_exists('programname', 'text',
             'Program name preview', true, 'Program name preview');
         $element->data = json_encode(['display' => 'programname']);
-        /** @var \certificateelement_program\element $e */
         $e = $this->get_generator()->new_element($pageid, 'program', $element);
         $this->assertTrue(strpos($e->format_preview_data(), 'Program name preview') >= 0);
 
         $element->data = json_encode(['display' => 'completiondate']);
-        /** @var \certificateelement_program\element $e */
         $e = $this->get_generator()->new_element($pageid, 'program', $element);
         $this->assertFalse(empty($e->format_preview_data()));
 
         $element->data = json_encode(['display' => 'completedcourses']);
-        /** @var \certificateelement_program\element $e */
         $e = $this->get_generator()->new_element($pageid, 'program', $element);
         $this->assertFalse(empty($e->format_preview_data()));
     }
@@ -93,7 +89,7 @@ final class element_test extends advanced_testcase {
     /**
      * Test format_issue_data
      */
-    public function test_format_issue_data(): void {
+    public function test_format_issue_data() {
         $certificate1 = $this->get_generator()->create_template((object)['name' => 'Certificate 1']);
         $pageid = $this->get_generator()->create_page($certificate1)->get_id();
         $element = new stdClass();
@@ -116,7 +112,7 @@ final class element_test extends advanced_testcase {
         $user1 = $this->getDataGenerator()->create_user();
 
         $data = ['certificationname' => 'Certification 1', 'programname' => 'Program 1', 'programcompletiondate' => '1/2/12',
-                 'programcompletedcourses' => '<p>Course1,<br>Course2</p>', ];
+                 'programcompletedcourses' => '<p>Course1,<br>Course2</p>'];
         $issueid = $certificate1->issue_certificate($user1->id, null, $data, 'tool_program');
         $issue = (object)['id' => $issueid];
 
@@ -126,17 +122,14 @@ final class element_test extends advanced_testcase {
         $this->assertEquals($data['certificationname'], $e->format_issue_data($issue));
 
         $element->data = json_encode(['display' => 'programname']);
-        /** @var \certificateelement_program\element $e */
         $e = $this->get_generator()->new_element($pageid, 'program', $element);
         $this->assertEquals($data['programname'], $e->format_issue_data($issue));
 
         $element->data = json_encode(['display' => 'programcompletiondate']);
-        /** @var \certificateelement_program\element $e */
         $e = $this->get_generator()->new_element($pageid, 'program', $element);
         $this->assertEquals('1/2/12', $e->format_issue_data($issue));
 
         $element->data = json_encode(['display' => 'programcompletedcourses']);
-        /** @var \certificateelement_program\element $e */
         $e = $this->get_generator()->new_element($pageid, 'program', $element);
         $this->assertEquals('<p>Course1,<br />Course2</p>', $e->format_issue_data($issue));
     }
@@ -144,7 +137,7 @@ final class element_test extends advanced_testcase {
     /**
      * Test save_unique_data
      */
-    public function test_save_unique_data(): void {
+    public function test_save_unique_data() {
         global $DB;
         $certificate1 = $this->get_generator()->create_template((object)['name' => 'Certificate 1']);
         $pageid = $this->get_generator()->create_page($certificate1)->get_id();
@@ -159,7 +152,7 @@ final class element_test extends advanced_testcase {
     /**
      * Test rendering
      */
-    public function test_render_content(): void {
+    public function test_render_content() {
         $certificate1 = $this->get_generator()->create_template((object)['name' => 'Certificate 1']);
         $pageid = $this->get_generator()->create_page($certificate1)->get_id();
         foreach (['programname', 'certificationname', 'completiondate', 'programcompletedcourses'] as $displaytype) {
@@ -170,20 +163,22 @@ final class element_test extends advanced_testcase {
 
         // Generate PDF for preview.
         $filecontents = $this->get_generator()->generate_pdf($certificate1, true);
-        $this->assertGreaterThan(30000, core_text::strlen($filecontents, '8bit'));
+        $filesize = core_text::strlen($filecontents);
+        $this->assertTrue($filesize > 30000 && $filesize < 90000);
 
         // Generate PDF for issue.
         $issue = $this->get_generator()->issue($certificate1, $this->getDataGenerator()->create_user(),
             null, ['programname' => 'P', 'certificationname' => 'C', 'programcompletiondate' => '1/1/11',
-                'programcompletedcourses' => 'list', ], 'tool_certification');
+                'programcompletedcourses' => 'list'], 'tool_certification');
         $filecontents = $this->get_generator()->generate_pdf($certificate1, false, $issue);
-        $this->assertGreaterThan(30000, core_text::strlen($filecontents, '8bit'));
+        $filesize = core_text::strlen($filecontents);
+        $this->assertTrue($filesize > 30000 && $filesize < 90000);
     }
 
     /**
      * Tests that the edit element form can be initiated without any errors
      */
-    public function test_edit_element_form(): void {
+    public function test_edit_element_form() {
         $this->setAdminUser();
 
         preg_match('|^certificateelement_(\w*)\\\\|', get_class($this), $matches);

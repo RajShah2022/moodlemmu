@@ -485,6 +485,8 @@ class quiz_attempt_data_processor {
                     ($category['correct_answers'] / $category['total_questions']) * 100, 
                     1
                 );
+            }
+            if ($category['total_marks'] > 0) {
                 $category['marks_percentage'] = round(
                     ($category['earned_marks'] / $category['total_marks']) * 100,
                     1
@@ -543,6 +545,38 @@ class quiz_attempt_data_processor {
         unset($group);
 
         return $tag_groups;
+    }
+
+    /**
+     * Calculate overall stats from tag groups (instead of categories)
+     */
+    public function calculate_overall_stats_from_tags($tag_groups) {
+        $total_questions = 0;
+        $total_correct = 0;
+        $total_wrong = 0;
+        $total_marks = 0;
+        $earned_marks = 0;
+
+        foreach ($tag_groups as $group) {
+            $total_questions += $group['total_questions'];
+            $total_correct += $group['correct_answers'];
+            $total_wrong += $group['wrong_answers'];
+            $total_marks += $group['total_marks'] ?? 0;
+            $earned_marks += $group['earned_marks'] ?? 0;
+        }
+
+        $overall_percentage = $total_questions > 0
+            ? round(($total_correct / $total_questions) * 100, 1)
+            : 0;
+
+        return [
+            'total_questions' => $total_questions,
+            'total_correct' => $total_correct,
+            'total_wrong' => $total_wrong,
+            'percentage' => $overall_percentage,
+            'total_marks' => $total_marks,
+            'earned_marks' => round($earned_marks, 2),
+        ];
     }
 
     /**

@@ -22,14 +22,14 @@
  *
  * @package     tool_tcpdffonts
  *
- * @copyright   2021 RvD
- * @author      RvD <helpdesk@sebsoft.nl>
+ * @copyright   2021 Ing. R.J. van Dongen
+ * @author      Ing. R.J. van Dongen <rogier@sebsoft.nl>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace tool_tcpdffonts\output\component;
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') or die('NO_ACCESS');
 
 require_once($CFG->dirroot . '/lib/pdflib.php');
 
@@ -41,11 +41,12 @@ use tool_tcpdffonts\local\helper;
  *
  * @package     tool_tcpdffonts
  *
- * @copyright   2021 RvD
- * @author      RvD <helpdesk@sebsoft.nl>
+ * @copyright   2021 Ing. R.J. van Dongen
+ * @author      Ing. R.J. van Dongen <rogier@sebsoft.nl>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class fontlist implements \renderable, \templatable {
+class fontlist implements \templatable, \renderable {
+
     /**
      * Base url
      *
@@ -77,7 +78,7 @@ class fontlist implements \renderable, \templatable {
      * @return stdClass
      */
     public function export_for_template(\renderer_base $output) {
-        $rs = new stdClass();
+        $rs = new stdClass;
 
         $rs->locationcustomized = false;
         $rs->groupedbyfamily = $this->groupbyfamily;
@@ -109,7 +110,7 @@ class fontlist implements \renderable, \templatable {
                         'type' => $font['type'],
                         'iscore' => $font['iscore'],
                         'iscorerestriction' => $font['iscorerestriction'],
-                        'styles' => [],
+                        'styles' => []
                     ];
                 }
                 $rs->fonts[$font['family']]['styles'][] = empty($font['style']) ? 'Regular' : $font['style'];
@@ -155,4 +156,5 @@ class fontlist implements \renderable, \templatable {
 
         return $rs;
     }
+
 }

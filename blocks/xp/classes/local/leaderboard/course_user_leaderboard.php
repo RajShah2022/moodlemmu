@@ -1,20 +1,18 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Course user state leaderboard.
@@ -96,13 +94,12 @@ class course_user_leaderboard implements leaderboard {
      * @param int $groupid This should not be used, but kept for backwards compat.
      */
     public function __construct(
-        moodle_database $db,
-        levels_info $levelsinfo,
-        $courseid,
-        array $columns,
-        ?ranker $ranker = null,
-        $groupid = 0
-    ) {
+            moodle_database $db,
+            levels_info $levelsinfo,
+            $courseid,
+            array $columns,
+            ranker $ranker = null,
+            $groupid = 0) {
 
         $this->db = $db;
         $this->levelsinfo = $levelsinfo;
@@ -145,7 +142,7 @@ class course_user_leaderboard implements leaderboard {
                    AND ctx.contextlevel = :contextlevel";
         $params += ['contextlevel' => CONTEXT_USER];
 
-        $this->where = "u.deleted = 0 AND u.suspended = 0 AND x.courseid = :courseid";
+        $this->where = "x.courseid = :courseid";
         $params += ['courseid' => $this->courseid];
 
         [$usersql, $userparams] = $this->get_user_ids_sql('x.userid');
@@ -281,7 +278,7 @@ class course_user_leaderboard implements leaderboard {
 
         if ($this->ranker) {
             return $this->ranker->rank_states(
-                new map_recordset($recordset, function ($record) {
+                new map_recordset($recordset, function($record) {
                     return $this->make_state_from_record($record);
                 })
             );

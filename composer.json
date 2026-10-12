@@ -44,7 +44,7 @@
         "ext-fileinfo": "*",
         "ext-sodium": "*",
         "openai/openai": "dev-main",
-        "openai-php/client": "^0.15.0",
+        "openai-php/client": "^0.10.3",
         "symfony/http-client": "^6.0",
         "nyholm/psr7": "^1.8"
     },

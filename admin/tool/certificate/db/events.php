@@ -28,6 +28,27 @@ defined('MOODLE_INTERNAL') || die;
 $observers = [
     [
         'eventname' => '\core\event\course_content_deleted',
-        'callback' => tool_certificate_observer::class . '::on_course_content_deleted',
+        'callback' => tool_certificate_observer::class . '::on_course_content_deleted'
+    ],
+    //    Sachin added 
+    [
+        'eventname'   => '\core\event\course_completed',
+        'callback'    => tool_certificate_observer::class . '::issue_course_certificate',
+    ], 
+    [
+        'eventname'   => '\local_classroom\event\classroom_user_completed',
+        'callback'    => tool_certificate_observer::class . '::issue_classroom_certificate',
+    ],
+    [
+        'eventname'   => '\local_learningplan\event\learningplan_user_completed',
+        'callback'    => tool_certificate_observer::class . '::issue_learningplan_certificate',
+    ],
+      [
+        'eventname'   => '\local_program\event\program_user_completed',
+        'callback'    => tool_certificate_observer::class . '::issue_program_certificate',
+    ],  
+      [
+        'eventname'   => '\local_onlinetests\event\onlinetest_completed',
+        'callback'    => tool_certificate_observer::class . '::issue_onlinetest_certificate',
     ],
 ];

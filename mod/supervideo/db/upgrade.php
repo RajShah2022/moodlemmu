@@ -17,9 +17,9 @@
 /**
  * Upgrade file
  *
- * @package   mod_supervideo
- * @copyright 2024 Eduardo Kraus {@link https://eduardokraus.com}
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_supervideo
+ * @copyright  2023 Eduardo kraus (http://eduardokraus.com)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 /**
@@ -28,8 +28,11 @@
  * @param int $oldversion
  *
  * @return bool
- *
- * @throws Exception
+ * @throws ddl_exception
+ * @throws ddl_field_missing_exception
+ * @throws ddl_table_missing_exception
+ * @throws downgrade_exception
+ * @throws upgrade_exception
  */
 function xmldb_supervideo_upgrade($oldversion) {
     global $DB;
@@ -38,78 +41,100 @@ function xmldb_supervideo_upgrade($oldversion) {
 
     if ($oldversion < 2019010303) {
 
-        $tablesupervideo = new xmldb_table("supervideo");
+        $tablesupervideo = new xmldb_table('supervideo');
 
-        $fieldurl = new xmldb_field("supervideoid", XMLDB_TYPE_CHAR, 255);
+        $fieldurl = new xmldb_field('supervideoid', XMLDB_TYPE_CHAR, 255);
         if ($dbman->field_exists($tablesupervideo, $fieldurl)) {
-            $dbman->rename_field($tablesupervideo, $fieldurl, "url");
+            $dbman->rename_field($tablesupervideo, $fieldurl, 'url');
         }
 
-        upgrade_mod_savepoint(true, 2019010303, "supervideo");
+        upgrade_plugin_savepoint(true, 2019010303, 'mod', 'supervideo');
     }
 
     if ($oldversion < 2023032506) {
 
-        $tablesupervideoview = new xmldb_table("supervideo_view");
+        $tablesupervideoview = new xmldb_table('supervideo_view');
 
-        $tablesupervideoview->add_field("id", XMLDB_TYPE_INTEGER, "10", null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
-        $tablesupervideoview->add_field("cm_id", XMLDB_TYPE_INTEGER, "10", null, XMLDB_NOTNULL);
-        $tablesupervideoview->add_field("user_id", XMLDB_TYPE_INTEGER, "10", null, XMLDB_NOTNULL);
-        $tablesupervideoview->add_field("currenttime", XMLDB_TYPE_INTEGER, "10", null, XMLDB_NOTNULL);
-        $tablesupervideoview->add_field("duration", XMLDB_TYPE_INTEGER, "10", null, XMLDB_NOTNULL);
-        $tablesupervideoview->add_field("percent", XMLDB_TYPE_INTEGER, "10", null, XMLDB_NOTNULL);
-        $tablesupervideoview->add_field("mapa", XMLDB_TYPE_CHAR, null, null, XMLDB_NOTNULL);
-        $tablesupervideoview->add_field("timecreated", XMLDB_TYPE_INTEGER, "20", null, XMLDB_NOTNULL);
-        $tablesupervideoview->add_field("timemodified", XMLDB_TYPE_INTEGER, "20", null, XMLDB_NOTNULL);
+        $tablesupervideoview->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+        $tablesupervideoview->add_field('cm_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL);
+        $tablesupervideoview->add_field('user_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL);
+        $tablesupervideoview->add_field('currenttime', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL);
+        $tablesupervideoview->add_field('duration', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL);
+        $tablesupervideoview->add_field('percent', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL);
+        $tablesupervideoview->add_field('mapa', XMLDB_TYPE_CHAR, null, null, XMLDB_NOTNULL);
+        $tablesupervideoview->add_field('timecreated', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL);
+        $tablesupervideoview->add_field('timemodified', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL);
 
-        $tablesupervideoview->add_key("primary", XMLDB_KEY_PRIMARY, ["id"]);
+        $tablesupervideoview->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
 
         if (!$dbman->table_exists($tablesupervideoview)) {
             $dbman->create_table($tablesupervideoview);
         }
 
-        $tablesupervideo = new xmldb_table("supervideo");
+        $tablesupervideo = new xmldb_table('supervideo');
 
-        $fieldgradeapproval = new xmldb_field("grade_approval", XMLDB_TYPE_INTEGER, 10);
+        $fieldgradeapproval = new xmldb_field('grade_approval', XMLDB_TYPE_INTEGER, 10);
         if (!$dbman->field_exists($tablesupervideo, $fieldgradeapproval)) {
             $dbman->add_field($tablesupervideo, $fieldgradeapproval);
         }
 
-        $fieldcompletpercent = new xmldb_field("completionpercent", XMLDB_TYPE_INTEGER, 10);
+        $fieldcompletpercent = new xmldb_field('completionpercent', XMLDB_TYPE_INTEGER, 10);
         if (!$dbman->field_exists($tablesupervideo, $fieldcompletpercent)) {
             $dbman->add_field($tablesupervideo, $fieldcompletpercent);
         }
 
-        upgrade_mod_savepoint(true, 2023032506, "supervideo");
+        upgrade_plugin_savepoint(true, 2023032506, 'mod', 'supervideo');
+    }
+
+    if ($oldversion < 2023052000) {
+
+        // Add auth table.
+        $table = new xmldb_table('supervideo_auth');
+
+        // Add fields.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+        $table->add_field('user_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL);
+        $table->add_field('created_at', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL);
+        $table->add_field('secret', XMLDB_TYPE_CHAR, '64', null, XMLDB_NOTNULL);
+
+        // Add keys and index.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Create table if it does not exist.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        upgrade_plugin_savepoint(true, 2023052000, 'mod', 'supervideo');
     }
 
     if ($oldversion < 2023071800) {
 
-        $table = new xmldb_table("supervideo");
-        $field = new xmldb_field("showshowinfo", XMLDB_TYPE_INTEGER, 10, null, null, null, null, null, 0, "showcontrols");
+        $table = new xmldb_table('supervideo');
+        $field = new xmldb_field("showshowinfo", XMLDB_TYPE_INTEGER, 10, null, null, null, null, null, 0, 'showcontrols');
         if ($dbman->field_exists($table, $field)) {
-            $dbman->rename_field($table, $field, "showinfo");
+            $dbman->rename_field($table, $field, 'showinfo');
         }
 
-        upgrade_mod_savepoint(true, 2023071800, "supervideo");
+        upgrade_plugin_savepoint(true, 2023071800, 'mod', 'supervideo');
     }
 
     if ($oldversion < 2023072700) {
 
-        $table = new xmldb_table("supervideo");
-        $field = new xmldb_field("complet_percent", XMLDB_TYPE_INTEGER, 10, null, null, null, null, null, 0, "grade_approval");
+        $table = new xmldb_table('supervideo');
+        $field = new xmldb_field("complet_percent", XMLDB_TYPE_INTEGER, 10, null, null, null, null, null, 0, 'grade_approval');
         if ($dbman->field_exists($table, $field)) {
-            $dbman->rename_field($table, $field, "completionpercent");
+            $dbman->rename_field($table, $field, 'completionpercent');
         }
 
-        upgrade_mod_savepoint(true, 2023072700, "supervideo");
+        upgrade_plugin_savepoint(true, 2023072700, 'mod', 'supervideo');
     }
 
     if ($oldversion < 2023080701) {
 
-        $table = new xmldb_table("supervideo");
+        $table = new xmldb_table('supervideo');
 
-        $index = new xmldb_index("showrel", XMLDB_INDEX_NOTUNIQUE, ["showrel"]);
+        $index = new xmldb_index('showrel', XMLDB_INDEX_NOTUNIQUE, array('showrel'));
         if ($dbman->index_exists($table, $index)) {
             $dbman->drop_index($table, $index);
         }
@@ -119,29 +144,37 @@ function xmldb_supervideo_upgrade($oldversion) {
             $dbman->drop_field($table, $field);
         }
 
-        upgrade_mod_savepoint(true, 2023080701, "supervideo");
+        upgrade_plugin_savepoint(true, 2023080701, 'mod', 'supervideo');
     }
 
     if ($oldversion < 2023081100) {
 
-        $table = new xmldb_table("supervideo");
-
-        $index = new xmldb_index("showinfo", XMLDB_INDEX_NOTUNIQUE, ["showinfo"]);
-        if ($dbman->index_exists($table, $index)) {
-            $dbman->drop_index($table, $index);
-        }
+        $table = new xmldb_table('supervideo');
 
         $field = new xmldb_field("showinfo", XMLDB_TYPE_INTEGER, 10);
+
+        $index = new xmldb_index('showinfo', XMLDB_INDEX_NOTUNIQUE, array('showinfo'));
+      /*   if ($dbman->field_exists($table, $field) && $dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
         if ($dbman->field_exists($table, $field)) {
             $dbman->drop_field($table, $field);
+        } */
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
         }
 
-        upgrade_mod_savepoint(true, 2023081100, "supervideo");
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        upgrade_plugin_savepoint(true, 2023081100, 'mod', 'supervideo');
     }
 
     if ($oldversion < 2023081602) {
 
-        $table = new xmldb_table("supervideo");
+        $table = new xmldb_table('supervideo');
 
         $field1 = new xmldb_field("playersize", XMLDB_TYPE_CHAR, 15, null, false, false, "", "videourl");
         if (!$dbman->field_exists($table, $field1)) {
@@ -151,7 +184,7 @@ function xmldb_supervideo_upgrade($oldversion) {
             $DB->execute($sql);
         }
 
-        $index = new xmldb_index("videosize", XMLDB_INDEX_NOTUNIQUE, ["videosize"]);
+        $index = new xmldb_index('videosize', XMLDB_INDEX_NOTUNIQUE, array('videosize'));
         if ($dbman->index_exists($table, $index)) {
             $dbman->drop_index($table, $index);
         }
@@ -161,128 +194,8 @@ function xmldb_supervideo_upgrade($oldversion) {
             $dbman->drop_field($table, $field2);
         }
 
-        upgrade_mod_savepoint(true, 2023081602, "supervideo");
-    }
-
-    if ($oldversion < 2024083102) {
-
-        $table = new xmldb_table("supervideo");
-
-        $origem = new xmldb_field("origem", XMLDB_TYPE_CHAR, 10, null, false, false, "", "introformat");
-        if (!$dbman->field_exists($table, $origem)) {
-            $dbman->add_field($table, $origem);
-        }
-
-        $supervideos = $DB->get_records("supervideo");
-        foreach ($supervideos as $supervideo) {
-            $origem = xmldb_supervideo_upgrade_parse($supervideo->videourl);
-            if ($origem) {
-                $supervideo->origem = $origem;
-            }
-
-            if ($supervideo->origem == "link") {
-                $supervideo->videourl = str_replace("[link]:", "", $supervideo->videourl);
-            }
-
-            $DB->update_record("supervideo", $supervideo);
-        }
-
-        upgrade_mod_savepoint(true, 2024083102, "supervideo");
-    }
-
-    if ($oldversion < 2024100800) {
-
-        $table = new xmldb_table("supervideo_auth");
-        if ($dbman->table_exists($table)) {
-            $dbman->drop_table($table);
-        }
-
-        upgrade_mod_savepoint(true, 2024100800, "supervideo");
-    }
-
-    if ($oldversion < 2024101100) {
-
-        $sql = "
-            SELECT cm.id AS cm_id, c.id AS c_id, cm.instance AS cm_instance
-              FROM {course_modules} cm
-              JOIN {modules}        m ON m.id = cm.module
-              JOIN {context}        c ON c.instanceid = cm.id
-             WHERE m.name      LIKE 'supervideo'
-               AND c.contextlevel = :contextlevel";
-        $modules = $DB->get_records_sql($sql, ["contextlevel" => CONTEXT_MODULE]);
-
-        foreach ($modules as $module) {
-            $files = $DB->get_records("files", ["contextid" => $module->c_id]);
-            foreach ($files as $file) {
-                if ($file->itemid != $module->cm_instance) {
-                    $file->itemid = $module->cm_instance;
-                    $file->pathnamehash = get_file_storage()->get_pathname_hash(
-                        $file->contextid, $file->component, $file->filearea, $file->itemid,
-                        $file->filepath, $file->filename);
-                    $DB->update_record("files", $file);
-                }
-            }
-        }
-
-        upgrade_mod_savepoint(true, 2024101100, "supervideo");
-    }
-
-    if ($oldversion < 2025041600) {
-
-        $table = new xmldb_table("supervideo");
-
-        $origem = new xmldb_field("ottflix_ia", XMLDB_TYPE_CHAR, 100, null, false, false, "", "videourl");
-        if (!$dbman->field_exists($table, $origem)) {
-            $dbman->add_field($table, $origem);
-        }
-
-        upgrade_mod_savepoint(true, 2025041600, "supervideo");
-    }
-
-    if ($oldversion < 2025080400) {
-
-        $sql = "UPDATE {supervideo} SET origem = 'pandavideo' WHERE origem LIKE 'panda'";
-        $DB->execute($sql);
-
-        upgrade_mod_savepoint(true, 2025080400, "supervideo");
+        upgrade_plugin_savepoint(true, 2023081602, 'mod', 'supervideo');
     }
 
     return true;
-}
-
-/**
- * Function xmldb_supervideo_upgrade_parse
- *
- * @param $videourl
- *
- * @return bool|string
- */
-function xmldb_supervideo_upgrade_parse($videourl) {
-
-    if (strpos($videourl, "ottflix.com") > 1) {
-        return "ottflix";
-    }
-    if (strpos($videourl, "[link]:") === 0) {
-        return "link";
-    }
-    if (strpos($videourl, "[resource-file") === 0) {
-        return "upload";
-    }
-    if (strpos($videourl, "youtu")) {
-        if (preg_match('/youtu(\.be|be\.com)\/(watch\?v=|embed\/|live\/|shorts\/)?([a-z0-9_\-]{11})/i', $videourl, $output)) {
-            return "youtube";
-        }
-    }
-    if (strpos($videourl, "vimeo")) {
-        return "vimeo";
-    }
-    if (strpos($videourl, "docs.google.com") || strpos($videourl, "drive.google.com")) {
-        return "drive";
-    }
-
-    if (preg_match('/^https?.*\.(mp3|mp4|m3u8|webm)/i', $videourl, $output)) {
-        return "link";
-    }
-
-    return false;
 }

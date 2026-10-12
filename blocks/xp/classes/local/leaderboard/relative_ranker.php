@@ -1,20 +1,18 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Ranker.
@@ -50,7 +48,7 @@ class relative_ranker implements ranker {
      *
      * @param state $relativestate The state this is relative to, can be omitted to get the first
      */
-    public function __construct(?state $relativestate = null) {
+    public function __construct(state $relativestate = null) {
         $this->relativestate = $relativestate;
     }
 
@@ -73,7 +71,7 @@ class relative_ranker implements ranker {
      */
     public function rank_states($states) {
         $base = $this->relativestate ? $this->relativestate->get_xp() : null;
-        return new map_iterator($states, function ($state) use (&$base) {
+        return new map_iterator($states, function($state) use (&$base) {
             if ($base === null) {
                 $base = $state->get_xp();
             }

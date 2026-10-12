@@ -1,20 +1,18 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Admin rules controller.
@@ -30,8 +28,6 @@ namespace block_xp\local\controller;
 use coding_exception;
 use html_writer;
 use block_xp\local\routing\url;
-use block_xp\local\utils\text_utils;
-use core\output\notification;
 
 /**
  * Admin rules controller class.
@@ -181,26 +177,6 @@ class admin_rules_controller extends admin_route_controller {
     }
 
     /**
-     * Get action rules widget element.
-     *
-     * @return renderable
-     */
-    protected function get_action_rules_widget_element() {
-        $url = $this->urlresolver->reverse('admin/actionrules');
-        $notification = new notification(
-            text_utils::markdown_light(get_string('visitpagetoeditdefaultactionrules', 'block_xp', $url->out(false))),
-            notification::NOTIFY_INFO,
-            false
-        );
-        return new \block_xp\output\filters_widget_element(
-            $notification,
-            get_string('actionrules', 'block_xp'),
-            null,
-            new \help_icon('actionrules', 'block_xp')
-        );
-    }
-
-    /**
      * Get events widget element.
      *
      * @return renderable
@@ -224,10 +200,7 @@ class admin_rules_controller extends admin_route_controller {
      * @return renderable
      */
     protected function get_widget_group() {
-        return new \block_xp\output\filters_widget_group([
-            $this->get_action_rules_widget_element(),
-            $this->get_events_widget_element(),
-        ]);
+        return new \block_xp\output\filters_widget_group([$this->get_events_widget_element()]);
     }
 
     protected function page_plus_promo_content() {
@@ -278,9 +251,28 @@ class admin_rules_controller extends admin_route_controller {
         echo html_writer::tag('p', get_string('admindefaultrulesintro', 'block_xp'));
         $this->page_rules_content();
 
+        $hasdangerzone = $this->filtermanager->is_customised() || !$forwholesite;
+        if ($hasdangerzone) {
+            echo $output->heading_with_divider(get_string('dangerzone', 'block_xp'));
+        }
+
+        // Revert button.
+        if ($this->filtermanager->is_customised()) {
+
+            echo html_writer::tag('p', get_string('reverttopluginsdefaultsintro', 'block_xp'));
+            $url = new url($this->pageurl, ['revert' => 1, 'sesskey' => sesskey()]);
+            echo html_writer::tag('p',
+                $output->render($output->make_single_button(
+                    $url->get_compatible_url(),
+                    get_string('reverttopluginsdefaults', 'block_xp'),
+                    ['danger' => true]
+                ))
+            );
+
+        }
+
         // Reset courses.
         if (!$forwholesite) {
-            echo $output->heading_with_divider(get_string('dangerzone', 'block_xp'));
             echo html_writer::tag('p', markdown_to_html(get_string('resetallcoursestodefaultsintro', 'block_xp')));
             $url = new url($this->pageurl, ['reset' => 1, 'sesskey' => sesskey()]);
             echo html_writer::tag('p',

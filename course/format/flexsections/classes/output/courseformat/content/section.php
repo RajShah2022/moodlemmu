@@ -26,6 +26,7 @@ use stdClass;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class section extends \core_courseformat\output\local\content\section {
+
     /** @var \format_flexsections the course format */
     protected $format;
 
@@ -49,15 +50,19 @@ class section extends \core_courseformat\output\local\content\section {
      * @return stdClass
      */
     public function export_for_template(\renderer_base $output): stdClass {
-        global $CFG;
         $format = $this->format;
         $course = $format->get_course();
 
         $data = parent::export_for_template($output);
 
-        if ((int)$CFG->branch == 404) {
-            // Fixed in MDL-81766 in 4.5 but not in 4.4.
-            $data->displayonesection = $this->format->get_sectionid() == $this->section->id;
+        // Cohort-aware "Hidden from students": a section can be visible-flagged (enabled
+        // for some other cohort) yet unavailable to any of this teacher's own cohorts.
+        // The core badge only reflects the global `visible` flag, so add it here.
+        if (empty($data->hiddenfromstudents)
+                && has_capability('moodle/course:viewhiddensections', \context_course::instance($course->id))
+                && \format_flexsections\local\visibilityhelper::hidden_from_my_students(
+                    $this->section->availability, $course->id)) {
+            $data->hiddenfromstudents = true;
         }
 
         // For sections that are displayed as a link do not print list of cms or controls.
@@ -76,10 +81,8 @@ class section extends \core_courseformat\output\local\content\section {
             $data->level = $this->level;
         }
 
-        if (
-            (!$course->showsection0title && $this->section->section === 0) ||
-                ($this->section->section !== 0 && $this->section->section === $this->format->get_viewed_section())
-        ) {
+        if ((!$course->showsection0title && $this->section->section === 0) ||
+                ($this->section->section !== 0 && $this->section->section === $this->format->get_viewed_section())) {
             // Never collapse content of top section in single section view or
             // when showing title of the top section is not shown.
             $data->contentcollapsed = false;
@@ -94,10 +97,8 @@ class section extends \core_courseformat\output\local\content\section {
 
         $data->addsectionafter = false;
         $data->insertsubsection = false;
-        if (
-            $this->format->should_display_add_sub_section_link($this->section->parent)
-                && ($this->section->section != $this->format->get_viewed_section() || $this->section->section === 0)
-        ) {
+        if ($this->format->should_display_add_sub_section_link($this->section->parent)
+                && ($this->section->section != $this->format->get_viewed_section() || $this->section->section === 0)) {
             // Display 'Add section' button after to insert after this section.
             $data->addsectionafter = $this->export_add_section($output);
         }

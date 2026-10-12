@@ -42,37 +42,6 @@ const Selectors = {
 
 export const init = () => {
     document.addEventListener('click', function(e) {
-        const btn = e.target.closest('[data-action="enable-all-toggles"]');
-        if (!btn) return;
-        e.preventDefault();
-        e.stopImmediatePropagation();
-
-        const courseid = parseInt(btn.getAttribute('data-courseid'));
-        const groupid = parseInt(btn.getAttribute('data-groupid'));
-
-        Notification.confirm(
-            'Enable all',
-            'Enable all topics and activities for this group?',
-            'Enable all',
-            'Cancel',
-            function() {
-                btn.disabled = true;
-                btn.textContent = 'Enabling...';
-                Ajax.call([{
-                    methodname: 'local_courses_bulk_enable_topics',
-                    args: { courseid: courseid, groupid: groupid }
-                }])[0].done(function() {
-                    window.location.reload();
-                }).fail(function(err) {
-                    btn.disabled = false;
-                    Notification.exception(err);
-                });
-            }
-        );
-    });
-
-
-    document.addEventListener('click', function(e) {
         let topicsconfiguration = e.target.closest(Selectors.actions.topicsconfiguration);
         if (topicsconfiguration) {
             e.preventDefault();

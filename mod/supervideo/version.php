@@ -17,15 +17,17 @@
 /**
  * version file
  *
- * @package   mod_supervideo
- * @copyright 2024 Eduardo Kraus {@link https://eduardokraus.com}
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_supervideo
+ * @copyright  2023 Eduardo kraus (http://eduardokraus.com)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version = 2026042300;
-$plugin->release = "3.0.5";
-$plugin->requires = 2021041900;
-$plugin->component = "mod_supervideo";
-$plugin->maturity = MATURITY_STABLE;
+$plugin->version = 2023081700;
+$plugin->requires = 2014051200;
+$plugin->release = '2.5.2';
+$plugin->component = 'mod_supervideo';
+//$plugin->maturity = MATURITY_STABLE;
+$plugin->cron = 0;
+$plugin->dependencies = [];

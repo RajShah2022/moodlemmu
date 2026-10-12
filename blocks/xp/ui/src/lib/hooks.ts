@@ -1,29 +1,10 @@
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { AddonContext } from "./contexts";
 import { getModuleAsync, getString, hasString, isBehatRunning, loadString, loadStrings } from "./moodle";
-import type { CoreModal, CoreModalForm, RuleV2 } from "./types";
+import { AddonContext } from "./contexts";
 import { getUniqueId } from "./utils";
-
-type KnownAmdModules = {
-  "block_xp/modal": {
-    createSaveCancelModal(config: Record<string, any>): Promise<CoreModal>;
-  };
-  "core/modal_events": {
-    hidden: string;
-    save: string;
-    shown: string;
-  };
-  "core_form/modalform": CoreModalForm;
-};
-
-type ResolveTypedModule<TModule extends string> = TModule extends keyof KnownAmdModules ? KnownAmdModules[TModule] : any;
 
 export const useAddonActivated = () => {
   return useContext(AddonContext).activated;
-};
-
-export const useAddonPromo = () => {
-  return useContext(AddonContext).enablepromo;
 };
 
 export const useAnchorButtonProps = (onClick: () => void) => {
@@ -52,11 +33,11 @@ export const useDuplicatedActionPreventor = (msDelay = 100) => {
       return false;
     }
     ref.current = Date.now();
-    return true;
-  }, []); // eslint-disable-line
-};
+    return true
+  }, []);
+}
 
-export const useModules = <TModules extends readonly string[]>(modules: TModules) => {
+export const useModules = (modules: string[]) => {
   const modulesPromise = useRef<Promise<any>>();
   const modulesRef = useRef<Record<string, any>>();
   const [ready, setReady] = useState(false);
@@ -69,33 +50,27 @@ export const useModules = <TModules extends readonly string[]>(modules: TModules
     }
 
     let cancelled = false;
-    modulesPromise.current
-      .then((loadedModles) => {
-        if (cancelled) return;
+    modulesPromise.current.then((loadedModles) => {
+      if (cancelled) return;
 
-        modulesRef.current = modules.reduce(
-          (acc, module, i) => {
-            acc[module] = loadedModles[i];
-            return acc;
-          },
-          {} as Record<string, any>,
-        );
+      modulesRef.current = modules.reduce((acc, module, i) => {
+        acc[module] = loadedModles[i];
+        return acc;
+      }, {} as Record<string, any>);
 
-        setReady(true);
-        return;
-      })
-      .catch(() => {});
+      setReady(true);
+    });
     return () => {
       cancelled = true;
     };
   });
 
   const getModule = useCallback(
-    <TModule extends TModules[number]>(module: TModule): ResolveTypedModule<TModule> | null => {
-      if (!ready || !modulesRef.current) return null;
-      return (modulesRef.current[module] ?? null) as ResolveTypedModule<TModule> | null;
+    (module: string) => {
+      if (!modulesRef.current) return null;
+      return modulesRef.current[module] ?? null;
     },
-    [ready],
+    [ready, modulesRef.current]
   );
 
   return {
@@ -113,7 +88,7 @@ export const useNumericInputProps = (value: number, onChange: (n: number) => voi
       setExternalValue(valueAsString);
       setInternalValue(valueAsString);
     }
-  }, [valueAsString, externalValue]);
+  });
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     const v = parseInt(internalValue, 10) || 0;
@@ -150,19 +125,6 @@ export const useRoleButtonListeners = (onClick: () => void) => {
   };
 };
 
-export const useRuleCreationLimit = () => {
-  const isAddonActivated = useAddonActivated();
-  return !isAddonActivated ? 3 : 0;
-};
-
-export const useHasReachedRuleTypeLimit = (rules?: RuleV2[]) => {
-  const ruleLimit = useRuleCreationLimit();
-  if (ruleLimit <= 0 || !rules) {
-    return false;
-  }
-  return rules?.filter((r) => !["consume_content", "produce_content"].includes(r.typename)).length >= ruleLimit;
-};
-
 export const useUnloadCheck = (isDirty: boolean) => {
   const str = useString("changesmadereallygoaway", "core");
 
@@ -188,7 +150,7 @@ export const useUniqueId = () => {
   return id;
 };
 
-export const useString = (id: string, component: string = "block_xp", a?: any): string => {
+export const useString = (id: string, component: string = "block_xp", a?: any) => {
   const wasKnownAtMount = useMemo(() => hasString(id, component), [id, component]);
   const [isLoaded, setLoaded] = useState(false);
 
@@ -221,9 +183,8 @@ export const useString = (id: string, component: string = "block_xp", a?: any): 
   return hasString(id, component) ? getString(id, component, a) : "​";
 };
 
-export const useStrings = <T extends string>(ids: T[], component: string = "block_xp"): ((id: T, a?: any) => string) => {
+export const useStrings = <T extends string>(ids: T[], component: string = "block_xp") => {
   const idsForKey = ids.join(",");
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const allKnownAtMount = useMemo(() => ids.every((id) => hasString(id, component)), [idsForKey, component]);
   const [isLoaded, setLoaded] = useState(false);
 
@@ -253,5 +214,5 @@ export const useStrings = <T extends string>(ids: T[], component: string = "bloc
     };
   });
 
-  return useCallback((id: T, a?: any): string => (hasString(id, component) ? getString(id, component, a) : "​"), [component]);
+  return (id: T, a?: any): string => (hasString(id, component) ? getString(id, component, a) : "​");
 };

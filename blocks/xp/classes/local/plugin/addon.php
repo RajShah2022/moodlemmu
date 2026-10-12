@@ -1,20 +1,18 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Addon.
@@ -26,8 +24,6 @@
  */
 
 namespace block_xp\local\plugin;
-
-use block_xp\task\post_deactivation_adhoc;
 
 /**
  * Addon class.
@@ -50,10 +46,10 @@ class addon {
         $pluginman = \core_plugin_manager::instance();
         $blockxp = $pluginman->get_plugin_info('block_xp');
         $release = $blockxp ? $blockxp->release : '';
-        if (!preg_match('/^([0-9]+)\./', $release, $parts)) {
+        if (!preg_match('/^([0-9]+)\.([0-9]+)/', $release, $parts)) {
             return '?';
         }
-        return (int) $parts[1];
+        return ((int) $parts[1]) - 2 . '.' . $parts[2];
     }
 
     /**
@@ -72,17 +68,8 @@ class addon {
      * @return bool
      */
     public function is_activated() {
-        return false;
-    }
-
-    /**
-     * Whether the add-on was deactivated.
-     *
-     * @return bool
-     */
-    public function is_deactivated(): bool {
-        return !$this->is_activated()
-            && static::is_passing_activation_checks();
+        // Consider activated if we detect a legacy version.
+        return $this->is_legacy_version_present();
     }
 
     /**
@@ -94,7 +81,6 @@ class addon {
      * when using a legacy version.
      *
      * @return bool
-     * @deprecated Since XP 18
      */
     final public function is_legacy_version_present() {
         $localxp = static::get_plugin_info();
@@ -107,7 +93,8 @@ class addon {
      * @return bool
      */
     public function is_installed_and_upgraded() {
-        return static::get_plugin_info()->is_installed_and_upgraded();
+        return $this->is_legacy_version_present()
+            && static::get_plugin_info()->is_installed_and_upgraded();
     }
 
     /**
@@ -127,7 +114,8 @@ class addon {
      * @return bool
      */
     public function is_out_of_sync() {
-        return false;
+        // If we use a legacy version, we're certain to be out of sync.
+        return $this->is_legacy_version_present();
     }
 
     /**
@@ -154,46 +142,19 @@ class addon {
      *
      * @return \core\plugininfo\base|null
      */
-    public static function get_plugin_info(): ?\core\plugininfo\local {
+    public static function get_plugin_info() {
         $pluginman = \core_plugin_manager::instance();
         return $pluginman->get_plugin_info('local_xp');
     }
-
 
     /**
      * Whether the plugin is automatically.
      *
      * @return bool
      */
-    public static function is_automatically_activated(): bool {
+    public static function is_automatically_activated() {
         global $CFG;
         return empty($CFG->local_xp_disable_automatic_activation);
-    }
-
-    /**
-     * Check if compatible.
-     *
-     * @return bool
-     */
-    public static function is_compatible(): bool {
-        $pluginman = \core_plugin_manager::instance();
-        $blockxp = $pluginman->get_plugin_info('block_xp');
-        $localxp = static::get_plugin_info();
-        $blockversion = $blockxp->versiondisk ?? 1000;
-        $localversion = $localxp->versiondisk ?? 100;
-        $major = function ($version) {
-            return floor($version / 100);
-        };
-        return $major($blockversion) === $major($localversion);
-    }
-
-    /**
-     * Simplest check to identify whether the plugin is present.
-     *
-     * @return bool
-     */
-    public static function is_container_present() {
-        return class_exists('local_xp\local\container');
     }
 
     /**
@@ -207,45 +168,12 @@ class addon {
     }
 
     /**
-     * Whether passing basic activation checks.
+     * Simplest check to identify whether the plugin is present.
      *
      * @return bool
      */
-    protected static function is_passing_activation_checks(): bool {
-        return static::is_container_present()
-            && (static::is_automatically_activated() || static::is_marked_to_activate());
-    }
-
-    /**
-     * Whether passing compatibility checks.
-     *
-     * @return bool
-     */
-    protected static function is_passing_compatibility_checks(): bool {
-        global $CFG;
-
-        $cache = \cache::make('block_xp', 'metadata');
-        $compatibility = $cache->get('addoncompatibilitycheckresult');
-        if ($compatibility !== false) {
-            return $compatibility === 'true';
-        }
-
-        if (!static::is_compatible()) {
-            $acceptincompatibility = false;
-            $acceptincompatibilitywith = (string) ($CFG->local_xp_accept_incompatibility_with ?? 0);
-            if (!empty($acceptincompatibilitywith)) {
-                $blockxp = \core_plugin_manager::instance()->get_plugin_info('block_xp');
-                $acceptincompatibility = (string) $blockxp->versiondb === $acceptincompatibilitywith;
-            }
-            if (!$acceptincompatibility) {
-                $cache->set('addoncompatibilitycheckresult', 'false');
-                post_deactivation_adhoc::schedule();
-                return false;
-            }
-        }
-
-        $cache->set('addoncompatibilitycheckresult', 'true');
-        return true;
+    public static function is_container_present() {
+        return class_exists('local_xp\local\container');
     }
 
     /**
@@ -253,13 +181,8 @@ class addon {
      *
      * @return bool
      */
-    public static function should_activate(): bool {
-        if (!static::is_passing_activation_checks()) {
-            return false;
-        } else if (!static::is_passing_compatibility_checks()) {
-            return false;
-        }
-        return true;
+    public static function should_activate() {
+        return static::is_container_present()
+            && (static::is_automatically_activated() || static::is_marked_to_activate());
     }
-
 }

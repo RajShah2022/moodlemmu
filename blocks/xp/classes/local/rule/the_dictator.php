@@ -1,20 +1,18 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Dictator.
@@ -38,7 +36,6 @@ use moodle_database;
  * @copyright  2024 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @deprecated Since XP 20, use world_rule_manager instead.
  */
 class the_dictator implements dictator {
 
@@ -68,7 +65,7 @@ class the_dictator implements dictator {
      * @param \context|null $childcontext The child context.
      * @return int
      */
-    protected function normalise_childcontext_id(\context $storecontext, ?\context $childcontext = null): int {
+    protected function normalise_childcontext_id(\context $storecontext, \context $childcontext = null): int {
         $childcontextid = 0;
         if ($childcontext && $childcontext->is_child_of($storecontext, false)) {
             $childcontextid = $childcontext->id;
@@ -82,9 +79,9 @@ class the_dictator implements dictator {
      * @param \context $storecontext The context.
      * @param \context|null $childcontext The child context.
      * @param array $options Some options (expected to support type, and filter).
-     * @return int
+     * @return instance[]
      */
-    public function count_rules_in_context(\context $storecontext, ?\context $childcontext = null, array $options = []) {
+    public function count_rules_in_context(\context $storecontext, \context $childcontext = null, array $options = []) {
         $conditions = [
             'contextid' => $storecontext->id,
             'childcontextid' => $this->normalise_childcontext_id($storecontext, $childcontext),
@@ -108,7 +105,7 @@ class the_dictator implements dictator {
      * @param \context|null $childcontext The child context.
      * @return instance[]
      */
-    protected function fetch_rules_in_context(\context $storecontext, ?\context $childcontext = null) {
+    protected function fetch_rules_in_context(\context $storecontext, \context $childcontext = null) {
         $sql = "SELECT r.*, ctx.contextlevel AS contextlevel, childctx.contextlevel AS childcontextlevel
                   FROM {block_xp_rule} r
                   JOIN {context} ctx ON ctx.id = r.contextid
@@ -121,7 +118,7 @@ class the_dictator implements dictator {
         ];
         $records = $this->db->get_records_sql($sql, $params);
 
-        return array_values(array_map(function ($record) {
+        return array_values(array_map(function($record) {
             return new static_instance($record);
         }, $records));
     }
@@ -183,7 +180,7 @@ class the_dictator implements dictator {
      * @param \context|null $childcontext The child context.
      * @return instance[]
      */
-    public function get_rules_in_context(\context $storecontext, ?\context $childcontext = null) {
+    public function get_rules_in_context(\context $storecontext, \context $childcontext = null) {
         $cachekey = $storecontext->id . ':' . ($childcontext ? $childcontext->id : 0);
         if (!isset($this->rulesinctxcache[$cachekey])) {
             $this->rulesinctxcache[$cachekey] = $this->fetch_rules_in_context($storecontext, $childcontext);
@@ -214,11 +211,11 @@ class the_dictator implements dictator {
      * @param \context|null $childcontext The child context.
      * @return instance[]
      */
-    public function get_rules_of_types_in_context(\context $storecontext, array $types, ?\context $childcontext = null) {
+    public function get_rules_of_types_in_context(\context $storecontext, array $types, \context $childcontext = null) {
         // This may not be seen as very efficient, however getting the rules in the context is expected
         // to be cached, and therefore it should be good enough to filter as we do here for now.
         $rules = $this->get_rules_in_context($storecontext, $childcontext);
-        return array_filter($rules, function ($rule) use ($types) {
+        return array_filter($rules, function($rule) use ($types) {
             return in_array($rule->get_type_name(), $types);
         });
     }
@@ -233,7 +230,7 @@ class the_dictator implements dictator {
         // Sort the rules by context level, filter method weight, and then points, all descendingly, and then ID.
         // This means that the deepest context, with the highest weight, and the most points will be evaluated first.
         // Although, the context depth does not currently handle a hierarchy within a context level (like course cat).
-        usort($rules, function ($a, $b) {
+        usort($rules, function($a, $b) {
             $achildcontext = $a->get_child_context();
             $bchildcontext = $b->get_child_context();
 

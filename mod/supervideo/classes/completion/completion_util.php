@@ -14,49 +14,45 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * User: Eduardo Kraus
+ * Date: 18/07/2023
+ * Time: 18:47
+ */
+
 namespace mod_supervideo\completion;
 
-use dml_exception;
 
-/**
- * Completion Util class
- *
- * @package   mod_supervideo
- * @copyright 2024 Eduardo Kraus {@link https://eduardokraus.com}
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
 class completion_util {
 
     /**
-     * Function get_completion_state
-     *
-     * @param $course
-     * @param $cm
-     * @param $userid
+     * @param \stdClass $course
+     * @param \stdClass $cm
+     * @param int $userid
      *
      * @return bool
-     * @throws dml_exception
+     * @throws \dml_exception
      */
     public static function get_completion_state($course, $cm, $userid) {
-        global $DB;
+        global $CFG, $DB, $USER;
 
-        $supervideo = $DB->get_record("supervideo", ["id" => $cm->instance], "*", MUST_EXIST);
+        $supervideo = $DB->get_record('supervideo', ['id' => $cm->instance], '*', MUST_EXIST);
+        if ($supervideo->completionpercent) {
 
-        if (empty($supervideo->completionpercent)) {
-            return true;
+            require_once($CFG->libdir . '/gradelib.php');
+            $grades = grade_get_grades($course->id, 'mod', 'supervideo', $supervideo->id, $USER->id);
+
+            if (isset($grades->items[0]->grades)) {
+                foreach ($grades->items[0]->grades as $grade) {
+                    if (intval($supervideo->completionpercent) >= intval($grade->grade)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
-        $sql = "
-         SELECT MAX(percent)
-           FROM {supervideo_view}
-          WHERE cm_id = :cm_id
-            AND user_id = :user_id";
-        $params = [
-            "cm_id" => $cm->id,
-            "user_id" => $userid,
-        ];
-        $userpercent = $DB->get_field_sql($sql, $params);
-
-        return (int) ($userpercent ?? 0) >= (int) $supervideo->completionpercent;
+        return true;
     }
 }

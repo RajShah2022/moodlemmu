@@ -22,29 +22,29 @@
  *
  * @package     tool_tcpdffonts
  *
- * @copyright   2021 RvD
- * @author      RvD <helpdesk@sebsoft.nl>
+ * @copyright   2021 Ing. R.J. van Dongen
+ * @author      Ing. R.J. van Dongen <rogier@sebsoft.nl>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$capabilities = [
-    'tool/tcpdffonts:viewfonts' => [
+$capabilities = array(
+    'tool/tcpdffonts:viewfonts' => array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
-        'archetypes' => [
+        'archetypes' => array(
             'manager' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
-            'editingteacher' => CAP_ALLOW,
-        ],
-    ],
+            'editingteacher' => CAP_ALLOW
+        )
+    ),
 
-    'tool/tcpdffonts:managefonts' => [
+    'tool/tcpdffonts:managefonts' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
-        'archetypes' => [
-            'manager' => CAP_ALLOW,
-        ],
-    ],
-];
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
+        )
+    ),
+);

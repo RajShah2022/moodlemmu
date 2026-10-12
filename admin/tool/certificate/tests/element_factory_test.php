@@ -29,12 +29,11 @@ use moodle_exception;
  * @copyright  2018 Daniel Neis Araujo <daniel@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class element_factory_test extends advanced_testcase {
+class element_factory_test extends advanced_testcase {
     /**
      * Test set up.
      */
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
     }
 
@@ -42,14 +41,14 @@ final class element_factory_test extends advanced_testcase {
      * Get certificate generator
      * @return tool_certificate_generator
      */
-    protected function get_generator(): tool_certificate_generator {
+    protected function get_generator() : tool_certificate_generator {
         return $this->getDataGenerator()->get_plugin_generator('tool_certificate');
     }
 
     /**
      * Test render_html
      */
-    public function test_get_element_instance_with_invalid_element(): void {
+    public function test_get_element_instance_with_invalid_element() {
         $certificate1 = $this->get_generator()->create_template((object)['name' => 'Certificate 1']);
         $pageid = $this->get_generator()->create_page($certificate1)->get_id();
         try {

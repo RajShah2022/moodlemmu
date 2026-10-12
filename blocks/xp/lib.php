@@ -1,20 +1,18 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Block XP lib.
@@ -25,33 +23,6 @@
  */
 
 use block_xp\di;
-use block_xp\local\plugin\addon;
-
-/**
- * Environment check.
- *
- * @return environment_results
- */
-function block_xp_env_check_addon_compatibility(environment_results $result) {
-    if (!addon::is_container_present() || addon::is_compatible()) {
-        return null;
-    }
-    $result->setFeedbackStr(['envcheckaddonincompatibilitymessage', 'block_xp']);
-    $result->setStatus(false);
-    return $result;
-}
-
-/**
- * Statuc checks.
- *
- * @return array
- */
-function block_xp_status_checks(): array {
-    if (!addon::is_container_present()) {
-        return [];
-    }
-    return [new \block_xp\local\check\addon_compatibility()];
-}
 
 /**
  * File serving.
@@ -121,14 +92,14 @@ function block_xp_user_preferences() {
     return [
         'block_xp_notices' => [
             'type' => PARAM_BOOL,
-            'permissioncallback' => function ($user) {
+            'permissioncallback' => function($user) {
                 global $USER;
                 return $user->id == $USER->id;
             },
         ],
         'block_xp_notice_quest' => [
             'type' => PARAM_BOOL,
-            'permissioncallback' => function ($user) {
+            'permissioncallback' => function($user) {
                 global $USER;
                 return $user->id == $USER->id;
             },

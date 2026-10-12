@@ -408,42 +408,69 @@ if (has_capability('moodle/grade:viewall', $context)) {
 
         $sections[] = $section_data;
     }
-
-    //Query to get all classes of a teacher for a particular course 
+    //Query to get all classes of a teacher for a particular course
+    // The cohort is resolved separately, from {enrol}, so this query no longer joins
+    // cohort_members - that join silently dropped classes whenever the teacher was not
+    // himself a member of the class cohort.
     $classes_sql_query = '
-        SELECT DISTINCT 
-            g.id AS groupid, 
-            g.name AS groupname, 
-            c.id AS cohortid 
+        SELECT DISTINCT
+            g.id AS groupid,
+            g.name AS groupname
         FROM {groups} g
         JOIN {groups_members} gm ON g.id = gm.groupid
         JOIN {role_assignments} ra ON ra.userid = gm.userid
         JOIN {role} r ON r.id = ra.roleid
-        JOIN {cohort_members} cm ON cm.userid = gm.userid
-        JOIN {cohort} c ON c.id = cm.cohortid
-        WHERE g.courseid = :courseid 
+        WHERE g.courseid = :courseid
         AND ra.userid = :teacherid
         AND r.shortname = :role
     ';
+
     $classes = $DB->get_records_sql($classes_sql_query, [
         'courseid' => $courseid,
         'teacherid' => $teacher_id,
         'role' => 'teacher'
     ]);
-    $cohorts = cohort_get_user_cohorts($teacher_id);
-    // Add cohort id detail to classes array
-    foreach ($classes as $groupid => $class) {
-        // Remove " cohort" from groupname to match with cohort name
-        $class_name = str_replace(" cohort", "", $class->groupname);
-        // Find matching cohort by name
-        foreach ($cohorts as $cohortid => $cohort) {
-            if ($cohort->name === $class_name) {
-                $classes[$groupid]->cohortid = $cohort->id;
-                break;
-            }
+
+    // Map each class group to the cohort that is actually cohort-synced into it.
+    // {enrol} holds the authoritative mapping for the cohort enrolment plugin:
+    //   customint1 = cohortid, customint2 = groupid.
+    // The previous approach matched cohort names against group names, which broke as soon as
+    // Moodle appended a collision suffix to a group name (e.g. "Foo cohort (2)" vs "Foo"), and
+    // left an arbitrary teacher cohort in place when no name matched - producing an empty
+    // filtered structure and "No content has been enabled for this class."
+    // Where a group somehow has more than one cohort synced, prefer the cohort with the most
+    // enabled content, mirroring gradereport_user_resolve_course_cohortid() in lib.php.
+    $syncrows = $DB->get_records_sql("
+        SELECT e.id,
+               e.customint2 AS groupid,
+               e.customint1 AS cohortid,
+               (SELECT COUNT(*)
+                  FROM {local_coursegroupmodules} lcgm
+                 WHERE lcgm.courseid = e.courseid
+                   AND lcgm.groupid = e.customint1) AS enabledcount
+          FROM {enrol} e
+          JOIN {cohort} c ON c.id = e.customint1
+         WHERE e.courseid = :courseid
+           AND e.enrol = 'cohort'
+           AND e.customint2 > 0
+           AND c.visible = 1
+      ORDER BY enabledcount DESC, e.customint1 ASC
+    ", ['courseid' => $courseid]);
+
+    $cohortbygroup = [];
+    foreach ($syncrows as $row) {
+        if (!isset($cohortbygroup[$row->groupid])) {
+            $cohortbygroup[$row->groupid] = (int) $row->cohortid;
         }
     }
 
+    // Attach the resolved cohort to each class. Null means no cohort is synced to that group.
+    foreach ($classes as $groupid => $class) {
+        $classes[$groupid]->cohortid = isset($cohortbygroup[$groupid])
+            ? $cohortbygroup[$groupid]
+            : null;
+    }
+    
     // Random Bag Test report for one of the teacher's classes: the class average, or one student of the class.
     if (optional_param('fetch', '', PARAM_ALPHANUMEXT) === 'random' && gradereport_user_random_bag_teacher_enabled($courseid)) {
         $groupid = optional_param('class_id', 0, PARAM_INT);
@@ -460,9 +487,9 @@ if (has_capability('moodle/grade:viewall', $context)) {
                 echo $OUTPUT->footer();
                 exit;
             }
-            gradereport_user_random_bag_page($courseid, [$rbstudentid => $class_students[$rbstudentid]]);
+            gradereport_user_random_bag_page($courseid, [$rbstudentid => $class_students[$rbstudentid]], null, [], true);
         } else {
-            gradereport_user_random_bag_page($courseid, $class_students, $classes[$groupid]->groupname, ['class_id' => $groupid]);
+            gradereport_user_random_bag_page($courseid, $class_students, $classes[$groupid]->groupname, ['class_id' => $groupid], true);
         }
         exit;
     }
@@ -671,9 +698,23 @@ if (has_capability('moodle/grade:viewall', $context)) {
     // If class is already selected, show the report
     if (isset($_GET['class_id']) && $_GET['id']) {
         $course_structure =  get_course_structure($courseid);
+
+        if (!isset($classes[$_GET['class_id']])) {
+            echo $OUTPUT->notification('That class is not available for your account.', 'notifyproblem');
+            echo $OUTPUT->footer();
+            exit;
+        }
+
         $selected_class = $classes[$_GET['class_id']];
         $cohortid = $selected_class->cohortid;
-        $teacher_enabled_quiz_sql_query = "
+
+        if (empty($cohortid)) {
+            echo $OUTPUT->notification('No cohort is synced to this class, so no content can be resolved for it.', 'notifyproblem');
+            echo $OUTPUT->footer();
+            exit;
+        } 
+
+	$teacher_enabled_quiz_sql_query = "
             SELECT 
                 cm.id AS cmid,
                 m.name AS module_type,
@@ -694,7 +735,7 @@ if (has_capability('moodle/grade:viewall', $context)) {
             'courseid' => $courseid,
             'cohortid' => $cohortid,
         ]);
-
+        echo '<script>console.log("checking updates other")</script>';
 
         $sections_enabled_by_teacher_sql_query = "
             SELECT 
@@ -2713,8 +2754,9 @@ if (has_capability('moodle/grade:viewall', $context)) {
                     </div>
                 </div>
                 
-                <!-- Include Chart.js -->
+                <!-- Include Chart.js --><script>window.__amdDefine=window.define;window.define=undefined;</script>
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <script>window.define=window.__amdDefine;delete window.__amdDefine;</script>
                 <script>
                     document.addEventListener("DOMContentLoaded", function() {
                         // Overall Performance Chart
@@ -3083,7 +3125,6 @@ if (has_capability('moodle/grade:viewall', $context)) {
                     }
                 }
             </style>
-    
             <div class="quiz-dashboard">
                 <!-- Header -->
                 <div class="header slide-in">
@@ -3139,10 +3180,8 @@ if (has_capability('moodle/grade:viewall', $context)) {
                     </form>
                 </div>
             </div>
-
             <!-- Add Font Awesome if not already included -->
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
             <script>
                 const pastYearChildrenData = <?= json_encode($pastYearChildren) ?>;
                 const subsectionSelect = document.getElementById("subsectionSelect");
@@ -4214,8 +4253,9 @@ if (has_capability('moodle/grade:viewall', $context)) {
                             </table>
                         </div>
                 
-                <!-- Include Chart.js -->
+                <!-- Include Chart.js --><script>window.__amdDefine=window.define;window.define=undefined;</script>
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <script>window.define=window.__amdDefine;delete window.__amdDefine;</script>
                 <script>
                     function toggleTagGroupRow(tagGroupId) {
                         const row = document.getElementById('row-' + tagGroupId);

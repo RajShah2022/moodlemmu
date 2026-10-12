@@ -26,12 +26,11 @@ use tool_certificate_generator;
  * @copyright  2022 Frederik Pytlick
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class my_certificates_table_test extends \advanced_testcase {
+class my_certificates_table_test extends \advanced_testcase {
     /**
      * Test set up.
      */
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
     }
 
@@ -71,17 +70,12 @@ final class my_certificates_table_test extends \advanced_testcase {
      * @param object $issue
      * @param array $params
      * @param ?int $organizationid
-     * @param int $showshareonlinkedin
      * @return void
      * @throws \moodle_exception
      */
-    public function test_col_linkedin($issue, $params, $organizationid, $showshareonlinkedin): void {
+    public function test_col_linkedin($issue, $params, $organizationid): void {
         if ($organizationid) {
             set_config('linkedinorganizationid', $organizationid, 'tool_certificate');
-        }
-
-        if ($showshareonlinkedin) {
-            set_config('show_shareonlinkedin', $showshareonlinkedin, 'tool_certificate');
         }
 
         $user = self::getDataGenerator()->create_user();
@@ -92,7 +86,7 @@ final class my_certificates_table_test extends \advanced_testcase {
         $anchortag = $table->col_linkedin($issue);
 
         $link = $this->get_href_value_from_anchor_tag($anchortag);
-        $url = new \moodle_url(my_certificates_table::LINKEDIN_ADD_TO_PROFILE_URL, $params);
+        $url = new \moodle_url(\tool_certificate\my_certificates_table::LINKEDIN_ADD_TO_PROFILE_URL, $params);
 
         self::assertEquals($url->out(false), $link);
     }
@@ -102,7 +96,7 @@ final class my_certificates_table_test extends \advanced_testcase {
      *
      * @return array[]
      */
-    public static function col_linkedin_provider(): array {
+    public function col_linkedin_provider(): array {
         return [
             [(object)[
                 'id' => '6',
@@ -111,14 +105,14 @@ final class my_certificates_table_test extends \advanced_testcase {
                 'timecreated' => 1634376554,
                 'templateid' => '1',
                 'contextid' => '1',
-                'name' => 'Certificate demo template',
+                'name' => 'Certificate demo template'
             ], [
                 'name' => 'Certificate demo template',
                 'issueYear' => '2021',
                 'issueMonth' => '10',
                 'certId' => '0123456789SS',
-                'certUrl' => 'https://www.example.com/moodle/admin/tool/certificate/index.php?code=0123456789SS',
-            ], null, my_certificates_table::SHOW_LINK_TO_VERIFICATION_PAGE, ],
+                'certUrl' => 'https://www.example.com/moodle/admin/tool/certificate/index.php?code=0123456789SS'
+            ], null],
             [(object)[
                 'id' => '6',
                 'expires' => '0',
@@ -126,7 +120,7 @@ final class my_certificates_table_test extends \advanced_testcase {
                 'timecreated' => 1500370154,
                 'templateid' => '1',
                 'contextid' => '1',
-                'name' => 'Certificate demo template',
+                'name' => 'Certificate demo template'
             ], [
                 'name' => 'Certificate demo template',
                 'issueYear' => '2017',
@@ -134,7 +128,7 @@ final class my_certificates_table_test extends \advanced_testcase {
                 'certId' => '0123456789SS',
                 'certUrl' => 'https://www.example.com/moodle/admin/tool/certificate/index.php?code=0123456789SS',
                 'organizationId' => '123',
-            ], 123, my_certificates_table::SHOW_LINK_TO_VERIFICATION_PAGE, ],
+            ], 123],
             [(object)[
                 'id' => '6',
                 'expires' => '123',
@@ -142,7 +136,7 @@ final class my_certificates_table_test extends \advanced_testcase {
                 'timecreated' => 1568626154,
                 'templateid' => '1',
                 'contextid' => '1',
-                'name' => 'Certificate demo template',
+                'name' => 'Certificate demo template'
             ], [
                 'name' => 'Certificate demo template',
                 'issueYear' => '2019',
@@ -150,8 +144,8 @@ final class my_certificates_table_test extends \advanced_testcase {
                 'certId' => '0123456789SS',
                 'certUrl' => 'https://www.example.com/moodle/admin/tool/certificate/index.php?code=0123456789SS',
                 'expirationYear' => '1970',
-                'expirationMonth' => '01',
-            ], null, my_certificates_table::SHOW_LINK_TO_VERIFICATION_PAGE, ],
+                'expirationMonth' => '01'
+            ], null],
             [(object)[
                 'id' => '6',
                 'expires' => '123',
@@ -159,7 +153,7 @@ final class my_certificates_table_test extends \advanced_testcase {
                 'timecreated' => 1705573754,
                 'templateid' => '1',
                 'contextid' => '1',
-                'name' => 'Certificate demo template',
+                'name' => 'Certificate demo template'
             ], [
                 'name' => 'Certificate demo template',
                 'issueYear' => '2024',
@@ -169,73 +163,7 @@ final class my_certificates_table_test extends \advanced_testcase {
                 'expirationYear' => '1970',
                 'expirationMonth' => '01',
                 'organizationId' => '123',
-            ], 123, my_certificates_table::SHOW_LINK_TO_VERIFICATION_PAGE, ],
-            [(object)[
-                'id' => '6',
-                'expires' => '0',
-                'code' => '0123456789SS',
-                'timecreated' => 1634376554,
-                'templateid' => '1',
-                'contextid' => '1',
-                'name' => 'Certificate demo template',
-            ], [
-                'name' => 'Certificate demo template',
-                'issueYear' => '2021',
-                'issueMonth' => '10',
-                'certId' => '0123456789SS',
-                'certUrl' => 'https://www.example.com/moodle/admin/tool/certificate/view.php?code=0123456789SS',
-            ], null, my_certificates_table::SHOW_LINK_TO_CERTIFICATE_PAGE, ],
-            [(object)[
-                'id' => '6',
-                'expires' => '0',
-                'code' => '0123456789SS',
-                'timecreated' => 1500370154,
-                'templateid' => '1',
-                'contextid' => '1',
-                'name' => 'Certificate demo template',
-            ], [
-                'name' => 'Certificate demo template',
-                'issueYear' => '2017',
-                'issueMonth' => '07',
-                'certId' => '0123456789SS',
-                'certUrl' => 'https://www.example.com/moodle/admin/tool/certificate/view.php?code=0123456789SS',
-                'organizationId' => '123',
-            ], 123, my_certificates_table::SHOW_LINK_TO_CERTIFICATE_PAGE, ],
-            [(object)[
-                'id' => '6',
-                'expires' => '123',
-                'code' => '0123456789SS',
-                'timecreated' => 1568626154,
-                'templateid' => '1',
-                'contextid' => '1',
-                'name' => 'Certificate demo template',
-            ], [
-                'name' => 'Certificate demo template',
-                'issueYear' => '2019',
-                'issueMonth' => '09',
-                'certId' => '0123456789SS',
-                'certUrl' => 'https://www.example.com/moodle/admin/tool/certificate/view.php?code=0123456789SS',
-                'expirationYear' => '1970',
-                'expirationMonth' => '01',
-            ], null, my_certificates_table::SHOW_LINK_TO_CERTIFICATE_PAGE, ],
-            [(object)[
-                'id' => '6',
-                'expires' => '123',
-                'code' => '0123456789SS',
-                'timecreated' => 1705573754,
-                'templateid' => '1',
-                'contextid' => '1',
-                'name' => 'Certificate demo template',
-            ], [
-                'name' => 'Certificate demo template',
-                'issueYear' => '2024',
-                'issueMonth' => '01',
-                'certId' => '0123456789SS',
-                'certUrl' => 'https://www.example.com/moodle/admin/tool/certificate/view.php?code=0123456789SS',
-                'expirationYear' => '1970',
-                'expirationMonth' => '01',
-                'organizationId' => '123',
-            ], 123, my_certificates_table::SHOW_LINK_TO_CERTIFICATE_PAGE, ],
+            ], 123]
         ];
     }
 

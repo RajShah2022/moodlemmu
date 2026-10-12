@@ -27,12 +27,11 @@ use tool_certificate_generator;
  * @copyright   2020 Mikel Martín <mikel@moodle.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class observer_test extends advanced_testcase {
+class observer_test extends advanced_testcase {
     /**
      * Test setup
      */
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
     }
 
@@ -40,7 +39,7 @@ final class observer_test extends advanced_testcase {
      * Get certificate generator
      * @return tool_certificate_generator
      */
-    protected function get_generator(): tool_certificate_generator {
+    protected function get_generator() : tool_certificate_generator {
         return $this->getDataGenerator()->get_plugin_generator('tool_certificate');
     }
 
@@ -49,7 +48,7 @@ final class observer_test extends advanced_testcase {
      *
      * @return void
      */
-    public function test_course_deleted(): void {
+    public function test_course_deleted() {
         global $DB;
 
         $course1 = $this->getDataGenerator()->create_course();

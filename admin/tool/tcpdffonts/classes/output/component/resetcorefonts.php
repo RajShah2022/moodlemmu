@@ -22,12 +22,14 @@
  *
  * @package     tool_tcpdffonts
  *
- * @copyright   2021 RvD
- * @author      RvD <helpdesk@sebsoft.nl>
+ * @copyright   2021 Ing. R.J. van Dongen
+ * @author      Ing. R.J. van Dongen <rogier@sebsoft.nl>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace tool_tcpdffonts\output\component;
+
+defined('MOODLE_INTERNAL') or die('NO_ACCESS');
 
 use renderable;
 use templatable;
@@ -39,11 +41,12 @@ use pix_icon;
  *
  * @package     tool_tcpdffonts
  *
- * @copyright   2021 RvD
- * @author      RvD <helpdesk@sebsoft.nl>
+ * @copyright   2021 Ing. R.J. van Dongen
+ * @author      Ing. R.J. van Dongen <rogier@sebsoft.nl>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class resetcorefonts implements renderable, templatable {
+
     /**
      * Base url
      *
@@ -83,16 +86,17 @@ class resetcorefonts implements renderable, templatable {
         $dataactionattributes = [
             'data-action' => 'resetcorefonts',
             'data-contextid' => $context->id,
-            'class' => 'action-icon action-icon-hide',
+            'class' => 'action-icon action-icon-hide'
         ];
         return (object) [
             'action' => $output->action_link(
-                new moodle_url($this->baseurl, ['action' => 'resetcorefonts']),
-                $this->actionstring,
-                null,
-                ['alt' => $this->actionstring] + $dataactionattributes,
-                new pix_icon('t/edit', $this->actionstring, 'moodle', ['class' => 'icon'])
-            ),
+                    new moodle_url($this->baseurl, array('action' => 'resetcorefonts')),
+                    $this->actionstring,
+                    null,
+                    ['alt' => $this->actionstring] + $dataactionattributes,
+                    new pix_icon('t/edit', $this->actionstring, 'moodle', ['class' => 'icon'])
+                )
         ];
     }
+
 }

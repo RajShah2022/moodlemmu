@@ -37,16 +37,7 @@ export function getDefaultBulkEditPointsState(props: {
   };
 }
 
-const BulkEditPoints = ({
-  method,
-  base,
-  incr,
-  coef,
-  onBaseChange,
-  onCoefChange,
-  onIncrementChange,
-  onMethodChange,
-}: {
+const BulkEditPoints: React.FC<{
   method: BulkEditPointsState["method"];
   base: BulkEditPointsState["base"];
   incr: BulkEditPointsState["incr"];
@@ -55,7 +46,7 @@ const BulkEditPoints = ({
   onIncrementChange: (p: BulkEditPointsState["incr"]) => void;
   onBaseChange: (p: BulkEditPointsState["base"]) => void;
   onCoefChange: (p: BulkEditPointsState["coef"]) => void;
-}) => {
+}> = ({ method, base, incr, coef, onBaseChange, onCoefChange, onIncrementChange, onMethodChange }) => {
   const getStr = useStrings(
     [
       "basepoints",
@@ -103,7 +94,7 @@ const BulkEditPoints = ({
               label: (
                 <>
                   {getStr("difficultyrelative")}
-                  <div className="badge bg-info text-white xp-ml-2">{getStr("recommended")}</div>
+                  <div className="badge badge-info xp-ml-2">{getStr("recommended")}</div>
                 </>
               ),
               desc: getStr("difficultyrelativedesc"),
@@ -211,7 +202,7 @@ const BulkEditPoints = ({
   );
 };
 
-export const BulkEditPointsModal = (props: {
+export const BulkEditPointsModal: React.FC<{
   show?: boolean;
   onClose?: () => void;
   onSave?: (state: BulkEditPointsState) => void;
@@ -219,7 +210,7 @@ export const BulkEditPointsModal = (props: {
   base?: BulkEditPointsState["base"];
   incr?: BulkEditPointsState["incr"];
   coef?: BulkEditPointsState["coef"];
-}) => {
+}> = (props) => {
   const [state, dispatch] = useReducer(calculationMethodReducer, props, getDefaultBulkEditPointsState);
   const getStr = useStrings(["quickeditpoints", "apply"], "block_xp");
 

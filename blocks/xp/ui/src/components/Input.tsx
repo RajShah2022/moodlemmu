@@ -1,22 +1,18 @@
-import React, { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
+import React from 'react';
 
-const Input = ({ className = "", ...props }: InputHTMLAttributes<HTMLInputElement>) => {
+const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = ({ className = '', ...props }) => {
   /** Apply those classes for normalised styling across themes and versions. */
   return <input {...props} className={`xp-m-0 form-control ${className}`} />;
 };
 
-export const Select = ({ className = "", ...props }: SelectHTMLAttributes<HTMLSelectElement>) => {
+export const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement>> = ({ className = '', ...props }) => {
   /** Apply those classes for normalised styling across themes and versions. */
-  return <select {...props} className={`xp-m-0 xp-max-w-auto form-select form-control ${className}`} />;
+  return <select {...props} className={`xp-m-0 xp-max-w-auto form-control ${className}`} />;
 };
 
-export const Textarea = ({ className = "", ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) => {
+export const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = ({ className = '', ...props }) => {
   /** Apply those classes for normalised styling across themes and versions. */
   return <textarea {...props} className={`xp-m-0 form-control ${className}`} />;
-};
-
-export const FieldHelp = ({ children }: { children: React.ReactNode }) => {
-  return <p className="xp-text-gray-500 xp-m-0 xp-mt-1">{children}</p>;
 };
 
 export default Input;

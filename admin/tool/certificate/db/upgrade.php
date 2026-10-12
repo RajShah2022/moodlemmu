@@ -241,11 +241,28 @@ function xmldb_tool_certificate_upgrade($oldversion) {
         // Certificate savepoint reached.
         upgrade_plugin_savepoint(true, 2022051800, 'tool', 'certificate');
     }
+    if($oldversion < 2022051800.01){
+        $table = new xmldb_table('tool_certificate_templates');
+        $field = new xmldb_field('open_path', XMLDB_TYPE_CHAR, '255');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
 
-    if ($oldversion < 2023071300) {
-        tool_certificate_upgrade_add_permission_condition_to_reports();
-        upgrade_plugin_savepoint(true, 2023071300, 'tool', 'certificate');
+        upgrade_plugin_savepoint(true, 2022051800.01, 'tool', 'certificate');   
     }
+    if($oldversion < 2023031400.02){
+        $table = new xmldb_table('tool_certificate_issues');
+        $field1 = new xmldb_field('moduletype', XMLDB_TYPE_CHAR, '255');
+        if (!$dbman->field_exists($table, $field1)) {
+            $dbman->add_field($table, $field1);
+        }
+        $field2 = new xmldb_field('moduleid', XMLDB_TYPE_INTEGER, '2');
+        if (!$dbman->field_exists($table, $field2)) {
+            $dbman->add_field($table, $field2);
+        }
+        upgrade_plugin_savepoint(true, 2023031400.02, 'tool', 'certificate');   
+    }
+
 
     return true;
 }

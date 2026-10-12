@@ -51,9 +51,6 @@ class verify_certificate_results implements templatable, renderable {
      */
     public $issues;
 
-    /** @var stdClass */
-    protected $issue;
-
     /**
      * Constructor.
      *

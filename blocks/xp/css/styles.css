@@ -1,3 +1,7 @@
+/**
+ * All Level Up XP styles are built from the file css/styles.css.
+ */
+
 .block_xp * {
     /** For older themes. */
     box-sizing: border-box;
@@ -7,12 +11,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/** Cancel overflow of .no-overflow (and .table-responsive for now).*/
+/** Cancel overflow of .no-overflow */
 .block_xp .xp-cancel-overflow .no-overflow {
     overflow: visible;
-}
-.block_xp .xp-cancel-overflow .table-responsive {
-    overflow-x: visible
 }
 
 /** Legacy styles. */
@@ -176,10 +177,7 @@ a .block_xp-level {
  */
 .block_xp-table td {
     /* Using !important because it's late and I can't be bothered looking for an alternative. */
-    vertical-align: middle !important;
-}
-.block_xp-table .col-actions:empty {
-    padding: 0;
+    vertical-align: middle !important; /* stylelint-disable-line declaration-no-important */
 }
 .block_xp-table .col-lvl {
     width: 50px;
@@ -205,23 +203,7 @@ a .block_xp-level {
  * Report table.
  */
 .block_xp-report-table td {
-    vertical-align: middle !important;
-}
-.block_xp-report-table .col-userpic {
-    width: 1px;
-}
-.block_xp-report-table .col-userpic img {
-    margin: 0;
-}
-
-/**
- * Any tables.
- */
-.block_xp table .col-actions {
-    width: 1px;
-}
-.block_xp table .header.col-actions {
-    padding: 0 !important;
+    vertical-align: middle !important; /* stylelint-disable-line declaration-no-important */
 }
 
 /**
@@ -273,7 +255,7 @@ a .block_xp-level {
 }
 .block_xp-notification .moodle-dialogue-bd,
 .block_xp-notification .moodle-dialogue-ft {
-    text-align: center !important;
+    text-align: center !important; /* stylelint-disable-line declaration-no-important */
 }
 .block_xp-notification .level-headline {
     font-size: 1.4em;

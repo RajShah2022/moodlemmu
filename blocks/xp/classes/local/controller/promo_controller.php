@@ -1,20 +1,18 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Promo controller.
@@ -33,8 +31,8 @@ require_once($CFG->libdir . '/adminlib.php');
 use block_xp\di;
 use html_writer;
 use block_xp\local\routing\url;
-use core\output\notification;
 use moodle_url;
+use single_button;
 
 /**
  * Promo controller class.
@@ -49,12 +47,14 @@ class promo_controller extends route_controller {
     /** Seen flag. */
     const SEEN_FLAG = 'promo-page-seen';
     /** Page version. */
-    const VERSION = 20250412;
+    const VERSION = 20231006;
 
     /** @var string The normal route name. */
     protected $routename = 'promo';
     /** @var string The admin section name. */
     protected $sectionname = 'block_xp_promo';
+    /** @var string The email. */
+    protected $email = 'levelup@branchup.tech';
     /** @var url_resolver The URL resolver. */
     protected $urlresolver;
     /** @var world The world. */
@@ -137,25 +137,11 @@ class promo_controller extends route_controller {
     }
 
     protected function content() {
-        global $USER;
-
-        $indicator = \block_xp\di::get('user_generic_indicator');
-        $seenflag = $indicator->get_user_flag($USER->id, self::SEEN_FLAG);
-        $hasnewcontent = $seenflag !== null && $seenflag < static::VERSION;
         self::mark_as_seen();
-
-        // Warn users if the addon was deactivated.
-        if (di::get('addon')->is_deactivated()) {
-            echo di::get('renderer')->notification_without_close(strip_tags(markdown_to_html(
-                get_string('erroraddondeactivated', 'block_xp', [
-                    'docsurl' => (new \moodle_url('https://docs.levelup.plus/xp/docs/addon-deactivated'))->out(false),
-                ])
-            ), '<a><em><strong>'), notification::NOTIFY_ERROR);
-        }
 
         $addon = \block_xp\di::get('addon');
         if ($addon->is_activated()) {
-            $this->content_installed($hasnewcontent);
+            $this->content_installed();
             return;
         }
 
@@ -191,7 +177,7 @@ class promo_controller extends route_controller {
 
         $new = '🆕';
 
-        $renderitemstart = function ($icon, $title, $subtitle) use ($output) {
+        $renderitemstart = function($icon, $title, $subtitle) use ($output) {
             return <<<EOT
             <div class="xp-bg-slate-50 xp-rounded xp-p-4">
                 <div class="xp-pb-4 xp-mb-4 xp-flex xp-gap-4 xp-border-b-white xp-border-0 xp-border-b-2 xp-border-solid">
@@ -206,7 +192,7 @@ class promo_controller extends route_controller {
                 <div>
 EOT;
         };
-        $renderitemend = function () {
+        $renderitemend = function() {
             return "</div></div>";
         };
 
@@ -289,22 +275,14 @@ EOT;
     </a></p>
 </div>
 EOT;
+
     }
 
-    protected function content_installed(bool $hasnewcontent = false) {
+    protected function content_installed() {
         $output = \block_xp\di::get('renderer');
         $addon = \block_xp\di::get('addon');
-
-        $pluginman = \core_plugin_manager::instance();
-        $blockxp = $pluginman->get_plugin_info('block_xp');
-        $localxp = $pluginman->get_plugin_info('local_xp');
-
         $docsurl = new url('https://docs.levelup.plus/xp/docs?ref=plugin_promopage');
-        $releasenotesurl = new url('https://docs.levelup.plus/xp/release-notes', [
-            'ref' => 'plugin_promopage',
-            'xp' => $blockxp->release,
-            'xpp' => $localxp->release,
-        ]);
+        $releasenotesurl = new url('https://docs.levelup.plus/xp/release-notes?ref=plugin_promopage');
         $upgradeurl = new url('https://docs.levelup.plus/xp/docs/upgrade?ref=plugin_promopage');
         $outofsyncurl = new url('https://docs.levelup.plus/xp/docs/requirements-compatibility?ref=plugin_promopage#out-of-sync');
 
@@ -329,13 +307,6 @@ EOT;
             echo $output->notification_without_close(markdown_to_html(get_string('pluginsoutofsync', 'block_xp', [
                 'url' => $outofsyncurl->out(false),
             ])), 'error');
-        }
-
-        if ($hasnewcontent) {
-            $notification = new notification(strip_tags(markdown_to_html(get_string('newversioninstallednotice', 'block_xp', [
-                'releasenotesurl' => $releasenotesurl->out(false),
-            ])), '<a>'), notification::NOTIFY_INFO, false);
-            echo $output->render($notification);
         }
 
         echo $output->heading(get_string('thankyou', 'block_xp'), 3);

@@ -1,20 +1,18 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Default admin config.
@@ -59,11 +57,10 @@ class default_admin_config extends immutable_config {
      */
     public function __construct() {
         parent::__construct(new static_config([
-            'actionrulesstate' => course_world_config::DEFAULT_ACTION_RULES_MISSING,
             'context' => CONTEXT_COURSE,
             'adminscanearnxp' => 0,
             'enablepromoincourses' => 1,
-            'keeplogs' => 90,
+            'keeplogs' => 3,
             'navbardisplay' => 0,
 
             'enablecheatguard' => 1,
@@ -85,22 +82,12 @@ class default_admin_config extends immutable_config {
             'blockrankingsnapshot' => 1,
 
             'adminnotices' => 1,
-            'lastdeactivationnoticekey' => '',
             'lastoutofsyncnoticekey' => '',
-            'provisionstates' => 0,
-            'shortcodesecret' => '',
 
             'apiroot' => 'https://backend.levelup.plus/api',
             'usagereport' => 1,
             'lastusagereport' => 0,
             'usagereportid' => '',
-
-            // Log migration specific settings.
-            'logmigrationenabled' => 1,
-            'logmigrationruninterval' => 60,
-            'logmigrationbatchsize' => 5_000,
-            'logmigrationmaxitems' => 100_000,
-            'logmigrationmaxruntime' => 10 * MINSECS,
         ]));
     }
 

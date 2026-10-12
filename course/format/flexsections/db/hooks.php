@@ -31,10 +31,4 @@ $callbacks = [
         'callback' => 'format_flexsections\local\hooks\output\before_footer_html_generation::callback',
         'priority' => 0,
     ],
-
-    [
-        'hook' => core_course\hook\before_activitychooserbutton_exported::class,
-        'callback' => 'format_flexsections\local\hooks\before_activitychooserbutton_exported::callback',
-        'priority' => -100,
-    ],
 ];

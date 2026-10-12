@@ -1,20 +1,18 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Items per time element.
@@ -31,11 +29,6 @@ global $CFG;
 
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->libdir . '/form/group.php');
-
-// phpcs:disable moodle.NamingConventions.ValidFunctionName.LowercaseMethod
-// phpcs:disable PSR2.Methods.MethodDeclaration.Underscore
-// phpcs:disable PSR2.Classes.PropertyDeclaration.Underscore
-// phpcs:disable Squiz.Scope.MethodScope.Missing
 
 /**
  * Items per time element class.
@@ -106,7 +99,7 @@ class block_xp_form_itemspertime extends \MoodleQuickForm_group {
                 86400 => get_string('days'),
                 604800 => get_string('weeks'),
             ];
-            $this->_units = array_reduce(array_keys($units), function ($carry, $key) use ($units) {
+            $this->_units = array_reduce(array_keys($units), function($carry, $key) use ($units) {
                 if ($key <= $this->_options['maxunit']) {
                     $carry[$key] = $units[$key];
                 }
@@ -141,7 +134,7 @@ class block_xp_form_itemspertime extends \MoodleQuickForm_group {
      *
      * @return void
      */
-    function _createElements() {
+    function _createElements() { // @codingStandardsIgnoreLine
         $this->_elements = [];
 
         $item = $this->my_create_element('text', 'points', $this->_options['itemlabel'], [
@@ -200,7 +193,7 @@ class block_xp_form_itemspertime extends \MoodleQuickForm_group {
      * @param object $caller calling object
      * @return bool
      */
-    function onQuickFormEvent($event, $arg, &$caller) {
+    function onQuickFormEvent($event, $arg, &$caller) { // @codingStandardsIgnoreLine
         if (method_exists($this, 'setMoodleForm')) {
             $this->setMoodleForm($caller);
         }
@@ -226,7 +219,7 @@ class block_xp_form_itemspertime extends \MoodleQuickForm_group {
                     ];
                     if (!empty($value['time'])) {
                         if (!is_array($value['time'])) {
-                            [$time, $timeunit] = $this->seconds_to_unit($value['time']);
+                            list($time, $timeunit) = $this->seconds_to_unit($value['time']);
                             $finalval += [
                                 'time' => $time,
                                 'timeunit' => $timeunit,
@@ -274,7 +267,7 @@ class block_xp_form_itemspertime extends \MoodleQuickForm_group {
      * @param  bool  $notused Not used.
      * @return array field name => value. The value is the time interval in seconds.
      */
-    function exportValue(&$submitvalues, $notused = false) {
+    function exportValue(&$submitvalues, $notused = false) { // @codingStandardsIgnoreLine
         // Get the values from all the child elements.
         $values = [];
         foreach ($this->_elements as $element) {

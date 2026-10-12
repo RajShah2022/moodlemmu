@@ -17,14 +17,19 @@
 /**
  * Backup files
  *
- * @package   mod_supervideo
- * @category  backup
- * @copyright 2024 Eduardo Kraus {@link https://eduardokraus.com}
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_supervideo
+ * @category   backup
+ * @copyright  2023 Eduardo kraus (http://eduardokraus.com)
+ * @license    https://www.eduardokraus.com/
  */
 
 /**
  * Structure step to restore one supervideo activity
+ *
+ * @package    mod_supervideo
+ * @category   backup
+ * @copyright  2023 Eduardo kraus (http://eduardokraus.com)
+ * @license    https://www.eduardokraus.com/
  */
 class restore_supervideo_activity_structure_step extends restore_activity_structure_step {
 
@@ -35,7 +40,7 @@ class restore_supervideo_activity_structure_step extends restore_activity_struct
      */
     protected function define_structure() {
 
-        $paths = [];
+        $paths = array();
         $paths[] = new restore_path_element('supervideo', '/activity/supervideo');
 
         // Return the paths wrapped into standard activity structure.
@@ -46,14 +51,12 @@ class restore_supervideo_activity_structure_step extends restore_activity_struct
      * Process the given restore path element data
      *
      * @param array $data parsed element data
-     *
-     * @throws dml_exception
-     * @throws base_step_exception
      */
     protected function process_supervideo($data) {
         global $DB;
 
         $data = (object)$data;
+        $oldid = $data->id;
         $data->course = $this->get_courseid();
 
         if (empty($data->timecreated)) {
@@ -64,7 +67,7 @@ class restore_supervideo_activity_structure_step extends restore_activity_struct
             $data->timemodified = time();
         }
 
-        if (isset($data->grade) && $data->grade < 0) {
+        if ($data->grade < 0) {
             // Scale found, get mapping.
             $data->grade = -($this->get_mappingid('scale', abs($data->grade)));
         }
@@ -78,22 +81,7 @@ class restore_supervideo_activity_structure_step extends restore_activity_struct
      * Post-execution actions
      */
     protected function after_execute() {
-        global $DB;
-
         // Add supervideo related files, no need to match by itemname (just internally handled context).
         $this->add_related_files('mod_supervideo', 'intro', null);
-        $this->add_related_files('mod_supervideo', 'content', null);
-
-        $fs = get_file_storage();
-        $contextid = $this->task->get_contextid();
-        $activityid = $this->task->get_activityid();
-        $files = $DB->get_records("files", ["contextid" => $contextid]);
-        foreach ($files as $file) {
-            $file->itemid = $activityid;
-            $file->pathnamehash = $fs->get_pathname_hash(
-                $contextid, $file->component, $file->filearea, $file->itemid, $file->filepath, $file->filename);
-
-            $DB->update_record("files", $file);
-        }
     }
 }

@@ -1,20 +1,27 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Type.
+ *
+ * @package    block_xp
+ * @copyright  2024 Frédéric Massart
+ * @author     Frédéric Massart <fred@branchup.tech>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 namespace block_xp\local\ruletype;
 
@@ -32,39 +39,19 @@ use lang_string;
  */
 interface ruletype {
 
-    /**
-     * Unlimited.
-     *
-     * @deprecated Since XP 20, use ruletype_with_limit instead.
-     */
+    /** Unlimited. */
     const WINDOW_NONE = null;
-
-    /**
-     * Once only.
-     *
-     * @deprecated Since XP 20, use ruletype_with_limit instead.
-     */
+    /** Once only. */
     const WINDOW_ONCE = 'once';
-
-    /**
-     * Daily repeat.
-     *
-     * @deprecated Since XP 20, use ruletype_with_limit instead.
-      */
+    /** Daily repeat. */
     const WINDOW_DAILY = '1d';
-
-    /**
-     * Hourly repeat.
-     *
-     * @deprecated Since XP 20, use ruletype_with_limit instead.
-      */
+    /** Hourly repeat. */
     const WINDOW_HOURLY = '1h';
 
     /**
      * Get the list of compatible rule filters.
      *
      * @return string[] The name of the filters.
-     * @deprecated Since XP 20, use ruletype_with_profile instead.
      */
     public function get_compatible_filters(): array;
 
@@ -79,7 +66,6 @@ interface ruletype {
      * Get the repeat window.
      *
      * @return null|string One of the WINDOW_* const, or other arbitrary string.
-     * @deprecated Since XP 20, use ruletype_with_limit instead.
      */
     public function get_repeat_window(): ?string;
 

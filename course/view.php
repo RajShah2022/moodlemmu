@@ -25,6 +25,7 @@
 require_once('../config.php');
 require_once('lib.php');
 require_once($CFG->libdir.'/completionlib.php');
+require_once $CFG->dirroot . '/grade/report/user/lib.php';
 
 redirect_if_major_upgrade_required();
 
@@ -288,6 +289,14 @@ if (!empty($bulkbutton)) {
 
 $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
+
+// Debug: log full course structure to browser console
+$course_structure = get_course_structure($course->id);
+echo '<script>console.log("course_structure:", ' . json_encode($course_structure) . ')</script>';
+
+// Debug: log course module counts and XP levels to browser console
+$module_counts = get_course_module_counts($course->id);
+echo '<script>console.log("module_counts:", ' . json_encode($module_counts) . ')</script>';
 
 // Show communication room status notification.
 if (core_communication\api::is_available() && has_capability('moodle/course:update', $context)) {

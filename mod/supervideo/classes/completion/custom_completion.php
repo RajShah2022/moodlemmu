@@ -14,37 +14,30 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+declare(strict_types=1);
+
 namespace mod_supervideo\completion;
 
-use coding_exception;
 use core_completion\activity_custom_completion;
-use Exception;
 
 /**
- * Custom ompletion Class
- *
- * @package   mod_supervideo
- * @copyright 2024 Eduardo Kraus {@link https://eduardokraus.com}
+ * @package mod_supervideo
+ * @copyright 2023 Eduardo Kraus {@link http://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class custom_completion extends activity_custom_completion {
 
     /**
-     * Function get_state
-     *
      * @param string $rule The completion rule.
-     *
      * @return int The completion state.
-     *
-     * @throws Exception
+     * @throws \Exception
      */
     public function get_state(string $rule): int {
         global $DB;
 
         $this->validate_rule($rule);
 
-        $params = ["cm_id" => $this->cm->id, "user_id" => $this->userid];
-        $userentries = (int) ($DB->get_field("supervideo_view", "MAX(percent)", $params) ?? 0);
+        $userentries = $DB->get_field("supervideo_view", "MAX(percent)", ["cm_id" => $this->cm->id, "user_id" => $this->userid]);
         $completionpercent = $this->cm->customdata['customcompletionrules']['completionpercent'];
 
         return ($completionpercent <= $userentries) ? COMPLETION_COMPLETE : COMPLETION_INCOMPLETE;
@@ -63,8 +56,7 @@ class custom_completion extends activity_custom_completion {
      * Returns an associative array of the descriptions of custom completion rules.
      *
      * @return array
-     *
-     * @throws coding_exception
+     * @throws \coding_exception
      */
     public function get_custom_rule_descriptions(): array {
         $entries = $this->cm->customdata['customcompletionrules']['completionpercent'] ?? 0;

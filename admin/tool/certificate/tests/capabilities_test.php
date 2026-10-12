@@ -31,7 +31,7 @@ use context_system;
  * @copyright  2018 Daniel Neis Araujo <daniel@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class capabilities_test extends advanced_testcase {
+class capabilities_test extends advanced_testcase {
 
     /** @var tool_certificate_generator */
     protected $certgenerator;
@@ -40,7 +40,6 @@ final class capabilities_test extends advanced_testcase {
      * Test set up.
      */
     public function setUp(): void {
-        parent::setUp();
         $this->resetAfterTest();
         $this->certgenerator = self::getDataGenerator()->get_plugin_generator('tool_certificate');
     }
@@ -48,7 +47,7 @@ final class capabilities_test extends advanced_testcase {
     /**
      * Test the can_manage
      */
-    public function test_can_manage(): void {
+    public function test_can_manage() {
         global $DB;
         $cat1 = self::getDataGenerator()->create_category();
         $cat2 = self::getDataGenerator()->create_category();
@@ -57,7 +56,7 @@ final class capabilities_test extends advanced_testcase {
         $certificate2 = $this->certgenerator->create_template((object)['name' => 'Certificate 2', 'categoryid' => $cat2->id]);
         $certificate3 = $this->certgenerator->create_template((object)['name' => 'Certificate 3']);
 
-        $managerrole = $DB->get_record('role', ['shortname' => 'manager']);
+        $managerrole = $DB->get_record('role', array('shortname' => 'manager'));
         $manager = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->role_assign($managerrole->id, $manager->id, context_coursecat::instance($cat1->id));
 
@@ -84,7 +83,7 @@ final class capabilities_test extends advanced_testcase {
     /**
      * Test can_verify. By default, users can verify certificates.
      */
-    public function test_can_verify(): void {
+    public function test_can_verify() {
         $manager = $this->getDataGenerator()->create_user();
 
         $this->setUser($manager);
@@ -95,15 +94,15 @@ final class capabilities_test extends advanced_testcase {
     /**
      * Test can_view_admin_tree. For default, manager are able to view the admin tree, but guests are not.
      */
-    public function test_can_view_admin_tree(): void {
+    public function test_can_view_admin_tree() {
         global $DB;
 
-        $guest = $DB->get_record('user', ['username' => 'guest']);
+        $guest = $DB->get_record('user', array('username' => 'guest'));
         $this->setUser($guest);
 
         $this->assertFalse(\tool_certificate\permission::can_view_admin_tree());
 
-        $managerrole = $DB->get_record('role', ['shortname' => 'manager']);
+        $managerrole = $DB->get_record('role', array('shortname' => 'manager'));
         $manager = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->role_assign($managerrole->id, $manager->id);
 
@@ -115,7 +114,7 @@ final class capabilities_test extends advanced_testcase {
     /**
      * Test the can_issue with users within the same tenant
      */
-    public function test_can_issue_same_tenant(): void {
+    public function test_can_issue_same_tenant() {
         global $DB;
 
         // Skip tests if tool_tenant is not present.
@@ -126,7 +125,7 @@ final class capabilities_test extends advanced_testcase {
         $cat1 = self::getDataGenerator()->create_category();
         $cat2 = self::getDataGenerator()->create_category();
 
-        $managerrole = $DB->get_record('role', ['shortname' => 'manager']);
+        $managerrole = $DB->get_record('role', array('shortname' => 'manager'));
         $manager1 = $this->getDataGenerator()->create_user();
         $user1 = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->role_assign($managerrole->id, $manager1->id, context_coursecat::instance($cat1->id));
@@ -163,7 +162,7 @@ final class capabilities_test extends advanced_testcase {
     /**
      * Test the can_issue with user allocated to non-default tenant
      */
-    public function test_can_issue_other_tenant(): void {
+    public function test_can_issue_other_tenant() {
         global $DB;
 
         // Skip tests if not using Postgres.
@@ -173,7 +172,7 @@ final class capabilities_test extends advanced_testcase {
 
         $cat1 = self::getDataGenerator()->create_category();
         $cat2 = self::getDataGenerator()->create_category();
-        $managerrole = $DB->get_record('role', ['shortname' => 'manager']);
+        $managerrole = $DB->get_record('role', array('shortname' => 'manager'));
         unassign_capability('moodle/site:viewparticipants', $managerrole->id, \context_system::instance()->id);
         $manager1 = $this->getDataGenerator()->create_user();
         $user1 = $this->getDataGenerator()->create_user();

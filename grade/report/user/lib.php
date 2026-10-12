@@ -340,6 +340,49 @@ function gradereport_user_get_report_link(
 
 
 /**
+ * Resolves which of a student's cohorts should drive content filtering for a course.
+ *
+ * cohort_get_user_cohorts() returns every visible cohort the user belongs to, site-wide,
+ * with no ORDER BY, so taking array_key_first() picks an arbitrary cohort - frequently one
+ * with no enabled content for this course, or one belonging to an entirely different course.
+ * That yields an empty filtered course structure (blank report, division by zero downstream).
+ *
+ * This restricts the choice to cohorts actually cohort-synced into $courseid, and prefers the
+ * one with the most enabled content so the result is deterministic.
+ *
+ * @param int $studentid
+ * @param int $courseid
+ * @return int|null Cohort id, or null when the student has no synced cohort for this course.
+ */
+function gradereport_user_resolve_course_cohortid($studentid, $courseid)
+{
+    global $DB;
+
+    $sql = "SELECT e.customint1 AS cohortid,
+                   (SELECT COUNT(*)
+                      FROM {local_coursegroupmodules} lcgm
+                     WHERE lcgm.courseid = e.courseid
+                       AND lcgm.groupid = e.customint1) AS enabledcount
+              FROM {enrol} e
+              JOIN {cohort_members} cm ON cm.cohortid = e.customint1
+              JOIN {cohort} c ON c.id = e.customint1
+             WHERE e.courseid = :courseid
+               AND e.enrol = 'cohort'
+               AND cm.userid = :userid
+               AND c.visible = 1
+          GROUP BY e.customint1, e.courseid
+          ORDER BY enabledcount DESC, e.customint1 ASC";
+
+    $records = $DB->get_records_sql($sql, ['courseid' => $courseid, 'userid' => $studentid], 0, 1);
+    if (empty($records)) {
+        return null;
+    }
+    $first = reset($records);
+
+    return (int) $first->cohortid;
+}
+
+/**
  * Calculates student ranks based on performance across all quizzes in the course structure.
  * 
  * This function:
@@ -1882,6 +1925,7 @@ function renderTeacherReport($reportData)
 
         // Animate numbers in widgets
         function animateNumber(element, target, duration = 1000) {
+            if (!element) return;
             const steps = 60;
             const stepTime = duration / steps;
             const stepValue = target / steps;
@@ -2381,6 +2425,7 @@ function renderTeacherReport($reportData)
             // Clear existing data
             attemptedList.innerHTML = '';
             notAttemptedList.innerHTML = '';
+
 
             // Render students who attempted the quiz
             function renderStudentList(students, container, type) {
@@ -4012,8 +4057,13 @@ function generateStudentReport($jsonContent, $courseid, $studentid)
     // Get cohort of the student
     $cohorts = cohort_get_user_cohorts($studentid);
 
-    // Get the first cohort id
-    $cohortid = array_key_first($cohorts);
+    // Resolve the cohort that is actually cohort-synced into THIS course. Falls back to the
+    // old arbitrary pick only when the student has no synced cohort here.
+    $cohortid = gradereport_user_resolve_course_cohortid($studentid, $courseid);
+    if ($cohortid === null) {
+        $cohortid = array_key_first($cohorts);
+    }
+
 
     $course_structure =  get_course_structure($courseid);
     $teacher_enabled_quiz_sql_query = "
@@ -4066,6 +4116,7 @@ function generateStudentReport($jsonContent, $courseid, $studentid)
     $allowed_section_ids = array_column($sections_enabled_by_teacher, 'section_id');
     $allowed_quiz_cmids = array_column($quiz_enables_by_teacher, 'cmid');
     $filtered_course_structure = filter_course_structure($course_structure, $allowed_section_ids, $allowed_quiz_cmids);
+
 
     $filtered_sections = [];
     foreach ($sections as $section) {
@@ -5453,8 +5504,13 @@ function getCourseData($courseid, $studentid)
     // Get cohort of the student
     $cohorts = cohort_get_user_cohorts($studentid);
 
-    // Get the first cohort id
-    $cohortid = array_key_first($cohorts);
+    // Resolve the cohort that is actually cohort-synced into THIS course. Falls back to the
+    // old arbitrary pick only when the student has no synced cohort here.
+    $cohortid = gradereport_user_resolve_course_cohortid($studentid, $courseid);
+    if ($cohortid === null) {
+        $cohortid = array_key_first($cohorts);
+    }
+
 
     $course_structure =  get_course_structure($courseid);
     $teacher_enabled_quiz_sql_query = "
@@ -5507,6 +5563,7 @@ function getCourseData($courseid, $studentid)
     $allowed_section_ids = array_column($sections_enabled_by_teacher, 'section_id');
     $allowed_quiz_cmids = array_column($quiz_enables_by_teacher, 'cmid');
     $filtered_course_structure = filter_course_structure($course_structure, $allowed_section_ids, $allowed_quiz_cmids);
+
 
     $filtered_sections = [];
     foreach ($sections as $section) {

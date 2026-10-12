@@ -37,6 +37,7 @@ use stdClass;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class controlmenu extends \core_courseformat\output\local\content\cm\controlmenu {
+
     /** @var \format_flexsections the course format */
     protected $format;
 

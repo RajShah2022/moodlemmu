@@ -72,16 +72,6 @@ class groupcontentconfiguration extends dynamic_form {
             // Build the checkbox options.
             $checkboxes = $this->build_section_paths($allsections);
 
-            if ($user_can_edit) {
-                $btnhtml = '<div class="form-group row mb-3"><div class="col-md-12 text-right">'
-                    . '<button type="button" class="btn btn-primary local-courses-enable-all" '
-                    . 'data-action="enable-all-toggles" '
-                    . 'data-courseid="' . $courseid . '" data-groupid="' . $groupid . '">'
-                    . get_string('enable_all_topics', 'local_courses')
-                    . '</button></div></div>';
-                $mform->addElement('html', $btnhtml);
-            }
-
             // Add checkboxes to the form.
             foreach ($checkboxes as $value => $label) {
                 $parent = $this->get_parent_id($allsections, $value);

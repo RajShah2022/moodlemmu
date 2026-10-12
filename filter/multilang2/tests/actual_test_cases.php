@@ -1,18 +1,18 @@
 <?php
-// This file is part of filter_multilang2 - https://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
-// filter_multilang2 is free software: you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation, either version 3 of the
-// License, or (at your option) any later version.
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
-// filter_multilang2 is distributed in the hope that it will be
-// useful, but WITHOUT ANY WARRANTY; without even the implied warranty
-// of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with filter_multilang2.  If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Actual test cases for the unit tests.
@@ -162,11 +162,10 @@ function multilang2_actual_test_cases(): array {
             '¡Hola!
              This text is common for all languages because it is outside of all lang blocks.
              ',
-            '{mlang other}Hello!{mlang}{mlang es}¡Hola!{mlang}
+            '{mlang other}Hello!{mlang}{mlang es,es_mx}¡Hola!{mlang}
              This text is common for all languages because it is outside of all lang blocks.
              {mlang other}Bye!{mlang}{mlang it}Ciao!{mlang}',
-            'es_mx',
-            ['es_mx' => 'es'],
+            'es_mx', ['es_mx' => 'es']
         ],
         [
             '
@@ -257,76 +256,6 @@ function multilang2_actual_test_cases(): array {
             '{mlang ,es}Bad filter syntax{mlang}',
             'es',
         ],
-        [
-            null,
-            null,
-            'es',
-        ],
-        [
-            123,
-            123,
-            'es',
-        ],
-        [
-            123.0,
-            123.0,
-            'es',
-        ],
-        [
-            'Some Canadian French text.Some French text.',
-            '{mlang fr_ca}Some Canadian French text.{mlang}'
-            . '{mlang en}Some English text.{mlang}'
-            . '{mlang es}Some Spanish text.{mlang}'
-            . '{mlang en_kids}Some English for Kids text.{mlang}'
-            . '{mlang fr}Some French text.{mlang}',
-            'fr_ca',
-            [
-                'fr_ca' => 'fr',
-                'en_kids' => 'en',
-            ],
-            'default',
-        ],
-        [
-            'Some Canadian French text.',
-            '{mlang fr_ca}Some Canadian French text.{mlang}'
-            . '{mlang en}Some English text.{mlang}'
-            . '{mlang es}Some Spanish text.{mlang}'
-            . '{mlang en_kids}Some English for Kids text.{mlang}'
-            . '{mlang fr}Some French text.{mlang}',
-            'fr_ca',
-            [
-                'fr_ca' => 'fr',
-                'en_kids' => 'en',
-            ],
-            'never',
-        ],
-        [
-            'Some English for Kids text.',
-            '{mlang fr_ca}Some Canadian French text.{mlang}'
-            . '{mlang en}Some English text.{mlang}'
-            . '{mlang es}Some Spanish text.{mlang}'
-            . '{mlang en_kids}Some English for Kids text.{mlang}'
-            . '{mlang fr}Some French text.{mlang}',
-            'en_kids',
-            [
-                'fr_ca' => 'fr',
-                'en_kids' => 'en',
-            ],
-            'default',
-        ],
-        [
-            'Some English text.Some English for Kids text.',
-            '{mlang fr_ca}Some Canadian French text.{mlang}'
-            . '{mlang en}Some English text.{mlang}'
-            . '{mlang es}Some Spanish text.{mlang}'
-            . '{mlang en_kids}Some English for Kids text.{mlang}'
-            . '{mlang fr}Some French text.{mlang}',
-            'en_kids',
-            [
-                'fr_ca' => 'fr',
-                'en_kids' => 'en',
-            ],
-            'include_en',
-        ],
     ];
 }
+

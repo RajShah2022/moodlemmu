@@ -1,20 +1,18 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * User state course store.
@@ -32,7 +30,6 @@ use moodle_database;
 use stdClass;
 use block_xp\local\logger\collection_logger_with_group_reset;
 use block_xp\local\logger\collection_logger_with_id_reset;
-use block_xp\local\logger\collection_logger;
 use block_xp\local\logger\reason_collection_logger;
 use block_xp\local\observer\level_up_state_store_observer;
 use block_xp\local\observer\points_increased_state_store_observer;
@@ -52,7 +49,8 @@ use block_xp\local\utils\user_utils;
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class course_user_state_store implements course_state_store, state_store_with_delete, state_store_with_reason {
+class course_user_state_store implements course_state_store,
+        state_store_with_reason, state_store_with_delete {
 
     /** @var moodle_database The database. */
     protected $db;
@@ -62,7 +60,7 @@ class course_user_state_store implements course_state_store, state_store_with_de
     protected $levelsinfo;
     /** @var string The DB table. */
     protected $table = 'block_xp';
-    /** @var collection_logger The logger. */
+    /** @var reason_collection_logger The logger. */
     protected $logger;
     /** @var level_up_state_store_observer The observer. */
     protected $observer;
@@ -75,18 +73,13 @@ class course_user_state_store implements course_state_store, state_store_with_de
      * @param moodle_database $db The DB.
      * @param levels_info $levelsinfo The levels info.
      * @param int $courseid The course ID.
-     * @param collection_logger $logger The reason logger.
+     * @param reason_collection_logger $logger The reason logger.
      * @param level_up_state_store_observer $observer The observer.
      * @param points_increased_state_store_observer $pointsobserver The observer.
      */
-    public function __construct(
-        moodle_database $db,
-        levels_info $levelsinfo,
-        $courseid,
-        collection_logger $logger,
-        ?level_up_state_store_observer $observer = null,
-        ?points_increased_state_store_observer $pointsobserver = null
-    ) {
+    public function __construct(moodle_database $db, levels_info $levelsinfo, $courseid,
+            reason_collection_logger $logger, level_up_state_store_observer $observer = null,
+            points_increased_state_store_observer $pointsobserver = null) {
         $this->db = $db;
         $this->levelsinfo = $levelsinfo;
         $this->courseid = $courseid;
@@ -194,9 +187,7 @@ class course_user_state_store implements course_state_store, state_store_with_de
      */
     public function increase_with_reason($id, $amount, reason $reason) {
         $this->increase($id, $amount);
-        if ($this->logger instanceof reason_collection_logger) {
-            $this->logger->log_reason($id, $amount, $reason);
-        }
+        $this->logger->log_reason($id, $amount, $reason);
     }
 
     /**

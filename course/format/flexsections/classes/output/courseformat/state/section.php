@@ -25,6 +25,7 @@ use format_flexsections\constants;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class section extends \core_courseformat\output\local\state\section {
+
     /** @var \format_flexsections the course format class */
     protected $format;
 

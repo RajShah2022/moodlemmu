@@ -1,26 +1,31 @@
 <?php
-// This file is part of Level Up XP.
+// This file is part of Moodle - http://moodle.org/
 //
-// Level Up XP is free software: you can redistribute it and/or modify
+// Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Level Up XP is distributed in the hope that it will be useful,
+// Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Level Up XP.  If not, see <https://www.gnu.org/licenses/>.
-//
-// https://levelup.plus
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * External function.
+ *
+ * @package    block_xp
+ * @copyright  2024 Frédéric Massart
+ * @author     Frédéric Massart <fred@branchup.tech>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 namespace block_xp\external;
 
 use block_xp\di;
-use context;
-use context_system;
 
 /**
  * External function.
@@ -53,38 +58,24 @@ class delete_rule extends external_api {
         $params = self::validate_parameters(self::execute_parameters(), compact('id'));
         $id = $params['id'];
 
+        // Retrieve the rule.
         $db = di::get('db');
         $rule = $db->get_record('block_xp_rule', ['id' => $id], '*', MUST_EXIST);
-        $world = self::require_manage_permissions_and_get_world((int) $rule->contextid);
-        if ($world) {
-            $manager = di::get('world_rule_manager_factory')->get_rule_manager($world);
-            $manager->detach();
-            $manager->delete_rule($id);
-        } else {
-            di::get('admin_rule_manager')->delete_rule($id);
-        }
-        return true;
-    }
 
-    /**
-     * Require manage permissions for the given context.
-     *
-     * @param int $contextid The context ID, or 0 for admin defaults.
-     * @return ?\block_xp\local\world
-     */
-    protected static function require_manage_permissions_and_get_world($contextid) {
-        if (!$contextid) {
-            $context = context_system::instance();
-            self::validate_context($context);
-            require_capability('moodle/site:config', $context);
-            return;
-        }
-
+        // Resolve the world.
         $worldfactory = di::get('context_world_factory');
-        $world = $worldfactory->get_world_from_context(context::instance_by_id($contextid));
-        self::validate_context($world->get_context());
-        $world->get_access_permissions()->require_manage();
-        return $world;
+        $world = $worldfactory->get_world_from_context(\context::instance_by_id($rule->contextid));
+        $context = $world->get_context(); // Ensure that we get the real context.
+        self::validate_context($context);
+
+        // Permission checks.
+        $perms = $world->get_access_permissions();
+        $perms->require_manage();
+
+        // In the future, we will keep the rule if it has logs.
+        $db->delete_records('block_xp_rule', ['id' => $id]);
+
+        return true;
     }
 
     /**
