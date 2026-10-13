@@ -472,7 +472,8 @@ if (has_capability('moodle/grade:viewall', $context)) {
     }
     
     // Random Bag Test report for one of the teacher's classes: the class average, or one student of the class.
-    if (optional_param('fetch', '', PARAM_ALPHANUMEXT) === 'random' && gradereport_user_random_bag_teacher_enabled($courseid)) {
+    $rbfetch = optional_param('fetch', '', PARAM_ALPHANUMEXT);
+    if (in_array($rbfetch, ['random', 'cajcs'], true) && gradereport_user_random_bag_teacher_enabled($courseid)) {
         $groupid = optional_param('class_id', 0, PARAM_INT);
         if (!isset($classes[$groupid])) {
             echo $OUTPUT->notification('Select one of your classes first.', 'notifyerror');
@@ -487,9 +488,9 @@ if (has_capability('moodle/grade:viewall', $context)) {
                 echo $OUTPUT->footer();
                 exit;
             }
-            gradereport_user_random_bag_page($courseid, [$rbstudentid => $class_students[$rbstudentid]], null, [], true);
+            gradereport_user_random_bag_page($courseid, [$rbstudentid => $class_students[$rbstudentid]], null, [], true, $rbfetch);
         } else {
-            gradereport_user_random_bag_page($courseid, $class_students, $classes[$groupid]->groupname, ['class_id' => $groupid], true);
+            gradereport_user_random_bag_page($courseid, $class_students, $classes[$groupid]->groupname, ['class_id' => $groupid], true, $rbfetch);
         }
         exit;
     }
@@ -802,7 +803,7 @@ if (has_capability('moodle/grade:viewall', $context)) {
         }
         echo '</select>';
         if (gradereport_user_random_bag_teacher_enabled($courseid)) {
-            echo '<button type="submit" name="fetch" value="random" class="btn btn-secondary" style="margin-left: 10px;">Generate Random Report</button>';
+            echo '<button type="submit" name="fetch" value="cajcs" class="btn btn-secondary" style="margin-left: 10px;">Generate School Test Reports</button>';
         }
         echo '</form>';
         echo '</div>';
@@ -1371,6 +1372,9 @@ if (has_capability('moodle/grade:viewall', $context)) {
         echo '<button type="submit" name="fetch" value="1" class="btn btn-primary">Generate AI Insights</button>';
         echo '<button type="submit" name="fetch" value="past-year" class="btn btn-secondary" style="margin-left: 10px;">Generate Past Year Paper Report</button>';
         echo '<button type="submit" name="fetch" value="random" class="btn btn-secondary" style="margin-left: 10px;">Generate Random Report</button>';
+        if (gradereport_user_random_bag_teacher_enabled($courseid)) {
+            echo '<button type="submit" name="fetch" value="cajcs" class="btn btn-secondary" style="margin-left: 10px;">Generate School Test Reports</button>';
+        }
         if (strpos($report->course->fullname, 'Olympiad') == false) {
             echo '<button type="submit" name="fetch" value="olympiad" class="btn btn-secondary" style="margin-left: 10px;">Generate Olympiad Report</button>';
         }
@@ -1728,6 +1732,9 @@ if (has_capability('moodle/grade:viewall', $context)) {
 
     if (isset($_GET['fetch']) && $_GET['fetch'] === 'random' && !empty($_GET['id'])) {
         gradereport_user_random_bag_page($courseid, [$USER->id => $USER]);
+    }
+    if (isset($_GET['fetch']) && $_GET['fetch'] === 'cajcs' && !empty($_GET['id']) && gradereport_user_random_bag_teacher_enabled($courseid)) {
+        gradereport_user_random_bag_page($courseid, [$USER->id => $USER], null, [], false, 'cajcs');
     }
     
     // Recursively gather every quiz activity under a section, at any depth, regardless of

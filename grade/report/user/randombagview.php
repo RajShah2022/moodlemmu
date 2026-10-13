@@ -644,15 +644,19 @@ function gradereport_user_random_bag_score_color($percentage): string {
  * @param string|null $classname null for one student's report, the class name for the class average
  * @param array $urlparams extra params kept on report links (e.g. class_id)
  * @param bool $teacherview true to let the picker choose a quiz from any section, false for Random Bag Tests only
+ * @param string $fetch the `fetch` value of the report: 'random', or 'cajcs' for the CAJCS Tests report
  */
 function gradereport_user_random_bag_page(int $courseid, array $students, ?string $classname = null, array $urlparams = [],
-        bool $teacherview = false): void {
-    global $CFG, $DB, $PAGE, $OUTPUT;
+        bool $teacherview = false, string $fetch = 'random'): void {
+    global $CFG, $DB, $PAGE, $OUTPUT, $USER;
+
+    // CAJCS Tests report for a student: every section, but only quizzes the student can access and only their own data.
+    $studentcajcs = $fetch === 'cajcs' && !$teacherview && $classname === null;
 
     $course_structure = get_course_structure($courseid);
     $children = [];
-    if ($teacherview) {
-        // Teachers: flatten every section and subsection (in course order) so a quiz can be picked from anywhere.
+    if ($teacherview || $studentcajcs) {
+        // Flatten every section and subsection (in course order) so a quiz can be picked from anywhere.
         $flatten = function (array $sections, int $depth) use (&$flatten, &$children) {
             foreach ($sections as $section) {
                 $section['depth'] = $depth;
@@ -663,6 +667,15 @@ function gradereport_user_random_bag_page(int $courseid, array $students, ?strin
             }
         };
         $flatten($course_structure["sections"], 0);
+        if ($studentcajcs) {
+            $modinfo = get_fast_modinfo($courseid, $USER->id);
+            foreach ($children as &$child) {
+                $child['activities'] = array_values(array_filter($child['activities'], function($activity) use ($modinfo) {
+                    return isset($modinfo->cms[$activity['id']]) && $modinfo->cms[$activity['id']]->uservisible;
+                }));
+            }
+            unset($child);
+        }
     } else {
         // Students: only the sections inside "Random Bag Tests".
         $mainSection = null;
@@ -680,11 +693,30 @@ function gradereport_user_random_bag_page(int $courseid, array $students, ?strin
     }
 
     $quiz_cmid = optional_param('quiz_id', 0, PARAM_INT);
+    if ($quiz_cmid && $studentcajcs) {
+        $allowed = false;
+        foreach ($children as $child) {
+            foreach ($child['activities'] as $activity) {
+                if ($activity['modname'] === 'quiz' && (int)$activity['id'] === $quiz_cmid) {
+                    $allowed = true;
+                }
+            }
+        }
+        if (!$allowed) {
+            echo $OUTPUT->notification('You cannot view this quiz.', 'notifyerror');
+            echo $OUTPUT->footer();
+            exit;
+        }
+    }
     if ($quiz_cmid) {
         require_once(__DIR__ . '/integrated_quiz_renderer.php');
         require_once(__DIR__ . '/quizdataprocessor.php');
         $processor = new quiz_attempt_data_processor();
-        if ($classname === null) {
+        if ($studentcajcs) {
+            // Always the logged-in student, whatever was passed in.
+            gradereport_user_random_bag_class_report($courseid, [$USER->id => $USER], fullname($USER), $quiz_cmid, $processor,
+                [], true);
+        } else if ($classname === null) {
             $renderer = new enhanced_quiz_question_renderer($PAGE, '');
             gradereport_user_random_bag_student_report($courseid, (int)reset($students)->id, $quiz_cmid, $processor, $renderer);
         } else {
@@ -995,7 +1027,7 @@ function gradereport_user_random_bag_page(int $courseid, array $students, ?strin
                     <!-- Main Form Container -->
                     <form method="get" action="" id="randomBagForm" class="class-selection-form card slide-in">
                         <input type="hidden" name="id" value="<?php echo htmlspecialchars($courseid); ?>">
-                        <input type="hidden" name="fetch" value="random">
+                        <input type="hidden" name="fetch" value="<?= htmlspecialchars($fetch) ?>">
                         
                         <h2 class="report-h2">
                             <i class="fas fa-chart-line"></i>
@@ -1100,7 +1132,7 @@ function gradereport_user_random_bag_page(int $courseid, array $students, ?strin
                         // Create URL with only quiz_id
                         const currentUrl = new URL(window.location.href);
                         currentUrl.searchParams.set('id', '<?php echo htmlspecialchars($courseid); ?>');
-                        currentUrl.searchParams.set('fetch', 'random');
+                        currentUrl.searchParams.set('fetch', '<?= htmlspecialchars($fetch) ?>');
                         currentUrl.searchParams.set('quiz_id', quizId);
                         
                         // Redirect to the new URL
@@ -1126,6 +1158,60 @@ function gradereport_user_random_bag_page(int $courseid, array $students, ?strin
     <?php endif;
 
     exit;
+}
+
+/**
+ * Full preview of a question as a student would first see it: no answer, correctness, marks or feedback.
+ * Teacher class report only.
+ *
+ * The preview is a fresh, unanswered copy of the question, but it is wired to the id, slot and quiz context
+ * of a real attempt so image/file links in the question resolve through the quiz's pluginfile access check.
+ *
+ * @param int $questionid
+ * @param int $usageid question usage of a real attempt containing this question
+ * @param int $slot slot of the question in that usage
+ * @param int $cmid course module of the quiz
+ * @param string $fallbacktext plain-text question text shown if the question cannot be rendered
+ * @return string HTML
+ */
+function gradereport_user_random_bag_question_preview(int $questionid, int $usageid, int $slot, int $cmid,
+        string $fallbacktext): string {
+    global $CFG;
+    require_once($CFG->dirroot . '/question/engine/lib.php');
+
+    static $cache = [];
+    if (isset($cache[$questionid])) {
+        return $cache[$questionid];
+    }
+    try {
+        $question = question_bank::load_question($questionid);
+        $quba = question_engine::make_questions_usage_by_activity('mod_quiz', context_module::instance($cmid));
+        $quba->set_preferred_behaviour('deferredfeedback');
+        // Slots are sequential, so pad up to the real slot to get matching file URLs.
+        for ($i = 1; $i < $slot; $i++) {
+            $quba->add_question($question, $question->defaultmark);
+        }
+        $previewslot = $quba->add_question($question, $question->defaultmark);
+        $quba->start_question($previewslot);
+        $quba->set_id_from_database($usageid);
+
+        $options = new question_display_options();
+        $options->readonly = true;
+        $options->marks = question_display_options::HIDDEN;
+        $options->correctness = question_display_options::HIDDEN;
+        $options->feedback = question_display_options::HIDDEN;
+        $options->generalfeedback = question_display_options::HIDDEN;
+        $options->rightanswer = question_display_options::HIDDEN;
+        $options->numpartscorrect = question_display_options::HIDDEN;
+        $options->manualcomment = question_display_options::HIDDEN;
+        $options->flags = question_display_options::HIDDEN;
+        $options->history = question_display_options::HIDDEN;
+        $html = $quba->render_question($previewslot, $options);
+    } catch (Throwable $e) {
+        debugging('Random bag question preview failed: ' . $e->getMessage(), DEBUG_DEVELOPER);
+        $html = '<div>' . s($fallbacktext) . '</div>';
+    }
+    return $cache[$questionid] = $html;
 }
 
 /**
@@ -1592,13 +1678,14 @@ function gradereport_user_random_bag_student_report(int $courseid, int $student_
  * @param int $courseid
  * @param array $students user records keyed by id
  * @param string $classname
+ * @param bool $studentmode one student viewing their own data: no class wording, columns or student list
  * @param int $quiz_cmid
  * @param quiz_attempt_data_processor $processor
  * @param array $urlparams extra params kept on the per-student report links
  */
 function gradereport_user_random_bag_class_report(int $courseid, array $students, string $classname, int $quiz_cmid,
-        quiz_attempt_data_processor $processor, array $urlparams): void {
-    global $DB, $OUTPUT;
+        quiz_attempt_data_processor $processor, array $urlparams, bool $studentmode = false): void {
+    global $DB, $OUTPUT, $PAGE;
 
     $quiz_info = $DB->get_record_sql("
         SELECT q.id as quiz_id, q.name as quiz_name, cm.id as cmid
@@ -1671,8 +1758,19 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
                         $totals['questions'][$question->questionid] = [
                             'name' => $question->question_name,
                             'text' => shorten_text(trim(html_entity_decode(strip_tags($question->questiontext), ENT_QUOTES, 'UTF-8')), 160),
+                            'tags' => array_filter(array_map(function($tag) {
+                                // Capitalise the first letter of each word, keeping acronyms (e.g. HCF) as they are.
+                                return preg_replace_callback('/(^|[\s\-\/(])(\p{Ll})/u', function($m) {
+                                    return $m[1] . core_text::strtoupper($m[2]);
+                                }, trim($tag));
+                            }, explode(' ; ', (string)($question->tag_combination ?? '')))),
                             'attempts' => 0,
                             'correct' => 0,
+                            // A real attempt of this question, so its image links resolve for the teacher.
+                            'usageid' => (int)$question->question_usage_id,
+                            'slot' => (int)$question->slot,
+                            // The student's own attempt, shown with their answer when they are the only one in the report.
+                            'attempt' => $studentmode ? $question : null,
                         ];
                     }
                     $totals['questions'][$question->questionid]['attempts']++;
@@ -1709,6 +1807,9 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
     }
     $score_color = gradereport_user_random_bag_score_color($overall_stats['percentage']);
     [$best_categories, $worst_categories] = gradereport_user_random_bag_highlights($categories);
+    $avg = $studentmode ? '' : 'Avg ';
+    // Renders a student's own answers, correct/incorrect status and score, as in the single-student report.
+    $renderer = $studentmode ? new enhanced_quiz_question_renderer($PAGE, '') : null;
 
     // Lowest scores first so the teacher sees who needs help.
     usort($student_rows, function($a, $b) {
@@ -1722,7 +1823,7 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Class Quiz Performance Report - <?= htmlspecialchars($classname) ?></title>
+        <title><?= $studentmode ? '' : 'Class ' ?>Quiz Performance Report - <?= htmlspecialchars($classname) ?></title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
         <?php gradereport_user_random_bag_styles(); ?>
     </head>
@@ -1730,9 +1831,9 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
         <div class="quiz-dashboard">
             <!-- Header -->
             <div class="header slide-in">
-                <h1>Class Quiz Performance Report</h1>
+                <h1><?= $studentmode ? '' : 'Class ' ?>Quiz Performance Report</h1>
                 <p><?= gradereport_user_quiz_name_link($quiz_info->quiz_name, $quiz_info->cmid, $quiz_info->quiz_id) ?></p>
-                <p>Class: <?= htmlspecialchars($classname) ?></p>
+                <p><?= $studentmode ? 'Student' : 'Class' ?>: <?= htmlspecialchars($classname) ?></p>
             </div>
 
             <!-- Course and Class Information -->
@@ -1740,9 +1841,13 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
                 <h2 class="report-h2"><i class="fas fa-graduation-cap"></i> Course Details</h2>
                 <div class="info-grid">
                     <div class="info-item"><strong>Quiz:</strong> <?= gradereport_user_quiz_name_link($quiz_info->quiz_name, $quiz_info->cmid, $quiz_info->quiz_id) ?></div>
-                    <div class="info-item"><strong>Class:</strong> <?= htmlspecialchars($classname) ?></div>
+                    <div class="info-item"><strong><?= $studentmode ? 'Student' : 'Class' ?>:</strong> <?= htmlspecialchars($classname) ?></div>
                     <div class="info-item"><strong>Course ID:</strong> <?= htmlspecialchars($courseid) ?></div>
-                    <div class="info-item"><strong>Completed:</strong> <?= $finished_count ?> / <?= count($students) ?> students</div>
+                    <?php if ($studentmode): ?>
+                        <div class="info-item"><strong>Status:</strong> <?= $finished_count ? 'Completed' : 'Not completed' ?></div>
+                    <?php else: ?>
+                        <div class="info-item"><strong>Completed:</strong> <?= $finished_count ?> / <?= count($students) ?> students</div>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -1763,26 +1868,26 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
             </div>
 
             <?php if (!$finished_count): ?>
-                <div class="no-data-message card">No student in this class has completed this quiz yet.</div>
+                <div class="no-data-message card"><?= $studentmode ? 'You have not completed this quiz yet.' : 'No student in this class has completed this quiz yet.' ?></div>
             <?php else: ?>
 
             <!-- Overall Statistics (average per student) -->
             <div class="stats-grid slide-in">
                 <div class="stat-card">
                     <div class="stat-number"><?= $overall_stats['total_questions'] ?></div>
-                    <div class="stat-label">Avg Questions</div>
+                    <div class="stat-label"><?= $avg ?>Questions</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number" style="color: var(--status-success-text);"><?= $overall_stats['total_correct'] ?></div>
-                    <div class="stat-label">Avg Correct</div>
+                    <div class="stat-label"><?= $avg ?>Correct</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number" style="color: var(--status-error-text);"><?= $overall_stats['total_wrong'] ?></div>
-                    <div class="stat-label">Avg Wrong</div>
+                    <div class="stat-label"><?= $avg ?>Wrong</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number" style="color: <?= $score_color ?>;"><?= $overall_stats['percentage'] ?>%</div>
-                    <div class="stat-label">Class Average Score</div>
+                    <div class="stat-label"><?= $studentmode ? 'Overall Score' : 'Class Average Score' ?></div>
                 </div>
             </div>
 
@@ -1799,7 +1904,7 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
                     <div class="best-categories">
                         <h3 style="color: #059669; margin-bottom: 15px; display: flex; align-items: center; gap: var(--space-sm); font-size: 1.2rem; font-weight: 600;">
                             <i class="fas fa-trophy" style="color: #059669;"></i>
-                            Class Strengths
+                            <?= $studentmode ? 'Your Strengths' : 'Class Strengths' ?>
                         </h3>
 
                         <?php if (!empty($best_categories)): ?>
@@ -1820,8 +1925,8 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
                                             </span>
                                         </div>
                                         <div style="font-size: 0.85rem; color: var(--text-light); display: flex; gap: var(--space-lg); margin-left: 36px;">
-                                            <span><i class="fas fa-check-circle" style="color: #059669;"></i> <?php echo $category['correct_answers']; ?> avg correct</span>
-                                            <span><i class="fas fa-question-circle"></i> <?php echo $category['total_questions']; ?> avg total</span>
+                                            <span><i class="fas fa-check-circle" style="color: #059669;"></i> <?php echo $category['correct_answers']; ?> <?= $studentmode ? '' : 'avg ' ?>correct</span>
+                                            <span><i class="fas fa-question-circle"></i> <?php echo $category['total_questions']; ?> <?= $studentmode ? '' : 'avg ' ?>total</span>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -1858,8 +1963,8 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
                                             </span>
                                         </div>
                                         <div style="font-size: 0.85rem; color: var(--text-light); display: flex; gap: var(--space-lg); margin-left: 36px;">
-                                            <span><i class="fas fa-times-circle" style="color: #DC2626;"></i> <?php echo $category['wrong_answers']; ?> avg incorrect</span>
-                                            <span><i class="fas fa-question-circle"></i> <?php echo $category['total_questions']; ?> avg total</span>
+                                            <span><i class="fas fa-times-circle" style="color: #DC2626;"></i> <?php echo $category['wrong_answers']; ?> <?= $studentmode ? '' : 'avg ' ?>incorrect</span>
+                                            <span><i class="fas fa-question-circle"></i> <?php echo $category['total_questions']; ?> <?= $studentmode ? '' : 'avg ' ?>total</span>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -1883,17 +1988,17 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
 
             <!-- Categories Table -->
             <div class="categories-table card slide-in">
-                <h2 class="report-h2" style="margin: 0 0 20px 0; padding: 20px 20px 0 20px;"><i class="fas fa-layer-group"></i> Category Performance Breakdown (class average)</h2>
+                <h2 class="report-h2" style="margin: 0 0 20px 0; padding: 20px 20px 0 20px;"><i class="fas fa-layer-group"></i> Category Performance Breakdown<?= $studentmode ? '' : ' (class average)' ?></h2>
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
                             <tr>
                                 <th>Category Name</th>
-                                <th>Students</th>
-                                <th>Avg Questions</th>
-                                <th>Avg Correct</th>
-                                <th>Avg Incorrect</th>
-                                <th>Avg Performance (%)</th>
+                                <?php if (!$studentmode): ?><th>Students</th><?php endif; ?>
+                                <th><?= $avg ?>Questions</th>
+                                <th><?= $avg ?>Correct</th>
+                                <th><?= $avg ?>Incorrect</th>
+                                <th><?= $avg ?>Performance (%)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1918,7 +2023,7 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
                                             <?= htmlspecialchars($category_name) ?>
                                         </div>
                                     </td>
-                                    <td><?= $category_data['students'] ?></td>
+                                    <?php if (!$studentmode): ?><td><?= $category_data['students'] ?></td><?php endif; ?>
                                     <td><?= $category_data['total_questions'] ?></td>
                                     <td><?= $category_data['correct_answers'] ?></td>
                                     <td><?= $category_data['wrong_answers'] ?></td>
@@ -1929,29 +2034,57 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td colspan="6" style="padding: 0;">
+                                    <td colspan="<?= $studentmode ? 5 : 6 ?>" style="padding: 0;">
                                         <div class="questions-container" id="<?= $category_id ?>">
                                             <div class="questions-content">
                                                 <table class="table" style="margin: 0;">
                                                     <thead>
                                                         <tr>
-                                                            <th>Question (hardest first)</th>
-                                                            <th>Answered by</th>
-                                                            <th>Correct</th>
-                                                            <th>% Correct</th>
+                                                            <th><?= $studentmode ? 'Question' : 'Question (hardest first)' ?></th>
+                                                            <?php if (!$studentmode): ?>
+                                                                <th>Answered by</th>
+                                                                <th>Correct</th>
+                                                                <th>% Correct</th>
+                                                            <?php endif; ?>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <?php foreach ($category_data['questions'] as $question): ?>
+                                                        <?php foreach ($category_data['questions'] as $question_id => $question): ?>
                                                             <?php $qpercent = round($question['correct'] / $question['attempts'] * 100, 1); ?>
                                                             <tr>
                                                                 <td>
-                                                                    <strong><?= htmlspecialchars($question['name']) ?></strong>
-                                                                    <div style="font-size: 0.85rem; color: var(--text-light);"><?= htmlspecialchars($question['text']) ?></div>
+                                                                    <details>
+                                                                        <summary style="cursor: pointer;">
+                                                                            <?php foreach ($question['tags'] as $tag): ?>
+                                                                                <span style="display: inline-block; margin: 0 4px 4px 0; padding: 2px 8px; border-radius: 10px; background: #E0F2F1; color: #0D9488; font-size: 0.8rem; font-weight: 600;"><i class="fas fa-tag"></i> <?= htmlspecialchars($tag) ?></span>
+                                                                            <?php endforeach; ?>
+                                                                            <?php if (!$question['tags']): ?>
+                                                                                <strong>Untagged question</strong>
+                                                                            <?php endif; ?>
+                                                                            <div style="font-size: 0.85rem; color: var(--text-light);"><?= htmlspecialchars($question['text']) ?></div>
+                                                                        </summary>
+                                                                        <div style="margin-top: 10px; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: #fff;">
+                                                                            <?php if ($studentmode): ?>
+                                                                                <?php
+                                                                                $attempt_question = $question['attempt'];
+                                                                                $attempt_data = (object)[
+                                                                                    'fraction' => $attempt_question->fraction,
+                                                                                    'stepdata_value' => $processor->extract_primary_answer($attempt_question),
+                                                                                    'state' => $attempt_question->state,
+                                                                                ];
+                                                                                echo $renderer->render_question_report($attempt_question, $attempt_data, true);
+                                                                                ?>
+                                                                            <?php else: ?>
+                                                                                <?= gradereport_user_random_bag_question_preview((int)$question_id, $question['usageid'], $question['slot'], $quiz_info->cmid, $question['text']) ?>
+                                                                            <?php endif; ?>
+                                                                        </div>
+                                                                    </details>
                                                                 </td>
-                                                                <td><?= $question['attempts'] ?></td>
-                                                                <td><?= $question['correct'] ?></td>
-                                                                <td style="color: <?= gradereport_user_random_bag_score_color($qpercent) ?>; font-weight: 700;"><?= $qpercent ?>%</td>
+                                                                <?php if (!$studentmode): ?>
+                                                                    <td><?= $question['attempts'] ?></td>
+                                                                    <td><?= $question['correct'] ?></td>
+                                                                    <td style="color: <?= gradereport_user_random_bag_score_color($qpercent) ?>; font-weight: 700;"><?= $qpercent ?>%</td>
+                                                                <?php endif; ?>
                                                             </tr>
                                                         <?php endforeach; ?>
                                                     </tbody>
@@ -1967,6 +2100,7 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
             </div>
             <?php endif; ?>
 
+            <?php if (!$studentmode): ?>
             <!-- Student-wise results -->
             <div class="categories-table card slide-in">
                 <h2 class="report-h2" style="margin: 0 0 20px 0; padding: 20px 20px 0 20px;"><i class="fas fa-users"></i> Student-wise Results</h2>
@@ -2019,6 +2153,7 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
                     </table>
                 </div>
             </div>
+            <?php endif; ?>
         </div>
 
         <script>window.__amdDefine=window.define;window.define=undefined;</script>
@@ -2031,7 +2166,7 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
                     new Chart(chartCanvas.getContext("2d"), {
                         type: "pie",
                         data: {
-                            labels: ["Avg Correct", "Avg Incorrect"],
+                            labels: ["<?= $avg ?>Correct", "<?= $avg ?>Incorrect"],
                             datasets: [{
                                 data: [<?= $overall_stats['total_correct'] ?>, <?= $overall_stats['total_wrong'] ?>],
                                 backgroundColor: ['#BAE1FF', '#FF8B94'],
@@ -2043,7 +2178,7 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
                             responsive: true,
                             plugins: {
                                 legend: {position: "top", labels: {font: {size: 14, weight: "bold"}}},
-                                title: {display: true, text: "Class Average Performance", font: {size: 18, weight: "bold"}}
+                                title: {display: true, text: "<?= $studentmode ? 'Overall Performance' : 'Class Average Performance' ?>", font: {size: 18, weight: "bold"}}
                             }
                         }
                     });

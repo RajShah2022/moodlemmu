@@ -167,10 +167,13 @@ enabled content is videos reports "no content" by design.
 - [ ] Fix `grade/report/user` class→cohort name-match resolution
 - [ ] Decide on `external.php:1377` / enable-all button vs removed `bulk_enable_for_group()`
 - [x] Teacher class-average Random Bag report (COMMITTED `ebc309030`)
-- [x] Teacher picker lists all sections/subsections; student picker stays "Random Bag Tests" only (UNCOMMITTED)
-- [x] Strengths/weaknesses never share a category (UNCOMMITTED)
+- [x] Teacher picker lists all sections/subsections; student picker stays "Random Bag Tests" only (COMMITTED `bdb9b84d9`)
+- [x] Strengths/weaknesses never share a category (COMMITTED `bdb9b84d9`)
+- [x] Teacher class report: tag badges + expandable full question preview per question (UNCOMMITTED, `randombagview.php`, untested in browser)
+- [x] "Generate School Test Reports" (`fetch=cajcs`) for students + teachers, gated by `gradereport_user_random_bag_teacher_enabled()` (UNCOMMITTED, untested in browser). Student: all sections filtered by `uservisible`, quiz_id validated, own data only, `gradereport_user_random_bag_class_report(..., $studentmode=true)` shows own answers + correct/incorrect via `enhanced_quiz_question_renderer`. Teacher old "Generate Random Report" button removed
+- [ ] Verify preview images load (real-attempt usage id/slot trick); if not, check `pluginfile.php` network error
 - [ ] Fill `GRADEREPORT_USER_RANDOM_BAG_TEACHER_COURSES` with **prod** course IDs (user to supply)
-- [ ] Commit + deploy this session's Random Bag changes (UNCOMMITTED: `index.php`, `randombagview.php`). Base set already COMMITTED `ebc309030`: `randombagview.php`, `index.php`, `lib.php`, `integrated_quiz_renderer.php`, `quizdataprocessor.php`
+- [ ] Commit + deploy Random Bag preview/tags/School Test Reports change (UNCOMMITTED: `index.php`, `randombagview.php`, `PROJECT_CONTEXT.md`). Base set already COMMITTED `ebc309030`: `randombagview.php`, `index.php`, `lib.php`, `integrated_quiz_renderer.php`, `quizdataprocessor.php`
 - [ ] Browser-test Random Bag as student + teacher (only CLI-rendered so far)
 - [ ] Run `course_sync.php --target` for real (target side never executed)
 - [x] Finish `pk-dev` → `prod` merge commit — COMMITTED `ebc309030` (verified 2026-10-12)
@@ -210,6 +213,9 @@ enabled content is videos reports "no content" by design.
 | 2026-10-07 | Repair = `rebuild_groupcontentconfig.php` (A → B), dry run first, back up rows before `--execute` | A is only faithful record of what was enabled |
 | 2026-10-07 | Audit counts only `quiz`+`supervideo`; B-only rows ignored | B-only mismatch = module types outside filter, not real breaks (spot-checked 4 pairs) |
 | 2026-10-12 | Section picker: teacher sees all sections/subsections, student only "Random Bag Tests" | Same UI both; teacher needs any quiz |
+| 2026-10-12 | Teacher-only Random Bag changes from now; never touch student-visible reports (`integrated_quiz_renderer.php`, student view) | User instruction |
+| 2026-10-12 | Teacher question preview = fresh unanswered quba w/ real attempt's usage id + slot + quiz context (`gradereport_user_random_bag_question_preview()`) | Hides answer/correctness; image pluginfile URLs need real usage |
+| 2026-10-13 | New report `fetch=cajcs`, button label "Generate School Test Reports", same course allowlist as teacher Random Bag; students see all sections they can access + own data only; teacher whole-class view never shows answers/correctness; teacher `rbstudent` and student `fetch=random` stay on original student report | User spec |
 | 2026-10-12 | Highlights: category in both lists → strength if >50%, else weakness (50% = weakness); no backfill | User rule; no duplicate across lists |
 | 2026-10-12 | Merge resolution: `local_courses` version = prod `2023060600.30` | Never lower a version prod DB already has |
 | 2026-10-12 | Third-party plugin upgrades (pk-dev `627bfea23`: `tool_certificate`, `tool_tcpdffonts`, `availability_role`, `report_benchmark`, `block_xp`, `format_flexsections`, `filter_multilang2`, `mod_supervideo`) + composer `openai-php/client` bump kept **out of** `prod` merge | User won't ship plugin upgrades with this merge. Paths reset to prod `HEAD`; backup in session scratchpad |
@@ -260,7 +266,7 @@ enabled content is videos reports "no content" by design.
 | `external.php:1377` calls missing `bulk_enable_for_group()` | Open | Enable-all button still fatals on `pk-dev` (`groupcontentconfiguration.php:78`, `local_courses_bulk_enable_topics` service). Removed from `prod` merge 2026-10-12 |
 | No unique index on plugin tables | Open | `(courseid, groupid, moduleid, open_path)` would prevent dupes; needs version bump + upgrade step |
 | Course backup omits `supervideo_view` (watch progress) | Open (worked around) | `mod/supervideo/backup/moodle2/backup_supervideo_stepslib.php` backs up settings only. `course_sync.php` copies it via `extras.json` |
-| ~~`integrated_quiz_renderer.php` require fatals `/question/engine/lib.php` (`$CFG` unset in function)~~ | Fixed (UNCOMMITTED) | `global $CFG` added to `gradereport_user_random_bag_page()`; pre-existing bug, hit on quiz select |
+| ~~`integrated_quiz_renderer.php` require fatals `/question/engine/lib.php` (`$CFG` unset in function)~~ | Fixed (COMMITTED `bdb9b84d9`) | `global $CFG` added to `gradereport_user_random_bag_page()`; pre-existing bug, hit on quiz select |
 | Random Bag class report slow on big classes | Open | `get_attempt_questions()` per student + per-question queries |
 | Random Bag `quiz_id` not checked against "Random Bag Tests" section | Open (low risk; teacher picker now intentionally allows any section — student URL still unchecked) | Teacher can load any course quiz via URL; student path same as before |
 | Random Bag drill-down blank/raw for image/TeX-only questions | Open | Preview = `strip_tags` + `shorten_text` of `questiontext` |
@@ -328,3 +334,5 @@ enabled content is videos reports "no content" by design.
 | 2026-10-11 | Session: investigated course 89 vs 95 + all-course audit; root cause = unscoped cohort-id deletes; rebuilt cohort 19 in 6 courses; added `local/cli/audit_groupcontentconfig.php` + runbook; moved scripts to `local/cli/`. Status: `api.php` fix, `local/cli/*`, `RUNBOOK_content_config_disconnect.md`, `PROJECT_CONTEXT.md` all `UNCOMMITTED` |
 | 2026-10-12 | Resolved `pk-dev` → `prod` merge conflicts (9 files, not committed): plugin upgrades (`627bfea23`) + composer bump reset to prod; enable-all button + `local/trialsignup` removed; `local_courses` version per §7; `quizdataprocessor.php` kept prod div-by-zero guard + `calculate_overall_stats_from_tags()`; `index.php` uses `randombagview.php` + keeps prod cohort attach and Chart.js AMD guard; merged this file |
 | 2026-10-12 | Session: Random Bag teacher picker → all sections/subsections (`$teacherview` param, student unchanged); fixed `$CFG` scope fatal on quiz select; strengths/weaknesses dedupe via shared `gradereport_user_random_bag_highlights()` (student view now uses it). Reconciled labels: merge + base Random Bag set COMMITTED `ebc309030`; this session's `index.php` + `randombagview.php` UNCOMMITTED. Not browser-tested (`php -l` only) |
+| 2026-10-12 | Session 2: teacher class Random Bag report — tag badges + expandable full question preview (no answer/correctness; fresh quba wired to real usage id/slot for images). Wrote `REPORTS_COMPARISON.md` (untracked). Reconciled: picker/highlights/`$CFG` fixes COMMITTED `bdb9b84d9` (verified ancestor of HEAD); preview change UNCOMMITTED. Not browser-tested |
+| 2026-10-13 | Session 3: added `fetch=cajcs` "Generate School Test Reports" (student + teacher; `$fetch` param on `gradereport_user_random_bag_page()`, `$studentmode` on class report); tags capitalised in teacher drill-down; question summary shows tags not name; removed teacher "Generate Random Report" button. Reconciled: tag badges/preview + all 2026-10-13 changes UNCOMMITTED (git status: `index.php`, `randombagview.php`, `PROJECT_CONTEXT.md` modified); latest commit `bdb9b84d9`. Not browser-tested |
