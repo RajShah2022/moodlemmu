@@ -1215,6 +1215,31 @@ function gradereport_user_random_bag_question_preview(int $questionid, int $usag
 }
 
 /**
+ * Whether a quiz sits in a "Past Papers" section: its own section or any section above it is named "Past Paper(s)".
+ *
+ * @param int $courseid
+ * @param int $cmid course module id of the quiz
+ * @return bool
+ */
+function gradereport_user_random_bag_is_past_paper(int $courseid, int $cmid): bool {
+    global $USER;
+    $modinfo = get_fast_modinfo($courseid, $USER->id);
+    if (!isset($modinfo->cms[$cmid])) {
+        return false;
+    }
+    $section = $modinfo->get_section_info_by_id($modinfo->cms[$cmid]->section);
+    $seen = [];
+    while ($section && !isset($seen[$section->id])) {
+        $seen[$section->id] = true;
+        if (stripos(trim((string)$section->name), 'past paper') === 0) {
+            return true;
+        }
+        $section = $section->parent ? $modinfo->get_section_info((int)$section->parent) : null;
+    }
+    return false;
+}
+
+/**
  * One student's report for their latest attempt of the quiz.
  *
  * @param int $courseid
@@ -1284,6 +1309,9 @@ function gradereport_user_random_bag_student_report(int $courseid, int $student_
                 }
             }
             
+            // Quizzes in a "Past Papers" section list each category's questions under their tags.
+            $pastpaper = gradereport_user_random_bag_is_past_paper($courseid, $quiz_cmid);
+
             // Group questions by category
             $categories = $processor->group_by_category($questions);
             
@@ -1563,10 +1591,32 @@ function gradereport_user_random_bag_student_report(int $courseid, int $student_
                                                                 'stepdata_value' => $processor->extract_primary_answer($question),
                                                                 'state' => $question->state
                                                             ];
-                                                            
-                                                            // Render question using enhanced renderer
-                                                            echo $renderer->render_question_report($question, $attempt_data, true);
                                                             ?>
+                                                            <?php if ($pastpaper): ?>
+                                                                <?php
+                                                                $qtags = array_filter(array_map('trim', explode(' ; ', (string)($question->tag_combination ?? ''))));
+                                                                $qtext = shorten_text(trim(html_entity_decode(strip_tags($question->questiontext), ENT_QUOTES, 'UTF-8')), 160);
+                                                                ?>
+                                                                <details style="margin-bottom: 10px;">
+                                                                    <summary style="cursor: pointer;">
+                                                                        <?php foreach ($qtags as $tag): ?>
+                                                                            <span style="display: inline-block; margin: 0 4px 4px 0; padding: 2px 8px; border-radius: 10px; background: #E0F2F1; color: #0D9488; font-size: 0.8rem; font-weight: 600;"><i class="fas fa-tag"></i> <?= htmlspecialchars($tag) ?></span>
+                                                                        <?php endforeach; ?>
+                                                                        <?php if (!$qtags): ?>
+                                                                            <strong>Untagged question</strong>
+                                                                        <?php endif; ?>
+                                                                        <div style="font-size: 0.85rem; color: var(--text-light);"><?= htmlspecialchars($qtext) ?></div>
+                                                                    </summary>
+                                                                    <div style="margin-top: 10px; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: #fff;">
+                                                                        <?= $renderer->render_question_report($question, $attempt_data, true) ?>
+                                                                    </div>
+                                                                </details>
+                                                            <?php else: ?>
+                                                                <?php
+                                                                // Render question using enhanced renderer
+                                                                echo $renderer->render_question_report($question, $attempt_data, true);
+                                                                ?>
+                                                            <?php endif; ?>
                                                         <?php endforeach; ?>
                                                     </div>
                                                 </div>
