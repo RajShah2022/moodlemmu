@@ -1055,6 +1055,15 @@ function gradereport_user_random_bag_page(int $courseid, array $students, ?strin
                             </select>
                         </div>
 
+                        <!-- Grouping -->
+                        <div class="form-group">
+                            <label for="groupSelect" class="form-label">Group by:</label>
+                            <select name="group" id="groupSelect" class="form-select">
+                                <option value="category">Category</option>
+                                <option value="tag">Tags</option>
+                            </select>
+                        </div>
+
                         <!-- Submit Button -->
                         <div class="form-group">
                             <button type="submit" id="submitBtn" class="submit-button" disabled>
@@ -1075,8 +1084,24 @@ function gradereport_user_random_bag_page(int $courseid, array $students, ?strin
                 const quizSelect = document.getElementById("quizSelect");
                 const submitBtn = document.getElementById("submitBtn");
                 const form = document.getElementById("randomBagForm");
+                const groupSelect = document.getElementById("groupSelect");
+
+                // Past Papers (the section or any section above it) default to tags, everything else to categories.
+                function inPastPapers(index) {
+                    let depth = childrenData[index].depth;
+                    for (let i = index; i >= 0; i--) {
+                        if (childrenData[i].depth <= depth) {
+                            if (/^past paper/i.test((childrenData[i].name || '').trim())) return true;
+                            depth = childrenData[i].depth;
+                            if (depth === 0) break;
+                        }
+                    }
+                    return false;
+                }
 
                 childSelect.addEventListener("change", function() {
+                    const sectionIndex = childrenData.findIndex(c => c.id === this.value);
+                    groupSelect.value = sectionIndex >= 0 && inPastPapers(sectionIndex) ? "tag" : "category";
                     quizSelect.innerHTML = '<option value="">-- Select Quiz --</option>';
                     if (submitBtn) submitBtn.disabled = true;
                     
@@ -1134,6 +1159,7 @@ function gradereport_user_random_bag_page(int $courseid, array $students, ?strin
                         currentUrl.searchParams.set('id', '<?php echo htmlspecialchars($courseid); ?>');
                         currentUrl.searchParams.set('fetch', '<?= htmlspecialchars($fetch) ?>');
                         currentUrl.searchParams.set('quiz_id', quizId);
+                        currentUrl.searchParams.set('group', groupSelect.value);
                         
                         // Redirect to the new URL
                         window.location.href = currentUrl.toString();
@@ -1309,14 +1335,25 @@ function gradereport_user_random_bag_student_report(int $courseid, int $student_
                 }
             }
             
-            // Quizzes in a "Past Papers" section list each category's questions under their tags.
+            // Quizzes in a "Past Papers" section group by tags unless told otherwise; the rest group by category.
             $pastpaper = gradereport_user_random_bag_is_past_paper($courseid, $quiz_cmid);
+            $groupby = optional_param('group', $pastpaper ? 'tag' : 'category', PARAM_ALPHA);
+            $bytags = $groupby === 'tag';
 
-            // Group questions by category
-            $categories = $processor->group_by_category($questions);
-            
-            // Calculate overall statistics
-            $overall_stats = $processor->calculate_overall_stats($categories);
+            if ($bytags) {
+                foreach ($questions as $question) {
+                    if (!empty($question->tag_combination)) {
+                        $question->tag_combination = $processor->clean_tag_names($question->tag_combination);
+                    }
+                }
+                // One group per distinct tag combination.
+                $categories = $processor->group_by_tag_combinations($questions);
+                $overall_stats = $processor->calculate_overall_stats_from_tag_groups($categories);
+            } else {
+                $categories = $processor->group_by_category($questions);
+                $overall_stats = $processor->calculate_overall_stats($categories);
+            }
+            $grouplabel = $bytags ? 'Topic' : 'Category';
 
             // Determine color based on percentage
             $percentage = $overall_stats['percentage'];
@@ -1407,7 +1444,7 @@ function gradereport_user_random_bag_student_report(int $courseid, int $student_
                             <div class="best-categories">
                                 <h3 style="color: #059669; margin-bottom: 15px; display: flex; align-items: center; gap: var(--space-sm); font-size: 1.2rem; font-weight: 600;">
                                     <i class="fas fa-trophy" style="color: #059669;"></i>
-                                    Top Performing Categories
+                                    <?= $bytags ? 'Top Performing Topics' : 'Top Performing Categories' ?>
                                 </h3>
                                 
                                 <?php if (!empty($best_categories)): ?>
@@ -1436,7 +1473,7 @@ function gradereport_user_random_bag_student_report(int $courseid, int $student_
                                     </div>
                                 <?php else: ?>
                                     <div class="info-item" style="background-color: var(--background-color); border: 1px solid var(--border-color); color: var(--text-light); font-style: italic; justify-content: center;">
-                                        <i class="fas fa-info-circle"></i> Not enough data to show top categories yet.
+                                        <i class="fas fa-info-circle"></i> Not enough data to show top <?= $bytags ? 'topics' : 'categories' ?> yet.
                                     </div>
                                 <?php endif; ?>
                             </div>
@@ -1495,7 +1532,7 @@ function gradereport_user_random_bag_student_report(int $courseid, int $student_
                                             Build on Strengths
                                         </h4>
                                         <p style="margin: 0; font-size: 0.85rem; color: var(--text-light); line-height: 1.4;">
-                                            Continue practicing your strong categories to maintain high performance.
+                                            Continue practicing your strong <?= $bytags ? 'topics' : 'categories' ?> to maintain high performance.
                                         </p>
                                     </div>
                                 <?php endif; ?>
@@ -1507,7 +1544,7 @@ function gradereport_user_random_bag_student_report(int $courseid, int $student_
                                             Focus on Weak Areas
                                         </h4>
                                         <p style="margin: 0; font-size: 0.85rem; color: var(--text-light); line-height: 1.4;">
-                                            Dedicate extra study time to your lowest performing categories.
+                                            Dedicate extra study time to your lowest performing <?= $bytags ? 'topics' : 'categories' ?>.
                                         </p>
                                     </div>
                                 <?php endif; ?>
@@ -1535,12 +1572,12 @@ function gradereport_user_random_bag_student_report(int $courseid, int $student_
                     
                     <!-- Categories Table -->
                     <div class="categories-table card slide-in">
-                        <h2 class="report-h2" style="margin: 0 0 20px 0; padding: 20px 20px 0 20px;"><i class="fas fa-layer-group"></i> Category Performance Breakdown</h2>
+                        <h2 class="report-h2" style="margin: 0 0 20px 0; padding: 20px 20px 0 20px;"><i class="fas fa-layer-group"></i> <?= $bytags ? 'Topic-wise Performance Analysis' : 'Category Performance Breakdown' ?></h2>
                         <div class="table-responsive">
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Category Name</th>
+                                        <th><?= $bytags ? 'Topic/Tag Combination' : 'Category Name' ?></th>
                                         <th>Total Questions</th>
                                         <th>Correct Answers</th>
                                         <th>Incorrect Answers</th>
@@ -1567,7 +1604,17 @@ function gradereport_user_random_bag_student_report(int $courseid, int $student_
                                             <td>
                                                 <div class="section-name">
                                                     <i class="fas fa-chevron-right section-icon"></i>
-                                                    <?= htmlspecialchars($category_name) ?>
+                                                    <?php if ($bytags): ?>
+                                                        <?php if (empty($category_name) || $category_name === 'No Tags'): ?>
+                                                            <span>Untagged Questions</span>
+                                                        <?php else: ?>
+                                                            <?php foreach (explode(' ; ', $category_name) as $tag): ?>
+                                                                <span style="display: inline-block; margin: 0 4px 4px 0; padding: 2px 8px; border-radius: 10px; background: #E0F2F1; color: #0D9488; font-size: 0.8rem; font-weight: 600;"><i class="fas fa-tag"></i> <?= htmlspecialchars(trim($tag)) ?></span>
+                                                            <?php endforeach; ?>
+                                                        <?php endif; ?>
+                                                    <?php else: ?>
+                                                        <?= htmlspecialchars($category_name) ?>
+                                                    <?php endif; ?>
                                                 </div>
                                             </td>
                                             <td><?= $category_data['total_questions'] ?></td>
@@ -1592,7 +1639,7 @@ function gradereport_user_random_bag_student_report(int $courseid, int $student_
                                                                 'state' => $question->state
                                                             ];
                                                             ?>
-                                                            <?php if ($pastpaper): ?>
+                                                            <?php if ($pastpaper && !$bytags): ?>
                                                                 <?php
                                                                 $qtags = array_filter(array_map('trim', explode(' ; ', (string)($question->tag_combination ?? ''))));
                                                                 $qtext = shorten_text(trim(html_entity_decode(strip_tags($question->questiontext), ENT_QUOTES, 'UTF-8')), 160);
