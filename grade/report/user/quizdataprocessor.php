@@ -730,7 +730,7 @@ class quiz_attempt_data_processor {
     /**
      * Clean tag names by removing PP suffixes
      */
-    private function clean_tag_names($tag_combination) {
+    public function clean_tag_names($tag_combination) {
         if (empty($tag_combination) || $tag_combination === 'No Tags') {
             return $tag_combination;
         }
