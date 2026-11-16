@@ -1869,11 +1869,20 @@ if (has_capability('moodle/grade:viewall', $context)) {
                 exit;
             }
             
-            // Group questions by tag combinations
-            $tag_groups = $processor->group_by_tag_combinations($all_questions);
-            
-            // Calculate overall statistics
-            $overall_stats = $processor->calculate_overall_stats_from_tag_groups($tag_groups);
+            // Group by tag combination (default) or by question-bank category.
+            $bytags = optional_param('group', 'tag', PARAM_ALPHA) !== 'category';
+            if ($bytags) {
+                $tag_groups = $processor->group_by_tag_combinations($all_questions);
+                $overall_stats = $processor->calculate_overall_stats_from_tag_groups($tag_groups);
+            } else {
+                foreach ($all_questions as $question) {
+                    if (empty($question->category_name)) {
+                        $question->category_name = 'Default Category';
+                    }
+                }
+                $tag_groups = $processor->group_by_category($all_questions);
+                $overall_stats = $processor->calculate_overall_stats($tag_groups);
+            }
 
             // Determine color based on percentage
             $percentage = $overall_stats['percentage'];
@@ -2675,12 +2684,12 @@ if (has_capability('moodle/grade:viewall', $context)) {
                     
                     <!-- Tag Groups Table -->
                     <div class="tag-groups-table card slide-in">
-                        <h2 class="report-h2" style="margin: 0 0 20px 0; padding: 20px 20px 0 20px;"><i class="fas fa-tags"></i> Topic-wise Performance Analysis</h2>
+                        <h2 class="report-h2" style="margin: 0 0 20px 0; padding: 20px 20px 0 20px;"><i class="fas fa-tags"></i> <?= $bytags ? 'Topic-wise Performance Analysis' : 'Category Performance Breakdown' ?></h2>
                         <div class="table-responsive">
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Topic/Tag Combination</th>
+                                        <th><?= $bytags ? 'Topic/Tag Combination' : 'Category Name' ?></th>
                                         <th>Total Questions</th>
                                         <th>Correct Answers</th>
                                         <th>Incorrect Answers</th>
@@ -2708,7 +2717,9 @@ if (has_capability('moodle/grade:viewall', $context)) {
                                                 <div class="section-name">
                                                     <i class="fas fa-chevron-right section-icon"></i>
                                                     <div class="tag-combination">
-                                                        <?php if (empty($tag_combination) || $tag_combination === 'No Tags'): ?>
+                                                        <?php if (!$bytags): ?>
+                                                            <?= htmlspecialchars($tag_combination) ?>
+                                                        <?php elseif (empty($tag_combination) || $tag_combination === 'No Tags'): ?>
                                                             <span class="no-tags">Untagged Questions</span>
                                                         <?php else: ?>
                                                             <?php 
@@ -3147,7 +3158,7 @@ if (has_capability('moodle/grade:viewall', $context)) {
                         
                         <h2 class="report-h2">
                             <i class="fas fa-file-alt"></i>
-                            Generate Tag-based Past Year Papers Report
+                            Generate Past Year Papers Report
                         </h2>
                         <!-- Year/Category Selection -->
                         <div class="form-group">
@@ -3168,6 +3179,15 @@ if (has_capability('moodle/grade:viewall', $context)) {
                             <label for="quizSelect" class="form-label">Choose Paper:</label>
                             <select id="quizSelect" class="form-select">
                                 <option value="">-- Select Paper --</option>
+                            </select>
+                        </div>
+
+                        <!-- Grouping -->
+                        <div class="form-group">
+                            <label for="groupSelect" class="form-label">Group by:</label>
+                            <select name="group" id="groupSelect" class="form-select">
+                                <option value="tag" selected>Tags</option>
+                                <option value="category">Category</option>
                             </select>
                         </div>
 
