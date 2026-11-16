@@ -1870,7 +1870,7 @@ if (has_capability('moodle/grade:viewall', $context)) {
             }
             
             // Group by tag combination (default) or by question-bank category.
-            $bytags = optional_param('group', 'tag', PARAM_ALPHA) !== 'category';
+            $bytags = quiz_attempt_data_processor::resolve_grouping(true) === 'tag';
             if ($bytags) {
                 $tag_groups = $processor->group_by_tag_combinations($all_questions);
                 $overall_stats = $processor->calculate_overall_stats_from_tag_groups($tag_groups);
@@ -3182,6 +3182,7 @@ if (has_capability('moodle/grade:viewall', $context)) {
                             </select>
                         </div>
 
+                        <?php if (quiz_attempt_data_processor::grouping_picker_enabled()): ?>
                         <!-- Grouping -->
                         <div class="form-group">
                             <label for="groupSelect" class="form-label">Group by:</label>
@@ -3190,6 +3191,7 @@ if (has_capability('moodle/grade:viewall', $context)) {
                                 <option value="category">Category</option>
                             </select>
                         </div>
+                        <?php endif; ?>
 
                         <!-- Hidden input to store selected quiz IDs -->
                         <input type="hidden" name="selected_quizzes" id="selectedQuizzes">
@@ -3510,11 +3512,19 @@ if (has_capability('moodle/grade:viewall', $context)) {
             // Use data processor to get comprehensive question data
             $questions = $processor->get_attempt_questions($latest_attempt->attempt_id);
 
-            // Group all questions directly by tags (no categories)
-            $tag_groups = $processor->group_all_by_tags($questions);
-            echo '<script>console.log("tag_groups:", ' . json_encode($tag_groups) . ')</script>';
-            // Calculate overall statistics from tag groups
-            $overall_stats = $processor->calculate_overall_stats_from_tags($tag_groups);
+            // Group by tags (default) or by question-bank category.
+            if (quiz_attempt_data_processor::resolve_grouping(true) === 'tag') {
+                $tag_groups = $processor->group_all_by_tags($questions);
+                $overall_stats = $processor->calculate_overall_stats_from_tags($tag_groups);
+            } else {
+                foreach ($questions as $question) {
+                    if (empty($question->category_name)) {
+                        $question->category_name = 'Default Category';
+                    }
+                }
+                $tag_groups = $processor->group_by_category($questions);
+                $overall_stats = $processor->calculate_overall_stats($tag_groups);
+            }
 
 
             // Determine color based on percentage
@@ -4709,6 +4719,17 @@ if (has_capability('moodle/grade:viewall', $context)) {
                             Generate Olympiad Quiz Report
                         </h2>
 
+                        <?php if (quiz_attempt_data_processor::grouping_picker_enabled()): ?>
+                        <!-- Grouping -->
+                        <div class="form-group">
+                            <label for="groupSelect" class="form-label">Group by:</label>
+                            <select id="groupSelect" class="form-select">
+                                <option value="tag" selected>Tags</option>
+                                <option value="category">Category</option>
+                            </select>
+                        </div>
+                        <?php endif; ?>
+
                         <!-- Section Selection -->
                         <div class="form-group">
                             <label for="childSection" class="form-label">Choose Section:</label>
@@ -4814,6 +4835,8 @@ if (has_capability('moodle/grade:viewall', $context)) {
                         currentUrl.searchParams.set('id', '<?php echo htmlspecialchars($courseid); ?>');
                         currentUrl.searchParams.set('fetch', 'random');
                         currentUrl.searchParams.set('quiz_id', quizId);
+                        const olympiadGroup = document.getElementById('groupSelect');
+                        if (olympiadGroup) currentUrl.searchParams.set('group', olympiadGroup.value);
                         
                         // Redirect to the new URL
                         window.location.href = currentUrl.toString();

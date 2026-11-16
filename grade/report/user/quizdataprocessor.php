@@ -9,7 +9,15 @@
 defined('MOODLE_INTERNAL') || die();
 
 class quiz_attempt_data_processor {
-    
+
+    /**
+     * Master switch for the "Group by" picker (tags or categories) in the Random Bag, School Test,
+     * Past Year and Olympiad reports. Set to false to remove the picker and go back to the fixed
+     * grouping: Past Papers quizzes and the Past Year / Olympiad reports by tags, everything else
+     * by category.
+     */
+    const GROUPING_PICKER = true;
+
     private $db;
     
     public function __construct() {
@@ -17,6 +25,27 @@ class quiz_attempt_data_processor {
         $this->db = $DB;
     }
     
+    /**
+     * Whether reports offer the tag / category "Group by" picker (see GROUPING_PICKER).
+     */
+    public static function grouping_picker_enabled(): bool {
+        return self::GROUPING_PICKER;
+    }
+
+    /**
+     * The grouping a report should use: the picked one when the picker is on, otherwise the default.
+     *
+     * @param bool $tagdefault whether tags are the default for this report
+     * @return string 'tag' or 'category'
+     */
+    public static function resolve_grouping(bool $tagdefault): string {
+        $default = $tagdefault ? 'tag' : 'category';
+        if (!self::GROUPING_PICKER) {
+            return $default;
+        }
+        return optional_param('group', $default, PARAM_ALPHA) === 'category' ? 'category' : 'tag';
+    }
+
     /**
      * Get comprehensive question data for a quiz attempt with enhanced metadata
      * 

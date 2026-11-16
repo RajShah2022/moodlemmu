@@ -66,6 +66,10 @@ function gradereport_user_random_bag_styles(): void {
                 <style>
                     @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap");
 
+                    .capitalise {
+                        text-transform: capitalize;
+                    }
+
                     :root {
                         --primary-color: #0D9488;
                         --secondary-color: #7b1fa2;
@@ -1055,6 +1059,17 @@ function gradereport_user_random_bag_page(int $courseid, array $students, ?strin
                             </select>
                         </div>
 
+                        <?php if (quiz_attempt_data_processor::grouping_picker_enabled()): ?>
+                        <!-- Grouping -->
+                        <div class="form-group">
+                            <label for="groupSelect" class="form-label">Group by:</label>
+                            <select name="group" id="groupSelect" class="form-select">
+                                <option value="category">Category</option>
+                                <option value="tag">Tags</option>
+                            </select>
+                        </div>
+                        <?php endif; ?>
+
                         <!-- Submit Button -->
                         <div class="form-group">
                             <button type="submit" id="submitBtn" class="submit-button" disabled>
@@ -1076,7 +1091,26 @@ function gradereport_user_random_bag_page(int $courseid, array $students, ?strin
                 const submitBtn = document.getElementById("submitBtn");
                 const form = document.getElementById("randomBagForm");
 
+                const groupSelect = document.getElementById("groupSelect");
+
+                // Past Papers (the section or any section above it) default to tags, everything else to categories.
+                function inPastPapers(index) {
+                    let depth = childrenData[index].depth;
+                    for (let i = index; i >= 0; i--) {
+                        if (childrenData[i].depth <= depth) {
+                            if (/^past paper/i.test((childrenData[i].name || '').trim())) return true;
+                            depth = childrenData[i].depth;
+                            if (depth === 0) break;
+                        }
+                    }
+                    return false;
+                }
+
                 childSelect.addEventListener("change", function() {
+                    if (groupSelect) {
+                        const sectionIndex = childrenData.findIndex(c => c.id === this.value);
+                        groupSelect.value = sectionIndex >= 0 && inPastPapers(sectionIndex) ? "tag" : "category";
+                    }
                     quizSelect.innerHTML = '<option value="">-- Select Quiz --</option>';
                     if (submitBtn) submitBtn.disabled = true;
                     
@@ -1134,6 +1168,7 @@ function gradereport_user_random_bag_page(int $courseid, array $students, ?strin
                         currentUrl.searchParams.set('id', '<?php echo htmlspecialchars($courseid); ?>');
                         currentUrl.searchParams.set('fetch', '<?= htmlspecialchars($fetch) ?>');
                         currentUrl.searchParams.set('quiz_id', quizId);
+                        if (groupSelect) currentUrl.searchParams.set('group', groupSelect.value);
                         
                         // Redirect to the new URL
                         window.location.href = currentUrl.toString();
@@ -1240,30 +1275,41 @@ function gradereport_user_random_bag_is_past_paper(int $courseid, int $cmid): bo
 }
 
 /**
- * Names the group each question is reported under: its category, or for Past Papers quizzes its tags
- * (as in the Past Papers report), so grouping, highlights and tables all follow the tags.
+ * Group a student's questions by tag combination or by category, with the stats to match.
  *
- * @param array $questions attempt questions
- * @param bool $pastpaper group by tags instead of category
  * @param quiz_attempt_data_processor $processor
+ * @param array $questions attempt questions
+ * @param bool $bytags
+ * @return array [groups, overall stats]
  */
-function gradereport_user_random_bag_set_groups(array $questions, bool $pastpaper,
-        quiz_attempt_data_processor $processor): void {
-    foreach ($questions as $question) {
-        if ($pastpaper) {
-            // Same tag clean-up as the Past Papers report: drops the " - PP" suffixes.
+function gradereport_user_random_bag_group_questions(quiz_attempt_data_processor $processor, array $questions,
+        bool $bytags): array {
+    if ($bytags) {
+        foreach ($questions as $question) {
             if (!empty($question->tag_combination)) {
                 $question->tag_combination = $processor->clean_tag_names($question->tag_combination);
             }
-            $tags = array_filter(array_map('trim', explode(' ; ', (string)($question->tag_combination ?? ''))));
-            $tags = array_filter($tags, function($tag) {
-                return $tag !== 'No Tags';
-            });
-            $question->category_name = $tags ? implode(' • ', $tags) : 'No Tags';
-        } else if (empty($question->category_name)) {
+        }
+        $groups = $processor->group_by_tag_combinations($questions);
+        return [$groups, $processor->calculate_overall_stats_from_tag_groups($groups)];
+    }
+    foreach ($questions as $question) {
+        if (empty($question->category_name)) {
             $question->category_name = 'Default Category';
         }
     }
+    $groups = $processor->group_by_category($questions);
+    return [$groups, $processor->calculate_overall_stats($groups)];
+}
+
+/**
+ * A group's name for display: tag combinations read "A • B", "No Tags" reads "Untagged Questions".
+ */
+function gradereport_user_random_bag_group_name(string $name, bool $bytags): string {
+    if (!$bytags) {
+        return $name;
+    }
+    return $name === 'No Tags' || $name === '' ? 'Untagged Questions' : str_replace(' ; ', ' • ', $name);
 }
 
 /**
@@ -1330,16 +1376,10 @@ function gradereport_user_random_bag_student_report(int $courseid, int $student_
             // Use data processor to get comprehensive question data
             $questions = $processor->get_attempt_questions($latest_attempt->attempt_id);
 
-            // Quizzes in a "Past Papers" section are grouped by tags instead of categories.
+            // Group by tag combination or category: the picker's choice, else tags for Past Papers quizzes.
             $pastpaper = gradereport_user_random_bag_is_past_paper($courseid, $quiz_cmid);
-            $grouplabel = $pastpaper ? 'Tag' : 'Category';
-            gradereport_user_random_bag_set_groups($questions, $pastpaper, $processor);
-
-            // Group questions by category
-            $categories = $processor->group_by_category($questions);
-            
-            // Calculate overall statistics
-            $overall_stats = $processor->calculate_overall_stats($categories);
+            $bytags = quiz_attempt_data_processor::resolve_grouping($pastpaper) === 'tag';
+            [$categories, $overall_stats] = gradereport_user_random_bag_group_questions($processor, $questions, $bytags);
 
             // Determine color based on percentage
             $percentage = $overall_stats['percentage'];
@@ -1430,7 +1470,7 @@ function gradereport_user_random_bag_student_report(int $courseid, int $student_
                             <div class="best-categories">
                                 <h3 style="color: #059669; margin-bottom: 15px; display: flex; align-items: center; gap: var(--space-sm); font-size: 1.2rem; font-weight: 600;">
                                     <i class="fas fa-trophy" style="color: #059669;"></i>
-                                    Top Performing <?= $grouplabel ?>s
+                                    Top Performing <?= $bytags ? 'Topics' : 'Categories' ?>
                                 </h3>
                                 
                                 <?php if (!empty($best_categories)): ?>
@@ -1442,8 +1482,8 @@ function gradereport_user_random_bag_student_report(int $courseid, int $student_
                                                         <span style="background: #059669; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9em; font-weight: 700;">
                                                             <?php echo ($index + 1); ?>
                                                         </span>
-                                                        <span style="font-weight: 600; color: var(--text-color);">
-                                                            <?php echo htmlspecialchars($category['name']); ?>
+                                                        <span class="<?= $bytags ? 'capitalise' : '' ?>" style="font-weight: 600; color: var(--text-color);">
+                                                            <?php echo htmlspecialchars(gradereport_user_random_bag_group_name($category['name'], $bytags)); ?>
                                                         </span>
                                                     </div>
                                                     <span style="background-color: #D1FAE5; color: #065F46; padding: 6px 12px; border-radius: 16px; font-size: 0.9em; font-weight: 600;">
@@ -1459,7 +1499,7 @@ function gradereport_user_random_bag_student_report(int $courseid, int $student_
                                     </div>
                                 <?php else: ?>
                                     <div class="info-item" style="background-color: var(--background-color); border: 1px solid var(--border-color); color: var(--text-light); font-style: italic; justify-content: center;">
-                                        <i class="fas fa-info-circle"></i> Not enough data to show top <?= strtolower($grouplabel) ?>s yet.
+                                        <i class="fas fa-info-circle"></i> Not enough data to show top <?= $bytags ? 'topics' : 'categories' ?> yet.
                                     </div>
                                 <?php endif; ?>
                             </div>
@@ -1480,8 +1520,8 @@ function gradereport_user_random_bag_student_report(int $courseid, int $student_
                                                         <span style="background: #DC2626; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9em; font-weight: 700;">
                                                             <?php echo ($index + 1); ?>
                                                         </span>
-                                                        <span style="font-weight: 600; color: var(--text-color);">
-                                                            <?php echo htmlspecialchars($category['name']); ?>
+                                                        <span class="<?= $bytags ? 'capitalise' : '' ?>" style="font-weight: 600; color: var(--text-color);">
+                                                            <?php echo htmlspecialchars(gradereport_user_random_bag_group_name($category['name'], $bytags)); ?>
                                                         </span>
                                                     </div>
                                                     <span style="background-color: #FECACA; color: #991B1B; padding: 6px 12px; border-radius: 16px; font-size: 0.9em; font-weight: 600;">
@@ -1518,7 +1558,7 @@ function gradereport_user_random_bag_student_report(int $courseid, int $student_
                                             Build on Strengths
                                         </h4>
                                         <p style="margin: 0; font-size: 0.85rem; color: var(--text-light); line-height: 1.4;">
-                                            Continue practicing your strong <?= strtolower($grouplabel) ?>s to maintain high performance.
+                                            Continue practicing your strong <?= $bytags ? 'topics' : 'categories' ?> to maintain high performance.
                                         </p>
                                     </div>
                                 <?php endif; ?>
@@ -1530,7 +1570,7 @@ function gradereport_user_random_bag_student_report(int $courseid, int $student_
                                             Focus on Weak Areas
                                         </h4>
                                         <p style="margin: 0; font-size: 0.85rem; color: var(--text-light); line-height: 1.4;">
-                                            Dedicate extra study time to your lowest performing <?= strtolower($grouplabel) ?>s.
+                                            Dedicate extra study time to your lowest performing <?= $bytags ? 'topics' : 'categories' ?>.
                                         </p>
                                     </div>
                                 <?php endif; ?>
@@ -1558,12 +1598,12 @@ function gradereport_user_random_bag_student_report(int $courseid, int $student_
                     
                     <!-- Categories Table -->
                     <div class="categories-table card slide-in">
-                        <h2 class="report-h2" style="margin: 0 0 20px 0; padding: 20px 20px 0 20px;"><i class="fas fa-layer-group"></i> <?= $grouplabel ?> Performance Breakdown</h2>
+                        <h2 class="report-h2" style="margin: 0 0 20px 0; padding: 20px 20px 0 20px;"><i class="fas fa-layer-group"></i> <?= $bytags ? 'Topic-wise Performance Analysis' : 'Category Performance Breakdown' ?></h2>
                         <div class="table-responsive">
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th><?= $grouplabel ?> Name</th>
+                                        <th><?= $bytags ? 'Topic/Tag Combination' : 'Category Name' ?></th>
                                         <th>Total Questions</th>
                                         <th>Correct Answers</th>
                                         <th>Incorrect Answers</th>
@@ -1590,7 +1630,17 @@ function gradereport_user_random_bag_student_report(int $courseid, int $student_
                                             <td>
                                                 <div class="section-name">
                                                     <i class="fas fa-chevron-right section-icon"></i>
-                                                    <?= htmlspecialchars($category_name) ?>
+                                                    <?php if ($bytags): ?>
+                                                        <?php if (empty($category_name) || $category_name === 'No Tags'): ?>
+                                                            <span>Untagged Questions</span>
+                                                        <?php else: ?>
+                                                            <?php foreach (explode(' ; ', $category_name) as $tag): ?>
+                                                                <span class="capitalise" style="display: inline-block; margin: 0 4px 4px 0; padding: 2px 8px; border-radius: 10px; background: #E0F2F1; color: #0D9488; font-size: 0.8rem; font-weight: 600;"><i class="fas fa-tag"></i> <?= htmlspecialchars(trim($tag)) ?></span>
+                                                            <?php endforeach; ?>
+                                                        <?php endif; ?>
+                                                    <?php else: ?>
+                                                        <?= htmlspecialchars($category_name) ?>
+                                                    <?php endif; ?>
                                                 </div>
                                             </td>
                                             <td><?= $category_data['total_questions'] ?></td>
@@ -1614,10 +1664,36 @@ function gradereport_user_random_bag_student_report(int $courseid, int $student_
                                                                 'stepdata_value' => $processor->extract_primary_answer($question),
                                                                 'state' => $question->state
                                                             ];
-
-                                                            // Render question using enhanced renderer
-                                                            echo $renderer->render_question_report($question, $attempt_data, true);
                                                             ?>
+                                                            <?php if ($pastpaper || $bytags): ?>
+                                                                <?php
+                                                                // Badges show what the rows are not grouped by: the category in tag mode, the tags otherwise.
+                                                                $qtags = $bytags
+                                                                    ? [$question->category_name ?: 'Default Category']
+                                                                    : array_filter(array_map('trim', explode(' ; ', (string)($question->tag_combination ?? ''))));
+                                                                $qtext = shorten_text(trim(html_entity_decode(strip_tags($question->questiontext), ENT_QUOTES, 'UTF-8')), 160);
+                                                                ?>
+                                                                <details style="margin-bottom: 10px;">
+                                                                    <summary style="cursor: pointer;">
+                                                                        <?php foreach ($qtags as $tag): ?>
+                                                                            <?php if ($bytags): ?>
+                                                                                <span style="display: inline-block; margin: 0 8px 4px 0; font-size: 0.9rem; font-weight: 600; color: #000;"><?= htmlspecialchars($tag) ?></span>
+                                                                            <?php else: ?>
+                                                                                <span class="capitalise" style="display: inline-block; margin: 0 4px 4px 0; padding: 2px 8px; border-radius: 10px; background: #E0F2F1; color: #0D9488; font-size: 0.8rem; font-weight: 600;"><i class="fas fa-tag"></i> <?= htmlspecialchars($tag) ?></span>
+                                                                            <?php endif; ?>
+                                                                        <?php endforeach; ?>
+                                                                        <?php if (!$qtags): ?>
+                                                                            <strong>Untagged question</strong>
+                                                                        <?php endif; ?>
+                                                                        <div style="font-size: 0.85rem; color: var(--text-light);"><?= htmlspecialchars($qtext) ?></div>
+                                                                    </summary>
+                                                                    <div style="margin-top: 10px; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: #fff;">
+                                                                        <?= $renderer->render_question_report($question, $attempt_data, true) ?>
+                                                                    </div>
+                                                                </details>
+                                                            <?php else: ?>
+                                                                <?= $renderer->render_question_report($question, $attempt_data, true) ?>
+                                                            <?php endif; ?>
                                                         <?php endforeach; ?>
                                                     </div>
                                                 </div>
@@ -1770,9 +1846,12 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
         $rs->close();
     }
 
-    // Quizzes in a "Past Papers" section are grouped by tags instead of categories.
+    // Group by tag combination or category: the picker's choice, else tags for Past Papers quizzes.
     $pastpaper = gradereport_user_random_bag_is_past_paper($courseid, $quiz_cmid);
-    $grouplabel = $pastpaper ? 'Tag' : 'Category';
+    $bytags = quiz_attempt_data_processor::resolve_grouping($pastpaper) === 'tag';
+    if (quiz_attempt_data_processor::grouping_picker_enabled()) {
+        $urlparams['group'] = $bytags ? 'tag' : 'category';
+    }
 
     // Per-student results, plus running totals per category and per question.
     $student_rows = [];
@@ -1785,9 +1864,7 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
         $row = ['student' => $s, 'attempt' => $attempt, 'stats' => null];
         if ($finished) {
             $questions = $processor->get_attempt_questions($finished->attempt_id);
-            gradereport_user_random_bag_set_groups($questions, $pastpaper, $processor);
-            $student_categories = $processor->group_by_category($questions);
-            $stats = $processor->calculate_overall_stats($student_categories);
+            [$student_categories, $stats] = gradereport_user_random_bag_group_questions($processor, $questions, $bytags);
             $row['stats'] = $stats;
             $finished_count++;
             foreach (array_keys($overall_totals) as $key) {
@@ -1809,7 +1886,8 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
                         $totals['questions'][$question->questionid] = [
                             'name' => $question->question_name,
                             'text' => shorten_text(trim(html_entity_decode(strip_tags($question->questiontext), ENT_QUOTES, 'UTF-8')), 160),
-                            'tags' => array_filter(array_map(function($tag) {
+                            // Badges show what the rows are not grouped by: the category in tag mode, the tags otherwise.
+                            'tags' => $bytags ? [$question->category_name ?: 'Default Category'] : array_filter(array_map(function($tag) {
                                 // Capitalise the first letter of each word, keeping acronyms (e.g. HCF) as they are.
                                 return preg_replace_callback('/(^|[\s\-\/(])(\p{Ll})/u', function($m) {
                                     return $m[1] . core_text::strtoupper($m[2]);
@@ -1967,8 +2045,8 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
                                                 <span style="background: #059669; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9em; font-weight: 700;">
                                                     <?php echo ($index + 1); ?>
                                                 </span>
-                                                <span style="font-weight: 600; color: var(--text-color);">
-                                                    <?php echo htmlspecialchars($category['name']); ?>
+                                                <span class="<?= $bytags ? 'capitalise' : '' ?>" style="font-weight: 600; color: var(--text-color);">
+                                                    <?php echo htmlspecialchars(gradereport_user_random_bag_group_name($category['name'], $bytags)); ?>
                                                 </span>
                                             </div>
                                             <span style="background-color: #D1FAE5; color: #065F46; padding: 6px 12px; border-radius: 16px; font-size: 0.9em; font-weight: 600;">
@@ -1984,7 +2062,7 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
                             </div>
                         <?php else: ?>
                             <div class="info-item" style="background-color: var(--background-color); border: 1px solid var(--border-color); color: var(--text-light); font-style: italic; justify-content: center;">
-                                <i class="fas fa-info-circle"></i> Not enough data to show top <?= strtolower($grouplabel) ?>s yet.
+                                <i class="fas fa-info-circle"></i> Not enough data to show top <?= $bytags ? 'topics' : 'categories' ?> yet.
                             </div>
                         <?php endif; ?>
                     </div>
@@ -2005,8 +2083,8 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
                                                 <span style="background: #DC2626; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9em; font-weight: 700;">
                                                     <?php echo ($index + 1); ?>
                                                 </span>
-                                                <span style="font-weight: 600; color: var(--text-color);">
-                                                    <?php echo htmlspecialchars($category['name']); ?>
+                                                <span class="<?= $bytags ? 'capitalise' : '' ?>" style="font-weight: 600; color: var(--text-color);">
+                                                    <?php echo htmlspecialchars(gradereport_user_random_bag_group_name($category['name'], $bytags)); ?>
                                                 </span>
                                             </div>
                                             <span style="background-color: #FECACA; color: #991B1B; padding: 6px 12px; border-radius: 16px; font-size: 0.9em; font-weight: 600;">
@@ -2039,12 +2117,12 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
 
             <!-- Categories Table -->
             <div class="categories-table card slide-in">
-                <h2 class="report-h2" style="margin: 0 0 20px 0; padding: 20px 20px 0 20px;"><i class="fas fa-layer-group"></i> <?= $grouplabel ?> Performance Breakdown<?= $studentmode ? '' : ' (class average)' ?></h2>
+                <h2 class="report-h2" style="margin: 0 0 20px 0; padding: 20px 20px 0 20px;"><i class="fas fa-layer-group"></i> <?= $bytags ? 'Topic-wise Performance Analysis' : 'Category Performance Breakdown' ?><?= $studentmode ? '' : ' (class average)' ?></h2>
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
                             <tr>
-                                <th><?= $grouplabel ?> Name</th>
+                                <th><?= $bytags ? 'Topic/Tag Combination' : 'Category Name' ?></th>
                                 <?php if (!$studentmode): ?><th>Students</th><?php endif; ?>
                                 <th><?= $avg ?>Questions</th>
                                 <th><?= $avg ?>Correct</th>
@@ -2071,7 +2149,13 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
                                     <td>
                                         <div class="section-name">
                                             <i class="fas fa-chevron-right section-icon"></i>
-                                            <?= htmlspecialchars($category_name) ?>
+                                            <?php if ($bytags && $category_name !== 'No Tags'): ?>
+                                                <?php foreach (explode(' ; ', $category_name) as $tag): ?>
+                                                    <span class="capitalise" style="display: inline-block; margin: 0 4px 4px 0; padding: 2px 8px; border-radius: 10px; background: #E0F2F1; color: #0D9488; font-size: 0.8rem; font-weight: 600;"><i class="fas fa-tag"></i> <?= htmlspecialchars(trim($tag)) ?></span>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <?= htmlspecialchars(gradereport_user_random_bag_group_name($category_name, $bytags)) ?>
+                                            <?php endif; ?>
                                         </div>
                                     </td>
                                     <?php if (!$studentmode): ?><td><?= $category_data['students'] ?></td><?php endif; ?>
@@ -2107,7 +2191,11 @@ function gradereport_user_random_bag_class_report(int $courseid, array $students
                                                                     <details>
                                                                         <summary style="cursor: pointer;">
                                                                             <?php foreach ($question['tags'] as $tag): ?>
-                                                                                <span style="display: inline-block; margin: 0 4px 4px 0; padding: 2px 8px; border-radius: 10px; background: #E0F2F1; color: #0D9488; font-size: 0.8rem; font-weight: 600;"><i class="fas fa-tag"></i> <?= htmlspecialchars($tag) ?></span>
+                                                                                <?php if ($bytags): ?>
+                                                                                    <span style="display: inline-block; margin: 0 8px 4px 0; font-size: 0.9rem; font-weight: 600; color: #000;"><?= htmlspecialchars($tag) ?></span>
+                                                                                <?php else: ?>
+                                                                                    <span class="capitalise" style="display: inline-block; margin: 0 4px 4px 0; padding: 2px 8px; border-radius: 10px; background: #E0F2F1; color: #0D9488; font-size: 0.8rem; font-weight: 600;"><i class="fas fa-tag"></i> <?= htmlspecialchars($tag) ?></span>
+                                                                                <?php endif; ?>
                                                                             <?php endforeach; ?>
                                                                             <?php if (!$question['tags']): ?>
                                                                                 <strong>Untagged question</strong>
