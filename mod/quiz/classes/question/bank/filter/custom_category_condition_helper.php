@@ -104,27 +104,14 @@ class custom_category_condition_helper extends \qbank_managecategories\helper {
         $topwhere = $top ? '' : 'AND c.parent <> 0';
         $statuscondition = "AND qv.status = '". question_version_status::QUESTION_STATUS_READY . "' ";
 
-        // Counts are grouped once for all categories: a per-category correlated subquery took ~1.7s on the live site.
-        $sql = "SELECT c.*, COALESCE(cnt.questioncount, 0) AS questioncount
-                  FROM {question_categories} c
-             LEFT JOIN (SELECT qbe.questioncategoryid, COUNT(1) AS questioncount
-                          FROM {question_categories} qc
-                          JOIN {question_bank_entries} qbe ON qbe.questioncategoryid = qc.id
-                          JOIN {question_versions} qv ON qv.questionbankentryid = qbe.id
-                          JOIN {question} q ON q.id = qv.questionid
-                         WHERE qc.contextid IN ($contexts)
-                               AND q.parent = '0'
-                               $statuscondition
-                               AND ($showallversions = 1
-                                   OR qv.version = (SELECT MAX(v.version)
-                                                      FROM {question_versions} v
-                                                     WHERE v.questionbankentryid = qbe.id)
-                                   )
-                      GROUP BY qbe.questioncategoryid
-                       ) cnt ON cnt.questioncategoryid = c.id
-                 WHERE c.contextid IN ($contexts) $topwhere
-              ORDER BY $sortorder";
-
-        return $DB->get_records_sql($sql);
+        $categories = $DB->get_records_sql("SELECT c.*
+                                              FROM {question_categories} c
+                                             WHERE c.contextid IN ($contexts) $topwhere
+                                          ORDER BY $sortorder");
+        $counts = self::get_question_counts($contexts, $statuscondition, $showallversions);
+        foreach ($categories as $category) {
+            $category->questioncount = $counts[$category->id] ?? 0;
+        }
+        return $categories;
     }
 }

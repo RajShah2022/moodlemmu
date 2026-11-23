@@ -260,28 +260,66 @@ class helper {
         $statuscondition = "AND (qv.status = '". question_version_status::QUESTION_STATUS_READY . "' " .
             " OR qv.status = '" . question_version_status::QUESTION_STATUS_DRAFT . "' )";
 
-        // Counts are grouped once for all categories: a per-category correlated subquery took ~1.7s on the live site.
-        $sql = "SELECT c.*, COALESCE(cnt.questioncount, 0) AS questioncount
-                  FROM {question_categories} c
-             LEFT JOIN (SELECT qbe.questioncategoryid, COUNT(1) AS questioncount
-                          FROM {question_categories} qc
-                          JOIN {question_bank_entries} qbe ON qbe.questioncategoryid = qc.id
-                          JOIN {question_versions} qv ON qv.questionbankentryid = qbe.id
-                          JOIN {question} q ON q.id = qv.questionid
-                         WHERE qc.contextid IN ($contexts)
-                               AND q.parent = '0'
-                               $statuscondition
-                               AND ($showallversions = 1
-                                   OR qv.version = (SELECT MAX(v.version)
-                                                      FROM {question_versions} v
-                                                     WHERE v.questionbankentryid = qbe.id)
-                                   )
-                      GROUP BY qbe.questioncategoryid
-                       ) cnt ON cnt.questioncategoryid = c.id
-                 WHERE c.contextid IN ($contexts) $topwhere
-              ORDER BY $sortorder";
+        $categories = $DB->get_records_sql("SELECT c.*
+                                              FROM {question_categories} c
+                                             WHERE c.contextid IN ($contexts) $topwhere
+                                          ORDER BY $sortorder");
+        $counts = self::get_question_counts($contexts, $statuscondition, $showallversions);
+        foreach ($categories as $category) {
+            $category->questioncount = $counts[$category->id] ?? 0;
+        }
+        return $categories;
+    }
 
-        return $DB->get_records_sql($sql);
+    /**
+     * Number of questions in each category of the given contexts, cached per context.
+     *
+     * @param string|int $contexts comma separated list of context ids.
+     * @param string $statuscondition SQL fragment restricting qv.status.
+     * @param int $showallversions 1 to count all versions not only the latest.
+     * @return int[] category id => question count; categories without questions are absent.
+     */
+    protected static function get_question_counts($contexts, string $statuscondition, int $showallversions): array {
+        global $DB;
+        // Counting takes ~1.4s for the 75k-question system context, and the counts only decorate category names.
+        // shortcut: counts can be up to 5 minutes stale, purge this cache on question changes if exact counts are needed.
+        $cache = \cache::make_from_params(\cache_store::MODE_APPLICATION, 'qbank_managecategories', 'questioncounts');
+        $suffix = md5($statuscondition . $showallversions);
+        $counts = [];
+        $missing = [];
+        foreach (array_map('intval', explode(',', (string) $contexts)) as $contextid) {
+            $cached = $cache->get("{$contextid}_{$suffix}");
+            if ($cached && $cached['time'] > time() - 5 * MINSECS) {
+                $counts += $cached['counts'];
+            } else {
+                $missing[$contextid] = [];
+            }
+        }
+        if ($missing) {
+            $missingsql = implode(', ', array_keys($missing));
+            $sql = "SELECT qbe.questioncategoryid, qc.contextid, COUNT(1) AS questioncount
+                      FROM {question_categories} qc
+                      JOIN {question_bank_entries} qbe ON qbe.questioncategoryid = qc.id
+                      JOIN {question_versions} qv ON qv.questionbankentryid = qbe.id
+                      JOIN {question} q ON q.id = qv.questionid
+                     WHERE qc.contextid IN ($missingsql)
+                           AND q.parent = '0'
+                           $statuscondition
+                           AND ($showallversions = 1
+                               OR qv.version = (SELECT MAX(v.version)
+                                                  FROM {question_versions} v
+                                                 WHERE v.questionbankentryid = qbe.id)
+                               )
+                  GROUP BY qbe.questioncategoryid, qc.contextid";
+            foreach ($DB->get_records_sql($sql) as $record) {
+                $missing[$record->contextid][$record->questioncategoryid] = (int) $record->questioncount;
+            }
+            foreach ($missing as $contextid => $contextcounts) {
+                $cache->set("{$contextid}_{$suffix}", ['time' => time(), 'counts' => $contextcounts]);
+                $counts += $contextcounts;
+            }
+        }
+        return $counts;
     }
 
     /**
