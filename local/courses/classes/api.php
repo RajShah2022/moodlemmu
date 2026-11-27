@@ -283,6 +283,9 @@ class api {
     public static function insert_groupcontentconfig_instance($data) {
         global $DB, $USER;
 
+        // A big course can take longer than the default PHP limit to save.
+        \core_php_time_limit::raise(600);
+
         try {
             $categorycontext = (new \local_courses\lib\accesslib())::get_module_context();
             $courseid = $data->courseid;
@@ -391,11 +394,13 @@ class api {
             // them - without this there is no record of who removed what, or when.
             $removedtopics = [];
             $removedactivities = [];
+            $offcmids = [];
 
             foreach ($existingtopicids as $topicid => $paths) {
                 if (!isset($selectedtopics[$topicid]) && isset($paths[$USER->open_path])) {
                     $removedtopics[] = $topicid;
-                    self::update_deleted_section_availability($courseid, $topicid, $groupid);
+                    // Students lose the topic; the class's teachers keep seeing it.
+                    self::update_deleted_section_availability($courseid, $topicid, $groupid, true);
                     $DB->delete_records(self::COURSEGROUPTOPICS_TABLE, ['id' => $paths[$USER->open_path]]);
                 }
             }
@@ -403,9 +408,18 @@ class api {
             foreach ($existingactivityids as $activityid => $paths) {
                 if (!isset($selectedactivities[$activityid]) && isset($paths[$USER->open_path])) {
                     $removedactivities[] = $activityid;
-                    self::update_deleted_module_availability($courseid, $activityid, $groupid);
+                    // Cache is purged once below: a full clear per activity made turning off
+                    // a big course take as long as one cache rebuild per activity.
+                    if (self::update_deleted_module_availability($courseid, $activityid, $groupid, false)) {
+                        $offcmids[] = $activityid;
+                    }
                     $DB->delete_records(self::COURSEGROUPMODULES_TABLE, ['id' => $paths[$USER->open_path]]);
                 }
+            }
+
+            if (!empty($offcmids)) {
+                \course_modinfo::purge_course_modules_cache($courseid, $offcmids);
+                rebuild_course_cache($courseid, true, true);
             }
 
             if (!empty($removedtopics) || !empty($removedactivities)) {
@@ -651,6 +665,11 @@ class api {
             $sectionsByTopic[$topicRecord->topic] = $topicRecord->topic;
         }
 
+        // Modules written below. The cache is purged once for all of them after the
+        // loops: purging and rebuilding per module made a save cost one full cache
+        // rebuild per activity, which is what made large courses take minutes.
+        $touchedcmids = [];
+
         // Iterate over all sections
         foreach ($allSections as $section) {
             $sectiondata = new stdClass();
@@ -730,8 +749,14 @@ class api {
                                 $sectiondata->visible = 1;
                             }
 
-                            // Apply the changes
-                            course_update_section($course, $section, $sectiondata);
+                            // Apply the changes. Core rebuilds the course cache on every call,
+                            // so skip it when the section already holds exactly this state.
+                            $sectionunchanged = isset($sectiondata->availability)
+                                && $sectiondata->availability === (string)$section->availability
+                                && (int)$sectiondata->visible === (int)$section->visible;
+                            if (!$sectionunchanged) {
+                                course_update_section($course, $section, $sectiondata);
+                            }
                         }
                     }
 
@@ -794,16 +819,19 @@ class api {
                             ];
                             $moduleAvailabilityJson = json_encode($moduleAvailability);
 
-                            // Update the availability field in course_modules
-                            $DB->set_field('course_modules', 'availability', $moduleAvailabilityJson, ['id' => $module->moduleid]);
+                            // Update the availability field in course_modules, only if it changed.
+                            if ((string)$moduleRecord->availability !== $moduleAvailabilityJson) {
+                                $DB->set_field('course_modules', 'availability', $moduleAvailabilityJson, ['id' => $module->moduleid]);
+                                $touchedcmids[$module->moduleid] = $module->moduleid;
+                            }
                             // Use the core API rather than a raw set_field: it is the only thing
                             // that keeps visibleold in sync with visible. A raw write desyncs them,
                             // and course_update_section()'s cascade then restores modules from
                             // visibleold - silently re-hiding content that was just granted.
-                            set_coursemodule_visible($module->moduleid, $sectiondata->visible,
-                                $moduleRecord->visibleoncoursepage, false);
-                            \course_modinfo::purge_course_module_cache($courseid, $module->moduleid);
-                            rebuild_course_cache($course->id, true, true);
+                            if (set_coursemodule_visible($module->moduleid, $sectiondata->visible,
+                                    $moduleRecord->visibleoncoursepage, false)) {
+                                $touchedcmids[$module->moduleid] = $module->moduleid;
+                            }
                         } 
                         // else {
                         //     $DB->set_field('course_modules', 'visible', $section->visible, ['id' => $module->moduleid]);
@@ -811,6 +839,11 @@ class api {
                     }
                 }
             }
+        }
+
+        if (!empty($touchedcmids)) {
+            \course_modinfo::purge_course_modules_cache($courseid, array_values($touchedcmids));
+            rebuild_course_cache($courseid, true, true);
         }
     }
 
@@ -984,7 +1017,7 @@ class api {
      * @param bool $changed Set to true if anything was removed.
      * @return array The remaining top level conditions.
      */
-    protected static function strip_group_conditions($json, array $groupids, &$changed): array {
+    protected static function strip_group_conditions($json, array $groupids, &$changed, bool $keepteacherblocks = false): array {
         $changed = false;
 
         if (empty($json)) {
@@ -997,7 +1030,8 @@ class api {
 
         $kept = [];
         foreach ($availability['c'] as $condition) {
-            if (is_array($condition) && self::condition_targets_group($condition, $groupids)) {
+            if (is_array($condition) && self::condition_targets_group($condition, $groupids)
+                    && !($keepteacherblocks && self::is_teacher_block($condition))) {
                 $changed = true;
                 continue;
             }
@@ -1008,13 +1042,36 @@ class api {
     }
 
     /**
+     * Whether a condition block lets only staff of the class through: "group AND role".
+     * An OR block ("group OR role") also admits the class's students, so it is not one.
+     *
+     * @param array $condition A top level availability condition.
+     * @return bool
+     */
+    protected static function is_teacher_block(array $condition): bool {
+        if (($condition['op'] ?? '') !== '&' || empty($condition['c']) || !is_array($condition['c'])) {
+            return false;
+        }
+        foreach ($condition['c'] as $subcondition) {
+            if (is_array($subcondition) && ($subcondition['type'] ?? '') === 'role') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Remove a class's access to a section after its topic row has been unchecked.
      *
      * @param int $courseid
      * @param int $topicid Section id.
      * @param int $groupid Cohort id.
+     * @param bool $keepteacher True when a teacher turns content off for their class: students lose
+     *     the section but the class's teachers keep seeing it ("group AND teacher role" block). Teachers
+     *     cannot see hidden sections or bypass restrictions, so without this block a teacher who turns
+     *     content off loses sight of it. False (class removal, stale clean-up) removes the class entirely.
      */
-    public static function update_deleted_section_availability($courseid, $topicid, $groupid) {
+    public static function update_deleted_section_availability($courseid, $topicid, $groupid, $keepteacher = false) {
         global $DB;
 
         $section = $DB->get_record(self::COURSESECTIONS_TABLE, ['course' => $courseid, 'id' => $topicid]);
@@ -1031,9 +1088,20 @@ class api {
         }
 
         $changed = false;
-        $remaining = self::strip_group_conditions($section->availability, $groupids, $changed);
+        $remaining = self::strip_group_conditions($section->availability, $groupids, $changed, $keepteacher);
         if (!$changed) {
             return;
+        }
+
+        if ($keepteacher) {
+            // Make sure the class's teachers keep a way in, even where only a student block existed.
+            $teacherroleid = (int)self::get_teacher_roleid();
+            foreach ($groupids as $gid) {
+                $block = ['op' => '&', 'c' => [['type' => 'group', 'id' => (int)$gid], ['type' => 'role', 'id' => $teacherroleid]]];
+                if (!in_array($block, $remaining)) {
+                    $remaining[] = $block;
+                }
+            }
         }
 
         $sectiondata = new stdClass();
@@ -1067,8 +1135,10 @@ class api {
      * @param int $courseid
      * @param int $moduleid Course module id.
      * @param int $groupid Cohort id.
+     * @param bool $rebuildcache False when the caller purges the course cache once after a batch.
+     * @return bool Whether the module was changed.
      */
-    public static function update_deleted_module_availability($courseid, $moduleid, $groupid) {
+    public static function update_deleted_module_availability($courseid, $moduleid, $groupid, $rebuildcache = true) {
         global $DB;
 
         // Look the module up by id alone. The previous code also matched
@@ -1079,18 +1149,18 @@ class api {
         $cm = $DB->get_record(self::COURSEMODULES_TABLE, ['course' => $courseid, 'id' => $moduleid],
             'id, availability, visible, visibleoncoursepage');
         if (!$cm || empty($cm->availability)) {
-            return;
+            return false;
         }
 
         $groupids = self::class_group_ids($courseid, $groupid);
         if (empty($groupids)) {
-            return;
+            return false;
         }
 
         $changed = false;
         $remaining = self::strip_group_conditions($cm->availability, $groupids, $changed);
         if (!$changed) {
-            return;
+            return false;
         }
 
         if (!empty($remaining)) {
@@ -1109,8 +1179,11 @@ class api {
             set_coursemodule_visible($cm->id, 0, $cm->visibleoncoursepage, false);
         }
 
-        \course_modinfo::purge_course_module_cache($courseid, $cm->id);
-        rebuild_course_cache($courseid, true, true);
+        if ($rebuildcache) {
+            \course_modinfo::purge_course_module_cache($courseid, $cm->id);
+            rebuild_course_cache($courseid, true, true);
+        }
+        return true;
     }
 
 
