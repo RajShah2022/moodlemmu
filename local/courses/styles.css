@@ -1201,3 +1201,53 @@ body#page-local-courses-userdashboard .card_list_view {
 .groupcontentconfiguration.cannotupdate .modal-content .modal-footer {
   display: none;
 }
+
+/* Content configuration form: nested topics with per-section "Enable items below". */
+.groupcontentconfiguration_form .gcc-bar {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin: 0 0 .75rem;
+}
+.groupcontentconfiguration_form .fitem.gcc-row {
+    align-items: center;
+    margin: 0;
+    padding: .4rem .75rem .4rem calc(.75rem + var(--gcc-depth, 0) * 1.5rem);
+}
+.groupcontentconfiguration_form .fitem.gcc-row > .col-md-3 {
+    display: none;
+}
+.groupcontentconfiguration_form .fitem.gcc-row > .col-md-9 {
+    flex: 0 0 100%;
+    max-width: 100%;
+}
+.groupcontentconfiguration_form .fitem.gcc-section {
+    margin-top: .5rem;
+}
+.groupcontentconfiguration_form .gcc-section .form-check,
+.groupcontentconfiguration_form .gcc-activity .form-check {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+.groupcontentconfiguration_form .gcc-section .form-check label {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+}
+.groupcontentconfiguration_form .gcc-activity .form-check label {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 400;
+}
+.groupcontentconfiguration_form .gcc-count {
+    color: #6c757d;
+    font-size: 12px;
+    white-space: nowrap;
+}
+/* Labels stay as wide as their text so empty row space never toggles a switch. */
+.groupcontentconfiguration_form .gcc-enable-below {
+    margin-left: auto;
+    white-space: nowrap;
+}
+

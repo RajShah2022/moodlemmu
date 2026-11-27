@@ -72,10 +72,23 @@ class groupcontentconfiguration extends dynamic_form {
             // Build the checkbox options.
             $checkboxes = $this->build_section_paths($allsections);
 
+            // Ticks every box client-side; nothing is stored until the user presses Save.
+            if ($user_can_edit) {
+                $mform->addElement('html', \html_writer::div(
+                    \html_writer::tag('button', get_string('enableall', 'local_courses'), [
+                        'type' => 'button',
+                        'class' => 'btn btn-secondary btn-sm',
+                        'data-action' => 'enable-all-toggles',
+                    ]) . ' ' . \html_writer::span(get_string('enableall_help', 'local_courses'), 'text-muted small'),
+                    'mb-3'));
+            }
+
             // Add checkboxes to the form.
             foreach ($checkboxes as $value => $label) {
                 $parent = $this->get_parent_id($allsections, $value);
-                $attributes = ['group' => 'checkboxgroup custom_switch'];
+                $depth = $this->sectionmeta[$value]['depth'] ?? 0;
+                $attributes = ['group' => 'checkboxgroup custom_switch', 'data-kind' => 'section',
+                    'data-depth' => $depth, 'title' => $label];
                 if (!$user_can_edit) {
                     $attributes['disabled'] = 'disabled';
                 }
@@ -84,15 +97,15 @@ class groupcontentconfiguration extends dynamic_form {
                     $attributes['data-parent'] = 'section_' . $parent;
                 }
                 $sectionid = 'section_' . $value;
-                $mform->addElement('advcheckbox', $sectionid, '', $label, $attributes);
-                // Add a help button if the checkbox is a child.
-                if ($parent !== null) {
-                    $mform->addHelpButton($sectionid, 'childcheckboxhelp', 'local_courses');
-                }
+                // The indentation shows the nesting, so the row only needs its own name.
+                $mform->addElement('advcheckbox', $sectionid, '', $this->sectionmeta[$value]['name'] ?? $label, $attributes);
                 $activities = $modinfo->get_cms();
                 foreach ($activities as $cm) {
                     if ($cm->section == $value) {
                         $attributes['data-parent'] = 'section_' . $value;
+                        $attributes['data-kind'] = 'activity';
+                        $attributes['data-depth'] = $depth + 1;
+                        unset($attributes['title']);
                         $activityname = $cm->name;
                         $activityid = 'activity_' . $cm->id;
                         $attributes['class'] = 'ml-1';
@@ -119,21 +132,25 @@ class groupcontentconfiguration extends dynamic_form {
         }
         return null;
     }
+    /** @var array Section id => ['name' => own name, 'depth' => 0 for top level]. */
+    protected $sectionmeta = [];
+
     protected function build_section_paths($sections) {
         $paths = [];
 
         // Helper function to recursively build paths.
-        $build_path = function($section, $sections, $current_path = '') use (&$build_path, &$paths) {
+        $build_path = function($section, $sections, $current_path = '', $depth = 0) use (&$build_path, &$paths) {
             $section_name = $section->name ?: "Topic " . $section->section;
             $full_path = $current_path ? $current_path . ' / ' . $section_name : $section_name;
 
             // Add the current section to paths.
             $paths[$section->id] = $full_path;
+            $this->sectionmeta[$section->id] = ['name' => $section_name, 'depth' => $depth];
 
             // Check for children and build their paths.
             foreach ($sections as $s) {
                 if (isset($s->parent) && $s->parent == $section->section) {
-                    $build_path($s, $sections, $full_path);
+                    $build_path($s, $sections, $full_path, $depth + 1);
                 }
             }
         };
